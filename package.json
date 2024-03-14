@@ -1,0 +1,37 @@
+{
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "lerna run build",
+		"clean": "lerna run clean",
+		"test": "vitest",
+		"lint": "run-s lint:eslint lint:prettier lint:textlint lint:cspell",
+		"lint:cspell": "cspell --no-progress --show-suggestions \"{*,packages/@d-zero/{*,src/**/*}}/\"",
+		"lint:eslint": "eslint --fix \"{*,packages/@d-zero/{*,src/**/*}}.{js,cjs,mjs,jsx,ts,cts,mts,tsx}\"",
+		"lint:prettier": "prettier --write \"{*,packages/@d-zero/{*,src/**/*}}.{md,json,js,cjs,mjs,jsx,ts,cts,mts,tsx}\"",
+		"lint:textlint": "textlint --fix \"./{*,packages/@d-zero/{*,src/**/*}}.{md}\"",
+		"release": "lerna publish",
+		"prerelease": "yarn build; yarn test",
+		"up": "yarn upgrade-interactive --latest"
+	},
+	"workspaces": [
+		"packages/@d-zero/*"
+	],
+	"devDependencies": {
+		"@d-zero/cspell-config": "5.0.0-alpha.16",
+		"@d-zero/eslint-config": "5.0.0-alpha.16",
+		"@d-zero/lint-staged-config": "5.0.0-alpha.16",
+		"@d-zero/prettier-config": "5.0.0-alpha.16",
+		"@d-zero/textlint-config": "5.0.0-alpha.16",
+		"@tsconfig/node-lts": "20.1.1",
+		"@tsconfig/recommended": "1.0.3",
+		"@tsconfig/strictest": "2.0.3",
+		"lerna": "8.1.2",
+		"npm-run-all2": "6.1.2",
+		"typescript": "5.4.2"
+	},
+	"volta": {
+		"node": "20.11.1",
+		"yarn": "1.22.21"
+	}
+}

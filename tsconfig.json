@@ -1,0 +1,15 @@
+{
+	"extends": [
+		// https://github.com/tsconfig/bases
+		"@tsconfig/recommended",
+		"@tsconfig/strictest",
+		"@tsconfig/node-lts"
+	],
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"lib": ["ESNext", "DOM"],
+		"noPropertyAccessFromIndexSignature": false
+	},
+	"include": ["**/*.ts"]
+}
