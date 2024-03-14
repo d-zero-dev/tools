@@ -4,7 +4,7 @@
 	"scripts": {
 		"build": "lerna run build",
 		"clean": "lerna run clean",
-		"test": "vitest",
+		"test": "vitest run",
 		"lint": "run-s lint:eslint lint:prettier lint:textlint lint:cspell",
 		"lint:cspell": "cspell --no-progress --show-suggestions \"{*,packages/@d-zero/{*,src/**/*}}/\"",
 		"lint:eslint": "eslint --fix \"{*,packages/@d-zero/{*,src/**/*}}.{js,cjs,mjs,jsx,ts,cts,mts,tsx}\"",
@@ -28,7 +28,8 @@
 		"@tsconfig/strictest": "2.0.3",
 		"lerna": "8.1.2",
 		"npm-run-all2": "6.1.2",
-		"typescript": "5.4.2"
+		"typescript": "5.4.2",
+		"vitest": "1.3.1"
 	},
 	"volta": {
 		"node": "20.11.1",
