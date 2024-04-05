@@ -28,7 +28,7 @@
 		"@tsconfig/strictest": "2.0.3",
 		"lerna": "8.1.2",
 		"npm-run-all2": "6.1.2",
-		"typescript": "5.4.2"
+		"typescript": "5.4.4"
 	},
 	"volta": {
 		"node": "20.11.1",
