@@ -9,7 +9,8 @@
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
 		"lib": ["ESNext", "DOM"],
-		"noPropertyAccessFromIndexSignature": false
+		"noPropertyAccessFromIndexSignature": false,
+		"exactOptionalPropertyTypes": false
 	},
 	"include": ["**/*.ts"]
 }
