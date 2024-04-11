@@ -1,0 +1,24 @@
+{
+	"name": "@d-zero/dealer",
+	"version": "1.0.0-alpha.0",
+	"description": "A tool that provides an API and CLI for parallel processing of collections and sequential logging to standard output",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"ansi-colors": "4.1.3"
+	}
+}
