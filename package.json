@@ -29,7 +29,7 @@
 		"lerna": "8.1.2",
 		"npm-run-all2": "6.1.2",
 		"typescript": "5.4.5",
-		"vitest": "1.4.0"
+		"vitest": "1.5.0"
 	},
 	"volta": {
 		"node": "20.11.1",
