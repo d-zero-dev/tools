@@ -19,11 +19,11 @@
 	},
 	"dependencies": {
 		"@d-zero/readtext": "1.0.0-alpha.0",
-		"follow-redirects": "1.15.5",
+		"follow-redirects": "1.15.6",
 		"minimist": "1.2.8"
 	},
 	"devDependencies": {
 		"@types/follow-redirects": "1.14.4",
-		"@types/node": "20.11.27"
+		"@types/node": "20.12.7"
 	}
 }
