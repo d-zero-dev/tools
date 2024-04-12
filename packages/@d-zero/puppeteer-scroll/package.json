@@ -1,0 +1,28 @@
+{
+	"name": "@d-zero/puppeteer-scroll",
+	"version": "1.0.0-alpha.1",
+	"description": "Scroll function for puppeteer",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "tsc --build --clean"
+	},
+	"devDependencies": {
+		"puppeteer": "22.6.4"
+	}
+}
