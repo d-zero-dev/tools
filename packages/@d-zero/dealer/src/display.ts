@@ -14,6 +14,7 @@ const animationPresets: Animations = {
 	dots: [5, '.  ', '.. ', '...'],
 	block: [20, '▘', '▀', '▜', '▉', '▟', '▃', '▖', ' '],
 	propeller: [25, '\\', '|', '/', '-'],
+	braille: [10, '⠄', '⠂', '⠁', '⠈', '⠐', '⠠'],
 };
 
 interface Options {

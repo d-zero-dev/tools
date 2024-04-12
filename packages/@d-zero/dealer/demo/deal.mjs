@@ -117,7 +117,7 @@ await deal(
 		header: (progress, done, total, limit) =>
 			progress === 1
 				? `${c.green.bold('Header')} %earth% %dots% Done! ${done}/${total} (${limit})`
-				: `${c.red.bold('Header')} %earth% %dots% %block% %propeller% ${done}/${total} (${limit})`,
+				: `${c.red.bold('Header')} %earth% %dots% %block% %propeller% %braille% ${done}/${total} (${limit})`,
 	},
 );
 
