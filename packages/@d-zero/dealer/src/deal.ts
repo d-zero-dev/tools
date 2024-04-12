@@ -18,8 +18,8 @@ export async function deal<T extends WeakKey>(
 		process: T,
 		update: (log: string) => void,
 		index: number,
-	) => () => void | Promise<void>,
-	options: Options,
+	) => Promise<() => void | Promise<void>>,
+	options?: Options,
 ) {
 	const dealer = new Dealer(items, options);
 	const lanes = new Lanes(options);
@@ -30,16 +30,16 @@ export async function deal<T extends WeakKey>(
 		});
 	}
 
-	dealer.setup((process, index) => {
+	await dealer.setup(async (process, index) => {
 		const update = (log: string) => lanes.update(index, log);
-		const start = setup(process, update, index);
+		const start = await setup(process, update, index);
 		return async () => {
 			await start();
 			lanes.delete(index);
 		};
 	});
 
-	if (options.debug) {
+	if (options?.debug) {
 		dealer.debug((log) => {
 			lanes.update(DEBUG_ID, `[DEBUG]: ${log}`);
 		});

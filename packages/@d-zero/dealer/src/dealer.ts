@@ -39,9 +39,9 @@ export class Dealer<T extends WeakKey> {
 		this.#progress = listener;
 	}
 
-	setup(initializer: ProcessInitializer<T>) {
+	async setup(initializer: ProcessInitializer<T>) {
 		for (const [index, item] of this.#items.entries()) {
-			const start = initializer(item, index);
+			const start = await initializer(item, index);
 			this.#starts.set(item, async () => await start());
 		}
 		this.#progress(
