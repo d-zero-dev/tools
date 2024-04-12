@@ -13,6 +13,19 @@ export async function readList(filePath: string): Promise<string[]>;
 export async function readList(filePath: string, keyValue: true): Promise<KeyValue[]>;
 export async function readList(filePath: string, keyValue?: true): Promise<unknown[]> {
 	const fileContent = await fs.readFile(filePath, 'utf8');
+	const list = toList(fileContent);
+
+	if (!keyValue) {
+		return list;
+	}
+
+	return list.map((line) => {
+		const [key, value] = line.split(/\s+/);
+		return { key, value };
+	});
+}
+
+export function toList(fileContent: string) {
 	const lines = fileContent.split('\n');
 
 	// Trim
@@ -24,12 +37,5 @@ export async function readList(filePath: string, keyValue?: true): Promise<unkno
 	// Remove comments
 	const nonCommentLines = nonEmptyLines.filter((line) => !line.startsWith('#'));
 
-	if (!keyValue) {
-		return nonCommentLines;
-	}
-
-	return nonCommentLines.map((line) => {
-		const [key, value] = line.split(/\s+/);
-		return { key, value };
-	});
+	return nonCommentLines;
 }
