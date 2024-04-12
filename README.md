@@ -2,10 +2,14 @@
 
 ## CLI
 
+- [`@d-zero/archaeologist`](./packages/%40d-zero/archaeologist/README.md)
 - [`@d-zero/filematch`](./packages/%40d-zero/filematch/README.md)
 
 ## API
 
+- [`@d-zero/packages/@d-zero/dealer`](./packages/%40d-zero/packages/@d-zero/dealer/README.md)
+- [`@d-zero/packages/@d-zero/html-distiller`](./packages/%40d-zero/packages/@d-zero/html-distiller/README.md)
+- [`@d-zero/puppeteer-scroll`](./packages/%40d-zero/puppeteer-scroll/README.md)
 - [`@d-zero/readtext`](./packages/%40d-zero/readtext/README.md)
 
 ## メンテナンス環境
@@ -21,3 +25,4 @@
 | ------------ | -------------------------------------------------------------------------- |
 | `yarn build` | 各パッケージのビルドを行います                                             |
 | `yarn lint`  | リポジトリ内のファイルのリント・自動フォーマット・スペルチェックを行います |
+| `yarn test`  | リポジトリ内のファイルのテストを実装します                                 |
