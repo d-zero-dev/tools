@@ -1,0 +1,24 @@
+{
+	"name": "@d-zero/html-distiller",
+	"version": "1.0.0-alpha.1",
+	"description": "A tool for precisely extracting essential information from HTML, enhancing machine readability. It removes unnecessary elements and provides the needed data in JSON format",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"parse5": "7.1.2"
+	}
+}
