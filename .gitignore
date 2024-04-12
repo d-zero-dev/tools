@@ -71,3 +71,9 @@ typings/
 
 # Secret Test
 test/fixture/.__*
+
+# Archaeologist Result Directory
+.archaeologist
+
+# Secret Test Files
+___*
