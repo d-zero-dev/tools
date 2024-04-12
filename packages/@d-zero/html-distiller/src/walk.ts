@@ -7,8 +7,11 @@ import type {
 	commentNode,
 } from './types.js';
 
-export function walk(node: ChildNode): ResultNode {
+export function walk(node: ChildNode) {
 	switch (node.nodeName) {
+		case '#documentType': {
+			return '<!DOCTYPE html>';
+		}
 		case '#text': {
 			return (node as TextNode).value.trim();
 		}
