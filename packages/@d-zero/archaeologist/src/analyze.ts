@@ -9,13 +9,18 @@ import { deal } from '@d-zero/dealer';
 import c from 'ansi-colors';
 import puppeteer from 'puppeteer';
 
+import { analyzeUrlList } from './analize-url.js';
 import { diffImages } from './diff-images.js';
 import { diffTree } from './diff-tree.js';
 import { getData } from './get-data.js';
 import { label, score } from './output-utils.js';
 
 export async function analyze(list: readonly URLPair[]): Promise<Result[]> {
+	const urlInfo = analyzeUrlList(list);
+	const useOldMode = urlInfo.hasAuth && urlInfo.hasNoSSL;
+
 	const browser = await puppeteer.launch({
+		headless: useOldMode ? 'shell' : true,
 		args: [
 			//
 			'--lang=ja',
