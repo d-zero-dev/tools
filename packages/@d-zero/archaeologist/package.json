@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/archaeologist",
-	"version": "1.0.0-alpha.2",
+	"version": "1.0.0-alpha.3",
 	"description": "Uncover visual and HTML differences in web pages with precision",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -28,7 +28,7 @@
 	"dependencies": {
 		"@d-zero/dealer": "^1.0.0-alpha.2",
 		"@d-zero/html-distiller": "^1.0.0-alpha.2",
-		"@d-zero/puppeteer-screenshot": "^1.0.0-alpha.2",
+		"@d-zero/puppeteer-screenshot": "^1.0.0-alpha.3",
 		"@d-zero/readtext": "^1.0.0-alpha.2",
 		"ansi-colors": "4.1.3",
 		"diff": "5.2.0",
