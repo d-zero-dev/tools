@@ -1,4 +1,4 @@
-import type { Listener, Screenshot, Sizes } from './types.js';
+import type { Listener, PageHook, Screenshot, Sizes } from './types.js';
 import type { Page } from 'puppeteer';
 
 import { scrollAllOver } from '@d-zero/puppeteer-scroll';
@@ -7,6 +7,7 @@ import { getBinary } from './get-binary.js';
 
 type Options = {
 	sizes?: Sizes;
+	hooks?: readonly PageHook[];
 	listener?: Listener;
 };
 
@@ -48,6 +49,15 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		} else {
 			listener?.('load', { name, type: 'open' });
 			await page.goto(url, { waitUntil: 'networkidle0' });
+		}
+
+		for (const hook of options?.hooks ?? []) {
+			await hook(page, {
+				name,
+				width,
+				resolution,
+				log: (message) => listener?.('hook', { name, message }),
+			});
 		}
 
 		listener?.('scroll', { name });
