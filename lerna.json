@@ -2,5 +2,10 @@
 	"lerna": "8.1.2",
 	"version": "independent",
 	"npmClient": "yarn",
-	"packages": ["packages/@d-zero/*"]
+	"packages": ["packages/@d-zero/*"],
+	"command": {
+		"version": {
+			"message": "chore(release): publish %s"
+		}
+	}
 }
