@@ -1,0 +1,32 @@
+{
+	"name": "@d-zero/notion",
+	"version": "1.0.0-alpha.0",
+	"description": "A simple Notion API client for D-ZERO tools",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/db.js",
+			"types": "./dist/db.d.ts"
+		},
+		"./types": {
+			"types": "./dist/types.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"@d-zero/shared": "0.1.0",
+		"@notionhq/client": "2.2.15"
+	}
+}

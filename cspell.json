@@ -2,6 +2,9 @@
 	"import": ["@d-zero/cspell-config"],
 	"words": [
 		//
-		"pngjs"
+		"pngjs",
+
+		//
+		"notionhq"
 	]
 }
