@@ -23,6 +23,6 @@
 		"clean": "tsc --build --clean"
 	},
 	"devDependencies": {
-		"puppeteer": "22.6.5"
+		"puppeteer": "22.8.0"
 	}
 }
