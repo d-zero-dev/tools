@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/puppeteer-screenshot",
-	"version": "1.0.0-alpha.3",
+	"version": "1.0.0",
 	"description": "Screenshot utility for puppeteer",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -23,7 +23,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/puppeteer-scroll": "^1.0.0-alpha.3"
+		"@d-zero/puppeteer-scroll": "1.0.0"
 	},
 	"devDependencies": {
 		"puppeteer": "22.8.0"

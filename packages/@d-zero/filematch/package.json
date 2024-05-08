@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/filematch",
-	"version": "1.0.0-alpha.2",
+	"version": "1.0.0",
 	"description": "A simple file matching library",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -18,7 +18,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/readtext": "^1.0.0-alpha.2",
+		"@d-zero/readtext": "1.0.0",
 		"follow-redirects": "1.15.6",
 		"minimist": "1.2.8"
 	},
