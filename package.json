@@ -12,6 +12,7 @@
 		"lint:textlint": "textlint --fix \"./{*,packages/@d-zero/*/{*,src/**/*}}.{md}\"",
 		"release": "lerna publish",
 		"prerelease": "yarn build; yarn test",
+		"prepare": "husky",
 		"commit": "cz",
 		"co": "cz",
 		"up": "yarn upgrade-interactive --latest"
@@ -35,6 +36,7 @@
 		"@d-zero/prettier-config": "5.0.0-alpha.23",
 		"@d-zero/textlint-config": "5.0.0-alpha.23",
 		"@d-zero/tsconfig": "0.2.0",
+		"husky": "9.0.11",
 		"lerna": "8.1.2",
 		"npm-run-all2": "6.1.2",
 		"typescript": "5.4.5",
