@@ -8,6 +8,7 @@
 	},
 	"github.copilot.enable": {
 		"*": true,
+		"markdown": true,
 		"dotenv": false
 	}
 }
