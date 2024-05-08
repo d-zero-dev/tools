@@ -42,3 +42,11 @@ https://example.com/xyz/001
 | `https://example.com/xyz/001` | `https://stage.example.com/xyz/001` |
 
 実行した結果は`.archaeologist`ディレクトリに保存されます。
+
+## 認証
+
+### Basic認証
+
+Basic認証が必要なページの場合はURLにユーザー名とパスワードを含めます。
+
+例: `https://user:pass@example.com`
