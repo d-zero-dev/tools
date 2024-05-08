@@ -31,4 +31,14 @@ https://example.com/c
 https://example.com/xyz/001
 ```
 
+上記のサンプルファイルの場合、以下のURLが比較されます。
+
+| 比較元                        | 比較対象                            |
+| ----------------------------- | ----------------------------------- |
+| `https://example.com`         | `https://stage.example.com`         |
+| `https://example.com/a`       | `https://stage.example.com/a`       |
+| `https://example.com/b`       | `https://stage.example.com/b`       |
+| `https://example.com/c`       | `https://stage.example.com/c`       |
+| `https://example.com/xyz/001` | `https://stage.example.com/xyz/001` |
+
 実行した結果は`.archaeologist`ディレクトリに保存されます。
