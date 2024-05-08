@@ -1,12 +1,16 @@
 import type { URLPair } from './types.js';
+import type { PageHook } from '@d-zero/puppeteer-screenshot';
 
 import c from 'ansi-colors';
 
 import { analyze } from './analyze.js';
 import { label, score } from './output-utils.js';
 
-export async function archaeologist(list: readonly URLPair[]) {
-	const results = await analyze(list);
+export async function archaeologist(
+	list: readonly URLPair[],
+	pageHooks?: readonly PageHook[],
+) {
+	const results = await analyze(list, pageHooks ?? []);
 
 	const output: string[] = [];
 

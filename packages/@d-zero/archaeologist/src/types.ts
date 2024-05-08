@@ -1,3 +1,5 @@
+export type { PageHook } from '@d-zero/puppeteer-screenshot';
+
 import type { Screenshot } from '@d-zero/puppeteer-screenshot';
 
 export type PageData = {

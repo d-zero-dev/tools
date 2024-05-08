@@ -1,5 +1,5 @@
 import type { PageData } from './types.js';
-import type { Listener } from '@d-zero/puppeteer-screenshot';
+import type { Listener, PageHook } from '@d-zero/puppeteer-screenshot';
 import type { Page } from 'puppeteer';
 
 import { distill } from '@d-zero/html-distiller';
@@ -8,6 +8,7 @@ import { screenshot } from '@d-zero/puppeteer-screenshot';
 export async function getData(
 	page: Page,
 	url: string,
+	hooks: readonly PageHook[],
 	listener: Listener,
 ): Promise<PageData> {
 	const screenshots = await screenshot(page, url, {
@@ -20,6 +21,7 @@ export async function getData(
 				resolution: 2,
 			},
 		},
+		hooks,
 		listener,
 	});
 

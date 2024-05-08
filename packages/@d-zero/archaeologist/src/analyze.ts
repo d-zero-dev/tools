@@ -1,6 +1,6 @@
 import type { DiffImagesPhase } from './diff-images.js';
 import type { PageData, Result, URLPair } from './types.js';
-import type { Phase } from '@d-zero/puppeteer-screenshot';
+import type { PageHook, Phase } from '@d-zero/puppeteer-screenshot';
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -15,7 +15,10 @@ import { diffTree } from './diff-tree.js';
 import { getData } from './get-data.js';
 import { label, score } from './output-utils.js';
 
-export async function analyze(list: readonly URLPair[]): Promise<Result[]> {
+export async function analyze(
+	list: readonly URLPair[],
+	hooks: readonly PageHook[],
+): Promise<Result[]> {
 	const urlInfo = analyzeUrlList(list);
 	const useOldMode = urlInfo.hasAuth && urlInfo.hasNoSSL;
 
@@ -50,7 +53,7 @@ export async function analyze(list: readonly URLPair[]): Promise<Result[]> {
 			return async () => {
 				const dataPair: PageData[] = [];
 				for (const url of urlPair) {
-					const data = await getData(page, url, (phase, data) => {
+					const data = await getData(page, url, hooks, (phase, data) => {
 						const outputUrl = c.gray(url);
 						const sizeName = label(data.name);
 						switch (phase) {
@@ -66,6 +69,11 @@ export async function analyze(list: readonly URLPair[]): Promise<Result[]> {
 								update(
 									`%braille% ${outputUrl} ${sizeName}: %earth% ${type === 'open' ? 'Open' : 'Reload'} page`,
 								);
+								break;
+							}
+							case 'hook': {
+								const { message } = data as Phase['hook'];
+								update(`%braille% ${outputUrl} ${sizeName}: ${message}`);
 								break;
 							}
 							case 'scroll': {

@@ -43,6 +43,49 @@ https://example.com/xyz/001
 
 実行した結果は`.archaeologist`ディレクトリに保存されます。
 
+## ページフック
+
+[Frontmatter](https://jekyllrb.com/docs/front-matter/)の`hooks`に配列としてスクリプトファイルのパスを渡すと、ページを開いた後（厳密にはPuppetterの`waitUntil: 'networkidle0'`のタイミング直後）にそれらのスクリプトを実行します。スクリプトは配列の順番通りに逐次実行されます。
+
+```txt
+---
+comparisonHost: https://stage.example.com
+hooks:
+  - ./hook1.cjs
+  - ./hook2.mjs
+---
+
+https://example.com
+https://example.com/a
+︙
+```
+
+フックスクリプトは、以下のようにエクスポートされた関数を持つモジュールとして定義します。
+
+```js
+/**
+ * @type {import('@d-zero/archaeologist').PageHook}
+ */
+export default async function (page, { name, width, resolution, log }) {
+	// 非同期処理可能
+	// page: PuppeteerのPageオブジェクト
+	// name: サイズ名（'desktop' | 'mobile'）
+	// width: ウィンドウ幅
+	// resolution: 解像度
+	// log: ロガー
+
+	// ログイン処理の例
+	log('login');
+	await page.type('#username', 'user');
+	await page.type('#password', 'pass');
+	await page.click('button[type="submit"]');
+	await page.waitForNavigation();
+	log('login done');
+}
+```
+
+例のように、ページにログインする処理をフックスクリプトに記述することで、ユーザー認証が必要なページのスクリーンショットを撮影することができます。
+
 ## 認証
 
 ### Basic認証
