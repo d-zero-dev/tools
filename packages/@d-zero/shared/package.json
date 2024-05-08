@@ -1,0 +1,44 @@
+{
+	"name": "@d-zero/shared",
+	"version": "0.1.0",
+	"description": "Shared utilities for D-ZERO tools",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		"./between-weekend-days": {
+			"import": "./dist/between-weekend-days.js",
+			"types": "./dist/between-weekend-days.d.ts"
+		},
+		"./filesize": {
+			"import": "./dist/filesize.js",
+			"types": "./dist/filesize.d.ts"
+		},
+		"./skip-holyday-period": {
+			"import": "./dist/skip-holyday-period.js",
+			"types": "./dist/skip-holyday-period.d.ts"
+		},
+		"./skip-holydays": {
+			"import": "./dist/skip-holydays.js",
+			"types": "./dist/skip-holydays.d.ts"
+		},
+		"./types": {
+			"types": "./dist/types.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"@holiday-jp/holiday_jp": "2.4.0",
+		"dayjs": "1.11.11"
+	}
+}
