@@ -1,4 +1,4 @@
-# `@d-zero/packbacklog-projects`
+# `@d-zero/backlog-projects`
 
 ## 使い方
 
