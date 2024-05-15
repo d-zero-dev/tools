@@ -10,6 +10,10 @@
 	},
 	"type": "module",
 	"exports": {
+		"./sort/dir": {
+			"import": "./dist/sort/dir.js",
+			"types": "./dist/sort/dir.d.ts"
+		},
 		"./between-weekend-days": {
 			"import": "./dist/between-weekend-days.js",
 			"types": "./dist/between-weekend-days.d.ts"
