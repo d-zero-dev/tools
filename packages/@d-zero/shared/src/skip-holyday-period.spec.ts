@@ -28,7 +28,7 @@ describe('skipHolydayPeriod', () => {
 		expect(dueDate.day()).toBe(5);
 	});
 
-	test.only('2023-12-25 to 2024-01-03', () => {
+	test('2023-12-25 to 2024-01-03', () => {
 		const start = dayjs('2023-12-25');
 		const due = dayjs('2024-01-03');
 		const { startDate, dueDate } = skipHolydayPeriod(start, due);
