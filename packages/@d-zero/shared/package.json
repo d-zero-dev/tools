@@ -42,6 +42,10 @@
 			"import": "./dist/skip-holydays.js",
 			"types": "./dist/skip-holydays.d.ts"
 		},
+		"./str-to-regex": {
+			"import": "./dist/str-to-regex.js",
+			"types": "./dist/str-to-regex.d.ts"
+		},
 		"./typed-await-event-emitter": {
 			"import": "./dist/typed-await-event-emitter.js",
 			"types": "./dist/typed-await-event-emitter.d.ts"
@@ -60,6 +64,7 @@
 	"dependencies": {
 		"@holiday-jp/holiday_jp": "2.4.0",
 		"await-event-emitter": "2.0.2",
-		"dayjs": "1.11.11"
+		"dayjs": "1.11.11",
+		"escape-string-regexp": "5.0.0"
 	}
 }

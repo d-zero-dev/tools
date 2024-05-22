@@ -10,5 +10,6 @@
 | `@d-zero/shared/retry`                     | Decorator factory that adds retry logic to a method.                                       |
 | `@d-zero/shared/skip-holyday-period`       | Skips the holiday period between the start and due dates.                                  |
 | `@d-zero/shared/skip-holydays`             | Skips holidays and weekends in the given date and returns the next available date.         |
+| `@d-zero/shared/str-to-regex`              | Converts a string pattern to a regular expression.                                         |
 | `@d-zero/shared/typed-await-event-emitter` | An event emitter that supports typed events and asynchronous event handling.               |
 | `@d-zero/shared/types`                     | TypesScript types.                                                                         |
