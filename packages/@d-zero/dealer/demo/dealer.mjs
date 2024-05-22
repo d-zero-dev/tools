@@ -109,7 +109,7 @@ dealer.debug((log) => {
 	lanes.update(-999, `[DEBUG]: ${log}`);
 });
 
-dealer.setup((steps, index) => {
+await dealer.setup((steps, index) => {
 	steps.addListener((type, stepCount, delay) => {
 		lanes.update(
 			index,
