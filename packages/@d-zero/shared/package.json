@@ -30,6 +30,10 @@
 			"import": "./dist/filesize.js",
 			"types": "./dist/filesize.d.ts"
 		},
+		"./retry": {
+			"import": "./dist/retry.js",
+			"types": "./dist/retry.d.ts"
+		},
 		"./skip-holyday-period": {
 			"import": "./dist/skip-holyday-period.js",
 			"types": "./dist/skip-holyday-period.d.ts"
