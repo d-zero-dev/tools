@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.3.0...@d-zero/shared@0.4.0) (2024-05-22)
+
+### Features
+
+- **shared:** add `@d-zero/shared/delay` ([f9e1067](https://github.com/d-zero-dev/tools/commit/f9e1067e05a1a6b50392a0a481d0a6f98a17c265))
+- **shared:** add `@d-zero/shared/retry` ([b629e83](https://github.com/d-zero-dev/tools/commit/b629e8331150e29e68137c908d7cb1889add1142))
+- **shared:** add `@d-zero/shared/str-to-regex` ([6547112](https://github.com/d-zero-dev/tools/commit/654711262e4054e437cc7d4fef9ceed6ba845301))
+- **shared:** add `@d-zero/shared/typed-await-event-emitter` ([5381eb6](https://github.com/d-zero-dev/tools/commit/5381eb6a71fe3cb89a79ec5efeffe0d9e1cc9bbb))
+
 # [0.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.2.0...@d-zero/shared@0.3.0) (2024-05-15)
 
 ### Features
