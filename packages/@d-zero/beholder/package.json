@@ -1,0 +1,33 @@
+{
+	"name": "@d-zero/beholder",
+	"version": "0.0.1",
+	"description": "The tool for scraping and recording web pages",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./lib/index.js",
+			"types": "./lib/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"@d-zero/shared": "0.3.0",
+		"debug": "4.3.4",
+		"follow-redirects": "1.15.6",
+		"puppeteer": "22.9.0",
+		"typescript-fsa": "3.0.0"
+	},
+	"devDependencies": {
+		"@types/debug": "4.1.12",
+		"@types/follow-redirects": "1.14.4"
+	}
+}

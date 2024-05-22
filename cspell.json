@@ -5,6 +5,11 @@
 		"pngjs",
 
 		//
-		"notionhq"
+		"noarchive",
+		"notionhq",
+		"PHPSESSID",
+
+		//
+		"whatwg"
 	]
 }
