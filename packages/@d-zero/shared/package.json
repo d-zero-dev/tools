@@ -22,6 +22,10 @@
 			"import": "./dist/between-weekend-days.js",
 			"types": "./dist/between-weekend-days.d.ts"
 		},
+		"./delay": {
+			"import": "./dist/delay.js",
+			"types": "./dist/delay.d.ts"
+		},
 		"./filesize": {
 			"import": "./dist/filesize.js",
 			"types": "./dist/filesize.d.ts"
