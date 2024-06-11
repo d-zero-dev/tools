@@ -35,7 +35,7 @@
 		"@d-zero/eslint-config": "5.0.0-alpha.35",
 		"@d-zero/lint-staged-config": "5.0.0-alpha.35",
 		"@d-zero/prettier-config": "5.0.0-alpha.35",
-		"@d-zero/textlint-config": "5.0.0-alpha.33",
+		"@d-zero/textlint-config": "5.0.0-alpha.35",
 		"@d-zero/tsconfig": "0.3.0",
 		"husky": "9.0.11",
 		"lerna": "8.1.3",
