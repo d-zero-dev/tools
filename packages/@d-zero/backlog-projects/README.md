@@ -46,3 +46,24 @@ BACKLOG_HOST=xxxxx.backlog.jp
 BACKLOG_APIKEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 NOTION_TOKEN=secret_xxxxxxxxxxxxxx
 ```
+
+## API
+
+### `assing`
+
+```ts
+function assign(backlog: Backlog, params: Params): Promise<void>;
+
+type Params = {
+	backlogProject: Project.Project;
+	assignedUsers: Record<Role, User.User>;
+	backlogCategory?: string;
+	log?: (message: string) => void;
+};
+```
+
+### `createBacklogClient
+
+```ts
+function createBacklogClient(): Backlog;
+```

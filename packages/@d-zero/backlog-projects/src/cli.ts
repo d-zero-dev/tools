@@ -2,12 +2,12 @@
 import type { Role } from './types.js';
 import type { User } from 'backlog-js/dist/types/entity.js';
 
-import { Backlog } from 'backlog-js';
 import dotenv from 'dotenv';
 import Enquirer from 'enquirer';
 import minimist from 'minimist';
 
 import { assign } from './assign.js';
+import { createBacklogClient } from './create-backlog-client.js';
 import { roles } from './define.js';
 import { getBacklogProjectIdFromUrl } from './get-backlog-project-id-from-url.js';
 
@@ -19,18 +19,7 @@ const cli = minimist(process.argv.slice(2), {
 	},
 });
 
-if (!process.env.BACKLOG_HOST) {
-	throw new Error('BACKLOG_HOST is not defined. Please set it in .env file');
-}
-
-if (!process.env.BACKLOG_APIKEY) {
-	throw new Error('BACKLOG_APIKEY is not defined. Please set it in .env file');
-}
-
-const backlog = new Backlog({
-	host: process.env.BACKLOG_HOST,
-	apiKey: process.env.BACKLOG_APIKEY,
-});
+const backlog = createBacklogClient();
 
 if (cli.assign) {
 	const users = await backlog.getUsers();

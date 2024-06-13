@@ -15,6 +15,11 @@
 	"bin": {
 		"backlog-projects": "./dist/cli.js"
 	},
+	"exports": {
+		".": {
+			"import": "./dist/index.js"
+		}
+	},
 	"files": [
 		"dist"
 	],
