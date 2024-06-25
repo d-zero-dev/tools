@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/beholder",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "The tool for scraping and recording web pages",
 	"author": "D-ZERO",
 	"license": "MIT",
