@@ -6,6 +6,7 @@ export type Size = { width: number; resolution?: number };
 
 export type Screenshot = {
 	binary: Buffer;
+	dom: string;
 } & Size;
 
 export type Phase = {
@@ -15,6 +16,8 @@ export type Phase = {
 	scroll: { name: string };
 	screenshotStart: { name: string };
 	screenshotEnd: { name: string; binary: Buffer };
+	getDOMStart: { name: string };
+	getDOMEnd: { name: string; dom: string };
 };
 
 export type Listener = (phase: keyof Phase, data: Phase[keyof Phase]) => void;

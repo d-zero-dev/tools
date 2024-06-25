@@ -67,7 +67,11 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		const binary = await getBinary(page);
 		listener?.('screenshotEnd', { name, binary });
 
-		result[name] = { binary, width, resolution };
+		listener?.('getDOMStart', { name });
+		const dom = await page.content();
+		listener?.('getDOMEnd', { name, dom });
+
+		result[name] = { binary, dom, width, resolution };
 	}
 
 	return result;
