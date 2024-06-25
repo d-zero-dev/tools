@@ -15,6 +15,7 @@ if (cli.listfile) {
 	await archaeologist(pairList, {
 		hooks,
 		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
+		debug: !!cli.debug,
 	});
 	process.exit(0);
 }

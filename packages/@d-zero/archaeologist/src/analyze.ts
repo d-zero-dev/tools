@@ -18,6 +18,7 @@ import { label, score } from './output-utils.js';
 export interface AnalyzeOptions {
 	readonly hooks: readonly PageHook[];
 	readonly limit?: number;
+	readonly debug?: boolean;
 }
 
 export async function analyze(
@@ -188,6 +189,7 @@ export async function analyze(
 		},
 		{
 			limit: options?.limit,
+			debug: options?.debug,
 			header(_, done, total) {
 				return `${c.bold.magenta('🕵️  Archaeologist')} ${done}/${total}`;
 			},

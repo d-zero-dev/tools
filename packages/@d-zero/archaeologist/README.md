@@ -12,7 +12,7 @@
 ## CLI
 
 ```sh
-npx @d-zero/archaeologist -f <filepath> [--limit <number>]
+npx @d-zero/archaeologist -f <filepath> [--limit <number>] [--debug]
 ```
 
 URLリストを持つファイルを指定して実行します。
@@ -21,6 +21,7 @@ URLリストを持つファイルを指定して実行します。
 
 - `-f, --file <filepath>`: URLリストを持つファイルのパス（必須）
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
+- `--debug`: デバッグモード（デフォルト: false）
 
 ### ファイルフォーマット
 
