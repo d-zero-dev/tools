@@ -15,9 +15,14 @@ import { diffTree } from './diff-tree.js';
 import { getData } from './get-data.js';
 import { label, score } from './output-utils.js';
 
+export interface AnalyzeOptions {
+	readonly hooks: readonly PageHook[];
+	readonly limit?: number;
+}
+
 export async function analyze(
 	list: readonly URLPair[],
-	hooks: readonly PageHook[],
+	options?: AnalyzeOptions,
 ): Promise<Result[]> {
 	const urlInfo = analyzeUrlList(list);
 	const useOldMode = urlInfo.hasAuth && urlInfo.hasNoSSL;
@@ -53,7 +58,7 @@ export async function analyze(
 			return async () => {
 				const dataPair: PageData[] = [];
 				for (const url of urlPair) {
-					const data = await getData(page, url, hooks, (phase, data) => {
+					const data = await getData(page, url, options?.hooks ?? [], (phase, data) => {
 						const outputUrl = c.gray(url);
 						const sizeName = label(data.name);
 						switch (phase) {
@@ -182,6 +187,7 @@ export async function analyze(
 			};
 		},
 		{
+			limit: options?.limit,
 			header(_, done, total) {
 				return `${c.bold.magenta('🕵️  Archaeologist')} ${done}/${total}`;
 			},

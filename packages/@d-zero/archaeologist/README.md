@@ -12,10 +12,17 @@
 ## CLI
 
 ```sh
-npx @d-zero/archaeologist -f <filepath>
+npx @d-zero/archaeologist -f <filepath> [--limit <number>]
 ```
 
 URLリストを持つファイルを指定して実行します。
+
+### オプション
+
+- `-f, --file <filepath>`: URLリストを持つファイルのパス（必須）
+- `--limit <number>`: 並列実行数の上限（デフォルト: 10）
+
+### ファイルフォーマット
 
 ファイルの先頭には比較対象のホストを指定します。[Frontmatter](https://jekyllrb.com/docs/front-matter/)形式で`comparisonHost`に指定します。
 

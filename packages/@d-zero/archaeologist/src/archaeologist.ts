@@ -1,16 +1,18 @@
+import type { AnalyzeOptions } from './analyze.js';
 import type { URLPair } from './types.js';
-import type { PageHook } from '@d-zero/puppeteer-screenshot';
 
 import c from 'ansi-colors';
 
 import { analyze } from './analyze.js';
 import { label, score } from './output-utils.js';
 
+export interface ArchaeologistOptions extends AnalyzeOptions {}
+
 export async function archaeologist(
 	list: readonly URLPair[],
-	pageHooks?: readonly PageHook[],
+	options?: ArchaeologistOptions,
 ) {
-	const results = await analyze(list, pageHooks ?? []);
+	const results = await analyze(list, options);
 
 	const output: string[] = [];
 

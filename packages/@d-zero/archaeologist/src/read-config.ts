@@ -26,10 +26,10 @@ export async function readConfig(filePath: string) {
 		];
 	});
 
-	const pageHooks = await readHooks(content.attributes?.hooks ?? [], filePath);
+	const hooks = await readHooks(content.attributes?.hooks ?? [], filePath);
 
 	return {
 		pairList,
-		pageHooks,
+		hooks,
 	};
 }
