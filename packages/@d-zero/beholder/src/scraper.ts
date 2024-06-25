@@ -285,7 +285,6 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 		return result;
 	}
 
-	// eslint-disable-next-line no-restricted-syntax
 	@retry()
 	async #bootBrowser(
 		isExternal: boolean,
@@ -338,7 +337,6 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 		return this.#browser;
 	}
 
-	// eslint-disable-next-line no-restricted-syntax
 	@retry()
 	async #createPage(
 		isExternal: boolean,
@@ -368,7 +366,6 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 		return page;
 	}
 
-	// eslint-disable-next-line no-restricted-syntax
 	@retry({
 		timeout: 1 * 60 * 1000, // 1sec,
 		// retries: 1,
@@ -634,13 +631,11 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 		};
 	}
 
-	// eslint-disable-next-line no-restricted-syntax
 	@retry()
 	async #fetchHead(url: ExURL, isExternal: boolean) {
 		return await fetchDestination(url, isExternal);
 	}
 
-	// eslint-disable-next-line no-restricted-syntax
 	@retry({
 		timeout: 5 * 60 * 1000, // 5sec
 		fallback: [],
