@@ -65,7 +65,7 @@ export class Dealer<T extends WeakKey> {
 			this.#finish();
 		}
 
-		while (this.#workers.size <= this.#limit) {
+		while (this.#workers.size < this.#limit) {
 			const worker = this.#draw();
 			if (!worker) {
 				return;
