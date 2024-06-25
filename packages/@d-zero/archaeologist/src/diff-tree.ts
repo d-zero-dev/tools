@@ -1,36 +1,22 @@
-import { diffLines } from 'diff';
+import { createTwoFilesPatch } from 'diff';
+import parse from 'parse-diff';
 
-export function diffTree(dataA: string, dataB: string) {
-	const changes = diffLines(dataA, dataB);
+export function diffTree(urlA: string, urlB: string, dataA: string, dataB: string) {
+	const result = createTwoFilesPatch(urlA, urlB, dataA, dataB);
+	const info = parse(result)[0];
+
+	if (!info) {
+		throw new Error('Failed to parse diff');
+	}
+
 	const lineA = dataA.split('\n').length;
 	const lineB = dataB.split('\n').length;
 	const maxLine = Math.max(lineA, lineB);
 
-	let changedLines = 0;
-
-	const result = changes
-		.map((change) => {
-			if (change.added) {
-				changedLines++;
-				return `+${change.value}`;
-			}
-			if (change.removed) {
-				changedLines++;
-				return `-${change.value}`;
-			}
-			return change.value
-				.split('\n')
-				.map((line) => (line.trim() ? ` ${line}` : line))
-				.join('\n');
-		})
-		.filter(Boolean)
-		.join('');
-
 	return {
-		changed: changedLines > 0,
+		changed: dataA !== dataB,
 		maxLine,
-		changedLines,
-		matches: 1 - changedLines / maxLine,
+		matches: 1 - Math.abs((info.additions - info.deletions) / maxLine),
 		result,
 	};
 }

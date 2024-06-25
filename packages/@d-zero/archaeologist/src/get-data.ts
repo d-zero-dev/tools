@@ -5,10 +5,14 @@ import type { Page } from 'puppeteer';
 import { distill } from '@d-zero/html-distiller';
 import { screenshot } from '@d-zero/puppeteer-screenshot';
 
+export interface GetDataOptions {
+	readonly hooks?: readonly PageHook[];
+}
+
 export async function getData(
 	page: Page,
 	url: string,
-	hooks: readonly PageHook[],
+	options: GetDataOptions,
 	listener: Listener,
 ): Promise<PageData> {
 	const screenshots = await screenshot(page, url, {
@@ -21,17 +25,18 @@ export async function getData(
 				resolution: 2,
 			},
 		},
-		hooks,
+		hooks: options?.hooks ?? [],
 		listener,
 	});
 
-	const html = await page.content();
-	const serializedHtmlTree = distill(html).tree;
-	const serializedHtml = JSON.stringify(serializedHtmlTree, null, 2);
+	const data: PageData = { url, screenshots: {} };
 
-	return {
-		url,
-		serializedHtml,
-		screenshots,
-	};
+	for (const [sizeName, screenshot] of Object.entries(screenshots)) {
+		data.screenshots[sizeName] = {
+			...screenshot,
+			domTree: JSON.stringify(distill(screenshot.dom).tree, null, 2),
+		};
+	}
+
+	return data;
 }

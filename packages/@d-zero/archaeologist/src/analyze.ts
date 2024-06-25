@@ -1,5 +1,5 @@
 import type { DiffImagesPhase } from './diff-images.js';
-import type { PageData, Result, URLPair } from './types.js';
+import type { ImageResult, MediaResult, PageData, Result, URLPair } from './types.js';
 import type { PageHook, Phase } from '@d-zero/puppeteer-screenshot';
 
 import { writeFile, mkdir } from 'node:fs/promises';
@@ -59,46 +59,55 @@ export async function analyze(
 			return async () => {
 				const dataPair: PageData[] = [];
 				for (const url of urlPair) {
-					const data = await getData(page, url, options?.hooks ?? [], (phase, data) => {
-						const outputUrl = c.gray(url);
-						const sizeName = label(data.name);
-						switch (phase) {
-							case 'setViewport': {
-								const { width } = data as Phase['setViewport'];
-								update(
-									`%braille% ${outputUrl} ${sizeName}: ↔️ Change viewport size to ${width}px`,
-								);
-								break;
+					const data = await getData(
+						page,
+						url,
+						{
+							...options,
+						},
+						(phase, data) => {
+							const outputUrl = c.gray(url);
+							const sizeName = label(data.name);
+							switch (phase) {
+								case 'setViewport': {
+									const { width } = data as Phase['setViewport'];
+									update(
+										`%braille% ${outputUrl} ${sizeName}: ↔️ Change viewport size to ${width}px`,
+									);
+									break;
+								}
+								case 'load': {
+									const { type } = data as Phase['load'];
+									update(
+										`%braille% ${outputUrl} ${sizeName}: %earth% ${type === 'open' ? 'Open' : 'Reload'} page`,
+									);
+									break;
+								}
+								case 'hook': {
+									const { message } = data as Phase['hook'];
+									update(`%braille% ${outputUrl} ${sizeName}: ${message}`);
+									break;
+								}
+								case 'scroll': {
+									update(
+										`%braille% ${outputUrl} ${sizeName}: %propeller% Scroll the page`,
+									);
+									break;
+								}
+								case 'screenshotStart': {
+									update(`%braille% ${outputUrl} ${sizeName}: 📸 Take a screenshot`);
+									break;
+								}
+								case 'screenshotEnd': {
+									const { binary } = data as Phase['screenshotEnd'];
+									update(
+										`%braille% ${outputUrl} ${sizeName}: 📸 Screenshot taken (${binary.length} bytes)`,
+									);
+									break;
+								}
 							}
-							case 'load': {
-								const { type } = data as Phase['load'];
-								update(
-									`%braille% ${outputUrl} ${sizeName}: %earth% ${type === 'open' ? 'Open' : 'Reload'} page`,
-								);
-								break;
-							}
-							case 'hook': {
-								const { message } = data as Phase['hook'];
-								update(`%braille% ${outputUrl} ${sizeName}: ${message}`);
-								break;
-							}
-							case 'scroll': {
-								update(`%braille% ${outputUrl} ${sizeName}: %propeller% Scroll the page`);
-								break;
-							}
-							case 'screenshotStart': {
-								update(`%braille% ${outputUrl} ${sizeName}: 📸 Take a screenshot`);
-								break;
-							}
-							case 'screenshotEnd': {
-								const { binary } = data as Phase['screenshotEnd'];
-								update(
-									`%braille% ${outputUrl} ${sizeName}: 📸 Screenshot taken (${binary.length} bytes)`,
-								);
-								break;
-							}
-						}
-					});
+						},
+					);
 
 					dataPair.push(data);
 
@@ -111,21 +120,15 @@ export async function analyze(
 					throw new Error('Failed to get screenshots');
 				}
 
-				const screenshotResult: Record<
-					string,
-					{
-						matches: number;
-						file: string;
-					}
-				> = {};
+				const screenshotResult: Record<string, MediaResult> = {};
 
 				const outputUrl = c.gray(urlPair.join(' vs '));
 
 				for (const [name, screenshotA] of Object.entries(a.screenshots)) {
 					const screenshotB = b.screenshots[name];
 					const sizeName = label(name);
-
 					const id = `${index}_${name}`;
+
 					if (!screenshotB) {
 						throw new Error(`Failed to get screenshotB: ${id}`);
 					}
@@ -150,38 +153,51 @@ export async function analyze(
 						}
 					});
 
-					update(
-						`%braille% ${outputUrl} ${sizeName}: 🧩 Matches ${score(imageDiff.matches, 0.9)}`,
-					);
-					await delay(1500);
+					let image: ImageResult | null = null;
 
-					await writeFile(path.resolve(dir, `${id}_a.png`), imageDiff.images.a);
-					await writeFile(path.resolve(dir, `${id}_b.png`), imageDiff.images.b);
+					if (imageDiff) {
+						update(
+							`%braille% ${outputUrl} ${sizeName}: 🧩 Matches ${score(imageDiff.matches, 0.9)}`,
+						);
+						await delay(1500);
 
-					const outFilePath = path.resolve(dir, `${id}_diff.png`);
-					update(
-						`%braille% ${outputUrl} ${sizeName}: 📊 Save diff image to ${path.relative(dir, outFilePath)}`,
+						await writeFile(path.resolve(dir, `${id}_a.png`), imageDiff.images.a);
+						await writeFile(path.resolve(dir, `${id}_b.png`), imageDiff.images.b);
+
+						const outFilePath = path.resolve(dir, `${id}_diff.png`);
+						update(
+							`%braille% ${outputUrl} ${sizeName}: 📊 Save diff image to ${path.relative(dir, outFilePath)}`,
+						);
+						await writeFile(outFilePath, imageDiff.images.diff);
+
+						image = {
+							matches: imageDiff.matches,
+							file: outFilePath,
+						};
+					}
+
+					const htmlDiff = diffTree(
+						a.url,
+						b.url,
+						screenshotA.domTree,
+						screenshotB.domTree,
 					);
-					await writeFile(outFilePath, imageDiff.images.diff);
+					const outFilePath = path.resolve(dir, `${id}_html.diff`);
+					await writeFile(outFilePath, htmlDiff.result, { encoding: 'utf8' });
 
 					screenshotResult[name] = {
-						matches: imageDiff.matches,
-						file: outFilePath,
+						image,
+						dom: {
+							matches: htmlDiff.matches,
+							diff: htmlDiff.changed ? htmlDiff.result : null,
+							file: outFilePath,
+						},
 					};
 				}
-
-				const htmlDiff = diffTree(a.serializedHtml, b.serializedHtml);
-				const outFilePath = path.resolve(dir, `${index}_html.diff`);
-				await writeFile(outFilePath, htmlDiff.result, { encoding: 'utf8' });
 
 				const result: Result = {
 					target: [a.url, b.url],
 					screenshots: screenshotResult,
-					html: {
-						matches: htmlDiff.matches,
-						diff: htmlDiff.changed ? htmlDiff.result : null,
-						file: outFilePath,
-					},
 				};
 
 				results.push(result);

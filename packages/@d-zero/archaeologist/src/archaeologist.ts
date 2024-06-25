@@ -18,12 +18,15 @@ export async function archaeologist(
 
 	for (const result of results) {
 		output.push(c.gray(`${result.target.join(' vs ')}`));
-		for (const [sizeName, { matches, file }] of Object.entries(result.screenshots)) {
-			output.push(`  ${label(sizeName)} ${score(matches, 0.9)} ${file}`);
+		for (const [sizeName, { image, dom }] of Object.entries(result.screenshots)) {
+			if (image) {
+				const { matches, file } = image;
+				output.push(`  ${label(sizeName)} ${score(matches, 0.9)} ${file}`);
+			}
+			output.push(
+				`  ${label('HTML', c.bgBlueBright)}: ${score(dom.matches, 0.995)} ${dom.file}`,
+			);
 		}
-		output.push(
-			`  ${label('HTML', c.bgBlueBright)}: ${score(result.html.matches, 0.995)} ${result.html.file}`,
-		);
 	}
 
 	process.stdout.write(output.join('\n') + '\n');

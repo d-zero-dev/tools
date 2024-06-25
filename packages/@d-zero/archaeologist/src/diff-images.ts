@@ -20,6 +20,10 @@ export async function diffImages(
 	dataB: Screenshot,
 	listener: DiffImagesListener,
 ) {
+	if (!dataA.binary || !dataB.binary) {
+		return null;
+	}
+
 	listener('create', { a: dataA.binary, b: dataB.binary });
 	const imgA = PNG.sync.read(dataA.binary);
 	const imgB = PNG.sync.read(dataB.binary);
