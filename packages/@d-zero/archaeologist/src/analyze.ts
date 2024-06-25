@@ -17,6 +17,7 @@ import { label, score } from './output-utils.js';
 
 export interface AnalyzeOptions {
 	readonly hooks: readonly PageHook[];
+	readonly htmlDiffOnly?: boolean;
 	readonly limit?: number;
 	readonly debug?: boolean;
 }

@@ -16,6 +16,7 @@ if (cli.listfile) {
 		hooks,
 		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
 		debug: !!cli.debug,
+		htmlDiffOnly: !!cli.htmlDiffOnly,
 	});
 	process.exit(0);
 }

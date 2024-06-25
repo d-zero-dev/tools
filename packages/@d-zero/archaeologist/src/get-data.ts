@@ -7,6 +7,7 @@ import { screenshot } from '@d-zero/puppeteer-screenshot';
 
 export interface GetDataOptions {
 	readonly hooks?: readonly PageHook[];
+	readonly htmlDiffOnly?: boolean;
 }
 
 export async function getData(
@@ -15,6 +16,8 @@ export async function getData(
 	options: GetDataOptions,
 	listener: Listener,
 ): Promise<PageData> {
+	const htmlDiffOnly = options.htmlDiffOnly ?? false;
+
 	const screenshots = await screenshot(page, url, {
 		sizes: {
 			desktop: {
@@ -27,6 +30,7 @@ export async function getData(
 		},
 		hooks: options?.hooks ?? [],
 		listener,
+		domOnly: htmlDiffOnly,
 	});
 
 	const data: PageData = { url, screenshots: {} };
