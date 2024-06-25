@@ -5,7 +5,7 @@ export type Sizes = Record<string, Size>;
 export type Size = { width: number; resolution?: number };
 
 export type Screenshot = {
-	binary: Buffer;
+	binary: Buffer | null;
 	dom: string;
 } & Size;
 

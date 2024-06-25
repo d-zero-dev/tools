@@ -9,6 +9,7 @@ type Options = {
 	sizes?: Sizes;
 	hooks?: readonly PageHook[];
 	listener?: Listener;
+	domOnly?: boolean;
 };
 
 const defaultSizes: Sizes = {
@@ -63,9 +64,13 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		listener?.('scroll', { name });
 		await scrollAllOver(page);
 
-		listener?.('screenshotStart', { name });
-		const binary = await getBinary(page);
-		listener?.('screenshotEnd', { name, binary });
+		let binary: Buffer | null = null;
+
+		if (!options?.domOnly) {
+			listener?.('screenshotStart', { name });
+			binary = await getBinary(page);
+			listener?.('screenshotEnd', { name, binary });
+		}
 
 		listener?.('getDOMStart', { name });
 		const dom = await page.content();
