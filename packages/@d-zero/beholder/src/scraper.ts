@@ -368,7 +368,6 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 
 	@retry({
 		timeout: 1 * 60 * 1000, // 1sec,
-		// retries: 1,
 	})
 	async #fetchData(
 		page: Page,
@@ -472,7 +471,6 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 		});
 
 		if (url.username && url.password) {
-			// await page.authenticate({ username: url.username, password: url.password });
 			await page.setExtraHTTPHeaders({
 				Authorization: `Basic ${Buffer.from(`${url.username}:${url.password}`).toString('base64')}`,
 			});
