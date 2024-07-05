@@ -484,13 +484,6 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 			throw new Error('The method Page.goto returned null');
 		}
 
-		// console.log(res.ok());
-		// console.log(res.status());
-		// console.log(res.statusText());
-		// console.log(res.request().headers());
-		// console.log(res.request().response()?.headers());
-		// console.log(res.securityDetails());
-
 		const destUrl = parseUrl(page.url(), options)!;
 		const redirectPaths = res
 			.request()
