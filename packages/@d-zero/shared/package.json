@@ -64,7 +64,7 @@
 	"dependencies": {
 		"@holiday-jp/holiday_jp": "2.4.0",
 		"await-event-emitter": "2.0.2",
-		"dayjs": "1.11.11",
+		"dayjs": "1.11.12",
 		"escape-string-regexp": "5.0.0"
 	}
 }
