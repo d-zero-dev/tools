@@ -19,7 +19,7 @@
 	},
 	"dependencies": {
 		"@d-zero/readtext": "1.0.3",
-		"follow-redirects": "1.15.6",
+		"follow-redirects": "1.15.8",
 		"minimist": "1.2.8"
 	},
 	"devDependencies": {
