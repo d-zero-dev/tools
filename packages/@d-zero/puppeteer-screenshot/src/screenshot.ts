@@ -65,7 +65,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		listener?.('scroll', { name });
 		await scrollAllOver(page);
 
-		let binary: Buffer | null = null;
+		let binary: Uint8Array | null = null;
 
 		if (!options?.domOnly) {
 			listener?.('screenshotStart', { name });

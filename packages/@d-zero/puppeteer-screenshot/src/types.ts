@@ -5,7 +5,7 @@ export type Sizes = Record<string, Size>;
 export type Size = { width: number; resolution?: number };
 
 export type Screenshot = {
-	binary: Buffer | null;
+	binary: Uint8Array | null;
 	dom: string;
 } & Size;
 
@@ -15,7 +15,7 @@ export type Phase = {
 	load: { name: string; type: 'open' | 'reaload' };
 	scroll: { name: string };
 	screenshotStart: { name: string };
-	screenshotEnd: { name: string; binary: Buffer };
+	screenshotEnd: { name: string; binary: Uint8Array };
 	screenshotSaving: { name: string; path: string };
 	screenshotError: { name: string; error: Error };
 	getDOMStart: { name: string };

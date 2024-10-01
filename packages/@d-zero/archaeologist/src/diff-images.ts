@@ -5,9 +5,9 @@ import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
 export type DiffImagesPhase = {
-	create: { a: Buffer; b: Buffer };
-	resize: { a: Buffer; b: Buffer; width: number; height: number };
-	diff: { a: Buffer; b: Buffer };
+	create: { a: Uint8Array; b: Uint8Array };
+	resize: { a: Uint8Array; b: Uint8Array; width: number; height: number };
+	diff: { a: Uint8Array; b: Uint8Array };
 };
 
 type DiffImagesListener = (
@@ -25,15 +25,15 @@ export async function diffImages(
 	}
 
 	listener('create', { a: dataA.binary, b: dataB.binary });
-	const imgA = PNG.sync.read(dataA.binary);
-	const imgB = PNG.sync.read(dataB.binary);
+	const imgA = PNG.sync.read(Buffer.from(dataA.binary));
+	const imgB = PNG.sync.read(Buffer.from(dataB.binary));
 
 	const width = Math.max(imgA.width, imgB.width);
 	const height = Math.max(imgA.height, imgB.height);
 
 	listener('resize', { a: dataA.binary, b: dataB.binary, width, height });
-	const resizedA = await resizeImg(dataA.binary, width, height);
-	const resizedB = await resizeImg(dataB.binary, width, height);
+	const resizedA = await resizeImg(Buffer.from(dataA.binary), width, height);
+	const resizedB = await resizeImg(Buffer.from(dataB.binary), width, height);
 
 	listener('diff', { a: resizedA, b: resizedB });
 	const imgA_ = PNG.sync.read(resizedA);
