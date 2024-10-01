@@ -18,7 +18,7 @@ export async function deal<T extends WeakKey>(
 		process: T,
 		update: (log: string) => void,
 		index: number,
-	) => Promise<() => void | Promise<void>>,
+	) => Promise<() => void | Promise<void>> | (() => void | Promise<void>),
 	options?: Options,
 ) {
 	const dealer = new Dealer(items, options);
