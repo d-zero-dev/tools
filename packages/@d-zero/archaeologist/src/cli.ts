@@ -10,7 +10,7 @@ const cli = minimist(process.argv.slice(2), {
 	},
 });
 
-if (cli.listfile) {
+if (cli.listfile?.length) {
 	const { pairList, hooks } = await readConfig(cli.listfile);
 	await archaeologist(pairList, {
 		hooks,
@@ -21,5 +21,5 @@ if (cli.listfile) {
 	process.exit(0);
 }
 
-process.stdout.write('Usage: archaeologist -f <listfile> [--limit <number>]');
+process.stderr.write('Usage: archaeologist -f <listfile> [--limit <number>]\n');
 process.exit(1);
