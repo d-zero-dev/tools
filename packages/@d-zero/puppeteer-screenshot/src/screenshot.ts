@@ -69,16 +69,24 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 
 		if (!options?.domOnly) {
 			listener?.('screenshotStart', { name });
-			if (options?.path) {
-				listener?.('screenshotEnd', { name, path: options.path });
-				await page.screenshot({
-					path: options.path.replace(/\.png$/i, `-${name}.png`),
-					fullPage: true,
-					type: 'png',
-				});
-			} else {
-				binary = await getBinary(page);
-				listener?.('screenshotEnd', { name, binary });
+			try {
+				if (options?.path) {
+					listener?.('screenshotSaving', { name, path: options.path });
+					await page.screenshot({
+						path: options.path.replace(/\.png$/i, `-${name}.png`),
+						fullPage: true,
+						type: 'png',
+					});
+				} else {
+					binary = await getBinary(page);
+					listener?.('screenshotEnd', { name, binary });
+				}
+			} catch (error: unknown) {
+				if (error instanceof Error) {
+					listener?.('screenshotError', { name, error });
+				} else {
+					throw error;
+				}
 			}
 		}
 

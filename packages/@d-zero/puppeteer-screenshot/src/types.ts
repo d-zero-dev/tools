@@ -16,6 +16,8 @@ export type Phase = {
 	scroll: { name: string };
 	screenshotStart: { name: string };
 	screenshotEnd: { name: string; binary: Buffer };
+	screenshotSaving: { name: string; path: string };
+	screenshotError: { name: string; error: Error };
 	getDOMStart: { name: string };
 	getDOMEnd: { name: string; dom: string };
 };
