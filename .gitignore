@@ -75,5 +75,8 @@ test/fixture/.__*
 # Archaeologist Result Directory
 .archaeologist
 
+# Print Result Directory
+.print
+
 # Secret Test Files
 ___*

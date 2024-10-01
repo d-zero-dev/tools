@@ -1,0 +1,21 @@
+{
+	"extends": "../../../tsconfig.json",
+	"compilerOptions": {
+		"composite": true,
+		"outDir": "./dist",
+		"rootDir": "./src"
+	},
+	"references": [
+		{
+			"path": "../dealer"
+		},
+		{
+			"path": "../puppeteer-screenshot"
+		},
+		{
+			"path": "../readtext"
+		}
+	],
+	"include": ["./src/**/*"],
+	"exclude": ["node_modules", "dist", "./src/**/*.spec.ts"]
+}
