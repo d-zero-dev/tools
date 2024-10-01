@@ -10,6 +10,7 @@ type Options = {
 	hooks?: readonly PageHook[];
 	listener?: Listener;
 	domOnly?: boolean;
+	path?: string;
 };
 
 const defaultSizes: Sizes = {
@@ -68,8 +69,17 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 
 		if (!options?.domOnly) {
 			listener?.('screenshotStart', { name });
-			binary = await getBinary(page);
-			listener?.('screenshotEnd', { name, binary });
+			if (options?.path) {
+				listener?.('screenshotEnd', { name, path: options.path });
+				await page.screenshot({
+					path: options.path.replace(/\.png$/i, `-${name}.png`),
+					fullPage: true,
+					type: 'png',
+				});
+			} else {
+				binary = await getBinary(page);
+				listener?.('screenshotEnd', { name, binary });
+			}
 		}
 
 		listener?.('getDOMStart', { name });
