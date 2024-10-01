@@ -1,6 +1,6 @@
 import type { Screenshot } from '@d-zero/puppeteer-screenshot';
 
-import Jimp from 'jimp';
+import { Jimp, HorizontalAlign, VerticalAlign, JimpMime } from 'jimp';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
@@ -60,12 +60,11 @@ export async function diffImages(
 
 async function resizeImg(bin: Buffer, width: number, height: number) {
 	const img = await Jimp.read(bin);
-	img.contain(width, height, Jimp.HORIZONTAL_ALIGN_LEFT | Jimp.VERTICAL_ALIGN_TOP);
-
-	return new Promise<Buffer>((resolve, reject) => {
-		img.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
-			if (err) reject(err);
-			resolve(buffer);
-		});
+	img.contain({
+		w: width,
+		h: height,
+		align: HorizontalAlign.LEFT | VerticalAlign.TOP,
 	});
+
+	return img.getBuffer(JimpMime.png);
 }
