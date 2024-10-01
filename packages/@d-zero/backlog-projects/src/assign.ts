@@ -47,8 +47,8 @@ export async function assign(backlog: Backlog, params: Params) {
 	}
 
 	const category = categoryName
-		? categories.find((c) => c.name === categoryName) ??
-			(await backlog.postCategories(project.id, { name: categoryName }))
+		? (categories.find((c) => c.name === categoryName) ??
+			(await backlog.postCategories(project.id, { name: categoryName })))
 		: null;
 
 	const now = dayjs();
