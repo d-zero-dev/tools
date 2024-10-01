@@ -53,9 +53,8 @@ export type RetryDecoratorOptions = {
  * @param options - The options for the retry decorator.
  * @returns A decorator function that can be applied to a method.
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function retry<C extends Object>(options?: RetryDecoratorOptions) {
-	// eslint-disable-next-line @typescript-eslint/ban-types
+export function retry<C extends object>(options?: RetryDecoratorOptions) {
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	return (method: Function, context: ClassMethodDecoratorContext) => {
 		const retries = options?.retries ?? 5;
 		const interval = Math.max(options?.interval ?? 3000, 0);
