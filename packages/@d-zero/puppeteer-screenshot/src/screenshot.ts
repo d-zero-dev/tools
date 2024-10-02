@@ -2,10 +2,12 @@ import type { Listener, PageHook, Screenshot, Sizes } from './types.js';
 import type { Page } from 'puppeteer';
 
 import { scrollAllOver } from '@d-zero/puppeteer-scroll';
+import { urlToFileName } from '@d-zero/shared/url-to-file-name';
 
 import { getBinary } from './get-binary.js';
 
 type Options = {
+	id?: string;
 	sizes?: Sizes;
 	hooks?: readonly PageHook[];
 	listener?: Listener;
@@ -94,7 +96,13 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		const dom = await page.content();
 		listener?.('getDOMEnd', { name, dom });
 
-		result[name] = { binary, dom, width, resolution };
+		result[name] = {
+			id: options?.id ?? urlToFileName(url),
+			binary,
+			dom,
+			width,
+			resolution,
+		};
 	}
 
 	return result;

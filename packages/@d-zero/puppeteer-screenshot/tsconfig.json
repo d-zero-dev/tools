@@ -8,6 +8,9 @@
 	"references": [
 		{
 			"path": "../puppeteer-scroll"
+		},
+		{
+			"path": "../shared"
 		}
 	],
 	"include": ["./src/**/*"],
