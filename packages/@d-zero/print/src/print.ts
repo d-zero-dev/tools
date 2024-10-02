@@ -58,50 +58,51 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 					},
 					listener(phase, data) {
 						const sizeName = label(data.name);
+
+						const fixedOutput = `%braille% ${outputUrl} ${sizeName}`;
+
 						switch (phase) {
 							case 'setViewport': {
 								const { width } = data as Phase['setViewport'];
-								update(
-									`%braille% ${outputUrl} ${sizeName}: ↔️ Change viewport size to ${width}px`,
-								);
+								update(`${fixedOutput}: ↔️ Change viewport size to ${width}px`);
 								break;
 							}
 							case 'load': {
 								const { type } = data as Phase['load'];
 								update(
-									`%braille% ${outputUrl} ${sizeName}: %earth% ${type === 'open' ? 'Open' : 'Reload'} page`,
+									`${fixedOutput}: %earth% ${type === 'open' ? 'Open' : 'Reload'} page`,
 								);
 								break;
 							}
 							case 'hook': {
 								const { message } = data as Phase['hook'];
-								update(`%braille% ${outputUrl} ${sizeName}: ${message}`);
+								update(`${fixedOutput}: ${message}`);
 								break;
 							}
 							case 'scroll': {
-								update(`%braille% ${outputUrl} ${sizeName}: %propeller% Scroll the page`);
+								update(`${fixedOutput}: %propeller% Scroll the page`);
 								break;
 							}
 							case 'screenshotStart': {
-								update(`%braille% ${outputUrl} ${sizeName}: 📸 Take a screenshot`);
+								update(`${fixedOutput}: 📸 Take a screenshot`);
 								break;
 							}
 							case 'screenshotSaving': {
 								const { path: filePath } = data as Phase['screenshotSaving'];
 								const name = path.basename(filePath);
-								update(`%braille% ${outputUrl} ${sizeName}: 🖼 Save: ${name}`);
+								update(`${fixedOutput}: 🖼  Save a file ${name}`);
 								break;
 							}
 							case 'screenshotError': {
 								const { error } = data as Phase['screenshotError'];
-								update(`%braille% ${outputUrl} ❌️ Error: ${error.message}`);
+								update(`${fixedOutput}: ❌️ ${error.message}`);
 								break;
 							}
 						}
 					},
 				});
 
-				update(`%braille% Close: ${url}`);
+				update(`%braille% ${outputUrl}: 🔚 Closing`);
 				await page.close();
 			};
 		},
