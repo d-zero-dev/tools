@@ -8,6 +8,7 @@ export type Screenshot = {
 	id: string;
 	filePath: string | null;
 	url: string;
+	title: string;
 	binary: Uint8Array | null;
 	dom: string;
 } & Size;

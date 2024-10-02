@@ -94,6 +94,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		}
 
 		listener?.('getDOMStart', { name });
+		const title = await page.evaluate(() => document.title);
 		const dom = await page.content();
 		listener?.('getDOMEnd', { name, dom });
 
@@ -101,6 +102,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 			id: options?.id ?? urlToFileName(url),
 			filePath,
 			url,
+			title,
 			binary,
 			dom,
 			width,
