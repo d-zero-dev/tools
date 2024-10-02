@@ -43,6 +43,8 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 
 				const fileName = `${index}.png`;
 
+				const outputUrl = c.gray(url);
+
 				await screenshot(page, url, {
 					path: path.resolve(dir, fileName),
 					sizes: {
@@ -55,7 +57,6 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 						},
 					},
 					listener(phase, data) {
-						const outputUrl = c.gray(url);
 						const sizeName = label(data.name);
 						switch (phase) {
 							case 'setViewport': {
