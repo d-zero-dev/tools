@@ -8,6 +8,8 @@ import { screenshot } from '@d-zero/puppeteer-screenshot';
 import c from 'ansi-colors';
 import puppeteer from 'puppeteer';
 
+import { label } from './label.js';
+
 export interface PrintOptions {
 	readonly limit?: number;
 	readonly debug?: boolean;
@@ -112,8 +114,4 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 	);
 
 	await browser.close();
-}
-
-function label(str: string, color = c.bgMagenta) {
-	return color(` ${str} `);
 }
