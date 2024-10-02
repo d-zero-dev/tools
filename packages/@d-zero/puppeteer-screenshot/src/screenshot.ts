@@ -68,14 +68,15 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		await scrollAllOver(page);
 
 		let binary: Uint8Array | null = null;
+		const filePath = options?.path?.replace(/\.png$/i, `-${name}.png`) ?? null;
 
 		if (!options?.domOnly) {
 			listener?.('screenshotStart', { name });
 			try {
-				if (options?.path) {
+				if (filePath && options?.path) {
 					listener?.('screenshotSaving', { name, path: options.path });
 					await page.screenshot({
-						path: options.path.replace(/\.png$/i, `-${name}.png`),
+						path: filePath,
 						fullPage: true,
 						type: 'png',
 					});
@@ -98,6 +99,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 
 		result[name] = {
 			id: options?.id ?? urlToFileName(url),
+			filePath,
 			binary,
 			dom,
 			width,

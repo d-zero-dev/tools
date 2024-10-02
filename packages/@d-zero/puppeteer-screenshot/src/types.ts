@@ -6,6 +6,7 @@ export type Size = { width: number; resolution?: number };
 
 export type Screenshot = {
 	id: string;
+	filePath: string | null;
 	binary: Uint8Array | null;
 	dom: string;
 } & Size;
