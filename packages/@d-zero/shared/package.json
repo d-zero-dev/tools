@@ -52,6 +52,10 @@
 		},
 		"./types": {
 			"types": "./dist/types.d.ts"
+		},
+		"./url-to-file-name": {
+			"import": "./dist/url-to-file-name.js",
+			"types": "./dist/url-to-file-name.d.ts"
 		}
 	},
 	"files": [

@@ -13,3 +13,4 @@
 | `@d-zero/shared/str-to-regex`              | Converts a string pattern to a regular expression.                                         |
 | `@d-zero/shared/typed-await-event-emitter` | An event emitter that supports typed events and asynchronous event handling.               |
 | `@d-zero/shared/types`                     | TypesScript types.                                                                         |
+| `@d-zero/shared/url-to-file-name`          | Convert an URL to the string that is available as a file name.                             |
