@@ -100,6 +100,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		result[name] = {
 			id: options?.id ?? urlToFileName(url),
 			filePath,
+			url,
 			binary,
 			dom,
 			width,
