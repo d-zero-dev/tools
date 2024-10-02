@@ -41,12 +41,12 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 					'Accept-Language': 'ja-JP',
 				});
 
-				const fileName = `${index}.png`;
+				const fileId = index.toString().padStart(3, '0');
 
 				const outputUrl = c.gray(url);
 
 				await screenshot(page, url, {
-					path: path.resolve(dir, fileName),
+					id: fileId,
 					sizes: {
 						desktop: {
 							width: 1280,
