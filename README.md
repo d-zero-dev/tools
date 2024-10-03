@@ -4,13 +4,16 @@
 
 - [`@d-zero/archaeologist`](./packages/%40d-zero/archaeologist/README.md)
 - [`@d-zero/backlog-projects`](./packages/%40d-zero/backlog-projects/README.md)
+- [`@d-zero/print`](./packages/%40d-zero/print/README.md)
 - [`@d-zero/filematch`](./packages/%40d-zero/filematch/README.md)
 
 ## API
 
+- [`@d-zero/@d-zero/beholder`](./packages/%40d-zero/beholder/README.md)
 - [`@d-zero/@d-zero/dealer`](./packages/%40d-zero/dealer/README.md)
 - [`@d-zero/@d-zero/html-distiller`](./packages/%40d-zero/html-distiller/README.md)
 - [`@d-zero/@d-zero/notion`](./packages/%40d-zero/notion/README.md)
+- [`@d-zero/puppeteer-page-scan`](./packages/%40d-zero/puppeteer-page-scan/README.md)
 - [`@d-zero/puppeteer-screenshot`](./packages/%40d-zero/puppeteer-screenshot/README.md)
 - [`@d-zero/puppeteer-scroll`](./packages/%40d-zero/puppeteer-scroll/README.md)
 - [`@d-zero/readtext`](./packages/%40d-zero/readtext/README.md)
