@@ -3,22 +3,29 @@
 ウェブサイトのスクリーンショットを撮影するツールです。
 
 - Puppeteerを実行してページのスクリーンショットを撮影します
+- `png`、`pdf`、`note`の3つの形式で出力できます
 - スクリーンショットはデスクトップとモバイルの2つのサイズでそれぞれ撮影します
 
 ## CLI
 
 ```sh
-npx @d-zero/print -f <listfile> [--limit <number>] [--debug]
+npx @d-zero/print -f <listfile> [--type <png|pdf|note>] [--limit <number>] [--debug]
 
-npx @d-zero/print <url>... [--limit <number>] [--debug]
+npx @d-zero/print <url>... [--type <png|pdf|note>] [--limit <number>] [--debug]
 ```
 
 リストをファイルから読み込むか、URLを直接指定して実行します。
+
+実行した結果は`.print`ディレクトリに保存されます。
 
 ### オプション
 
 - `-f, --file <filepath>`: URLリストを持つファイルのパス
 - `<url>`: 対象のURL（複数指定可能）
+- `-t, --type <png|pdf|note>`: 出力形式（デフォルト: png）
+  - `png`: PNG画像（モバイルとデスクトップの2つが生成されます）
+  - `pdf`: PDFファイル（ブラウザの印刷機能を使用、Print CSSが適用されます）
+  - `note`: PNG画像のスクリーンショットに対してメモ欄付きのPDFファイルが生成されます
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
 - `--debug`: デバッグモード（デフォルト: false）
 
@@ -31,8 +38,6 @@ https://example.com/b
 https://example.com/c
 https://example.com/xyz/001
 ```
-
-実行した結果は`.print`ディレクトリに保存されます。
 
 ## ページフック
 
