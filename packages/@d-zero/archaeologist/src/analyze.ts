@@ -1,6 +1,6 @@
 import type { DiffImagesPhase } from './diff-images.js';
 import type { ImageResult, MediaResult, PageData, Result, URLPair } from './types.js';
-import type { PageHook, Phase } from '@d-zero/puppeteer-screenshot';
+import type { PageHook } from '@d-zero/puppeteer-screenshot';
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -66,48 +66,7 @@ export async function analyze(
 						{
 							...options,
 						},
-						(phase, data) => {
-							const outputUrl = c.gray(url);
-							const sizeName = label(data.name);
-							switch (phase) {
-								case 'setViewport': {
-									const { width } = data as Phase['setViewport'];
-									update(
-										`%braille% ${outputUrl} ${sizeName}: ↔️ Change viewport size to ${width}px`,
-									);
-									break;
-								}
-								case 'load': {
-									const { type } = data as Phase['load'];
-									update(
-										`%braille% ${outputUrl} ${sizeName}: %earth% ${type === 'open' ? 'Open' : 'Reload'} page`,
-									);
-									break;
-								}
-								case 'hook': {
-									const { message } = data as Phase['hook'];
-									update(`%braille% ${outputUrl} ${sizeName}: ${message}`);
-									break;
-								}
-								case 'scroll': {
-									update(
-										`%braille% ${outputUrl} ${sizeName}: %propeller% Scroll the page`,
-									);
-									break;
-								}
-								case 'screenshotStart': {
-									update(`%braille% ${outputUrl} ${sizeName}: 📸 Take a screenshot`);
-									break;
-								}
-								case 'screenshotEnd': {
-									const { binary } = data as Phase['screenshotEnd'];
-									update(
-										`%braille% ${outputUrl} ${sizeName}: 📸 Screenshot taken (${binary.length} bytes)`,
-									);
-									break;
-								}
-							}
-						},
+						update,
 					);
 
 					dataPair.push(data);

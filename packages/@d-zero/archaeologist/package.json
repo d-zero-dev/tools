@@ -28,6 +28,7 @@
 	"dependencies": {
 		"@d-zero/dealer": "1.0.2",
 		"@d-zero/html-distiller": "1.0.0",
+		"@d-zero/puppeteer-page-scan": "0.1.0",
 		"@d-zero/puppeteer-screenshot": "1.1.0",
 		"@d-zero/readtext": "1.0.3",
 		"ansi-colors": "4.1.3",

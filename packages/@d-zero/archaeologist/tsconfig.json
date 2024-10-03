@@ -13,6 +13,9 @@
 			"path": "../html-distiller"
 		},
 		{
+			"path": "../puppeteer-page-scan"
+		},
+		{
 			"path": "../puppeteer-screenshot"
 		},
 		{

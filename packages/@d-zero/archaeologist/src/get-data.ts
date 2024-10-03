@@ -1,9 +1,9 @@
 import type { PageData } from './types.js';
-import type { Listener, PageHook } from '@d-zero/puppeteer-screenshot';
+import type { PageHook } from '@d-zero/puppeteer-screenshot';
 import type { Page } from 'puppeteer';
 
 import { distill } from '@d-zero/html-distiller';
-import { screenshot } from '@d-zero/puppeteer-screenshot';
+import { screenshotListener, screenshot } from '@d-zero/puppeteer-screenshot';
 
 export interface GetDataOptions {
 	readonly hooks?: readonly PageHook[];
@@ -14,7 +14,7 @@ export async function getData(
 	page: Page,
 	url: string,
 	options: GetDataOptions,
-	listener: Listener,
+	update: (log: string) => void,
 ): Promise<PageData> {
 	const htmlDiffOnly = options.htmlDiffOnly ?? false;
 
@@ -29,7 +29,7 @@ export async function getData(
 			},
 		},
 		hooks: options?.hooks ?? [],
-		listener,
+		listener: screenshotListener(update),
 		domOnly: htmlDiffOnly,
 	});
 
