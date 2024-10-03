@@ -1,16 +1,18 @@
-import type { Phase } from '@d-zero/puppeteer-screenshot';
+import type { PrintType } from './types.js';
 
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import { deal } from '@d-zero/dealer';
-import { screenshot } from '@d-zero/puppeteer-screenshot';
 import c from 'ansi-colors';
 import puppeteer from 'puppeteer';
 
-import { label } from './label.js';
+import { pngToPdf } from './png-to-pdf.js';
+import { printPdf } from './print-pdf.js';
+import { printPng } from './print-png.js';
 
 export interface PrintOptions {
+	readonly type?: PrintType;
 	readonly limit?: number;
 	readonly debug?: boolean;
 }
@@ -29,9 +31,10 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 	const dir = path.resolve(process.cwd(), '.print');
 	await mkdir(dir, { recursive: true }).catch(() => {});
 
+	const type = options?.type ?? 'png';
+
 	await deal(
 		urlList.map((url) => ({ url })),
-		//
 		({ url }, update, index) => {
 			return async () => {
 				update(`%braille% Open: ${url}`);
@@ -42,67 +45,31 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 				});
 
 				const fileId = index.toString().padStart(3, '0');
+				const ext = type === 'pdf' ? 'pdf' : 'png';
+				const fileName = `${fileId}.${ext}`;
+				const filePath = path.resolve(dir, fileName);
 
-				const outputUrl = c.gray(url);
+				const lineHeader = `%braille% ${c.gray(url)}: `;
 
-				await screenshot(page, url, {
-					id: fileId,
-					sizes: {
-						desktop: {
-							width: 1280,
-						},
-						mobile: {
-							width: 375,
-							resolution: 2,
-						},
-					},
-					listener(phase, data) {
-						const sizeName = label(data.name);
+				if (type === 'pdf') {
+					await printPdf(page, url, filePath, (log) => update(lineHeader + log));
+					update(`${lineHeader}🔚 Closing`);
+					await page.close();
+					return;
+				}
 
-						const fixedOutput = `%braille% ${outputUrl} ${sizeName}`;
+				const result = await printPng(page, url, fileId, filePath, (log) =>
+					update(lineHeader + log),
+				);
 
-						switch (phase) {
-							case 'setViewport': {
-								const { width } = data as Phase['setViewport'];
-								update(`${fixedOutput}: ↔️ Change viewport size to ${width}px`);
-								break;
-							}
-							case 'load': {
-								const { type } = data as Phase['load'];
-								update(
-									`${fixedOutput}: %earth% ${type === 'open' ? 'Open' : 'Reload'} page`,
-								);
-								break;
-							}
-							case 'hook': {
-								const { message } = data as Phase['hook'];
-								update(`${fixedOutput}: ${message}`);
-								break;
-							}
-							case 'scroll': {
-								update(`${fixedOutput}: %propeller% Scroll the page`);
-								break;
-							}
-							case 'screenshotStart': {
-								update(`${fixedOutput}: 📸 Take a screenshot`);
-								break;
-							}
-							case 'screenshotSaving': {
-								const { path: filePath } = data as Phase['screenshotSaving'];
-								const name = path.basename(filePath);
-								update(`${fixedOutput}: 🖼  Save a file ${name}`);
-								break;
-							}
-							case 'screenshotError': {
-								const { error } = data as Phase['screenshotError'];
-								update(`${fixedOutput}: ❌️ ${error.message}`);
-								break;
-							}
-						}
-					},
-				});
+				if (type === 'png') {
+					update(`${lineHeader}🔚 Closing`);
+					await page.close();
+					return;
+				}
 
-				update(`%braille% ${outputUrl}: 🔚 Closing`);
+				await pngToPdf(browser, result, (log) => update(lineHeader + log));
+				update(`${lineHeader}🔚 Closing`);
 				await page.close();
 			};
 		},
@@ -110,7 +77,7 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 			limit: options?.limit,
 			debug: options?.debug,
 			header(_, done, total) {
-				return `${c.bold.magenta('🎨 Print pages')} ${done}/${total}`;
+				return `${c.bold.magenta('🎨 Print pages')} ${c.bgBlueBright(` ${type} `)} ${done}/${total}`;
 			},
 		},
 	);
