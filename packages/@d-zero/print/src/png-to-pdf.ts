@@ -42,6 +42,12 @@ export async function pngToPdf(
 
 		update(`${sizeLabel} 🚮 Remove the screenshot image`);
 
-		await rm(screenshot.filePath);
+		await rm(screenshot.filePath).catch((error: unknown) => {
+			if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+				// Ignore the error if the file does not exist
+				return;
+			}
+			throw error;
+		});
 	}
 }
