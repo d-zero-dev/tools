@@ -29,7 +29,7 @@ npx @d-zero/print <url>... [--type <png|pdf|note>] [--limit <number>] [--debug]
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
 - `--debug`: デバッグモード（デフォルト: false）
 
-### ファイルフォーマット
+#### URLリストのファイルフォーマット
 
 ```txt
 https://example.com
