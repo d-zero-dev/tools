@@ -37,10 +37,14 @@ https://example.com/a
 https://example.com/b
 ID:ABC https://example.com/c
 ID:XYZ https://example.com/xyz/001
+# コメント
+# https://example.com/d
 ```
 
 URLの手前に任意のIDを付与することで、出力ファイル名にIDが含まれます。ホワイトスペースで区切ることでIDとURLを分けることができます。
 IDが指定されていない場合は、連番がIDとして使用されます。連番は1から始まり、3桁のゼロパディングされた数字として出力されます。空行を除いた行数が連番として使用されます。
+
+`#`で始まる行はコメントとして無視されます。
 
 ## ページフック
 
