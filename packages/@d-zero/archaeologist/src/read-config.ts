@@ -1,11 +1,11 @@
 import type { FrontMatterResult } from 'front-matter';
 
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
+import { readPageHooks } from '@d-zero/puppeteer-page-scan';
 import { toList } from '@d-zero/readtext/list';
 import fm from 'front-matter';
-
-import { readHooks } from './read-hooks.js';
 
 export async function readConfig(filePath: string) {
 	const fileContent = await fs.readFile(filePath, 'utf8');
@@ -26,7 +26,8 @@ export async function readConfig(filePath: string) {
 		];
 	});
 
-	const hooks = await readHooks(content.attributes?.hooks ?? [], filePath);
+	const baseDir = path.dirname(filePath);
+	const hooks = await readPageHooks(content.attributes?.hooks ?? [], baseDir);
 
 	return {
 		pairList,
