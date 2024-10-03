@@ -23,7 +23,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/puppeteer-page-scan": "0.1.0",
+		"@d-zero/puppeteer-page-scan": "1.0.0-alpha",
 		"@d-zero/puppeteer-scroll": "1.0.4",
 		"@d-zero/shared": "0.4.0",
 		"ansi-colors": "4.1.3"
