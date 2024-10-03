@@ -15,8 +15,8 @@
 			"types": "./dist/read-grid.d.ts"
 		},
 		"./list": {
-			"import": "./dist/read-list.js",
-			"types": "./dist/read-list.d.ts"
+			"import": "./dist/list.js",
+			"types": "./dist/list.d.ts"
 		}
 	},
 	"files": [
