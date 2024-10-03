@@ -31,8 +31,8 @@ if (cli._.length > 0) {
 process.stderr.write(
 	[
 		'Usage:',
-		'\tprint -f <listfile> [--limit <number>] [--debug]',
-		'\tprint <url>... [--limit <number>] [--debug]',
+		'\tprint -f <listfile> [--type <png|pdf|note>] [--limit <number>] [--debug]',
+		'\tprint <url>... [--type <png|pdf|note>] [--limit <number>] [--debug]',
 	].join('\n') + '\n',
 );
 process.exit(1);
