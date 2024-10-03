@@ -40,7 +40,6 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 		urlList.map((url) => ({ url })),
 		({ url }, update, index) => {
 			return async () => {
-				update(`%braille% Open: ${url}`);
 				const page = await browser.newPage();
 				page.setDefaultNavigationTimeout(0);
 				await page.setExtraHTTPHeaders({
@@ -53,6 +52,8 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 				const filePath = path.resolve(dir, fileName);
 
 				const lineHeader = `%braille% ${c.gray(url)}: `;
+
+				update(`${lineHeader}🔗 Open%dots%`);
 
 				if (type === 'pdf') {
 					await printPdf(page, url, filePath, (log) => update(lineHeader + log), hooks);
