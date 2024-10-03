@@ -19,7 +19,16 @@ export interface PrintOptions {
 	readonly hooks?: readonly PageHook[];
 }
 
-export async function print(urlList: readonly string[], options?: PrintOptions) {
+export async function print(
+	urlList: readonly (
+		| string
+		| {
+				id: string | null;
+				url: string;
+		  }
+	)[],
+	options?: PrintOptions,
+) {
 	const browser = await puppeteer.launch({
 		headless: true,
 		args: [
@@ -37,8 +46,13 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 	const hooks = options?.hooks;
 
 	await deal(
-		urlList.map((url) => ({ url })),
-		({ url }, update, index) => {
+		urlList.map((url) => {
+			if (typeof url === 'string') {
+				return { id: null, url };
+			}
+			return url;
+		}),
+		({ id, url }, update, index) => {
 			return async () => {
 				const page = await browser.newPage();
 				page.setDefaultNavigationTimeout(0);
@@ -46,7 +60,7 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 					'Accept-Language': 'ja-JP',
 				});
 
-				const fileId = index.toString().padStart(3, '0');
+				const fileId = id || index.toString().padStart(3, '0');
 				const ext = type === 'pdf' ? 'pdf' : 'png';
 				const fileName = `${fileId}.${ext}`;
 				const filePath = path.resolve(dir, fileName);

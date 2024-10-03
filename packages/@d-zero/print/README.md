@@ -35,9 +35,12 @@ npx @d-zero/print <url>... [--type <png|pdf|note>] [--limit <number>] [--debug]
 https://example.com
 https://example.com/a
 https://example.com/b
-https://example.com/c
-https://example.com/xyz/001
+ID:ABC https://example.com/c
+ID:XYZ https://example.com/xyz/001
 ```
+
+URLの手前に任意のIDを付与することで、出力ファイル名にIDが含まれます。ホワイトスペースで区切ることでIDとURLを分けることができます。
+IDが指定されていない場合は、連番がIDとして使用されます。連番は1から始まり、3桁のゼロパディングされた数字として出力されます。空行を除いた行数が連番として使用されます。
 
 ## ページフック
 
