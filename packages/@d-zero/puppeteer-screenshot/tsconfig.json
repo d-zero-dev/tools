@@ -7,6 +7,9 @@
 	},
 	"references": [
 		{
+			"path": "../puppeteer-page-scan"
+		},
+		{
 			"path": "../puppeteer-scroll"
 		},
 		{

@@ -2,6 +2,7 @@ import type { Listener, PageHook, Screenshot, Sizes } from './types.js';
 import type { Page } from 'puppeteer';
 
 import { scrollAllOver } from '@d-zero/puppeteer-scroll';
+import { defaultSizes } from '@d-zero/puppeteer-page-scan';
 import { urlToFileName } from '@d-zero/shared/url-to-file-name';
 
 import { getBinary } from './get-binary.js';
@@ -13,12 +14,6 @@ type Options = {
 	listener?: Listener;
 	domOnly?: boolean;
 	path?: string;
-};
-
-const defaultSizes: Sizes = {
-	desktop: { width: 1400 },
-	tablet: { width: 768 },
-	mobile: { width: 375, resolution: 2 },
 };
 
 /**
