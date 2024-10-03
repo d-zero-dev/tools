@@ -1,4 +1,5 @@
 import type { PrintType } from './types.js';
+import type { PageHook } from '@d-zero/puppeteer-page-scan';
 
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -15,6 +16,7 @@ export interface PrintOptions {
 	readonly type?: PrintType;
 	readonly limit?: number;
 	readonly debug?: boolean;
+	readonly hooks?: readonly PageHook[];
 }
 
 export async function print(urlList: readonly string[], options?: PrintOptions) {
@@ -32,6 +34,7 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 	await mkdir(dir, { recursive: true }).catch(() => {});
 
 	const type = options?.type ?? 'png';
+	const hooks = options?.hooks;
 
 	await deal(
 		urlList.map((url) => ({ url })),
@@ -52,14 +55,19 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 				const lineHeader = `%braille% ${c.gray(url)}: `;
 
 				if (type === 'pdf') {
-					await printPdf(page, url, filePath, (log) => update(lineHeader + log));
+					await printPdf(page, url, filePath, (log) => update(lineHeader + log), hooks);
 					update(`${lineHeader}🔚 Closing`);
 					await page.close();
 					return;
 				}
 
-				const result = await printPng(page, url, fileId, filePath, (log) =>
-					update(lineHeader + log),
+				const result = await printPng(
+					page,
+					url,
+					fileId,
+					filePath,
+					(log) => update(lineHeader + log),
+					hooks,
 				);
 
 				if (type === 'png') {

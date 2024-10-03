@@ -18,8 +18,8 @@ const debug = !!cli.debug;
 const type: PrintType = cli.type === 'note' ? 'note' : cli.type === 'pdf' ? 'pdf' : 'png';
 
 if (cli.listfile?.length) {
-	const { urlList } = await readConfig(cli.listfile);
-	await print(urlList, { type, limit, debug });
+	const { urlList, hooks } = await readConfig(cli.listfile);
+	await print(urlList, { type, limit, debug, hooks });
 	process.exit(0);
 }
 

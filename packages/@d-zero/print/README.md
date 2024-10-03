@@ -59,7 +59,7 @@ https://example.com/a
 
 ```js
 /**
- * @type {import('@d-zero/archaeologist').PageHook}
+ * @type {import('@d-zero/print').PageHook}
  */
 export default async function (page, { name, width, resolution, log }) {
 	// 非同期処理可能

@@ -1,3 +1,4 @@
+import type { PageHook } from '@d-zero/puppeteer-screenshot';
 import type { Page } from 'puppeteer';
 
 import { screenshot, screenshotListener } from '@d-zero/puppeteer-screenshot';
@@ -8,6 +9,7 @@ export function printPng(
 	fileId: string,
 	filePath: string,
 	update: (log: string) => void,
+	hooks?: readonly PageHook[],
 ) {
 	return screenshot(page, url, {
 		id: fileId,
@@ -22,5 +24,6 @@ export function printPng(
 			},
 		},
 		listener: screenshotListener(update),
+		hooks,
 	});
 }

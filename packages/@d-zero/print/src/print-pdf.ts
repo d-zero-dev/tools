@@ -1,3 +1,4 @@
+import type { PageHook } from '@d-zero/puppeteer-page-scan';
 import type { Page } from 'puppeteer';
 
 import { beforePageScan } from '@d-zero/puppeteer-page-scan';
@@ -8,11 +9,13 @@ export async function printPdf(
 	url: string,
 	filePath: string,
 	update: (log: string) => void,
+	hooks?: readonly PageHook[],
 ) {
 	await beforePageScan(page, url, {
 		name: 'pdf',
 		width: 1400,
 		listener: screenshotListener(update),
+		hooks,
 	});
 
 	update('📄 Save as PDF');
