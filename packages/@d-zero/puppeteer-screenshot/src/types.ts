@@ -1,8 +1,10 @@
-import type { Page } from 'puppeteer';
+export type { PageHook } from '@d-zero/puppeteer-page-scan';
 
-export type Sizes = Record<string, Size>;
-
-export type Size = { width: number; resolution?: number };
+import type {
+	Listener as ScanListener,
+	Phase as ScanPhase,
+	Size,
+} from '@d-zero/puppeteer-page-scan';
 
 export type Screenshot = {
 	id: string;
@@ -13,25 +15,23 @@ export type Screenshot = {
 	dom: string;
 } & Size;
 
-export type Phase = {
-	setViewport: { name: string; width: number; resolution?: number };
-	hook: { name: string; message: string };
-	load: { name: string; type: 'open' | 'reaload' };
-	scroll: { name: string };
+export type ScreenshotPhase = {
 	screenshotStart: { name: string };
 	screenshotEnd: { name: string; binary: Uint8Array };
 	screenshotSaving: { name: string; path: string };
 	screenshotError: { name: string; error: Error };
 	getDOMStart: { name: string };
 	getDOMEnd: { name: string; dom: string };
-};
+} & ScanPhase;
 
-export type Listener = (phase: keyof Phase, data: Phase[keyof Phase]) => void;
+export type ScreenshotListener = ScanListener<ScreenshotPhase>;
 
-export type PageHook = (
-	page: Page,
-	size: Size & {
-		name: string;
-		log: (message: string) => void;
-	},
-) => Promise<void>;
+/**
+ * @deprecated
+ */
+export type Phase = ScreenshotPhase;
+
+/**
+ * @deprecated
+ */
+export type Listener = ScreenshotListener;

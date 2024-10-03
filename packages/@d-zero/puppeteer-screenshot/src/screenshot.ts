@@ -1,8 +1,8 @@
-import type { Listener, PageHook, Screenshot, Sizes } from './types.js';
+import type { Screenshot, ScreenshotListener } from './types.js';
+import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
 import type { Page } from 'puppeteer';
 
-import { scrollAllOver } from '@d-zero/puppeteer-scroll';
-import { defaultSizes } from '@d-zero/puppeteer-page-scan';
+import { beforePageScan, defaultSizes } from '@d-zero/puppeteer-page-scan';
 import { urlToFileName } from '@d-zero/shared/url-to-file-name';
 
 import { getBinary } from './get-binary.js';
@@ -11,7 +11,7 @@ type Options = {
 	id?: string;
 	sizes?: Sizes;
 	hooks?: readonly PageHook[];
-	listener?: Listener;
+	listener?: ScreenshotListener;
 	domOnly?: boolean;
 	path?: string;
 };
@@ -33,34 +33,12 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 	const result: Record<string, Screenshot> = {};
 
 	for (const [name, { width, resolution }] of Object.entries(sizes)) {
-		listener?.('setViewport', { name, width, resolution });
-		await page.setViewport({
+		await beforePageScan(page, url, {
+			...options,
+			name,
 			width,
-			height:
-				// Landscape or portrait
-				width > 1000 ? Math.floor(width * 0.75) : Math.floor(width * 1.5),
-			deviceScaleFactor: resolution ?? 1,
+			resolution,
 		});
-
-		if (page.url() === url) {
-			listener?.('load', { name, type: 'reaload' });
-			await page.reload({ waitUntil: 'networkidle0' });
-		} else {
-			listener?.('load', { name, type: 'open' });
-			await page.goto(url, { waitUntil: 'networkidle0' });
-		}
-
-		for (const hook of options?.hooks ?? []) {
-			await hook(page, {
-				name,
-				width,
-				resolution,
-				log: (message) => listener?.('hook', { name, message }),
-			});
-		}
-
-		listener?.('scroll', { name });
-		await scrollAllOver(page);
 
 		let binary: Uint8Array | null = null;
 		const filePath = options?.path?.replace(/\.png$/i, `-${name}.png`) ?? null;
