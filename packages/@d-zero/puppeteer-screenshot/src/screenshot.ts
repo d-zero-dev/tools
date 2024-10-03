@@ -41,7 +41,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		});
 
 		let binary: Uint8Array | null = null;
-		const filePath = options?.path?.replace(/\.png$/i, `-${name}.png`) ?? null;
+		const filePath = options?.path?.replace(/\.png$/i, `@${name}.png`) ?? null;
 
 		if (!options?.domOnly) {
 			listener?.('screenshotStart', { name });
