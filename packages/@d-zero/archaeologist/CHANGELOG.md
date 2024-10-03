@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@1.1.0...@d-zero/archaeologist@1.1.1) (2024-10-03)
+
+### Bug Fixes
+
+- **archaeologist:** fix to throw an error when option is empty ([a6fc338](https://github.com/d-zero-dev/tools/commit/a6fc33882401d6f0224e8fcc50e435da5adc6eb2))
+
 # [1.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@1.0.3...@d-zero/archaeologist@1.1.0) (2024-06-25)
 
 ### Bug Fixes

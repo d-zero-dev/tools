@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/print",
-	"version": "1.0.0-alpha",
+	"version": "1.0.0",
 	"description": "Print web pages to PDF or image files.",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -26,11 +26,11 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/dealer": "1.0.2",
+		"@d-zero/dealer": "1.1.0",
 		"@d-zero/html-distiller": "1.0.0",
-		"@d-zero/puppeteer-page-scan": "1.0.0-alpha",
-		"@d-zero/puppeteer-screenshot": "1.1.0",
-		"@d-zero/readtext": "1.0.3",
+		"@d-zero/puppeteer-page-scan": "1.0.0",
+		"@d-zero/puppeteer-screenshot": "1.2.0",
+		"@d-zero/readtext": "1.1.0",
 		"ansi-colors": "4.1.3",
 		"dayjs": "1.11.13",
 		"front-matter": "4.0.2",

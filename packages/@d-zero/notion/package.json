@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/notion",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "A simple Notion API client for D-ZERO tools",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -26,7 +26,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/shared": "0.4.0",
+		"@d-zero/shared": "0.5.0",
 		"@notionhq/client": "2.2.15"
 	}
 }

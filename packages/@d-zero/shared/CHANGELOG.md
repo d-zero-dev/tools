@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.4.0...@d-zero/shared@0.5.0) (2024-10-03)
+
+### Features
+
+- **shared:** add `@d-zero/shared/url-to-file-name` ([7c32757](https://github.com/d-zero-dev/tools/commit/7c327578634b4c68f6e11afda37e159ccc276fa1))
+
 # [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.3.0...@d-zero/shared@0.4.0) (2024-05-22)
 
 ### Features
