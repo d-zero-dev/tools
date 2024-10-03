@@ -1,0 +1,31 @@
+{
+	"name": "@d-zero/puppeteer-page-scan",
+	"version": "0.1.0",
+	"description": "Scanning page function for puppeteer",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"@d-zero/puppeteer-scroll": "1.0.4"
+	},
+	"devDependencies": {
+		"puppeteer": "23.4.1"
+	}
+}
