@@ -51,7 +51,7 @@ export async function print(urlList: readonly string[], options?: PrintOptions) 
 				const fileName = `${fileId}.${ext}`;
 				const filePath = path.resolve(dir, fileName);
 
-				const lineHeader = `%braille% ${c.gray(url)}: `;
+				const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(url)}: `;
 
 				update(`${lineHeader}🔗 Open%dots%`);
 
