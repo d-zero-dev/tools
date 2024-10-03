@@ -22,7 +22,7 @@
   - [Node.js](https://nodejs.org/)のバージョンは[`package.json`](./package.json)に記載しています
   - [yarn](https://yarnpkg.com/)のバージョンは[`package.json`](./package.json)に記載しています
   - このバージョンは[Renovate](https://www.mend.io/renovate/)によってアップデートされます
-- [Commitizen](https://github.com/commitizen/cz-cli)を利用してコミットメッセージを作ります。メッセージは[_commitlint_](https://commitlint.js.org/)によってチェックされます。
+- [Commitizen](https://github.com/commitizen/cz-cli)を利用してコミットメッセージを作ります（メッセージは[_commitlint_](https://commitlint.js.org/)によってチェックされます）
 
 ### メンテ用のコマンド
 
