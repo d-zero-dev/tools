@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/print",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"description": "Print web pages to PDF or image files.",
 	"author": "D-ZERO",
 	"license": "MIT",
