@@ -39,7 +39,7 @@
 		"parse-diff": "0.11.1",
 		"pixelmatch": "6.0.0",
 		"pngjs": "7.0.0",
-		"puppeteer": "23.5.2"
+		"puppeteer": "23.5.3"
 	},
 	"devDependencies": {
 		"@types/diff": "5.2.3",
