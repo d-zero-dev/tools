@@ -68,7 +68,9 @@ export class Display {
 
 	write(...logs: string[]) {
 		if (this.#verbose) {
-			process.stdout.write(logs.map((log) => log.trim()).join('\n'));
+			for (const log of logs) {
+				process.stdout.write(this.#text(log, false) + '\n');
+			}
 			return;
 		}
 
@@ -131,6 +133,16 @@ export class Display {
 		this.#write();
 	}
 
+	#text(text: string, trim = true) {
+		text = riffle(text, Date.now() - this.#startTime, this.#animations);
+		text = this.#countDown(text);
+		text = text.replaceAll(/\r?\n/g, ' ');
+		if (trim) {
+			text = text.slice(0, process.stdout.columns);
+		}
+		return `${RESET}${text}${RESET}`;
+	}
+
 	#write() {
 		if (!this.#stack) {
 			return;
@@ -138,13 +150,13 @@ export class Display {
 
 		this.#clear();
 
+		const outputBuffer: string[] = [];
+
 		for (const stack of this.#stack) {
-			let text = riffle(stack, Date.now() - this.#startTime, this.#animations);
-			text = this.#countDown(text);
-			const displayText = text.slice(0, process.stdout.columns);
-			process.stdout.write(`${RESET}${displayText}${RESET}\n`);
+			outputBuffer.push(this.#text(stack));
 		}
 
+		process.stdout.write(outputBuffer.join('\n') + '\n');
 		this.#lastWroteLineNum = this.#stack.length;
 	}
 }
