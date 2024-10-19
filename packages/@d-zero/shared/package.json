@@ -26,6 +26,10 @@
 			"import": "./dist/delay.js",
 			"types": "./dist/delay.d.ts"
 		},
+		"./hash": {
+			"import": "./dist/hash.js",
+			"types": "./dist/hash.d.ts"
+		},
 		"./filesize": {
 			"import": "./dist/filesize.js",
 			"types": "./dist/filesize.d.ts"
