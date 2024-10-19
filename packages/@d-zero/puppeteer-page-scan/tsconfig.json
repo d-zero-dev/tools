@@ -7,6 +7,9 @@
 	},
 	"references": [
 		{
+			"path": "../puppeteer-general-actions"
+		},
+		{
 			"path": "../puppeteer-scroll"
 		}
 	],

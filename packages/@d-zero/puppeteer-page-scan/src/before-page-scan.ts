@@ -1,4 +1,5 @@
-import type { Listener, PageHook, Phase, Size } from './types.js';
+import type { PageHook, PageScanPhase, Size } from './types.js';
+import type { Listener } from '@d-zero/puppeteer-general-actions';
 import type { Page } from 'puppeteer';
 
 import { scrollAllOver } from '@d-zero/puppeteer-scroll';
@@ -6,7 +7,7 @@ import { scrollAllOver } from '@d-zero/puppeteer-scroll';
 type Options = {
 	name: string;
 	hooks?: readonly PageHook[];
-	listener?: Listener<Phase>;
+	listener?: Listener<PageScanPhase>;
 } & Size;
 
 export async function beforePageScan(page: Page, url: string, options?: Options) {
