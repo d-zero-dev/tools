@@ -22,6 +22,10 @@
 			"import": "./dist/cache.js",
 			"types": "./dist/cache.d.ts"
 		},
+		"./decode-uri-safely": {
+			"import": "./dist/decode-uri-safely.js",
+			"types": "./dist/decode-uri-safely.d.ts"
+		},
 		"./between-weekend-days": {
 			"import": "./dist/between-weekend-days.js",
 			"types": "./dist/between-weekend-days.d.ts"
