@@ -1,8 +1,7 @@
 import type { PageHook } from '@d-zero/puppeteer-page-scan';
 import type { Page } from 'puppeteer';
 
-import { beforePageScan } from '@d-zero/puppeteer-page-scan';
-import { screenshotListener } from '@d-zero/puppeteer-screenshot';
+import { beforePageScan, pageScanListener } from '@d-zero/puppeteer-page-scan';
 
 export async function printPdf(
 	page: Page,
@@ -14,7 +13,7 @@ export async function printPdf(
 	await beforePageScan(page, url, {
 		name: 'pdf',
 		width: 1400,
-		listener: screenshotListener(update),
+		listener: pageScanListener(update),
 		hooks,
 	});
 
