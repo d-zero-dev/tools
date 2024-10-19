@@ -50,6 +50,10 @@
 			"import": "./dist/skip-holydays.js",
 			"types": "./dist/skip-holydays.d.ts"
 		},
+		"./split-array": {
+			"import": "./dist/split-array.js",
+			"types": "./dist/split-array.d.ts"
+		},
 		"./str-to-regex": {
 			"import": "./dist/str-to-regex.js",
 			"types": "./dist/str-to-regex.d.ts"
