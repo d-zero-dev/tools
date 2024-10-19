@@ -21,6 +21,9 @@ export type ScreenshotPhase = {
 	getDOMEnd: { name: string; dom: string };
 } & PageScanPhase;
 
+/**
+ * @deprecated
+ */
 export type ScreenshotListener = GeneralListener<ScreenshotPhase>;
 
 /**
