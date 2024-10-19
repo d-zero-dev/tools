@@ -1,4 +1,5 @@
-import type { Screenshot, ScreenshotListener } from './types.js';
+import type { Screenshot, ScreenshotPhase } from './types.js';
+import type { Listener } from '@d-zero/puppeteer-general-actions';
 import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
 import type { Page } from 'puppeteer';
 
@@ -11,7 +12,7 @@ type Options = {
 	id?: string;
 	sizes?: Sizes;
 	hooks?: readonly PageHook[];
-	listener?: ScreenshotListener;
+	listener?: Listener<ScreenshotPhase>;
 	domOnly?: boolean;
 	path?: string;
 };
@@ -38,6 +39,9 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 			name,
 			width,
 			resolution,
+			listener(phase, data) {
+				listener?.(phase, data);
+			},
 		});
 
 		let binary: Uint8Array | null = null;

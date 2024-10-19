@@ -1,10 +1,7 @@
 export type { PageHook } from '@d-zero/puppeteer-page-scan';
 
-import type {
-	Listener as ScanListener,
-	Phase as ScanPhase,
-	Size,
-} from '@d-zero/puppeteer-page-scan';
+import type { Listener as GeneralListener } from '@d-zero/puppeteer-general-actions';
+import type { PageScanPhase, Size } from '@d-zero/puppeteer-page-scan';
 
 export type Screenshot = {
 	id: string;
@@ -22,9 +19,9 @@ export type ScreenshotPhase = {
 	screenshotError: { name: string; error: Error };
 	getDOMStart: { name: string };
 	getDOMEnd: { name: string; dom: string };
-} & ScanPhase;
+} & PageScanPhase;
 
-export type ScreenshotListener = ScanListener<ScreenshotPhase>;
+export type ScreenshotListener = GeneralListener<ScreenshotPhase>;
 
 /**
  * @deprecated

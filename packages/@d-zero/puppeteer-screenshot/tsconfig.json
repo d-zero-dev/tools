@@ -7,10 +7,10 @@
 	},
 	"references": [
 		{
-			"path": "../puppeteer-page-scan"
+			"path": "../puppeteer-general-actions"
 		},
 		{
-			"path": "../puppeteer-scroll"
+			"path": "../puppeteer-page-scan"
 		},
 		{
 			"path": "../shared"
