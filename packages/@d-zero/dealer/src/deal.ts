@@ -4,7 +4,7 @@ import type { LanesOptions } from './lanes.js';
 import { Dealer } from './dealer.js';
 import { Lanes } from './lanes.js';
 
-type Options = DealerOptions &
+export type DealOptions = DealerOptions &
 	LanesOptions & {
 		header?: (progress: number, done: number, total: number, limit: number) => string;
 		debug?: boolean;
@@ -19,7 +19,7 @@ export async function deal<T extends WeakKey>(
 		update: (log: string) => void,
 		index: number,
 	) => Promise<() => void | Promise<void>> | (() => void | Promise<void>),
-	options?: Options,
+	options?: DealOptions,
 ) {
 	const dealer = new Dealer(items, options);
 	const lanes = new Lanes(options);
