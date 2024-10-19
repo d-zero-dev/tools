@@ -75,7 +75,7 @@ export class Lanes {
 		logs.sort(this.#sort);
 		const messages = logs.map(([, message]) => `${this.#indent}${message}`);
 		if (this.#header) {
-			messages.unshift(this.#header);
+			messages.unshift(...this.#header.split('\n'));
 		}
 		this.#display.write(...messages);
 	}
