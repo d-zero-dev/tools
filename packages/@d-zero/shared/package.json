@@ -18,6 +18,10 @@
 			"import": "./dist/sort/path.js",
 			"types": "./dist/sort/path.d.ts"
 		},
+		"./cache": {
+			"import": "./dist/cache.js",
+			"types": "./dist/cache.d.ts"
+		},
 		"./between-weekend-days": {
 			"import": "./dist/between-weekend-days.js",
 			"types": "./dist/between-weekend-days.d.ts"
