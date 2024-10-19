@@ -12,7 +12,7 @@ import { isType } from 'typescript-fsa';
 import { scraperLog } from './debug.js';
 import { scraperEvent, subProcessEvent } from './events.js';
 
-const __filename = new global.URL(import.meta.url).pathname;
+const __filename = new globalThis.URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
 const SUB_PROCESS_PATH = path.resolve(__dirname, 'sub-process');
 
