@@ -4,7 +4,7 @@ import type { URLPair } from './types.js';
 import c from 'ansi-colors';
 
 import { analyze } from './analyze.js';
-import { label, score } from './output-utils.js';
+import { score } from './output-utils.js';
 
 export interface ArchaeologistOptions extends AnalyzeOptions {}
 
@@ -21,10 +21,10 @@ export async function archaeologist(
 		for (const [sizeName, { image, dom }] of Object.entries(result.screenshots)) {
 			if (image) {
 				const { matches, file } = image;
-				output.push(`  ${label(sizeName)} ${score(matches, 0.9)} ${file}`);
+				output.push(`  ${c.bgMagenta(` ${sizeName} `)} ${score(matches, 0.9)} ${file}`);
 			}
 			output.push(
-				`  ${label('HTML', c.bgBlueBright)}: ${score(dom.matches, 0.995)} ${dom.file}`,
+				`  ${c.bgBlueBright(' HTML ')}: ${score(dom.matches, 0.995)} ${dom.file}`,
 			);
 		}
 	}

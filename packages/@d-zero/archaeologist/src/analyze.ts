@@ -13,7 +13,7 @@ import { analyzeUrlList } from './analize-url.js';
 import { diffImages } from './diff-images.js';
 import { diffTree } from './diff-tree.js';
 import { getData } from './get-data.js';
-import { label, score } from './output-utils.js';
+import { score } from './output-utils.js';
 
 export interface AnalyzeOptions {
 	readonly hooks: readonly PageHook[];
@@ -86,7 +86,7 @@ export async function analyze(
 
 				for (const [name, screenshotA] of Object.entries(a.screenshots)) {
 					const screenshotB = b.screenshots[name];
-					const sizeName = label(name);
+					const sizeName = c.bgMagenta(` ${name} `);
 					const id = `${index}_${name}`;
 
 					if (!screenshotB) {
