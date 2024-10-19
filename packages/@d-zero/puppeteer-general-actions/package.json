@@ -1,0 +1,31 @@
+{
+	"name": "@d-zero/puppeteer-general-actions",
+	"version": "1.0.0",
+	"description": "General functions for puppeteer",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"ansi-colors": "4.1.3"
+	},
+	"devDependencies": {
+		"puppeteer": "23.6.0"
+	}
+}
