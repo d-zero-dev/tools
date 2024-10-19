@@ -20,6 +20,7 @@ const animationPresets: Animations = {
 interface Options {
 	animations?: Animations;
 	fps?: FPS;
+	verbose?: boolean;
 }
 
 export class Display {
@@ -31,8 +32,7 @@ export class Display {
 	#stack: string[] | null = null;
 	readonly #startTime = Date.now();
 	#timer: ReturnType<typeof setTimeout> | null = null;
-
-	#verbose = false;
+	#verbose: boolean;
 
 	constructor(options?: Options) {
 		this.#animations = {
@@ -42,6 +42,8 @@ export class Display {
 
 		const fps = options?.fps ?? 30;
 		this.#frameInterval = 1000 / fps;
+
+		this.#verbose = options?.verbose ?? false;
 
 		process.stdout.on('resize', () => this.#resize());
 	}
@@ -121,6 +123,10 @@ export class Display {
 	}
 
 	#enterFrame() {
+		if (this.#verbose) {
+			return;
+		}
+
 		this.#timer = setTimeout(() => this.#enterFrame(), this.#frameInterval);
 		this.#write();
 	}
