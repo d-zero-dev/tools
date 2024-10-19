@@ -1,8 +1,8 @@
-import { decodeURLSafe } from '../decode-url-safe.js';
+import { decodeURISafely } from '../decode-uri-safely.js';
 
 export function alphabeticalComparator(a: string, b: string): 0 | -1 | 1 {
-	a = decodeURLSafe(a.toLowerCase());
-	b = decodeURLSafe(b.toLowerCase());
+	a = decodeURISafely(a.toLowerCase());
+	b = decodeURISafely(b.toLowerCase());
 	if (a === b) {
 		return 0;
 	}
