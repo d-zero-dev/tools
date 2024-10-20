@@ -6,9 +6,16 @@ import { Lanes } from './lanes.js';
 
 export type DealOptions = DealerOptions &
 	LanesOptions & {
-		header?: (progress: number, done: number, total: number, limit: number) => string;
-		debug?: boolean;
+		readonly header?: DealHeader;
+		readonly debug?: boolean;
 	};
+
+export type DealHeader = (
+	progress: number,
+	done: number,
+	total: number,
+	limit: number,
+) => string;
 
 const DEBUG_ID = Number.MIN_SAFE_INTEGER;
 
