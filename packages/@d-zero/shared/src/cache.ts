@@ -70,17 +70,17 @@ export class Cache<T> {
  * A class that extends the `Cache` class to handle binary data using `Buffer`.
  * This class provides methods to load and store binary data in a temporary directory.
  *
- * @extends {Cache<Buffer>}
+ * @extends {Cache<Uint8Array>}
  */
-export class BinaryCache extends Cache<Buffer> {
+export class BinaryCache extends Cache<Uint8Array> {
 	/**
 	 * Loads binary data from the cache using the provided key.
 	 * The key is hashed and used to generate the filename.
 	 *
 	 * @param {string} key - The key to identify the cached data.
-	 * @returns {Promise<Buffer | null>} - A promise that resolves to the binary data or null if not found.
+	 * @returns {Promise<Uint8Array | null>} - A promise that resolves to the binary data or null if not found.
 	 */
-	override async load(key: string): Promise<Buffer | null> {
+	override async load(key: string): Promise<Uint8Array | null> {
 		const name = hash(key) + '.bin';
 		const filePath = path.join(this.tmpDir, name);
 		const data = await fs.readFile(filePath).catch(() => null);
@@ -92,10 +92,10 @@ export class BinaryCache extends Cache<Buffer> {
 	 * The key is hashed and used to generate the filename.
 	 *
 	 * @param {string} key - The key to identify the cached data.
-	 * @param {Buffer} value - The binary data to be stored.
+	 * @param {Uint8Array} value - The binary data to be stored.
 	 * @returns {Promise<void>} - A promise that resolves when the data is successfully stored.
 	 */
-	override async store(key: string, value: Buffer) {
+	override async store(key: string, value: Uint8Array) {
 		const name = hash(key) + '.bin';
 		const filePath = path.join(this.tmpDir, name);
 		await fs.mkdir(this.tmpDir, { recursive: true });
