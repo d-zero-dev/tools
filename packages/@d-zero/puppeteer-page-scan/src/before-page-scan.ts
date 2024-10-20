@@ -42,6 +42,14 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 		});
 	}
 
-	listener?.('scroll', { name });
-	await scrollAllOver(page);
+	listener?.('scroll', {
+		name,
+		scrollY: 0,
+		scrollHeight: Number.NaN,
+		message: 'Start scrolling',
+	});
+	await scrollAllOver(page, {
+		logger: (scrollY, scrollHeight, message) =>
+			listener?.('scroll', { name, scrollY, scrollHeight, message }),
+	});
 }

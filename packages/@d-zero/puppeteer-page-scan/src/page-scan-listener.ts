@@ -13,8 +13,16 @@ export const pageScanLoggers: Loggers<PageScanPhase> = (log) => ({
 	hook({ message }) {
 		log(message);
 	},
-	scroll() {
-		log(`%propeller% Scroll the page`);
+	scroll({ scrollY, scrollHeight, message }) {
+		if (Number.isNaN(scrollHeight)) {
+			log(`%propeller% ${message}`);
+			return;
+		}
+		log(
+			`%propeller% ${scrollY}px/${scrollHeight}px (${Math.round(
+				(scrollY / scrollHeight) * 100,
+			)}%) ${message}`,
+		);
 	},
 });
 

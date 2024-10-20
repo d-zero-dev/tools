@@ -16,5 +16,5 @@ export type PageScanPhase = {
 	setViewport: { name: string; width: number; resolution?: number };
 	hook: { name: string; message: string };
 	load: { name: string; type: 'open' | 'reaload' };
-	scroll: { name: string };
+	scroll: { name: string; scrollY: number; scrollHeight: number; message: string };
 };
