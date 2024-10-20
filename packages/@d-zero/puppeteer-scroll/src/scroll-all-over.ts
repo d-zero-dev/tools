@@ -3,6 +3,7 @@ import type { Page } from 'puppeteer';
 export type Options = {
 	distance?: number;
 	interval?: number;
+	logger?: (scrollY: number, scrollHeight: number, message: string) => void;
 };
 
 /**
@@ -12,8 +13,11 @@ export type Options = {
  * @param options - Optional parameters for scrolling.
  * @param options.distance - The distance to scroll on each iteration (default: 100).
  * @param options.interval - The interval between each scroll iteration in milliseconds (default: 300).
+ * @param options.logger - A function that logs messages.
  */
 export async function scrollAllOver(page: Page, options?: Options) {
+	options?.logger?.(Number.NaN, Number.NaN, 'Scrolling (Inaccurate Mode)');
+
 	await page.evaluate(
 		async (distance, interval) => {
 			distance = distance ?? document.documentElement.clientHeight - 5;
