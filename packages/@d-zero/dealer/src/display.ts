@@ -140,7 +140,7 @@ export class Display {
 	}
 
 	#text(text: string, trim = true) {
-		text = riffle(text, Date.now() - this.#startTime, this.#animations);
+		text = riffle(text, Date.now() - this.#startTime, this.#animations, this.#verbose);
 		text = this.#countDown(text);
 		text = text.replaceAll(/\r?\n/g, ' ');
 		if (trim) {

@@ -49,7 +49,6 @@ export class Lanes {
 		this.#header = text;
 
 		if (this.#verbose) {
-			this.#display.write(text);
 			return;
 		}
 
@@ -58,7 +57,7 @@ export class Lanes {
 
 	update(id: number, log: string) {
 		if (this.#verbose) {
-			this.#display.write(log);
+			this.#display.write(this.#header + ' ' + log);
 			return;
 		}
 

@@ -1,7 +1,17 @@
 import type { Animations } from './types.js';
 
-export function riffle(text: string, elapsed: number, animations: Animations) {
+export function riffle(
+	text: string,
+	elapsed: number,
+	animations: Animations,
+	hidden = false,
+) {
 	for (const key of Object.keys(animations)) {
+		if (hidden) {
+			text = text.replaceAll(`%${key}%`, '');
+			continue;
+		}
+
 		const animation = animations[key];
 		if (!animation) {
 			continue;
