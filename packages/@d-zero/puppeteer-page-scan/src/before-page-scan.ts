@@ -6,6 +6,7 @@ import { scrollAllOver } from '@d-zero/puppeteer-scroll';
 
 type Options = {
 	name: string;
+	accurateScroll?: boolean;
 	hooks?: readonly PageHook[];
 	listener?: Listener<PageScanPhase>;
 } & Size;
@@ -49,6 +50,7 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 		message: 'Start scrolling',
 	});
 	await scrollAllOver(page, {
+		accurate: options?.accurateScroll,
 		logger: (scrollY, scrollHeight, message) =>
 			listener?.('scroll', { name, scrollY, scrollHeight, message }),
 	});
