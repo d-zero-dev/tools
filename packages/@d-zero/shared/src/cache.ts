@@ -55,14 +55,15 @@ export class Cache<T> {
 	 *
 	 * @param key - The key under which the value should be stored.
 	 * @param value - The value to be cached.
-	 * @returns A promise that resolves when the value has been stored.
+	 * @returns A promise that resolves to the filename of the cached value.
 	 */
-	async store(key: string, value: T) {
+	async store(key: string, value: T): Promise<string> {
 		const name = hash(key) + '.json';
 		const filePath = path.join(this.tmpDir, name);
 		await fs.mkdir(this.tmpDir, { recursive: true });
 		const data = JSON.stringify(value);
 		await fs.writeFile(filePath, data, 'utf8');
+		return name;
 	}
 }
 
@@ -107,13 +108,14 @@ export class BinaryCache extends Cache<Uint8Array> {
 	 *
 	 * @param {string} key - The key to identify the cached data.
 	 * @param {Uint8Array} value - The binary data to be stored.
-	 * @returns {Promise<void>} - A promise that resolves when the data is successfully stored.
+	 * @returns {Promise<string>} - A promise that resolves to the filename of the cached data.
 	 */
-	override async store(key: string, value: Uint8Array) {
+	override async store(key: string, value: Uint8Array): Promise<string> {
 		const ext = path.extname(key);
 		const name = hash(key) + ext;
 		const filePath = path.join(this.tmpDir, name);
 		await fs.mkdir(this.tmpDir, { recursive: true });
 		await fs.writeFile(filePath, value);
+		return name;
 	}
 }
