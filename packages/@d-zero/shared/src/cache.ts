@@ -81,7 +81,8 @@ export class BinaryCache extends Cache<Uint8Array> {
 	 * @returns {Promise<Uint8Array | null>} - A promise that resolves to the binary data or null if not found.
 	 */
 	override async load(key: string): Promise<Uint8Array | null> {
-		const name = hash(key) + '.bin';
+		const ext = path.extname(key);
+		const name = hash(key) + ext;
 		const filePath = path.join(this.tmpDir, name);
 		const data = await fs.readFile(filePath).catch(() => null);
 		return data;
@@ -96,7 +97,8 @@ export class BinaryCache extends Cache<Uint8Array> {
 	 * @returns {Promise<void>} - A promise that resolves when the data is successfully stored.
 	 */
 	override async store(key: string, value: Uint8Array) {
-		const name = hash(key) + '.bin';
+		const ext = path.extname(key);
+		const name = hash(key) + ext;
 		const filePath = path.join(this.tmpDir, name);
 		await fs.mkdir(this.tmpDir, { recursive: true });
 		await fs.writeFile(filePath, value);
