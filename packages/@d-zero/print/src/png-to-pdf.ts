@@ -1,5 +1,5 @@
 import type { Screenshot } from '@d-zero/puppeteer-screenshot';
-import type { Browser } from 'puppeteer';
+import type { Page } from 'puppeteer';
 
 import { rm } from 'node:fs/promises';
 import path from 'node:path';
@@ -9,13 +9,10 @@ import c from 'ansi-colors';
 import { printPdfWithNote } from './print-pdf-with-note.js';
 
 export async function pngToPdf(
-	browser: Browser,
+	page: Page,
 	screenshots: Record<string, Screenshot>,
 	update: (log: string) => void,
 ) {
-	const page = await browser.newPage();
-	page.setDefaultNavigationTimeout(0);
-
 	for (const [sizeName, screenshot] of Object.entries(screenshots)) {
 		if (!screenshot.filePath) {
 			continue;

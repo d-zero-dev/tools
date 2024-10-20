@@ -4,9 +4,8 @@ import type { PageHook } from '@d-zero/puppeteer-page-scan';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { deal } from '@d-zero/dealer';
+import { deal } from '@d-zero/puppeteer-dealer';
 import c from 'ansi-colors';
-import puppeteer from 'puppeteer';
 
 import { pngToPdf } from './png-to-pdf.js';
 import { printPdf } from './print-pdf.js';
@@ -29,16 +28,6 @@ export async function print(
 	)[],
 	options?: PrintOptions,
 ) {
-	const browser = await puppeteer.launch({
-		headless: true,
-		args: [
-			//
-			'--lang=ja',
-			'--no-zygote',
-			'--ignore-certificate-errors',
-		],
-	});
-
 	const dir = path.resolve(process.cwd(), '.print');
 	await mkdir(dir, { recursive: true }).catch(() => {});
 
@@ -52,58 +41,32 @@ export async function print(
 			}
 			return url;
 		}),
-		({ id, url }, update, index) => {
-			return async () => {
-				const page = await browser.newPage();
-				page.setDefaultNavigationTimeout(0);
-				await page.setExtraHTTPHeaders({
-					'Accept-Language': 'ja-JP',
-				});
-
-				const fileId = id || index.toString().padStart(3, '0');
-				const ext = type === 'pdf' ? 'pdf' : 'png';
-				const fileName = `${fileId}.${ext}`;
-				const filePath = path.resolve(dir, fileName);
-
-				const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(url)}: `;
-
-				update(`${lineHeader}🔗 Open%dots%`);
-
-				if (type === 'pdf') {
-					await printPdf(page, url, filePath, (log) => update(lineHeader + log), hooks);
-					update(`${lineHeader}🔚 Closing`);
-					await page.close();
-					return;
-				}
-
-				const result = await printPng(
-					page,
-					url,
-					fileId,
-					filePath,
-					(log) => update(lineHeader + log),
-					hooks,
-				);
-
-				if (type === 'png') {
-					update(`${lineHeader}🔚 Closing`);
-					await page.close();
-					return;
-				}
-
-				await pngToPdf(browser, result, (log) => update(lineHeader + log));
-				update(`${lineHeader}🔚 Closing`);
-				await page.close();
-			};
+		(_, done, total) => {
+			return `${c.bold.magenta('🎨 Print pages')} ${c.bgBlueBright(` ${type} `)} ${done}/${total}`;
 		},
 		{
-			limit: options?.limit,
-			debug: options?.debug,
-			header(_, done, total) {
-				return `${c.bold.magenta('🎨 Print pages')} ${c.bgBlueBright(` ${type} `)} ${done}/${total}`;
+			async deal(page, id, url, logger) {
+				const ext = type === 'pdf' ? 'pdf' : 'png';
+				const fileName = `${id}.${ext}`;
+				const filePath = path.resolve(dir, fileName);
+
+				if (type === 'pdf') {
+					await printPdf(page, url, filePath, logger, hooks);
+					logger('🔚 Closing');
+					return;
+				}
+
+				const result = await printPng(page, url, id, filePath, logger, hooks);
+
+				if (type === 'png') {
+					logger('🔚 Closing');
+					return;
+				}
+
+				await pngToPdf(page, result, logger);
+				logger('🔚 Closing');
 			},
 		},
+		options,
 	);
-
-	await browser.close();
 }
