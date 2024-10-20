@@ -5,9 +5,8 @@ import type { PageHook } from '@d-zero/puppeteer-screenshot';
 import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { deal } from '@d-zero/dealer';
+import { deal } from '@d-zero/puppeteer-dealer';
 import c from 'ansi-colors';
-import puppeteer from 'puppeteer';
 
 import { analyzeUrlList } from './analize-url.js';
 import { diffImages } from './diff-images.js';
@@ -26,39 +25,29 @@ export async function analyze(
 	list: readonly URLPair[],
 	options?: AnalyzeOptions,
 ): Promise<Result[]> {
-	const urlInfo = analyzeUrlList(list);
-	const useOldMode = urlInfo.hasAuth && urlInfo.hasNoSSL;
-
-	const browser = await puppeteer.launch({
-		headless: useOldMode ? 'shell' : true,
-		args: [
-			//
-			'--lang=ja',
-			'--no-zygote',
-			'--ignore-certificate-errors',
-		],
-	});
-
 	const results: Result[] = [];
 
 	const dir = path.resolve(process.cwd(), '.archaeologist');
 	await mkdir(dir, { recursive: true }).catch(() => {});
 
-	await deal(
-		list,
-		//
-		async (urlPair, update, index) => {
-			const page = await browser.newPage();
-			page.setDefaultNavigationTimeout(0);
-			await page.setUserAgent(
-				'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-			);
-			await page.setExtraHTTPHeaders({
-				'Accept-Language': 'ja-JP',
-			});
+	const urlInfo = analyzeUrlList(list);
+	const useOldMode = urlInfo.hasAuth || urlInfo.hasNoSSL;
 
-			return async () => {
+	await deal(
+		list.map(([urlA]) => ({ id: null, url: urlA })),
+		(_, done, total) => {
+			return `${c.bold.magenta('🕵️  Archaeologist')} ${done}/${total}`;
+		},
+		{
+			async deal(page, _, urlA, logger, index) {
+				const urlPair = list.find(([url]) => url === urlA);
+
+				if (!urlPair) {
+					throw new Error(`Failed to find urlPair: ${urlA}`);
+				}
+
 				const dataPair: PageData[] = [];
+
 				for (const url of urlPair) {
 					const data = await getData(
 						page,
@@ -66,7 +55,7 @@ export async function analyze(
 						{
 							...options,
 						},
-						update,
+						logger,
 					);
 
 					dataPair.push(data);
@@ -82,7 +71,7 @@ export async function analyze(
 
 				const screenshotResult: Record<string, MediaResult> = {};
 
-				const outputUrl = c.gray(urlPair.join(' vs '));
+				const outputUrl = 'vs ' + c.gray(urlPair[1]);
 
 				for (const [name, screenshotA] of Object.entries(a.screenshots)) {
 					const screenshotB = b.screenshots[name];
@@ -96,18 +85,16 @@ export async function analyze(
 					const imageDiff = await diffImages(screenshotA, screenshotB, (phase, data) => {
 						switch (phase) {
 							case 'create': {
-								update(`%braille% ${outputUrl} ${sizeName}: 🖼️ Create images`);
+								logger(`${sizeName} ${outputUrl} 🖼️ Create images`);
 								break;
 							}
 							case 'resize': {
 								const { width, height } = data as DiffImagesPhase['resize'];
-								update(
-									`%braille% ${outputUrl} ${sizeName}: ↔️ Resize images to ${width}x${height}`,
-								);
+								logger(`${sizeName} ${outputUrl} ↔️ Resize images to ${width}x${height}`);
 								break;
 							}
 							case 'diff': {
-								update(`%braille% ${outputUrl} ${sizeName}: 📊 Compare images`);
+								logger(`${sizeName} ${outputUrl} 📊 Compare images`);
 								break;
 							}
 						}
@@ -116,8 +103,8 @@ export async function analyze(
 					let image: ImageResult | null = null;
 
 					if (imageDiff) {
-						update(
-							`%braille% ${outputUrl} ${sizeName}: 🧩 Matches ${score(imageDiff.matches, 0.9)}`,
+						logger(
+							`${sizeName} ${outputUrl} 🧩 Matches ${score(imageDiff.matches, 0.9)}`,
 						);
 						await delay(1500);
 
@@ -125,8 +112,8 @@ export async function analyze(
 						await writeFile(path.resolve(dir, `${id}_b.png`), imageDiff.images.b);
 
 						const outFilePath = path.resolve(dir, `${id}_diff.png`);
-						update(
-							`%braille% ${outputUrl} ${sizeName}: 📊 Save diff image to ${path.relative(dir, outFilePath)}`,
+						logger(
+							`${sizeName} ${outputUrl} 📊 Save diff image to ${path.relative(dir, outFilePath)}`,
 						);
 						await writeFile(outFilePath, imageDiff.images.diff);
 
@@ -161,18 +148,13 @@ export async function analyze(
 				};
 
 				results.push(result);
-			};
-		},
-		{
-			limit: options?.limit,
-			debug: options?.debug,
-			header(_, done, total) {
-				return `${c.bold.magenta('🕵️  Archaeologist')} ${done}/${total}`;
 			},
 		},
+		{
+			...options,
+			headless: useOldMode ? 'shell' : true,
+		},
 	);
-
-	await browser.close();
 
 	return results;
 }

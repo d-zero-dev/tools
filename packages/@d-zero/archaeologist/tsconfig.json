@@ -7,10 +7,10 @@
 	},
 	"references": [
 		{
-			"path": "../dealer"
+			"path": "../html-distiller"
 		},
 		{
-			"path": "../html-distiller"
+			"path": "../puppeteer-dealer"
 		},
 		{
 			"path": "../puppeteer-page-scan"
