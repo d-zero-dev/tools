@@ -2,15 +2,15 @@ import type { Animations, FPS } from './types.js';
 
 import { Display } from './display.js';
 
-type Log = [id: number, message: string];
+type Log = readonly [id: number, message: string];
 type SortFunc = (a: Log, b: Log) => number;
 
 export type LanesOptions = {
-	animations?: Animations;
-	fps?: FPS;
-	indent?: string;
-	sort?: SortFunc;
-	verbose?: boolean;
+	readonly animations?: Animations;
+	readonly fps?: FPS;
+	readonly indent?: string;
+	readonly sort?: SortFunc;
+	readonly verbose?: boolean;
 };
 
 export class Lanes {
