@@ -74,6 +74,19 @@ export class Cache<T> {
  */
 export class BinaryCache extends Cache<Uint8Array> {
 	/**
+	 * Checks if a cached file exists for the given key.
+	 *
+	 * @param {string} key - The key to check in the cache.
+	 * @returns A promise that resolves to `true` if the file exists, otherwise `false`.
+	 */
+	async exists(key: string): Promise<boolean> {
+		const name = hash(key);
+		const filePath = path.join(this.tmpDir, name);
+		const data = await fs.stat(filePath).catch(() => null);
+		return !!data;
+	}
+
+	/**
 	 * Loads binary data from the cache using the provided key.
 	 * The key is hashed and used to generate the filename.
 	 *
