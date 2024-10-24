@@ -26,6 +26,10 @@
 			"import": "./dist/decode-uri-safely.js",
 			"types": "./dist/decode-uri-safely.d.ts"
 		},
+		"./deferred": {
+			"import": "./dist/deferred.js",
+			"types": "./dist/deferred.d.ts"
+		},
 		"./between-weekend-days": {
 			"import": "./dist/between-weekend-days.js",
 			"types": "./dist/between-weekend-days.d.ts"
