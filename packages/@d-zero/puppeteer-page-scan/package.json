@@ -26,6 +26,6 @@
 		"@d-zero/puppeteer-scroll": "1.0.5"
 	},
 	"devDependencies": {
-		"puppeteer": "23.6.0"
+		"puppeteer": "23.6.1"
 	}
 }
