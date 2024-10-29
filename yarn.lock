@@ -594,10 +594,10 @@
     "@commitlint/config-conventional" "19.5.0"
     "@d-zero/cz-config" "5.0.0-alpha.48"
 
-"@d-zero/cspell-config@5.0.0-alpha.47":
-  version "5.0.0-alpha.47"
-  resolved "https://registry.yarnpkg.com/@d-zero/cspell-config/-/cspell-config-5.0.0-alpha.47.tgz#9b6731607a255ff255defd7bdb94d7d3bb832dd1"
-  integrity sha512-P4bf/IZEi5O/Lgm9htj7VPUv6KLOW2u03we+616qPKb6SkMDpjFEY+5IiIejgMb/MLBLVkqi33P9bfEV9HwGEw==
+"@d-zero/cspell-config@5.0.0-alpha.48":
+  version "5.0.0-alpha.48"
+  resolved "https://registry.yarnpkg.com/@d-zero/cspell-config/-/cspell-config-5.0.0-alpha.48.tgz#8943b3501dbd87bbac89e6ea26ff08fc388130de"
+  integrity sha512-hspzrrQ+D2XBeVk0vTygWp9QVG6PHAheyMi1YWjmzFFsGtYO0OOZSCuwWrG7AU9YPOP25mQwlcNL2xPcPh5EBg==
   dependencies:
     cspell "8.15.4"
 
