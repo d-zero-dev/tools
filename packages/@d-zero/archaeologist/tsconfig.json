@@ -13,6 +13,9 @@
 			"path": "../puppeteer-dealer"
 		},
 		{
+			"path": "../puppeteer-page"
+		},
+		{
 			"path": "../puppeteer-page-scan"
 		},
 		{

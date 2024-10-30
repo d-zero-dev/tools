@@ -38,10 +38,10 @@
 		"minimist": "1.2.8",
 		"parse-diff": "0.11.1",
 		"pixelmatch": "6.0.0",
-		"pngjs": "7.0.0",
-		"puppeteer": "23.6.0"
+		"pngjs": "7.0.0"
 	},
 	"devDependencies": {
+		"@d-zero/puppeteer-page": "0.1.0",
 		"@types/diff": "5.2.3",
 		"@types/pixelmatch": "5.2.6",
 		"@types/pngjs": "6.0.5"

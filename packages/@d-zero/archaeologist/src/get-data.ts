@@ -1,6 +1,6 @@
 import type { PageData } from './types.js';
+import type { Page } from '@d-zero/puppeteer-page';
 import type { PageHook } from '@d-zero/puppeteer-screenshot';
-import type { Page } from 'puppeteer';
 
 import { distill } from '@d-zero/html-distiller';
 import { screenshotListener, screenshot } from '@d-zero/puppeteer-screenshot';
