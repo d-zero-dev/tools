@@ -46,6 +46,10 @@
 			"import": "./dist/filesize.js",
 			"types": "./dist/filesize.d.ts"
 		},
+		"./race-with-timeout": {
+			"import": "./dist/race-with-timeout.js",
+			"types": "./dist/race-with-timeout.d.ts"
+		},
 		"./retry": {
 			"import": "./dist/retry.js",
 			"types": "./dist/retry.d.ts"
