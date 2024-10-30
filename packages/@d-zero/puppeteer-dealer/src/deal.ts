@@ -1,10 +1,13 @@
 import type { PuppeteerDealerOptions, PuppeteerDealHandler, URLInfo } from './types.js';
 import type { DealHeader } from '@d-zero/dealer';
-import type { Page, PuppeteerLaunchOptions } from 'puppeteer';
+import type { Page } from '@d-zero/puppeteer-page';
+import type { PuppeteerLaunchOptions } from 'puppeteer';
 
 import { deal as coreDeal } from '@d-zero/dealer';
+import { createPage } from '@d-zero/puppeteer-page';
 import c from 'ansi-colors';
-import puppeteer from 'puppeteer';
+
+import { log } from './debug.js';
 
 export async function deal(
 	list: readonly URLInfo[],
@@ -17,16 +20,30 @@ export async function deal(
 		...options,
 	};
 
-	const browser = await puppeteer.launch({
-		headless: true,
-		args: [
-			//
-			`--lang=${config.locale}`,
-			'--no-zygote',
-			'--ignore-certificate-errors',
-		],
-		...config,
-	});
+	const childPrecessIds = new Set<number>();
+
+	const cleanUp = () => {
+		log('child process IDs: %o', childPrecessIds);
+		for (const pid of childPrecessIds) {
+			try {
+				process.kill(pid);
+				log('killed %d', pid);
+			} catch (error) {
+				log('Already dead: %d', pid);
+				if (error instanceof Error && 'code' in error && error.code === 'ESRCH') {
+					// ignore
+					continue;
+				}
+				throw error;
+			}
+		}
+
+		if (log.enabled) {
+			log('process.getActiveResourcesInfo(): %o', process.getActiveResourcesInfo());
+		}
+	};
+
+	process.on('exit', cleanUp);
 
 	await coreDeal(
 		list,
@@ -46,8 +63,22 @@ export async function deal(
 					return;
 				}
 
-				const page = await browser.newPage();
-				page.setDefaultNavigationTimeout(0);
+				const page = await createPage({
+					headless: true,
+					args: [
+						//
+						`--lang=${config.locale}`,
+						'--no-zygote',
+						'--ignore-certificate-errors',
+					],
+					...config,
+				});
+
+				if (page.pid !== null) {
+					childPrecessIds.add(page.pid);
+				}
+
+				await page.setDefaultNavigationTimeout(0);
 
 				if (config.locale) {
 					await page.setExtraHTTPHeaders({
@@ -74,7 +105,7 @@ export async function deal(
 		},
 	);
 
-	await browser.close();
+	log('PuppeteerDealer.deal() completed');
 }
 
 function evaluationError(page: Page, url: string, fileId: string, index: number) {
@@ -94,8 +125,6 @@ function evaluationError(page: Page, url: string, fileId: string, index: number)
 						'    Page:',
 						`        url: ${page.url()}`,
 						`        isClosed: ${page.isClosed()}`,
-						'    Browser:',
-						`        connected: ${page.browser().connected}`,
 					].join('\n'),
 				);
 			throw error;

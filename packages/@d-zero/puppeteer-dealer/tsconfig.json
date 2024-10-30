@@ -8,6 +8,9 @@
 	"references": [
 		{
 			"path": "../dealer"
+		},
+		{
+			"path": "../puppeteer-page"
 		}
 	],
 	"include": ["./src/**/*"],
