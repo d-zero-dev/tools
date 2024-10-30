@@ -1,0 +1,30 @@
+{
+	"name": "@d-zero/proc-talk",
+	"version": "0.1.0",
+	"description": "Process ",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"@d-zero/shared": "0.5.0",
+		"debug": "4.3.7"
+	}
+}
