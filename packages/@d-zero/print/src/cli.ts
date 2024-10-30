@@ -15,16 +15,17 @@ const cli = minimist(process.argv.slice(2), {
 
 const limit = cli.limit ? Number.parseInt(cli.limit) : undefined;
 const debug = !!cli.debug;
+const verbose = !!cli.verbose;
 const type: PrintType = cli.type === 'note' ? 'note' : cli.type === 'pdf' ? 'pdf' : 'png';
 
 if (cli.listfile?.length) {
 	const { urlList, hooks } = await readConfig(cli.listfile);
-	await print(urlList, { type, limit, debug, hooks });
+	await print(urlList, { type, limit, debug, verbose, hooks });
 	process.exit(0);
 }
 
 if (cli._.length > 0) {
-	await print(cli._, { type, limit, debug });
+	await print(cli._, { type, limit, verbose, debug });
 	process.exit(0);
 }
 

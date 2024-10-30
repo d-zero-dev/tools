@@ -15,6 +15,7 @@ export interface PrintOptions {
 	readonly type?: PrintType;
 	readonly limit?: number;
 	readonly debug?: boolean;
+	readonly verbose?: boolean;
 	readonly hooks?: readonly PageHook[];
 }
 
