@@ -15,7 +15,9 @@
 		"dist"
 	],
 	"scripts": {
-		"build": "tsc"
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
 		"@d-zero/google-auth": "0.1.0",

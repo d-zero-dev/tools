@@ -15,7 +15,9 @@
 		"dist"
 	],
 	"scripts": {
-		"build": "tsc"
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
 		"ansi-colors": "4.1.3",

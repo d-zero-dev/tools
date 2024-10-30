@@ -3,6 +3,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "lerna run build",
+		"watch": "lerna run watch --parallel",
 		"clean": "lerna run clean",
 		"test": "vitest run",
 		"lint": "run-s lint:eslint lint:prettier lint:textlint lint:cspell",
