@@ -1,4 +1,4 @@
-import type { Page } from 'puppeteer';
+import type { Page } from '@d-zero/puppeteer-page';
 
 export type Sizes = Record<string, Size>;
 

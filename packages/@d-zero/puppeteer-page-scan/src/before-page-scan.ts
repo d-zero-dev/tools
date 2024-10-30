@@ -1,6 +1,6 @@
 import type { PageHook, PageScanPhase, Size } from './types.js';
 import type { Listener } from '@d-zero/puppeteer-general-actions';
-import type { Page } from 'puppeteer';
+import type { Page } from '@d-zero/puppeteer-page';
 
 import { scrollAllOver } from '@d-zero/puppeteer-scroll';
 
@@ -26,7 +26,7 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 		deviceScaleFactor: resolution ?? 1,
 	});
 
-	if (page.url() === url) {
+	if ((await page.url()) === url) {
 		listener?.('load', { name, type: 'reaload' });
 		await page.reload({ waitUntil: 'networkidle0' });
 	} else {
