@@ -88,6 +88,18 @@ export class BinaryCache extends Cache<Uint8Array> {
 	}
 
 	/**
+	 * Loads binary data directly from the cache using the provided hashed key.
+	 *
+	 * @param {string} hashedKey - The hashed key to identify the cached data.
+	 * @returns {Promise<Uint8Array | null>} - A promise that resolves to the binary data or null if not found.
+	 */
+	async loadDirectly(hashedKey: string): Promise<Uint8Array | null> {
+		const filePath = path.join(this.tmpDir, hashedKey);
+		const data = await fs.readFile(filePath).catch(() => null);
+		return data;
+	}
+
+	/**
 	 * Loads binary data from the cache using the provided key.
 	 * The key is hashed and used to generate the filename.
 	 *
