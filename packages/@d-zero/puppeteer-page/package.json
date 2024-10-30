@@ -1,0 +1,34 @@
+{
+	"name": "@d-zero/puppeteer-page",
+	"version": "0.1.0",
+	"description": "Optional running Puppeteer as a child process",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"@axe-core/puppeteer": "4.10.0",
+		"@d-zero/proc-talk": "0.1.0",
+		"@d-zero/shared": "0.5.0",
+		"axe-core": "4.10.1",
+		"debug": "4.3.7",
+		"puppeteer": "23.6.0"
+	}
+}

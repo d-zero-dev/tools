@@ -6,6 +6,9 @@
 		"gaxios",
 		"pngjs",
 
+		// Puppeteer
+		"pptr",
+
 		//
 		"noarchive",
 		"notionhq",
