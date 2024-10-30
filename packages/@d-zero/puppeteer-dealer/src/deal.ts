@@ -5,6 +5,7 @@ import type { PuppeteerLaunchOptions } from 'puppeteer';
 
 import { deal as coreDeal } from '@d-zero/dealer';
 import { createPage } from '@d-zero/puppeteer-page';
+import { delay } from '@d-zero/shared/delay';
 import c from 'ansi-colors';
 
 import { log } from './debug.js';
@@ -96,7 +97,10 @@ export async function deal(
 					)
 					.catch(evaluationError(page, url.toString(), fileId, index));
 
+				update(`${lineHeader} ${c.blue('✓')} Closing page%dots%`);
 				await page.close();
+				update(`${lineHeader} ${c.greenBright('✓')} Page process completed!`);
+				await delay(600);
 			};
 		},
 		{
