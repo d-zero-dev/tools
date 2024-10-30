@@ -34,7 +34,9 @@ await deal(
 		async deal(page, id, url, logger) {
 			// Do something
 			await page.goto(url);
-			await page.waitForSelector('body');
+			await page.evaluate(() => {
+				// Do something
+			});
 		},
 	},
 
