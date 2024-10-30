@@ -1,0 +1,21 @@
+{
+	"extends": "../../../tsconfig.json",
+	"compilerOptions": {
+		"composite": true,
+		"outDir": "./dist",
+		"rootDir": "./src"
+	},
+	"references": [
+		{
+			"path": "../a11y-check-core"
+		},
+		{
+			"path": "../puppeteer-page"
+		},
+		{
+			"path": "../shared"
+		}
+	],
+	"include": ["./src/**/*"],
+	"exclude": ["node_modules", "dist", "./src/**/*.spec.ts"]
+}
