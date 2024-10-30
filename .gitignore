@@ -80,3 +80,6 @@ test/fixture/.__*
 
 # Secret Test Files
 ___*
+
+# Cache
+.cache
