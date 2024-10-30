@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/dealer",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"description": "A tool that provides an API and CLI for parallel processing of collections and sequential logging to standard output",
 	"author": "D-ZERO",
 	"license": "MIT",

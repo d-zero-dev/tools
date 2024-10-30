@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/puppeteer-screenshot",
-	"version": "1.2.0",
+	"version": "2.0.0",
 	"description": "Screenshot utility for puppeteer",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -24,11 +24,11 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/puppeteer-general-actions": "1.0.0",
-		"@d-zero/puppeteer-page-scan": "1.0.0",
-		"@d-zero/shared": "0.5.0"
+		"@d-zero/puppeteer-general-actions": "1.1.0",
+		"@d-zero/puppeteer-page-scan": "2.0.0",
+		"@d-zero/shared": "0.6.0"
 	},
 	"devDependencies": {
-		"@d-zero/puppeteer-page": "0.1.0"
+		"@d-zero/puppeteer-page": "0.2.0"
 	}
 }

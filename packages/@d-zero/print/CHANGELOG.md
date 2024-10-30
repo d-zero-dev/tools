@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@1.0.0...@d-zero/print@1.1.0) (2024-10-30)
+
+### Features
+
+- **print:** add `--verbose` option ([78e6215](https://github.com/d-zero-dev/tools/commit/78e62158fbc9c881a51657dc45fdbb5a4d3ab31a))
+
 # 1.0.0 (2024-10-03)
 
 ### Features
