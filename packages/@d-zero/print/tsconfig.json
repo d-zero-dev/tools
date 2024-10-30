@@ -10,6 +10,9 @@
 			"path": "../dealer"
 		},
 		{
+			"path": "../puppeteer-page"
+		},
+		{
 			"path": "../puppeteer-page-scan"
 		},
 		{

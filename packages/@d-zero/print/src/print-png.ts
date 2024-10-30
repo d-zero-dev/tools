@@ -1,5 +1,5 @@
+import type { Page } from '@d-zero/puppeteer-page';
 import type { PageHook } from '@d-zero/puppeteer-screenshot';
-import type { Page } from 'puppeteer';
 
 import { screenshot, screenshotListener } from '@d-zero/puppeteer-screenshot';
 

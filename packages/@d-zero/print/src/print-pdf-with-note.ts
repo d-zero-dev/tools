@@ -1,5 +1,5 @@
+import type { Page } from '@d-zero/puppeteer-page';
 import type { Screenshot } from '@d-zero/puppeteer-screenshot';
-import type { Page } from 'puppeteer';
 
 import dayjs from 'dayjs';
 

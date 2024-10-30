@@ -37,6 +37,6 @@
 		"minimist": "1.2.8"
 	},
 	"devDependencies": {
-		"puppeteer": "23.6.0"
+		"@d-zero/puppeteer-page": "0.1.0"
 	}
 }

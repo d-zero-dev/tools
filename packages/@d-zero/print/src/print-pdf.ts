@@ -1,5 +1,5 @@
+import type { Page } from '@d-zero/puppeteer-page';
 import type { PageHook } from '@d-zero/puppeteer-page-scan';
-import type { Page } from 'puppeteer';
 
 import { beforePageScan, pageScanListener } from '@d-zero/puppeteer-page-scan';
 
