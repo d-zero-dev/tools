@@ -1,7 +1,7 @@
 import type { Screenshot, ScreenshotPhase } from './types.js';
 import type { Listener } from '@d-zero/puppeteer-general-actions';
+import type { Page } from '@d-zero/puppeteer-page';
 import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
-import type { Page } from 'puppeteer';
 
 import { beforePageScan, defaultSizes } from '@d-zero/puppeteer-page-scan';
 import { urlToFileName } from '@d-zero/shared/url-to-file-name';

@@ -28,6 +28,6 @@
 		"@d-zero/shared": "0.5.0"
 	},
 	"devDependencies": {
-		"puppeteer": "23.6.0"
+		"@d-zero/puppeteer-page": "0.1.0"
 	}
 }

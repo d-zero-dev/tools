@@ -1,4 +1,4 @@
-import type { Page } from 'puppeteer';
+import type { Page } from '@d-zero/puppeteer-page';
 
 export async function getBinary(page: Page) {
 	const buffer = await page.screenshot({
