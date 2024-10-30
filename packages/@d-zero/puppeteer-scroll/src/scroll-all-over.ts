@@ -1,4 +1,4 @@
-import type { Page } from 'puppeteer';
+import type { Page } from '@d-zero/puppeteer-page';
 
 import { delay } from '@d-zero/shared/delay';
 
