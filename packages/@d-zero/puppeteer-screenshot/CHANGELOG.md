@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@1.2.0...@d-zero/puppeteer-screenshot@2.0.0) (2024-10-30)
+
+### Features
+
+- **puppeteer-screenshot:** use `@d-zero/puppeteer-page` ([c924882](https://github.com/d-zero-dev/tools/commit/c924882a08cf87e8ef043de8bedcdc1e014f4c79))
+
+### BREAKING CHANGES
+
+- **puppeteer-screenshot:** use `@d-zero/puppeteer-page` instead of `puppeteer`
+
 # [1.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@1.1.0...@d-zero/puppeteer-screenshot@1.2.0) (2024-10-03)
 
 ### Features

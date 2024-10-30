@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/google-sheets",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Google Sheets API Toolkit",
 	"author": "D-ZERO Co.,Ltd.",
 	"license": "MIT",
@@ -20,8 +20,8 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/google-auth": "0.1.0",
-		"@d-zero/shared": "0.5.0",
+		"@d-zero/google-auth": "0.2.0",
+		"@d-zero/shared": "0.6.0",
 		"debug": "4.3.7",
 		"gaxios": "6.7.1",
 		"googleapis": "144.0.0"

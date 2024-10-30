@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/puppeteer-scroll",
-	"version": "1.0.5",
+	"version": "2.0.0",
 	"description": "Scroll function for puppeteer",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -24,9 +24,9 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/shared": "0.5.0"
+		"@d-zero/shared": "0.6.0"
 	},
 	"devDependencies": {
-		"@d-zero/puppeteer-page": "0.1.0"
+		"@d-zero/puppeteer-page": "0.2.0"
 	}
 }

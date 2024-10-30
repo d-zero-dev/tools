@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/shared",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"description": "Shared utilities for D-ZERO tools",
 	"author": "D-ZERO",
 	"license": "MIT",
