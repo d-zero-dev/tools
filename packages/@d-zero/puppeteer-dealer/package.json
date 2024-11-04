@@ -31,6 +31,6 @@
 		"debug": "4.3.7"
 	},
 	"devDependencies": {
-		"puppeteer": "23.6.1"
+		"puppeteer": "23.7.0"
 	}
 }
