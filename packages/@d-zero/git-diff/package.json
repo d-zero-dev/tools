@@ -1,0 +1,22 @@
+{
+	"name": "@d-zero/git-diff",
+	"version": "1.0.0",
+	"description": "Get a list of files with git diffs",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"main": "./dist/index.js",
+	"bin": {
+		"git-diff": "./dist/index.js"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"clean": "tsc --build --clean"
+	}
+}
