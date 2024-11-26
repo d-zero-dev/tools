@@ -28,6 +28,6 @@
 		"clean": "tsc --build --clean"
 	},
 	"devDependencies": {
-		"@types/node": "22.9.4"
+		"@types/node": "22.10.0"
 	}
 }
