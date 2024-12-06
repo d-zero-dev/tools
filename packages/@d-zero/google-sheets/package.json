@@ -22,7 +22,7 @@
 	"dependencies": {
 		"@d-zero/google-auth": "0.1.0",
 		"@d-zero/shared": "0.5.0",
-		"debug": "4.3.7",
+		"debug": "4.4.0",
 		"gaxios": "6.7.1",
 		"googleapis": "144.0.0"
 	}
