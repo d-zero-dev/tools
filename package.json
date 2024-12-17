@@ -37,7 +37,7 @@
 		"@d-zero/lint-staged-config": "5.0.0-alpha.54",
 		"@d-zero/prettier-config": "5.0.0-alpha.54",
 		"@d-zero/textlint-config": "5.0.0-alpha.54",
-		"@d-zero/tsconfig": "0.4.0",
+		"@d-zero/tsconfig": "0.4.1",
 		"husky": "9.1.7",
 		"lerna": "8.1.9",
 		"npm-run-all2": "7.0.1",
