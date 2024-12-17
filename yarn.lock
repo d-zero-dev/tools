@@ -677,12 +677,12 @@
     textlint-rule-preset-japanese "10.0.3"
     textlint-rule-preset-jtf-style "3.0.1"
 
-"@d-zero/tsconfig@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@d-zero/tsconfig/-/tsconfig-0.4.0.tgz#a710fee2f2cbe48e67f05ce95da6142fa5bc049b"
-  integrity sha512-6Rr3uoPQmDh5viZM4hszzvwr9J5fwHVHlpNj1I+JYf8PNZ+JrVtlsAU1mMoM1YsYy34msG8KHWvWxjPjBoDa/Q==
+"@d-zero/tsconfig@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@d-zero/tsconfig/-/tsconfig-0.4.1.tgz#1295b14687ae34056df54347118ef5976bb89c44"
+  integrity sha512-igfCrwtd4z6Y5FPZIksPBZCj9T1KUH3KYB+mPmjBgmrxAHq7fqBSeX66TK6rgpCcTHBI5jQdx47AVAdJE34UnQ==
   dependencies:
-    "@tsconfig/node-lts" "22.0.0"
+    "@tsconfig/node-lts" "22.0.1"
     "@tsconfig/recommended" "1.0.8"
     "@tsconfig/strictest" "2.0.5"
 
@@ -2071,10 +2071,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/quickjs-emscripten/-/quickjs-emscripten-0.23.0.tgz#db4ecfd499a9765ab24002c3b696d02e6d32a12c"
   integrity sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==
 
-"@tsconfig/node-lts@22.0.0":
-  version "22.0.0"
-  resolved "https://registry.yarnpkg.com/@tsconfig/node-lts/-/node-lts-22.0.0.tgz#3b3c5eeeca0c5aa06774c2642720c30dbee13d27"
-  integrity sha512-6y6CBFe0etz2xU1s0rGOj7pLsvbYXM9l/RNmBQOKI3S5DFrp1jigxx8uYupG5O6cCNXNlOE/1gquoQH01+kz5w==
+"@tsconfig/node-lts@22.0.1":
+  version "22.0.1"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node-lts/-/node-lts-22.0.1.tgz#dd9809fe37ac966d73a4ca468210a0c6cb09aa97"
+  integrity sha512-BwlbLiYurZKrj+Pa6etSE1jXmr3VEDdgJto1jEYKcpBVwZZSWVkCPyFEFYbHdIOaFMlSTtV206DYPlT109aqug==
 
 "@tsconfig/recommended@1.0.8":
   version "1.0.8"
