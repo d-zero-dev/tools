@@ -28,6 +28,6 @@
 	},
 	"dependencies": {
 		"@d-zero/shared": "0.5.0",
-		"@notionhq/client": "2.2.15"
+		"@notionhq/client": "2.2.16"
 	}
 }
