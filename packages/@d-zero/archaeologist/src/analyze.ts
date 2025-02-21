@@ -21,6 +21,11 @@ export interface AnalyzeOptions {
 	readonly debug?: boolean;
 }
 
+/**
+ *
+ * @param list
+ * @param options
+ */
 export async function analyze(
 	list: readonly URLPair[],
 	options?: AnalyzeOptions,
@@ -159,6 +164,10 @@ export async function analyze(
 	return results;
 }
 
+/**
+ *
+ * @param ms
+ */
 function delay(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }

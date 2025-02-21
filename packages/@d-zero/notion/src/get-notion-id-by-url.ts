@@ -1,3 +1,7 @@
+/**
+ *
+ * @param url
+ */
 export function getNotionIdByURL(url: string) {
 	const urlObject = new URL(url);
 	const path = urlObject.pathname.trim();

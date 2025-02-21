@@ -18,8 +18,8 @@ export class Lanes {
 	#header?: string;
 	#indent = '';
 	#logs = new Map<number, string>();
-	#verbose: boolean;
 	#sort: SortFunc = ([a], [b]) => a - b;
+	#verbose: boolean;
 
 	constructor(options?: LanesOptions) {
 		this.#display = new Display({

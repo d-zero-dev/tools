@@ -19,7 +19,6 @@ type Options = {
 
 /**
  * Takes screenshots of a web page at different sizes and resolutions.
- *
  * @param page - The Puppeteer page object.
  * @param url - The URL of the web page to take screenshots of.
  * @param options - Optional settings for the screenshot process.

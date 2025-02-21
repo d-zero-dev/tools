@@ -1,6 +1,13 @@
 import { createTwoFilesPatch } from 'diff';
 import parse from 'parse-diff';
 
+/**
+ *
+ * @param urlA
+ * @param urlB
+ * @param dataA
+ * @param dataB
+ */
 export function diffTree(urlA: string, urlB: string, dataA: string, dataB: string) {
 	const result = createTwoFilesPatch(urlA, urlB, dataA, dataB);
 	const info = parse(result)[0];

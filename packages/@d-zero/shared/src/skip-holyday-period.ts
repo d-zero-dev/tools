@@ -7,7 +7,6 @@ import { skipHolydays } from './skip-holydays.js';
 
 /**
  * Skips the holiday period between the start and due dates.
- *
  * @param start The start date.
  * @param due The due date.
  * @returns An object containing the updated start and due dates.

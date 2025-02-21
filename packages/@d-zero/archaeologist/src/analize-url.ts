@@ -5,6 +5,10 @@ type AnalyzedUrlList = {
 	hasNoSSL: boolean;
 };
 
+/**
+ *
+ * @param list
+ */
 export function analyzeUrlList(list: readonly URLPair[]): AnalyzedUrlList {
 	const result: AnalyzedUrlList = {
 		hasAuth: false,

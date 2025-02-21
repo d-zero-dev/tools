@@ -9,6 +9,14 @@ import { inferExplanation } from './infer-explanation.js';
 import { p } from './pargraph.js';
 import { tagsToSCs } from './tags-to-scs.js';
 
+/**
+ *
+ * @param page
+ * @param axeResults
+ * @param sizeName
+ * @param screenshot
+ * @param log
+ */
 export async function convertResultsFromViolations(
 	page: Page,
 	axeResults: AxeResults,

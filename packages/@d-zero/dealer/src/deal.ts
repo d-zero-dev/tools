@@ -19,6 +19,12 @@ export type DealHeader = (
 
 const DEBUG_ID = Number.MIN_SAFE_INTEGER;
 
+/**
+ *
+ * @param items
+ * @param setup
+ * @param options
+ */
 export async function deal<T extends WeakKey>(
 	items: readonly T[],
 	setup: (

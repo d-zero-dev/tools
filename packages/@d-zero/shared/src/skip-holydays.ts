@@ -4,7 +4,6 @@ import holiday_jp from '@holiday-jp/holiday_jp';
 
 /**
  * Skips holidays and weekends in the given date and returns the next available date.
- *
  * @param date - The date to skip holidays and weekends from.
  * @returns The next available date after skipping holidays and weekends.
  */

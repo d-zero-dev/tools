@@ -7,6 +7,12 @@ import dayjs from 'dayjs';
 
 import { SpreadsheetReporter } from './spreadsheet.js';
 
+/**
+ *
+ * @param urlList
+ * @param out
+ * @param options
+ */
 export async function a11yCheck(
 	urlList: readonly (
 		| string

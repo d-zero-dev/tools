@@ -10,6 +10,12 @@ type Options = {
 	listener?: Listener<PageScanPhase>;
 } & Size;
 
+/**
+ *
+ * @param page
+ * @param url
+ * @param options
+ */
 export async function beforePageScan(page: Page, url: string, options?: Options) {
 	const listener = options?.listener;
 	const name = options?.name ?? 'default';

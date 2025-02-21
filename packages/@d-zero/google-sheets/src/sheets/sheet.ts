@@ -50,7 +50,7 @@ export class Sheet {
 			this.#currentRowIndex = 0;
 		}
 		let numOfReq = NUMBER_OF_PAGE_INFO_PER_ONE_REQUEST;
-		// eslint-disable-next-line no-constant-condition
+
 		while (true) {
 			const success = await this.#addRowQueue(data, numOfReq).catch((error) => {
 				if (error instanceof RangeError) {

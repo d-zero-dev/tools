@@ -1,6 +1,5 @@
 /**
  * Converts the given byte size to kilobytes (KB) or megabytes (MB).
- *
  * @param byte The byte size to convert.
  * @returns The converted size in kilobytes (KB) or megabytes (MB).
  */

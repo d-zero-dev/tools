@@ -4,6 +4,10 @@ import type { PageOptions } from './extended-page.js';
 
 import { Page } from './extended-page.js';
 
+/**
+ *
+ * @param options
+ */
 export function createPage(options: PageOptions) {
 	return Page.create(options);
 }

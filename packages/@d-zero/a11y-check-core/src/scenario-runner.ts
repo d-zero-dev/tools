@@ -20,6 +20,12 @@ import c from 'ansi-colors';
 
 import { cleanResults } from './clean-results.js';
 
+/**
+ *
+ * @param urlList
+ * @param scenarios
+ * @param options
+ */
 export async function scenarioRunner<O>(
 	urlList: readonly (
 		| string

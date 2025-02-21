@@ -8,7 +8,6 @@ import { numericalComparator } from './numerical.js';
 
 /**
  * Compares two URLs or strings representing URLs and returns a value indicating their order.
- *
  * @example
  * ```ts
  * import { pathComparator } from '@d-zero/shared/sort/path';
@@ -24,7 +23,6 @@ import { numericalComparator } from './numerical.js';
  *
  * urls.sort(pathComparator);
  * ```
- *
  * @param url1 - The first URL or string representing a URL to compare.
  * @param url2 - The second URL or string representing a URL to compare.
  * @returns A value indicating the order of the URLs: 0 if they are equal, -1 if the first URL comes before the second URL, 1 if the first URL comes after the second URL.

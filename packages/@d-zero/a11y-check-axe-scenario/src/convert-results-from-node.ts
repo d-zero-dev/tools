@@ -6,6 +6,13 @@ import path from 'node:path';
 
 import { hash } from '@d-zero/shared/hash';
 
+/**
+ *
+ * @param page
+ * @param node
+ * @param screenshot
+ * @param log
+ */
 export async function convertResultsFromNode(
 	page: Page,
 	node: NodeResult,

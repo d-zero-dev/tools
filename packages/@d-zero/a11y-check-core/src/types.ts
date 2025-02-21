@@ -17,9 +17,6 @@ export type ScenarioCreator<O> = (options?: O) => Scenario;
 
 export type Scenario = {
 	id: string;
-	config?: {
-		// Add option if needed
-	};
 	exec: ScenarioExecutor;
 	analyze?: ScenarioAnalyzer;
 };

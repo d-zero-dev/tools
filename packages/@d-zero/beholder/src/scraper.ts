@@ -698,6 +698,11 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 	}
 }
 
+/**
+ *
+ * @param page
+ * @param height
+ */
 async function autoScroll(page: Page, height: number) {
 	await page.evaluate(async (height: number) => {
 		/* global window */

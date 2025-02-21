@@ -1,5 +1,9 @@
 import type { Color } from './types.js';
 
+/**
+ *
+ * @param colorFn
+ */
 export function colorFnToHex(colorFn: string | null): Color | null {
 	if (!colorFn) {
 		return null;

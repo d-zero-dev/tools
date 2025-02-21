@@ -189,7 +189,7 @@ export default createScenario((options?: ScenarioOptions) => {
 				logger(`${test.name}: Screenshot`);
 				let bin: Uint8Array;
 				let retry = 0;
-				// eslint-disable-next-line no-constant-condition
+
 				while (true) {
 					bin = await page.screenshot({
 						type: 'png',

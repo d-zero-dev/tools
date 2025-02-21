@@ -2,6 +2,11 @@ import { removeMatches } from '../remove-matches.js';
 
 import { alphabeticalComparator } from './alphabetical.js';
 
+/**
+ *
+ * @param t1
+ * @param t2
+ */
 export function numericalComparator(t1: string | null, t2: string | null): 0 | -1 | 1 {
 	if (t1 == null && t2 == null) {
 		return 0;

@@ -9,6 +9,12 @@ import NetTimeoutError from './net-timeout-error.js';
 
 const cacheMap = new Map<string, PageData | Error>();
 
+/**
+ *
+ * @param url
+ * @param isExternal
+ * @param method
+ */
 export async function fetchDestination(
 	url: ExURL,
 	isExternal: boolean,
@@ -38,6 +44,12 @@ export async function fetchDestination(
 	return result;
 }
 
+/**
+ *
+ * @param url
+ * @param isExternal
+ * @param method
+ */
 async function _fetchHead(url: ExURL, isExternal: boolean, method: string) {
 	return new Promise<PageData>((resolve, reject) => {
 		const request: RequestOptions = {

@@ -6,6 +6,12 @@ import { colorContrastCheck, ColorContrastError } from '@d-zero/a11y-check-core'
 
 import { br, p } from './pargraph.js';
 
+/**
+ *
+ * @param id
+ * @param node
+ * @param style
+ */
 export function inferExplanation(
 	id: AxeRuleId,
 	node: NodeResult,

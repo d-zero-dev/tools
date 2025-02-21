@@ -2,7 +2,6 @@ import { numericalComparator } from './numerical.js';
 
 /**
  * Compares two directory paths and returns a value indicating their order.
- *
  * @example
  * ```ts
  * import { dirComparator } from '@d-zero/shared/sort/dir';
@@ -22,7 +21,6 @@ import { numericalComparator } from './numerical.js';
  *
  * dirs.sort(dirComparator);
  * ```
- *
  * @param d1 - The first directory path to compare.
  * @param d2 - The second directory path to compare.
  * @returns A value of 0 if the directory paths are equal, -1 if d1 should be sorted before d2, or 1 if d1 should be sorted after d2.

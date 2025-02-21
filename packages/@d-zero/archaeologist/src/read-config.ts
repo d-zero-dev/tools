@@ -7,6 +7,10 @@ import { readPageHooks } from '@d-zero/puppeteer-page-scan';
 import { toList } from '@d-zero/readtext/list';
 import fm from 'front-matter';
 
+/**
+ *
+ * @param filePath
+ */
 export async function readConfig(filePath: string) {
 	const fileContent = await fs.readFile(filePath, 'utf8');
 	const content: FrontMatterResult<{

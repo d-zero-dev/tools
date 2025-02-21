@@ -5,6 +5,10 @@ import { pathComparator } from '@d-zero/shared/sort/path';
 
 import { scNumberComparator } from './sc-number-comparator.js';
 
+/**
+ *
+ * @param results
+ */
 export function cleanResults(results: readonly Violation[]) {
 	const hashMap = new Map<string, Violation>();
 

@@ -10,6 +10,13 @@ import c from 'ansi-colors';
 
 import { log } from './debug.js';
 
+/**
+ *
+ * @param list
+ * @param header
+ * @param handler
+ * @param options
+ */
 export async function deal(
 	list: readonly URLInfo[],
 	header: DealHeader,
@@ -112,6 +119,13 @@ export async function deal(
 	log('PuppeteerDealer.deal() completed');
 }
 
+/**
+ *
+ * @param page
+ * @param url
+ * @param fileId
+ * @param index
+ */
 function evaluationError(page: Page, url: string, fileId: string, index: number) {
 	return (error: unknown) => {
 		if (

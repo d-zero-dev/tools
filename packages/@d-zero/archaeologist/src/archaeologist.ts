@@ -6,8 +6,14 @@ import c from 'ansi-colors';
 import { analyze } from './analyze.js';
 import { score } from './output-utils.js';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ArchaeologistOptions extends AnalyzeOptions {}
 
+/**
+ *
+ * @param list
+ * @param options
+ */
 export async function archaeologist(
 	list: readonly URLPair[],
 	options?: ArchaeologistOptions,

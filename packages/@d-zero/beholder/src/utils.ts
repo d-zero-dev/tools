@@ -2,6 +2,11 @@ import type { CDNType, CompressType, ParseURLOptions, ExURL } from './types.js';
 
 import Path from 'node:path';
 
+/**
+ *
+ * @param url
+ * @param options
+ */
 export function parseUrl(url: string | ExURL, options?: ParseURLOptions): ExURL | null {
 	if (typeof url !== 'string') {
 		return url;
@@ -94,10 +99,18 @@ export function parseUrl(url: string | ExURL, options?: ParseURLOptions): ExURL 
 	}
 }
 
+/**
+ *
+ * @param status
+ */
 export function isError(status: number) {
 	return !(200 <= status && status < 400);
 }
 
+/**
+ *
+ * @param headers
+ */
 export function detectCompress(
 	headers: Record<string, string | string[] | undefined>,
 ): false | CompressType {
@@ -142,6 +155,10 @@ export function detectCompress(
 	return false;
 }
 
+/**
+ *
+ * @param headers
+ */
 export function detectCDN(
 	headers: Record<string, string | string[] | undefined>,
 ): false | CDNType {

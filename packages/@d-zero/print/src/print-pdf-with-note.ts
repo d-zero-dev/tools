@@ -3,6 +3,15 @@ import type { Screenshot } from '@d-zero/puppeteer-screenshot';
 
 import dayjs from 'dayjs';
 
+/**
+ *
+ * @param page
+ * @param root0
+ * @param root0.id
+ * @param root0.filePath
+ * @param root0.url
+ * @param root0.title
+ */
 export async function printPdfWithNote(
 	page: Page,
 	{ id, filePath, url, title }: Screenshot,

@@ -4,6 +4,10 @@ import { parse } from 'parse5';
 
 import { serialize } from './serialize.js';
 
+/**
+ *
+ * @param html
+ */
 export function distill(html: string): ResultTree {
 	const ast = parse(html);
 	const tree = serialize(ast);

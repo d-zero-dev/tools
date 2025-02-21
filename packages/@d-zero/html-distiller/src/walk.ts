@@ -7,6 +7,10 @@ import type {
 	commentNode,
 } from './types.js';
 
+/**
+ *
+ * @param node
+ */
 export function walk(node: ChildNode) {
 	switch (node.nodeName) {
 		case '#documentType': {

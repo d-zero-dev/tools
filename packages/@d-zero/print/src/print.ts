@@ -19,6 +19,11 @@ export interface PrintOptions {
 	readonly hooks?: readonly PageHook[];
 }
 
+/**
+ *
+ * @param urlList
+ * @param options
+ */
 export async function print(
 	urlList: readonly (
 		| string

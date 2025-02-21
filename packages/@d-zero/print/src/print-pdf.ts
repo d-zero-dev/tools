@@ -3,6 +3,14 @@ import type { PageHook } from '@d-zero/puppeteer-page-scan';
 
 import { beforePageScan, pageScanListener } from '@d-zero/puppeteer-page-scan';
 
+/**
+ *
+ * @param page
+ * @param url
+ * @param filePath
+ * @param update
+ * @param hooks
+ */
 export async function printPdf(
 	page: Page,
 	url: string,

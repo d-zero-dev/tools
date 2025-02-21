@@ -1,5 +1,10 @@
 import { strToRegex } from '@d-zero/shared/str-to-regex';
 
+/**
+ *
+ * @param html
+ * @param excludeKeywords
+ */
 export function keywordCheck(html: string, excludeKeywords: string[]) {
 	for (const keyword of excludeKeywords) {
 		const pattern = strToRegex(keyword);

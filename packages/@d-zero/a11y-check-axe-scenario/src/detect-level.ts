@@ -1,3 +1,7 @@
+/**
+ *
+ * @param tags
+ */
 export function detectLevel(tags: readonly string[]) {
 	return tags.includes('wcag2a')
 		? 'A'

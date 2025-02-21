@@ -5,16 +5,16 @@ export interface DealerOptions {
 }
 
 export class Dealer<T extends WeakKey> {
+	#debug: (log: string) => void = () => {};
 	#done = new WeakSet<T>();
 	#doneCount = 0;
+	#finish: () => void = () => {};
 	#items: readonly T[];
 	#limit: number;
-	#starts = new WeakMap<T, () => Promise<void>>();
-	#workers = new Set<T>();
-	#debug: (log: string) => void = () => {};
-	#finish: () => void = () => {};
 	#progress: (progress: number, done: number, total: number, limit: number) => void =
 		() => {};
+	#starts = new WeakMap<T, () => Promise<void>>();
+	#workers = new Set<T>();
 
 	constructor(items: readonly T[], options?: DealerOptions) {
 		this.#items = items;

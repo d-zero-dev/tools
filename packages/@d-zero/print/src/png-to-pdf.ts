@@ -8,6 +8,12 @@ import c from 'ansi-colors';
 
 import { printPdfWithNote } from './print-pdf-with-note.js';
 
+/**
+ *
+ * @param page
+ * @param screenshots
+ * @param update
+ */
 export async function pngToPdf(
 	page: Page,
 	screenshots: Record<string, Screenshot>,

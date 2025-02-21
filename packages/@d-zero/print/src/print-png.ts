@@ -3,6 +3,15 @@ import type { PageHook } from '@d-zero/puppeteer-screenshot';
 
 import { screenshot, screenshotListener } from '@d-zero/puppeteer-screenshot';
 
+/**
+ *
+ * @param page
+ * @param url
+ * @param fileId
+ * @param filePath
+ * @param update
+ * @param hooks
+ */
 export function printPng(
 	page: Page,
 	url: string,

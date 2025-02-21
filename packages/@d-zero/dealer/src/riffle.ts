@@ -1,5 +1,12 @@
 import type { Animations } from './types.js';
 
+/**
+ *
+ * @param text
+ * @param elapsed
+ * @param animations
+ * @param hidden
+ */
 export function riffle(
 	text: string,
 	elapsed: number,

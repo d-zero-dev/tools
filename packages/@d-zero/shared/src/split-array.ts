@@ -1,6 +1,5 @@
 /**
  * Splits an array into chunks of the specified size.
- *
  * @template T - The type of elements in the array.
  * @param {T[]} a - The array to be split.
  * @param {number} count - The size of each smaller array.

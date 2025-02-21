@@ -15,6 +15,12 @@ type DiffImagesListener = (
 	data: DiffImagesPhase[keyof DiffImagesPhase],
 ) => void;
 
+/**
+ *
+ * @param dataA
+ * @param dataB
+ * @param listener
+ */
 export async function diffImages(
 	dataA: Screenshot,
 	dataB: Screenshot,
@@ -58,6 +64,12 @@ export async function diffImages(
 	};
 }
 
+/**
+ *
+ * @param bin
+ * @param width
+ * @param height
+ */
 async function resizeImg(bin: Buffer, width: number, height: number) {
 	const img = await Jimp.read(bin);
 	img.contain({

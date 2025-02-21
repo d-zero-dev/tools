@@ -49,7 +49,6 @@ export type RetryDecoratorOptions = {
 
 /**
  * Decorator factory that adds retry logic to a method.
- *
  * @param options - The options for the retry decorator.
  * @returns A decorator function that can be applied to a method.
  */
@@ -65,7 +64,7 @@ export function retry<C extends object>(options?: RetryDecoratorOptions) {
 		return async function (this: C, ...args: unknown[]) {
 			const constructorName = String(this.constructor?.name || this.constructor || this);
 			const methodName = `${constructorName}.${String(context.name)}`;
-			// eslint-disable-next-line no-constant-condition
+
 			while (true) {
 				if (retryCount >= retries) {
 					const message = `[Retried ${retryCount} times] ${firstTimeError.message}`;
@@ -113,6 +112,11 @@ export function retry<C extends object>(options?: RetryDecoratorOptions) {
 	};
 }
 
+/**
+ *
+ * @param time
+ * @param message
+ */
 async function timeout(time: number, message: string) {
 	await delay(time);
 	throw new RetryTimeoutError(message);

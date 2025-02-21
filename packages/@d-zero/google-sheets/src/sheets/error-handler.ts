@@ -20,6 +20,10 @@ export type ErrorHandlerOptions<C> = {
 	readonly log: (this: C, message: ErrorHandlerMessage) => void;
 };
 
+/**
+ *
+ * @param options
+ */
 export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>) {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	return (method: Function, context: ClassMethodDecoratorContext) => {
@@ -136,6 +140,10 @@ export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>)
 	};
 }
 
+/**
+ *
+ * @param res
+ */
 function userRateLimitExceededError(res: GaxiosError) {
 	return (
 		Number.parseInt(res.code ?? '') === 403 &&
@@ -143,6 +151,10 @@ function userRateLimitExceededError(res: GaxiosError) {
 	);
 }
 
+/**
+ *
+ * @param res
+ */
 function isTooManyRequestError(res: GaxiosError) {
 	return Number.parseInt(res.code ?? '') === 429;
 }

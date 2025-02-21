@@ -490,6 +490,10 @@ export class ChildProcessHostedPuppeteerPage extends Page {
 	}
 }
 
+/**
+ *
+ * @param methods
+ */
 function UnsafeDefineMethods<T>(methods: string[]) {
 	return (Constructor: T) => {
 		const addMethod = (name: string) => {

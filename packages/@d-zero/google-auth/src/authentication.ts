@@ -11,6 +11,12 @@ import { log } from './debug.js';
 
 const FINISHED_MESSAGE = `🔑 ${c.bold.green('Authentication successful')}\n`;
 
+/**
+ *
+ * @param credentialFilePath
+ * @param scope
+ * @param tokenFilePath
+ */
 export async function authentication(
 	credentialFilePath: string,
 	scope: readonly string[],
@@ -61,6 +67,10 @@ export async function authentication(
 	return newOAuth2Client;
 }
 
+/**
+ *
+ * @param credentialFilePath
+ */
 async function getCredentials(credentialFilePath: string) {
 	const credentialsAbsPath = path.isAbsolute(credentialFilePath)
 		? credentialFilePath
@@ -73,6 +83,12 @@ async function getCredentials(credentialFilePath: string) {
 	return credentials;
 }
 
+/**
+ *
+ * @param oAuth2Client
+ * @param scope
+ * @param tokenFilePath
+ */
 async function getNewToken(
 	oAuth2Client: OAuth2Client,
 	scope: readonly string[],

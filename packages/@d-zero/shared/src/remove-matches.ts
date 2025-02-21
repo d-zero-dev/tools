@@ -1,3 +1,8 @@
+/**
+ *
+ * @param t1
+ * @param t2
+ */
 export function removeMatches(t1: string, t2: string): [string, string] {
 	let loopCount = Math.max(t1.length, t2.length);
 	t1 = t1.toLowerCase();

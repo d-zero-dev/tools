@@ -14,12 +14,10 @@ export type RaceWithTimeoutResult<T> =
 /**
  * Executes a given promise and races it against a timeout. If the promise resolves before the timeout,
  * the result of the promise is returned. If the timeout occurs first, a timeout result is returned.
- *
  * @template T - The type of the result that the promise resolves to.
  * @param promise - A function that returns a promise or a value of type T.
  * @param timeout - The timeout duration in milliseconds.
  * @returns A promise that resolves to an object containing either the result of the promise or a timeout flag.
- *
  * @example
  * ```ts
  * const { result, timeout } = await raceWithTimeout(() => fetchData(), 5000);

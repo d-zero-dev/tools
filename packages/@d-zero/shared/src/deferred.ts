@@ -4,7 +4,6 @@
  * The `Deferred` class allows you to create a promise and resolve or reject it
  * at a later time. This can be useful for scenarios where you need to control
  * the timing of the promise resolution or rejection.
- *
  * @template T - The type of the value that the promise will resolve with.
  */
 export class Deferred<T = void> {
@@ -27,7 +26,6 @@ export class Deferred<T = void> {
 
 	/**
 	 * Returns the internal promise.
-	 *
 	 * @returns The promise that will be resolved or rejected.
 	 */
 	promise() {
@@ -36,7 +34,6 @@ export class Deferred<T = void> {
 
 	/**
 	 * Rejects the internal promise with the given reason.
-	 *
 	 * @param reason The reason for rejecting the promise.
 	 */
 	reject(reason?: unknown) {
@@ -45,7 +42,6 @@ export class Deferred<T = void> {
 
 	/**
 	 * Resolves the internal promise with the given value.
-	 *
 	 * @param value The value to resolve the promise with.
 	 */
 	resolve(value: T) {

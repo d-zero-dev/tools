@@ -10,6 +10,13 @@ export interface GetDataOptions {
 	readonly htmlDiffOnly?: boolean;
 }
 
+/**
+ *
+ * @param page
+ * @param url
+ * @param options
+ * @param update
+ */
 export async function getData(
 	page: Page,
 	url: string,

@@ -15,6 +15,11 @@ type Params = {
 	log?: (message: string) => void;
 };
 
+/**
+ *
+ * @param backlog
+ * @param params
+ */
 export async function assign(backlog: Backlog, params: Params) {
 	if (!process.env.NOTION_TOKEN) {
 		throw new Error('NOTION_TOKEN is not defined. Please set it in .env file');

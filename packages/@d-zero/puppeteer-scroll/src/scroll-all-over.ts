@@ -10,7 +10,6 @@ export type Options = {
 
 /**
  * Scrolls the page vertically until the end or a maximum height is reached.
- *
  * @param page - The Puppeteer page object.
  * @param options - Optional parameters for scrolling.
  * @param options.distance - The distance to scroll on each iteration (default: 100).

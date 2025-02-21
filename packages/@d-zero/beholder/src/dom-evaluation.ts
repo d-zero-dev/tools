@@ -8,6 +8,12 @@ const pid = `${process.pid}`;
 const log = domLog.extend(pid);
 const dLog = domDetailsLog.extend(pid);
 
+/**
+ *
+ * @param $el
+ * @param propName
+ * @param fallback
+ */
 export async function getProp<T>(
 	$el: ElementHandle<Element>,
 	propName: string,
@@ -19,6 +25,12 @@ export async function getProp<T>(
 	]);
 }
 
+/**
+ *
+ * @param $el
+ * @param propName
+ * @param fallback
+ */
 async function _getProp<T>($el: ElementHandle<Element>, propName: string, fallback: T) {
 	try {
 		const prop = await $el.getProperty(propName);
@@ -32,6 +44,13 @@ async function _getProp<T>($el: ElementHandle<Element>, propName: string, fallba
 	}
 }
 
+/**
+ *
+ * @param page
+ * @param selector
+ * @param propName
+ * @param fallback
+ */
 export async function getPropBySelector<T>(
 	page: Page,
 	selector: string,
@@ -46,6 +65,11 @@ export async function getPropBySelector<T>(
 	return getProp($el, propName, fallback);
 }
 
+/**
+ *
+ * @param page
+ * @param viewportWidth
+ */
 export async function getImageList(
 	page: Page,
 	viewportWidth: number,
@@ -99,6 +123,11 @@ export async function getImageList(
 	return imageList;
 }
 
+/**
+ *
+ * @param page
+ * @param options
+ */
 export async function getAnchorList(page: Page, options?: ParseURLOptions) {
 	log('Getting anchors');
 
@@ -130,6 +159,10 @@ export async function getAnchorList(page: Page, options?: ParseURLOptions) {
 	return anchorList;
 }
 
+/**
+ *
+ * @param page
+ */
 export async function getMeta(page: Page) {
 	log('Getting Meta');
 
