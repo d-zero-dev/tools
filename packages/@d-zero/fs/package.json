@@ -1,0 +1,34 @@
+{
+	"name": "@d-zero/fs",
+	"version": "0.1.0",
+	"description": "File system utilities",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		"./zip": {
+			"import": "./dist/zip.js",
+			"types": "./dist/zip.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"archiver": "7.0.1",
+		"unzipper": "0.12.3"
+	},
+	"devDependencies": {
+		"@types/archiver": "6.0.3",
+		"@types/unzipper": "0.10.11"
+	}
+}
