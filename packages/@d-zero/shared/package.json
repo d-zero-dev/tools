@@ -70,6 +70,10 @@
 			"import": "./dist/str-to-regex.js",
 			"types": "./dist/str-to-regex.d.ts"
 		},
+		"./timestamp": {
+			"import": "./dist/timestamp.js",
+			"types": "./dist/timestamp.d.ts"
+		},
 		"./typed-await-event-emitter": {
 			"import": "./dist/typed-await-event-emitter.js",
 			"types": "./dist/typed-await-event-emitter.d.ts"

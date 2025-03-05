@@ -17,6 +17,7 @@
 | `@d-zero/shared/skip-holydays`             | Skips holidays and weekends in the given date and returns the next available date.                     |
 | `@d-zero/shared/str-to-regex`              | Converts a string pattern to a regular expression.                                                     |
 | `@d-zero/shared/split-array`               | Splits an array into chunks of the specified size.                                                     |
+| `@d-zero/shared/timestamp`                 | Generates a timestamp. If no format is provided, returns the Linux time (epoch seconds) as a string.   |
 | `@d-zero/shared/typed-await-event-emitter` | An event emitter that supports typed events and asynchronous event handling.                           |
 | `@d-zero/shared/types`                     | TypesScript types.                                                                                     |
 | `@d-zero/shared/url-to-file-name`          | Convert an URL to the string that is available as a file name.                                         |
