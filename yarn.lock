@@ -8003,10 +8003,10 @@ pinkie@^2.0.0:
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
   integrity sha512-MnUuEycAemtSaeFSjXKW/aroV7akBbY+Sv+RkyqFjgAe73F+MR0TBWKBRDkmfWq/HiFmdavfZ1G7h4SPZXaCSg==
 
-pixelmatch@6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/pixelmatch/-/pixelmatch-6.0.0.tgz#82bfad31becb8973746e8f7b0d88160cd10ade6d"
-  integrity sha512-FYpL4XiIWakTnIqLqvt3uN4L9B3TsuHIvhLILzTiJZMJUsGvmKNeL4H3b6I99LRyerK9W4IuOXw+N28AtRgK2g==
+pixelmatch@7.1.0:
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/pixelmatch/-/pixelmatch-7.1.0.tgz#9d59bddc8c779340e791106c0f245ac33ae4d113"
+  integrity sha512-1wrVzJ2STrpmONHKBy228LM1b84msXDUoAzVEl0R8Mz4Ce6EPr+IVtxm8+yvrqLYMHswREkjYFaMxnyGnaY3Ng==
   dependencies:
     pngjs "^7.0.0"
 
