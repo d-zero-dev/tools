@@ -9,13 +9,24 @@ type AnalyzedUrlList = {
  *
  * @param list
  */
-export function analyzeUrlList(list: readonly URLPair[]): AnalyzedUrlList {
+export function analyzeUrlList(list: readonly (URLPair | string)[]): AnalyzedUrlList {
 	const result: AnalyzedUrlList = {
 		hasAuth: false,
 		hasNoSSL: false,
 	};
 
 	for (const urlPair of list) {
+		if (typeof urlPair === 'string') {
+			const urlObj = new URL(urlPair);
+			if (urlObj.username || urlObj.password) {
+				result.hasAuth = true;
+			}
+			if (urlObj.protocol === 'http:') {
+				result.hasNoSSL = true;
+			}
+			continue;
+		}
+
 		for (const url of urlPair) {
 			const urlObj = new URL(url);
 			if (urlObj.username || urlObj.password) {
