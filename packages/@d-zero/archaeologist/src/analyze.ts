@@ -6,6 +6,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import { deal } from '@d-zero/puppeteer-dealer';
+import { delay } from '@d-zero/shared/delay';
 import c from 'ansi-colors';
 
 import { analyzeUrlList } from './analize-url.js';
@@ -162,12 +163,4 @@ export async function analyze(
 	);
 
 	return results;
-}
-
-/**
- *
- * @param ms
- */
-function delay(ms: number) {
-	return new Promise((resolve) => setTimeout(resolve, ms));
 }
