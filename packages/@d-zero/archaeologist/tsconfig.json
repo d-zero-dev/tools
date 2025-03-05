@@ -23,6 +23,9 @@
 		},
 		{
 			"path": "../readtext"
+		},
+		{
+			"path": "../shared"
 		}
 	],
 	"include": ["./src/**/*"],
