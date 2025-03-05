@@ -27,7 +27,7 @@
 		"@axe-core/puppeteer": "4.10.1",
 		"@d-zero/proc-talk": "0.3.0",
 		"@d-zero/shared": "0.7.0",
-		"axe-core": "4.10.2",
+		"axe-core": "4.10.3",
 		"debug": "4.4.0",
 		"puppeteer": "24.3.1"
 	}
