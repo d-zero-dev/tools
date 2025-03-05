@@ -1,6 +1,6 @@
 export type { PageHook } from '@d-zero/puppeteer-screenshot';
 
-import type { Screenshot } from '@d-zero/puppeteer-screenshot';
+import type { PageHook, Screenshot } from '@d-zero/puppeteer-screenshot';
 
 export type PageData = {
 	url: string;
@@ -29,3 +29,16 @@ export type DOMResult = {
 	diff: string | null;
 	file: string;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ArchaeologistOptions extends AnalyzeOptions {}
+
+export interface AnalyzeOptions extends GeneralOptions {
+	readonly htmlDiffOnly?: boolean;
+}
+
+interface GeneralOptions {
+	readonly hooks: readonly PageHook[];
+	readonly limit?: number;
+	readonly debug?: boolean;
+}

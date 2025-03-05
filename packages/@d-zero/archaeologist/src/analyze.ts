@@ -1,6 +1,12 @@
 import type { DiffImagesPhase } from './diff-images.js';
-import type { ImageResult, MediaResult, PageData, Result, URLPair } from './types.js';
-import type { PageHook } from '@d-zero/puppeteer-screenshot';
+import type {
+	AnalyzeOptions,
+	ImageResult,
+	MediaResult,
+	PageData,
+	Result,
+	URLPair,
+} from './types.js';
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -14,13 +20,6 @@ import { diffImages } from './diff-images.js';
 import { diffTree } from './diff-tree.js';
 import { getData } from './get-data.js';
 import { score } from './output-utils.js';
-
-export interface AnalyzeOptions {
-	readonly hooks: readonly PageHook[];
-	readonly htmlDiffOnly?: boolean;
-	readonly limit?: number;
-	readonly debug?: boolean;
-}
 
 /**
  *

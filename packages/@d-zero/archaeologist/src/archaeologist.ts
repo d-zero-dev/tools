@@ -1,13 +1,9 @@
-import type { AnalyzeOptions } from './analyze.js';
-import type { URLPair } from './types.js';
+import type { ArchaeologistOptions, URLPair } from './types.js';
 
 import c from 'ansi-colors';
 
 import { analyze } from './analyze.js';
 import { score } from './output-utils.js';
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ArchaeologistOptions extends AnalyzeOptions {}
 
 /**
  *
