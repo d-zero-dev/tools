@@ -2,6 +2,7 @@
 import minimist from 'minimist';
 
 import { archaeologist } from './archaeologist.js';
+import { freeze } from './freeze.js';
 import { readConfig } from './read-config.js';
 
 const cli = minimist(process.argv.slice(2), {
@@ -17,6 +18,17 @@ if (cli.listfile?.length) {
 		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
 		debug: !!cli.debug,
 		htmlDiffOnly: !!cli.htmlDiffOnly,
+	});
+	process.exit(0);
+}
+
+if (cli.freeze) {
+	const { pairList, hooks } = await readConfig(cli.freeze);
+	const list = pairList.map(([urlA]) => urlA);
+	await freeze(list, {
+		hooks,
+		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
+		debug: !!cli.debug,
 	});
 	process.exit(0);
 }

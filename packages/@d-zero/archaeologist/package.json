@@ -27,6 +27,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
+		"@d-zero/fs": "0.1.0",
 		"@d-zero/html-distiller": "1.0.2",
 		"@d-zero/puppeteer-dealer": "0.3.0",
 		"@d-zero/puppeteer-page-scan": "3.0.0",

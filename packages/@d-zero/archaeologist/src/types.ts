@@ -37,6 +37,9 @@ export interface AnalyzeOptions extends GeneralOptions {
 	readonly htmlDiffOnly?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface FreezeOptions extends GeneralOptions {}
+
 interface GeneralOptions {
 	readonly hooks: readonly PageHook[];
 	readonly limit?: number;
