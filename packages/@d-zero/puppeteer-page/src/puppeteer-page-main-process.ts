@@ -21,6 +21,7 @@ import type {
 	HTTPResponse,
 	JSHandle,
 	Keyboard,
+	LaunchOptions,
 	MediaFeature,
 	Metrics,
 	Mouse,
@@ -30,7 +31,6 @@ import type {
 	PageEvents,
 	PDFOptions,
 	Protocol,
-	PuppeteerLaunchOptions,
 	ScreenshotOptions,
 	Target,
 	Touchscreen,
@@ -57,7 +57,7 @@ const SUB_PROCESS_PATH = path.resolve(
 
 @UnsafeDefineMethods(['screenshot', 'on'])
 export class ChildProcessHostedPuppeteerPage extends Page {
-	readonly process: ProcTalk<ExtendedPageInterface, PuppeteerLaunchOptions>;
+	readonly process: ProcTalk<ExtendedPageInterface, LaunchOptions>;
 
 	override get mouse(): Mouse {
 		throw new Error('Not implemented');
@@ -83,7 +83,7 @@ export class ChildProcessHostedPuppeteerPage extends Page {
 		return this.process.pid;
 	}
 
-	constructor(options?: PuppeteerLaunchOptions) {
+	constructor(options?: LaunchOptions) {
 		super();
 
 		this.process = new ProcTalk({
@@ -486,6 +486,10 @@ export class ChildProcessHostedPuppeteerPage extends Page {
 	}
 
 	override isServiceWorkerBypassed(): boolean {
+		throw new Error('Not implemented');
+	}
+
+	override getDefaultNavigationTimeout(): number {
 		throw new Error('Not implemented');
 	}
 }

@@ -5,10 +5,10 @@ import type {
 	EventsWithWildcard,
 	GoToOptions,
 	Handler,
+	LaunchOptions,
 	PageEvents,
 	PDFOptions,
 	Page as PPTRPage,
-	PuppeteerLaunchOptions,
 	ScreenshotOptions,
 	Viewport,
 	WaitForOptions,
@@ -22,7 +22,7 @@ import { ChildProcessHostedPuppeteerPage } from './puppeteer-page-main-process.j
 
 export type PageOptions = {
 	runChildProcess?: boolean;
-} & PuppeteerLaunchOptions;
+} & LaunchOptions;
 
 type PageContext =
 	| {

@@ -1,7 +1,7 @@
 import type { PuppeteerDealerOptions, PuppeteerDealHandler, URLInfo } from './types.js';
 import type { DealHeader } from '@d-zero/dealer';
 import type { Page } from '@d-zero/puppeteer-page';
-import type { PuppeteerLaunchOptions } from 'puppeteer';
+import type { LaunchOptions } from 'puppeteer';
 
 import { deal as coreDeal } from '@d-zero/dealer';
 import { createPage } from '@d-zero/puppeteer-page';
@@ -21,7 +21,7 @@ export async function deal(
 	list: readonly URLInfo[],
 	header: DealHeader,
 	handler: PuppeteerDealHandler,
-	options?: PuppeteerDealerOptions & PuppeteerLaunchOptions,
+	options?: PuppeteerDealerOptions & LaunchOptions,
 ) {
 	const config = {
 		locale: 'ja-JP',

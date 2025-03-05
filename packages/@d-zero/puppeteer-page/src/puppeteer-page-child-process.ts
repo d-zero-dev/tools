@@ -2,13 +2,13 @@
 process.title = '@d-zero/puppeteer-page:child-process';
 
 import type { ExtendedPageInterface } from './types.js';
-import type { PuppeteerLaunchOptions } from 'puppeteer';
+import type { LaunchOptions } from 'puppeteer';
 
 import AxePuppeteer from '@axe-core/puppeteer';
 import { ProcTalk } from '@d-zero/proc-talk';
 import puppeteer from 'puppeteer';
 
-new ProcTalk<ExtendedPageInterface, PuppeteerLaunchOptions>({
+new ProcTalk<ExtendedPageInterface, LaunchOptions>({
 	type: 'child',
 	async process(options) {
 		this.log('Starting puppeteer: %O', options);
