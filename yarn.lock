@@ -665,12 +665,12 @@
     globals "16.0.0"
     typescript-eslint "8.26.1"
 
-"@d-zero/lint-staged-config@5.0.0-alpha.61":
-  version "5.0.0-alpha.61"
-  resolved "https://registry.yarnpkg.com/@d-zero/lint-staged-config/-/lint-staged-config-5.0.0-alpha.61.tgz#6f98ad246f22b32fc00ed06cf1ba74dd34e47f92"
-  integrity sha512-F1O+aNst79lPxO9ZoFJZEriZ8dH+F7pITNYowc3oPUq92tBv5iMA54cuHmpZqMYW/3ar8tvOKmwgq4GYuiTIjg==
+"@d-zero/lint-staged-config@5.0.0-alpha.62":
+  version "5.0.0-alpha.62"
+  resolved "https://registry.yarnpkg.com/@d-zero/lint-staged-config/-/lint-staged-config-5.0.0-alpha.62.tgz#98a9a3e61b2dfb20794bf72e947dcc01b9f06974"
+  integrity sha512-/824lkbPCVIK4YQmGl8A8Y8aCR7SJJNjl9DTleaFhmLyJRodnjhHeTo1rJokLi2yhE2xOJq4UViwiOVg9vV7gA==
   dependencies:
-    lint-staged "15.4.3"
+    lint-staged "15.5.0"
     micromatch "4.0.8"
 
 "@d-zero/prettier-config@5.0.0-alpha.61":
@@ -6483,10 +6483,10 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.2.4.tgz#eca284f75d2965079309dc0ad9255abb2ebc1632"
   integrity sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==
 
-lint-staged@15.4.3:
-  version "15.4.3"
-  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-15.4.3.tgz#e73587cc857f580c99f907abefe9ac8d8d5e74c1"
-  integrity sha512-FoH1vOeouNh1pw+90S+cnuoFwRfUD9ijY2GKy5h7HS3OR7JVir2N2xrsa0+Twc1B7cW72L+88geG5cW4wIhn7g==
+lint-staged@15.5.0:
+  version "15.5.0"
+  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-15.5.0.tgz#fa6464cfb06e0faf5bb167f83186e952ff6e569e"
+  integrity sha512-WyCzSbfYGhK7cU+UuDDkzUiytbfbi0ZdPy2orwtM75P3WTtQBzmG40cCxIa8Ii2+XjfxzLH6Be46tUfWS85Xfg==
   dependencies:
     chalk "^5.4.1"
     commander "^13.1.0"
