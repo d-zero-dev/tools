@@ -24,7 +24,7 @@
 		"@d-zero/shared": "0.7.0",
 		"debug": "4.4.0",
 		"follow-redirects": "1.15.9",
-		"puppeteer": "24.4.0",
+		"puppeteer": "24.5.0",
 		"typescript-fsa": "3.0.0"
 	},
 	"devDependencies": {
