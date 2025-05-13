@@ -32,3 +32,26 @@ alwaysApply: true
     - `github`
 - The message body's lines must not be longer than 100 characters
 - The subject must not be sentence-case, start-case, pascal-case, upper-case
+
+# Commit message safety guidelines
+
+- Always use single quotes (') instead of double quotes (") for commit messages to avoid shell interpretation issues
+- For breaking changes or complex commit messages:
+  - Option 1 (Recommended for complex messages): Use the git commit without -m flag to open an editor:
+    ```
+    git commit
+    ```
+    Then write your commit message in the editor with the proper format:
+    ```
+    type(scope)!: subject line
+
+    BREAKING CHANGE: detailed explanation
+    - Additional details
+    - More information
+    ```
+  - Option 2: For command line commits with breaking changes, use a simple format:
+    ```
+    git commit -m 'type(scope)!: subject line' -m 'BREAKING CHANGE: explanation'
+    ```
+- Avoid using special characters like \n in command line commit messages
+- For multi-line messages in command line, use multiple -m parameters instead of line breaks
