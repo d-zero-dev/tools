@@ -28,7 +28,7 @@
 		"@d-zero/proc-talk": "0.3.0",
 		"@d-zero/shared": "0.7.0",
 		"ansi-colors": "4.1.3",
-		"debug": "4.4.0"
+		"debug": "4.4.1"
 	},
 	"devDependencies": {
 		"puppeteer": "24.8.2"

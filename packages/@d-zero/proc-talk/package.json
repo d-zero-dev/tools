@@ -25,6 +25,6 @@
 	},
 	"dependencies": {
 		"@d-zero/shared": "0.7.0",
-		"debug": "4.4.0"
+		"debug": "4.4.1"
 	}
 }
