@@ -23,9 +23,10 @@ export function deal<T extends Record<string, unknown>, R = void>(
 		({ id, url }, update, index) => {
 			const fileId = id || index.toString().padStart(3, '0');
 			const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(url.toString())}: `;
-			const mainProcess = createProcess();
 
 			return async () => {
+				const mainProcess = createProcess();
+				update(`${lineHeader}Booting Success%dots%`);
 				await mainProcess.ready();
 				mainProcess.log((log) => {
 					update(`${lineHeader}${log}`);
