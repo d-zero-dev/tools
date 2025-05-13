@@ -38,14 +38,7 @@ export class ProcTalk<T, O = void> {
 		this.#type = config.type;
 
 		if (config.type === 'main') {
-			this.#process = fork(
-				//
-				config.subModulePath,
-				[JSON.stringify(config.options ?? {})],
-				{
-					detached: true,
-				},
-			);
+			this.#process = fork(config.subModulePath, [JSON.stringify(config.options ?? {})]);
 		} else {
 			this.#process = process;
 		}
