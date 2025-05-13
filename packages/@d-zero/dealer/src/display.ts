@@ -60,6 +60,8 @@ export class Display {
 
 		this.#write();
 
+		process.stdin.setRawMode(false);
+
 		this.#lastWroteLineNum = 0;
 		this.#stack = null;
 	}
