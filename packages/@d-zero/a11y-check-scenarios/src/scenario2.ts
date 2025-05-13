@@ -11,6 +11,7 @@ export default createScenario((options?: ScenarioOptions) => {
 	const cache = new Cache<NeedAnalysis[]>(scenarioId, options?.cacheDir);
 
 	return {
+		modulePath: import.meta.url,
 		id: scenarioId,
 		async exec(page, sizeName, logger) {
 			if (options?.cache === false) {
@@ -68,7 +69,7 @@ export default createScenario((options?: ScenarioOptions) => {
 				needAnalysis.push({
 					scenarioId,
 					id: '',
-					url: await page.url(),
+					url: page.url(),
 					tool: 'a11y-check-scenario02',
 					timestamp: new Date(),
 					component: selector,

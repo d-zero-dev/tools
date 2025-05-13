@@ -1,6 +1,6 @@
 import type { ScenarioOptions } from './types.js';
 import type { NeedAnalysis } from '@d-zero/a11y-check-core';
-import type { Page } from '@d-zero/puppeteer-page';
+import type { Page } from 'puppeteer';
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -161,6 +161,7 @@ export default createScenario((options?: ScenarioOptions) => {
 	];
 
 	return {
+		modulePath: import.meta.url,
 		id: scenarioId,
 		async exec(page, sizeName, logger) {
 			// Wait Scroll End
@@ -226,7 +227,7 @@ export default createScenario((options?: ScenarioOptions) => {
 					scenarioId,
 					subKey: test.name,
 					id: '',
-					url: await page.url(),
+					url: page.url(),
 					tool: `a11y-check-scenario01: ${test.name}`,
 					timestamp: new Date(),
 					component: null,
