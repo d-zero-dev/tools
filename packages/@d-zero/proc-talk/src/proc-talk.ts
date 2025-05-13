@@ -126,6 +126,21 @@ export class ProcTalk<T, O = void> {
 		this.#log(...args);
 	}
 
+	#error(error: unknown) {
+		let message = 'unknown error';
+		let stack = '';
+		if (error instanceof Error) {
+			message = error.message;
+			stack = error.stack ?? '';
+		}
+
+		this.#log('❌ error: %o', error);
+		this.#process.send?.({
+			type: ':error',
+			payload: [message, stack],
+		});
+	}
+
 	async #init(config: ProcTalkConfig<T, O>) {
 		this.#process.on('message', this.#onMessage.bind(this));
 
@@ -166,6 +181,26 @@ export class ProcTalk<T, O = void> {
 			return;
 		}
 
+		if (
+			this.#type === 'main' &&
+			this.#process instanceof ChildProcess &&
+			receivedType === ':error'
+		) {
+			this.#log('Unexpected error in process: %O', message?.payload);
+			if (this.#type === 'main' && this.#process instanceof ChildProcess) {
+				this.#process.kill();
+				const errorMessage = message?.payload?.[0]
+					? `${message?.payload?.[0]}`
+					: 'Unexpected error in process';
+				const errorStack = message?.payload?.[1] ? `${message?.payload?.[1]}` : '';
+				const error = new Error(errorMessage);
+				if (errorStack) {
+					error.stack = errorStack;
+				}
+				throw error;
+			}
+		}
+
 		const payload = message?.payload;
 		const returns = message?.returns;
 		const listener = receivedType ? this.#listeners.get(receivedType) : null;
@@ -181,14 +216,18 @@ export class ProcTalk<T, O = void> {
 
 		if (payload && typeof listener === 'function') {
 			const args = deserialize(payload, this.#log);
-			const res = await listener(...args);
-			this.#log('▶️ await listener(%o, %o) => %O', receivedType, args, res);
-			const returns = serialize([res], this.#log);
-			this.#log('▶️ send(%o, %O)', receivedType, returns);
-			this.#process.send?.({
-				type: receivedType,
-				returns,
-			});
+			try {
+				const res = await listener(...args);
+				this.#log('▶️ await listener(%o, %o) => %O', receivedType, args, res);
+				const returns = serialize([res], this.#log);
+				this.#log('▶️ send(%o, %O)', receivedType, returns);
+				this.#process.send?.({
+					type: receivedType,
+					returns,
+				});
+			} catch (error: unknown) {
+				this.#error(error);
+			}
 		}
 
 		if (returns && typeof returnListener === 'function') {
