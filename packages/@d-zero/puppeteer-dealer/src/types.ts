@@ -1,5 +1,5 @@
 import type { DealOptions } from '@d-zero/dealer';
-import type { Page } from '@d-zero/puppeteer-page';
+import type { Page } from 'puppeteer';
 
 export type PuppeteerDealerOptions = {
 	readonly locale?: string;
