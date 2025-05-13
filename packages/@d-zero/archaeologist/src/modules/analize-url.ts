@@ -1,4 +1,4 @@
-import type { URLPair } from './types.js';
+import type { URLPair } from '../types.js';
 
 type AnalyzedUrlList = {
 	hasAuth: boolean;
