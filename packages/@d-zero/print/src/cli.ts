@@ -3,7 +3,7 @@ import type { PrintType } from './types.js';
 
 import minimist from 'minimist';
 
-import { print } from './print.js';
+import { print } from './print-main-process.js';
 import { readConfig } from './read-config.js';
 
 const cli = minimist(process.argv.slice(2), {

@@ -1,15 +1,13 @@
+import type { ChildProcessParams } from './print-child-process.js';
 import type { PrintType } from './types.js';
 import type { PageHook } from '@d-zero/puppeteer-page-scan';
+import type { LaunchOptions } from 'puppeteer';
 
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { deal } from '@d-zero/puppeteer-dealer';
+import { createProcess, deal } from '@d-zero/puppeteer-dealer';
 import c from 'ansi-colors';
-
-import { pngToPdf } from './png-to-pdf.js';
-import { printPdf } from './print-pdf.js';
-import { printPng } from './print-png.js';
 
 export interface PrintOptions {
 	readonly type?: PrintType;
@@ -32,13 +30,12 @@ export async function print(
 				url: string;
 		  }
 	)[],
-	options?: PrintOptions,
+	options?: PrintOptions & LaunchOptions,
 ) {
 	const dir = path.resolve(process.cwd(), '.print');
 	await mkdir(dir, { recursive: true }).catch(() => {});
 
 	const type = options?.type ?? 'png';
-	const hooks = options?.hooks;
 
 	await deal(
 		urlList.map((url) => {
@@ -50,29 +47,18 @@ export async function print(
 		(_, done, total) => {
 			return `${c.bold.magenta('🎨 Print pages')} ${c.bgBlueBright(` ${type} `)} ${done}/${total}`;
 		},
-		{
-			async deal(page, id, url, logger) {
-				const ext = type === 'pdf' ? 'pdf' : 'png';
-				const fileName = `${id}.${ext}`;
-				const filePath = path.resolve(dir, fileName);
-
-				if (type === 'pdf') {
-					await printPdf(page, url, filePath, logger, hooks);
-					logger('🔚 Closing');
-					return;
-				}
-
-				const result = await printPng(page, url, id, filePath, logger, hooks);
-
-				if (type === 'png') {
-					logger('🔚 Closing');
-					return;
-				}
-
-				await pngToPdf(page, result, logger);
-				logger('🔚 Closing');
-			},
+		() => {
+			return createProcess<ChildProcessParams>(
+				path.resolve(import.meta.dirname, 'print-child-process.js'),
+				{
+					dir,
+					type,
+					hooks: options?.hooks,
+				},
+				{
+					...options,
+				},
+			);
 		},
-		options,
 	);
 }
