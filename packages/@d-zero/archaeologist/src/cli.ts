@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import minimist from 'minimist';
 
-import { archaeologist } from './archaeologist.js';
-import { freeze } from './freeze.js';
+import { analyze } from './analyze-main-process.js';
+import { freeze } from './freeze-main-process.js';
 import { readConfig } from './read-config.js';
 
 const cli = minimist(process.argv.slice(2), {
@@ -13,7 +13,7 @@ const cli = minimist(process.argv.slice(2), {
 
 if (cli.listfile?.length) {
 	const { pairList, hooks } = await readConfig(cli.listfile);
-	await archaeologist(pairList, {
+	await analyze(pairList, {
 		hooks,
 		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
 		debug: !!cli.debug,

@@ -1,2 +1,2 @@
-export { archaeologist } from './archaeologist.js';
+export { analyze as archaeologist } from './analyze-main-process.js';
 export * from './types.js';
