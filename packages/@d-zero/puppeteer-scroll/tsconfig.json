@@ -7,9 +7,6 @@
 	},
 	"references": [
 		{
-			"path": "../puppeteer-page"
-		},
-		{
 			"path": "../shared"
 		}
 	],
