@@ -16,8 +16,13 @@ export type ProcTalkConfig<T, O = void> =
 	| {
 			type: 'child';
 			title?: string;
-			process: (this: ProcTalk<T, O>, options?: O) => void | Promise<void>;
+			process: (
+				this: ProcTalk<T, O>,
+				options?: O,
+			) => ChildProcCleanup | Promise<ChildProcCleanup> | void;
 	  };
+
+export type ChildProcCleanup = () => void | Promise<void>;
 
 export class ProcTalk<T, O = void> {
 	readonly #callLog: typeof log;
@@ -95,20 +100,12 @@ export class ProcTalk<T, O = void> {
 		return callPromise;
 	}
 
-	close() {
+	async close() {
 		if (this.#type === 'main' && this.#process instanceof ChildProcess) {
-			try {
-				this.#process.kill();
-				return true;
-			} catch (error) {
-				if (error instanceof Error && 'code' in error && error.code === 'ESRCH') {
-					return false;
-				}
-				throw error;
-			}
+			// @ts-ignore
+			// Inner specific call type
+			await this.call(':kill');
 		}
-
-		throw new Error('Cannot close main process');
 	}
 
 	async initialized(): Promise<void> {
@@ -160,7 +157,19 @@ export class ProcTalk<T, O = void> {
 		}
 
 		const options = JSON.parse(process.argv[2] ?? '{}') as O;
-		await config.process.call(this, options);
+		const cleanup = await config.process.call(this, options);
+		if (cleanup) {
+			// @ts-ignore
+			// Inner specific call type
+			this.bind(':kill', async () => {
+				await cleanup();
+				this.#log('Kill process');
+				if (this.#type === 'main' && this.#process instanceof ChildProcess) {
+					this.#process.kill();
+				}
+			});
+		}
+
 		this.#process.send?.({
 			type: 'initialized',
 		});
