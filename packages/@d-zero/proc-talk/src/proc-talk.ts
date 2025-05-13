@@ -15,6 +15,7 @@ export type ProcTalkConfig<T, O = void> =
 	  }
 	| {
 			type: 'child';
+			title?: string;
 			process: (this: ProcTalk<T, O>, options?: O) => void | Promise<void>;
 	  };
 
@@ -41,6 +42,7 @@ export class ProcTalk<T, O = void> {
 			this.#process = fork(config.subModulePath, [JSON.stringify(config.options ?? {})]);
 		} else {
 			this.#process = process;
+			this.#process.title = `${config.title ?? '@d-zero/proc-talk'}:child-process`;
 		}
 
 		this.#id = this.#process.pid ?? -1;
