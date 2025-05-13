@@ -34,9 +34,9 @@ export async function a11yCheck(
 		urlList,
 		[
 			//
-			scenarioAxe(options),
-			scenario01(options),
-			scenario02(options),
+			[scenarioAxe(options).modulePath, JSON.stringify(options)],
+			[scenario01(options).modulePath, JSON.stringify(options)],
+			[scenario02(options).modulePath, JSON.stringify(options)],
 		],
 		{
 			...options,
