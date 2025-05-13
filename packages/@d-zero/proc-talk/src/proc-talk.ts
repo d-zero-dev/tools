@@ -136,22 +136,24 @@ export class ProcTalk<T, O = void> {
 		});
 	}
 
+	#exit() {
+		if (this.#type !== 'main') {
+			this.#log('Cleaning with exiting');
+			this.#process.removeAllListeners();
+			this.#listeners.clear();
+			this.#returnListeners.clear();
+			this.#log(
+				'listenerCount(%o): %d',
+				'message',
+				this.#process.listenerCount('message'),
+			);
+		}
+	}
+
 	async #init(config: ProcTalkConfig<T, O>) {
 		this.#process.on('message', this.#onMessage.bind(this));
 
-		process.on('exit', () => {
-			if (this.#type !== 'main') {
-				this.#log('Cleaning with exiting');
-				this.#process.removeAllListeners();
-				this.#listeners.clear();
-				this.#returnListeners.clear();
-				this.#log(
-					'listenerCount(%o): %d',
-					'message',
-					this.#process.listenerCount('message'),
-				);
-			}
-		});
+		process.on('exit', this.#exit.bind(this));
 
 		if (config.type === 'main') {
 			return;
