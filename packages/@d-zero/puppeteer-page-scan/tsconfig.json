@@ -10,9 +10,6 @@
 			"path": "../puppeteer-general-actions"
 		},
 		{
-			"path": "../puppeteer-page"
-		},
-		{
 			"path": "../puppeteer-scroll"
 		}
 	],
