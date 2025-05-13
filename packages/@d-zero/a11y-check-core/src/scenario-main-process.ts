@@ -1,0 +1,85 @@
+import type { ChildProcessParams } from './scenario-child-process.js';
+import type {
+	CoreOptions,
+	NeedAnalysis,
+	Passed,
+	Result,
+	ScenarioRunnerOptions,
+} from './types.js';
+
+import path from 'node:path';
+
+import { importScenarios, type Violation } from '@d-zero/a11y-check-core';
+import { createProcess, deal } from '@d-zero/puppeteer-dealer';
+import c from 'ansi-colors';
+
+import { cleanResults } from './clean-results.js';
+
+/**
+ *
+ * @param urlList
+ * @param scenarios
+ * @param options
+ */
+export async function scenarioRunner<O>(
+	urlList: readonly (
+		| string
+		| {
+				id: string | null;
+				url: string;
+		  }
+	)[],
+	scenarios: readonly [modulePath: string, options?: string][],
+	options?: O & CoreOptions & ScenarioRunnerOptions,
+): Promise<Result> {
+	const needAnalysis: NeedAnalysis[] = [];
+	const passed: Passed[] = [];
+	const violations: Violation[] = [];
+
+	await deal(
+		urlList.map((url) => {
+			if (typeof url === 'string') {
+				return { id: null, url };
+			}
+			return url;
+		}),
+		(_, done, total) => {
+			return `${c.bold.magenta('🧿 A11y checking%dots%')} ${done}/${total}`;
+		},
+		() => {
+			return createProcess<ChildProcessParams, Result>(
+				path.resolve(import.meta.dirname, 'scenario-child-process.js'),
+				{
+					scenarios,
+					cacheDir: options?.cacheDir ?? '.a11y-check-core',
+				},
+				options,
+			);
+		},
+		(result) => {
+			needAnalysis.push(...result.needAnalysis);
+			passed.push(...result.passed);
+			violations.push(...result.violations);
+		},
+	);
+
+	const cleanedViolations = cleanResults(violations);
+
+	process.stdout.write(`📊 Found ${cleanedViolations.length} violations\n`);
+
+	const scenarioModules = await importScenarios(scenarios);
+
+	for (const scenario of scenarioModules) {
+		const targets = needAnalysis.filter((result) => result.scenarioId === scenario.id);
+		if (targets.length === 0) {
+			continue;
+		}
+		await scenario.analyze?.(targets, (log) => process.stdout.write(`${log}\n`));
+	}
+
+	return {
+		needAnalysis: needAnalysis,
+		passed: passed,
+		violations: cleanedViolations,
+	};
+}
