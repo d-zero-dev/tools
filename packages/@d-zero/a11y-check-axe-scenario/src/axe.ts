@@ -1,6 +1,7 @@
 import type { A11yCheckAxeOptions } from './types.js';
 import type { AxeResults } from 'axe-core';
 
+import AxePuppeteer from '@axe-core/puppeteer';
 import { createScenario } from '@d-zero/a11y-check-core';
 import { Cache } from '@d-zero/shared/cache';
 
@@ -12,6 +13,7 @@ export default createScenario((options?: A11yCheckAxeOptions) => {
 	const cache = new Cache<AxeResults>(scenarioId, options?.cacheDir);
 
 	return {
+		modulePath: import.meta.url,
 		id: scenarioId,
 		async exec(page, sizeName, log) {
 			if (options?.cache === false) {
@@ -20,7 +22,7 @@ export default createScenario((options?: A11yCheckAxeOptions) => {
 
 			const axeLog = (message: string) => log(`🪓 ${message}`);
 
-			const key = (await page.url()) + '#' + sizeName;
+			const key = page.url() + '#' + sizeName;
 
 			const cached = await cache.load(key, (key, value) => {
 				if (key === 'timestamp') {
@@ -41,10 +43,13 @@ export default createScenario((options?: A11yCheckAxeOptions) => {
 				};
 			}
 
-			const axeResults = await page.axe({
-				lang: options?.lang ?? 'ja',
-				log: axeLog,
-			});
+			const axeResults = await new AxePuppeteer(page)
+				.configure({
+					locale: {
+						lang: options?.lang ?? 'ja',
+					},
+				})
+				.analyze();
 
 			await cache.store(key, axeResults);
 

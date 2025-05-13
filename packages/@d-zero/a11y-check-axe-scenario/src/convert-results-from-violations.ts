@@ -1,7 +1,7 @@
 import type { AxeRuleId } from './types.js';
 import type { Violation } from '@d-zero/a11y-check-core';
-import type { Page } from '@d-zero/puppeteer-page';
 import type { AxeResults } from 'axe-core';
+import type { Page } from 'puppeteer';
 
 import { convertResultsFromNode } from './convert-results-from-node.js';
 import { detectLevel } from './detect-level.js';
@@ -40,7 +40,7 @@ export async function convertResultsFromViolations(
 
 			results.push({
 				id: '',
-				url: await page.url(),
+				url: page.url(),
 				tool: `${axeResults.testEngine.name} (v${axeResults.testEngine.version})`,
 				timestamp: new Date(axeResults.timestamp),
 				component: nodeResult?.landmark ?? null,
