@@ -2835,10 +2835,10 @@ b4a@^1.6.4:
   resolved "https://registry.yarnpkg.com/b4a/-/b4a-1.6.7.tgz#a99587d4ebbfbd5a6e3b21bdb5d5fa385767abe4"
   integrity sha512-OnAYlL5b7LEkALw87fUVafQw5rVR9RjwGd4KUwNQ6DrrNmaVaUCgLipfVlzrPQ4tWOR9P0IXGNOx50jYCCdSJg==
 
-backlog-js@0.13.3:
-  version "0.13.3"
-  resolved "https://registry.yarnpkg.com/backlog-js/-/backlog-js-0.13.3.tgz#0e3113fb9cb516c187a88d7596b14c6f29065626"
-  integrity sha512-reOy9+OnwR0yF9TncBigiSPRPWb3iLfJWA5sU9lyFqzYhb7eG2WW/1bea8U4Wr7Lt9qVXbx9A1f45P6CpMEMxA==
+backlog-js@0.13.4:
+  version "0.13.4"
+  resolved "https://registry.yarnpkg.com/backlog-js/-/backlog-js-0.13.4.tgz#2e0d05acb91bd423137f438eb8322f211f5bf520"
+  integrity sha512-rNvNg2yB6WOQbR6xwCPnx7J+lDZOfS24EzScTn7fNesswaKbb0VQK8+g4PLsJG5yz+3isJUQwTiB5wq7WjjeZA==
   dependencies:
     qs "^6.12.1"
 
