@@ -26,6 +26,7 @@ export type ChildProcCleanup = () => void | Promise<void>;
 
 export class ProcTalk<T, O = void> {
 	readonly #callLog: typeof log;
+	#cleanup: ChildProcCleanup | null = null;
 	readonly #id: number;
 	readonly #initialized = new Deferred<void>();
 	readonly #initLog: typeof log;
@@ -100,12 +101,18 @@ export class ProcTalk<T, O = void> {
 		return callPromise;
 	}
 
-	async close() {
+	close() {
 		if (this.#type === 'main' && this.#process instanceof ChildProcess) {
-			// @ts-ignore
-			// Inner specific call type
-			await this.call(':kill');
+			return new Promise<void>((resolve) => {
+				this.#process.once('exit', () => {
+					resolve();
+				});
+				this.#process.send?.({
+					type: ':kill',
+				});
+			});
 		}
+		return Promise.resolve();
 	}
 
 	async initialized(): Promise<void> {
@@ -150,25 +157,14 @@ export class ProcTalk<T, O = void> {
 	async #init(config: ProcTalkConfig<T, O>) {
 		this.#process.on('message', this.#onMessage.bind(this));
 
-		process.on('exit', this.#exit.bind(this));
-
 		if (config.type === 'main') {
 			return;
 		}
 
+		process.on('exit', this.#exit.bind(this));
+
 		const options = JSON.parse(process.argv[2] ?? '{}') as O;
-		const cleanup = await config.process.call(this, options);
-		if (cleanup) {
-			// @ts-ignore
-			// Inner specific call type
-			this.bind(':kill', async () => {
-				await cleanup();
-				this.#log('Kill process');
-				if (this.#type === 'main' && this.#process instanceof ChildProcess) {
-					this.#process.kill();
-				}
-			});
-		}
+		this.#cleanup = (await config.process.call(this, options)) ?? null;
 
 		this.#process.send?.({
 			type: 'initialized',
@@ -184,6 +180,18 @@ export class ProcTalk<T, O = void> {
 
 		if (receivedType === 'initialized') {
 			this.#initialized.resolve();
+			return;
+		}
+
+		if (
+			this.#type === 'child' &&
+			!(this.#process instanceof ChildProcess) &&
+			receivedType === ':kill'
+		) {
+			if (this.#cleanup) {
+				await this.#cleanup();
+			}
+			this.#process.exit(0);
 			return;
 		}
 
