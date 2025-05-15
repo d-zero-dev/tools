@@ -22,14 +22,14 @@ export async function scrollAllOver(page: Page, options?: Options) {
 	let currentScrollY = 0;
 	let scrollHeight = await page.evaluate(() => document.body.scrollHeight);
 
-	while (currentScrollY < scrollHeight) {
+	while (Math.ceil(currentScrollY) < Math.ceil(scrollHeight)) {
 		[currentScrollY, scrollHeight] = await page.evaluate(() => {
 			// Move the scroll position to the bottom of the page.
 			globalThis.scrollBy(0, document.documentElement.clientHeight);
 			// Return the current scroll position.
 			return [
-				globalThis.scrollY + globalThis.innerHeight,
-				document.body.scrollHeight,
+				Math.ceil(globalThis.scrollY + globalThis.innerHeight),
+				Math.ceil(document.body.scrollHeight),
 			] as const;
 		});
 		options?.logger?.(currentScrollY, scrollHeight, 'Scrolling');
