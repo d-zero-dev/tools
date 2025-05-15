@@ -15,11 +15,10 @@ export function createProcess<P, R = void>(
 	params: P,
 	options?: PuppeteerDealerOptions & LaunchOptions,
 ) {
-	const main = new MainProcess<P, R>(subModulePath, params, options);
-	return main;
+	return new ChildProcessManager<P, R>(subModulePath, params, options);
 }
 
-export class MainProcess<P, R> {
+export class ChildProcessManager<P, R> {
 	#procTalk: ProcTalk<ChildProcessCommands<P, R>, PuppeteerDealerOptions & LaunchOptions>;
 
 	constructor(

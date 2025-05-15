@@ -1,4 +1,4 @@
-import type { MainProcess } from './create-main-process.js';
+import type { ChildProcessManager } from './create-main-process.js';
 import type { URLInfo } from './types.js';
 import type { DealHeader } from '@d-zero/dealer';
 
@@ -15,7 +15,7 @@ import c from 'ansi-colors';
 export function deal<T extends Record<string, unknown>, R = void>(
 	list: readonly URLInfo[],
 	header: DealHeader,
-	createProcess: () => MainProcess<T, R>,
+	createProcess: () => ChildProcessManager<T, R>,
 	each?: (result: R) => void | Promise<void>,
 ) {
 	return coreDeal(
@@ -25,17 +25,17 @@ export function deal<T extends Record<string, unknown>, R = void>(
 			const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(url.toString())}: `;
 
 			return async () => {
-				const mainProcess = createProcess();
-				update(`${lineHeader}Booting Success%dots%`);
-				await mainProcess.ready();
-				mainProcess.log((log) => {
+				const processManager = createProcess();
+				update(`${lineHeader}Booting ChildProcess%dots%`);
+				await processManager.ready();
+				processManager.log((log) => {
 					update(`${lineHeader}${log}`);
 				});
-				const result = await mainProcess.each(fileId, url.toString(), index);
+				const result = await processManager.each(fileId, url.toString(), index);
 				if (each) {
 					await each(result);
 				}
-				await mainProcess.close();
+				await processManager.close();
 			};
 		},
 		{
