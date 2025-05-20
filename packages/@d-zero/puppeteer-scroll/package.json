@@ -30,6 +30,6 @@
 		"puppeteer": "24.9.0"
 	},
 	"peerDependencies": {
-		"puppeteer": "24.8.2"
+		"puppeteer": "24.9.0"
 	}
 }
