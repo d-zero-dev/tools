@@ -52,7 +52,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 				if (filePath && options?.path) {
 					listener?.('screenshotSaving', { name, path: options.path });
 					await page.screenshot({
-						path: filePath,
+						path: filePath as `${string}.png`,
 						fullPage: true,
 						type: 'png',
 					});

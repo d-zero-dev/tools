@@ -36,7 +36,7 @@ export async function convertResultsFromNode(
 		const ssName = hash(url + target) + '.png';
 		const el = await page.waitForSelector(target);
 		const elementScreenshot = await el?.screenshot({
-			path: path.resolve(process.cwd(), '.cache', ssName),
+			path: path.resolve(process.cwd(), '.cache', ssName) as `${string}.png`,
 		});
 		if (elementScreenshot) {
 			screenshotName = ssName;
