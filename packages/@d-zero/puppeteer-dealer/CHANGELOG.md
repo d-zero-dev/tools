@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.3.0...@d-zero/puppeteer-dealer@0.4.0) (2025-05-20)
+
+### Bug Fixes
+
+- **puppeteer-dealer:** move mainProcess initialization inside async function with success log ([02d4e70](https://github.com/d-zero-dev/tools/commit/02d4e701053afe7f0f76a8f2b56d5e8a2993f0c5))
+
+- refactor(puppeteer-dealer)!: implement process-based architecture ([5aad08f](https://github.com/d-zero-dev/tools/commit/5aad08fbdc9fc1f50b58970022ea729ea8a9deff))
+
+### BREAKING CHANGES
+
+- Complete API redesign using process-based approach
+
 # 0.3.0 (2025-03-05)
 
 ### Features

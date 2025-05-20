@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@1.2.0...@d-zero/print@2.0.0) (2025-05-20)
+
+- refactor(print)!: migrate to child process architecture ([01412fb](https://github.com/d-zero-dev/tools/commit/01412fb3c674de59b18ea6ae9f4594f8aee2f985))
+- refactor(puppeteer-page-scan)!: migrate from puppeteer-page to puppeteer ([9d0b277](https://github.com/d-zero-dev/tools/commit/9d0b27733e45af7dbbb2670f2baea6e751d5f979))
+
+### BREAKING CHANGES
+
+- Print module now uses a child process architecture with separation of concerns.
+- Update dependencies and imports to use puppeteer directly instead of puppeteer-page
+
 # [1.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@1.0.0...@d-zero/print@1.2.0) (2025-03-05)
 
 ### Features

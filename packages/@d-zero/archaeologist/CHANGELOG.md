@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@1.1.3...@d-zero/archaeologist@2.0.0) (2025-05-20)
+
+- refactor(archaeologist)!: implement child process architecture ([b22bbdc](https://github.com/d-zero-dev/tools/commit/b22bbdc1d99e876b764753c3dd83ceaba42eb22c))
+
+### Features
+
+- **archaeologist:** add `--freeze` option ([ea31010](https://github.com/d-zero-dev/tools/commit/ea310105142cdb6bceb5ed4a8480d6594d448deb))
+- **archaeologist:** allow analyzeUrlList to accept strings in addition to URLPair ([aff57b2](https://github.com/d-zero-dev/tools/commit/aff57b21fcf72e583d3c0c1820f942800ca73f00))
+- **archaeologist:** use shared delay function and remove local implementation ([bed61ad](https://github.com/d-zero-dev/tools/commit/bed61adf6a4cb944dac8f2e90076b97522e4734c))
+- **archaeologist:** use shared delay function and remove local implementation ([2a775e8](https://github.com/d-zero-dev/tools/commit/2a775e850a827d958b6b4acfb7690c8835584669))
+
+### BREAKING CHANGES
+
+- complete rewrite of internal architecture
+
+* Split analyze and freeze into main/child processes
+
+* Replace direct puppeteer-dealer usage with process-based implementation
+
+* Change return type of analyze() function to void (logs to console directly)
+
+* Remove archaeologist.ts in favor of analyze-main-process.ts
+
 ## [1.1.3](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@1.1.1...@d-zero/archaeologist@1.1.3) (2025-03-05)
 
 **Note:** Version bump only for package @d-zero/archaeologist

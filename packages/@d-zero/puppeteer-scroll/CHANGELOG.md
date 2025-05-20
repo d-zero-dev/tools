@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.0.0...@d-zero/puppeteer-scroll@3.0.1) (2025-05-20)
+
+### Bug Fixes
+
+- **puppeteer-scroll:** improve scroll calculation precision with Math.ceil ([71186c2](https://github.com/d-zero-dev/tools/commit/71186c25b23d0029ce49232f1681159a93d0bb20))
+
 # [3.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@1.0.5...@d-zero/puppeteer-scroll@3.0.0) (2025-03-05)
 
 ### Features

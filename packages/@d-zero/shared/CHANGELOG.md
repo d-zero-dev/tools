@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.7.0...@d-zero/shared@0.8.0) (2025-05-20)
+
+### Features
+
+- **shared:** add `@d-zero/shared/timestamp` ([8ff03cf](https://github.com/d-zero-dev/tools/commit/8ff03cf69b0fd7c1073368ae5088a2f250297a48))
+
 # [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.5.0...@d-zero/shared@0.7.0) (2025-03-05)
 
 ### Bug Fixes

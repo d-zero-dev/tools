@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/puppeteer-dealer",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "Puppeteer handles each page",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -24,9 +24,9 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/dealer": "1.3.0",
-		"@d-zero/proc-talk": "0.3.0",
-		"@d-zero/shared": "0.7.0",
+		"@d-zero/dealer": "1.3.1",
+		"@d-zero/proc-talk": "0.4.0",
+		"@d-zero/shared": "0.8.0",
 		"ansi-colors": "4.1.3",
 		"debug": "4.4.1"
 	},

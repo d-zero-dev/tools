@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.3.0...@d-zero/a11y-check-axe-scenario@0.3.1) (2025-05-20)
+
+### Bug Fixes
+
+- **a11y-check-axe-scenario:** adapt to a11y-check-core breaking changes ([9078ce6](https://github.com/d-zero-dev/tools/commit/9078ce63edf5bb8be762566e2f2141aac16a7ea6))
+
 # 0.3.0 (2025-03-05)
 
 ### Features

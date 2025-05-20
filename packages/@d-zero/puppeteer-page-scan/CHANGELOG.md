@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@3.0.0...@d-zero/puppeteer-page-scan@4.0.0) (2025-05-20)
+
+- refactor(puppeteer-page-scan)!: migrate from puppeteer-page to puppeteer ([9d0b277](https://github.com/d-zero-dev/tools/commit/9d0b27733e45af7dbbb2670f2baea6e751d5f979))
+
+### BREAKING CHANGES
+
+- Update dependencies and imports to use puppeteer directly instead of puppeteer-page
+
 # [3.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@1.0.0...@d-zero/puppeteer-page-scan@3.0.0) (2025-03-05)
 
 ### Features
