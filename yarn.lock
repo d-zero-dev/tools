@@ -1412,10 +1412,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@notionhq/client@3.1.1":
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/@notionhq/client/-/client-3.1.1.tgz#32d88d171bd1cf810cc0d8f453cf294a20e056f8"
-  integrity sha512-sAFNjrW5IVX1jgVRxn83mtLNphWsp4qj1koW5YKx9w0qH1pJLfJyAjedwvIFjWG2VNzPuXxVrXpQaRnxSUt5aQ==
+"@notionhq/client@3.1.2":
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/@notionhq/client/-/client-3.1.2.tgz#bd6bf827f577f90540b302d688916e0fd604fe60"
+  integrity sha512-EqJhtx5ekKW3wieENnDHPl5ZSgDxGyRP5r2664rPH39toW899sL000TSE7WHxenHb+kSIckVQ5OsT9tzPqbENg==
 
 "@npmcli/agent@^2.0.0":
   version "2.2.2"
