@@ -923,10 +923,10 @@
     "@eslint/core" "^0.13.0"
     levn "^0.4.1"
 
-"@holiday-jp/holiday_jp@2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@holiday-jp/holiday_jp/-/holiday_jp-2.4.0.tgz#dd98c48ceec8764c5d1af0e9deb5506d579e700b"
-  integrity sha512-YcLZJMTwadSoxR8sduIGWpX9sAhjoVR8hc2PnJZPxTOlT73ZXPlTu1TPQ0JZqM7+7MPGILZRuPimBDiC/aAhgw==
+"@holiday-jp/holiday_jp@2.5.1":
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/@holiday-jp/holiday_jp/-/holiday_jp-2.5.1.tgz#ac9f64372304fedd742bbd3d7d70a41bc76848a2"
+  integrity sha512-KuXfzsp0xlP830WDZRbsHj99wJzamx4fS55usUJFz+oHZmZ4gJfVdyiyv/rIWK+O7RgfHSi5j5Ajy0ZK/Vlnyg==
 
 "@humanfs/core@^0.19.1":
   version "0.19.1"
