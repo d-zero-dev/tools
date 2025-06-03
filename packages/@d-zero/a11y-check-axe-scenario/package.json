@@ -24,7 +24,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@axe-core/puppeteer": "4.10.1",
+		"@axe-core/puppeteer": "4.10.2",
 		"@d-zero/a11y-check-core": "0.4.0",
 		"@d-zero/db-wcag": "1.0.0-alpha.1",
 		"@d-zero/shared": "0.8.0"
