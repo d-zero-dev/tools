@@ -34,7 +34,6 @@ export type DOMResult = {
 export interface ArchaeologistOptions extends AnalyzeOptions {}
 
 export interface AnalyzeOptions extends GeneralOptions {
-	readonly htmlDiffOnly?: boolean;
 	readonly types?: readonly string[];
 }
 

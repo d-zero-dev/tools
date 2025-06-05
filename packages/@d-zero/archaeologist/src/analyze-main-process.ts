@@ -36,7 +36,6 @@ export async function analyze(list: readonly URLPair[], options?: AnalyzeOptions
 					list,
 					dir,
 					useOldMode,
-					htmlDiffOnly: options?.htmlDiffOnly ?? false,
 					types: options?.types,
 					hooks: options?.hooks ?? [],
 				},

@@ -20,7 +20,6 @@ if (cli.listfile?.length) {
 		types: cli.type ? parseTypes(cli.type) : undefined,
 		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
 		debug: !!cli.debug,
-		htmlDiffOnly: !!cli.htmlDiffOnly,
 	});
 	process.exit(0);
 }
