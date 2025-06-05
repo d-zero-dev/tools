@@ -54,7 +54,7 @@ export async function analyze(list: readonly URLPair[], options?: AnalyzeOptions
 
 	for (const result of results) {
 		output.push(c.gray(`${result.target.join(' vs ')}`));
-		for (const [sizeName, { image, dom }] of Object.entries(result.screenshots)) {
+		for (const [sizeName, { image, dom, text }] of Object.entries(result.screenshots)) {
 			if (image) {
 				const { matches, file } = image;
 				output.push(`  ${c.bgMagenta(` ${sizeName} `)} ${score(matches, 0.9)} ${file}`);
@@ -62,6 +62,11 @@ export async function analyze(list: readonly URLPair[], options?: AnalyzeOptions
 			if (dom) {
 				output.push(
 					`  ${c.bgBlueBright(' HTML ')}: ${score(dom.matches, 0.995)} ${dom.file}`,
+				);
+			}
+			if (text) {
+				output.push(
+					`  ${c.bgGreenBright(' TEXT ')}: ${score(text.matches, 0.995)} ${text.file}`,
 				);
 			}
 		}

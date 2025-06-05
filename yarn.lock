@@ -6379,7 +6379,7 @@ kuromoji@0.1.2:
     doublearray "0.0.2"
     zlibjs "^0.3.1"
 
-kuromojin@^3.0.0:
+kuromojin@3.0.1, kuromojin@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/kuromojin/-/kuromojin-3.0.1.tgz#ccb563274fe2dadda42b83d28f2e290a9be54c95"
   integrity sha512-E4rLmbTid8ZGH8Fw421UXvfgCe0IXGFKhUw/IosBVW6ootxVGKGbtb0UPQAvPswgsXX/8UuPiE+amz1NN11Uzg==

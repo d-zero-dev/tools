@@ -10,6 +10,10 @@ export type Screenshot = {
 	title: string;
 	binary: Uint8Array | null;
 	dom: string;
+	text: {
+		textContent: string;
+		altTextList: readonly string[];
+	};
 } & Size;
 
 export type ScreenshotPhase = {

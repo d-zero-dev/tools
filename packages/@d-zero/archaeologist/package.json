@@ -38,6 +38,7 @@
 		"diff": "8.0.2",
 		"front-matter": "4.0.2",
 		"jimp": "1.6.0",
+		"kuromojin": "3.0.1",
 		"minimist": "1.2.8",
 		"parse-diff": "0.11.1",
 		"pixelmatch": "7.1.0",

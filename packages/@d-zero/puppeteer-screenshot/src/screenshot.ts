@@ -72,6 +72,19 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		listener?.('getDOMStart', { name });
 		const title = await page.evaluate(() => document.title);
 		const dom = await page.content();
+		const text = await page.evaluate(() => {
+			const textContent = document.body.textContent ?? '';
+			const altTextList = [...document.querySelectorAll('img')]
+				.map((img) => {
+					const alt = img.getAttribute('alt');
+					return alt ?? '';
+				})
+				.filter((alt) => alt !== '');
+			return {
+				textContent,
+				altTextList,
+			};
+		});
 		listener?.('getDOMEnd', { name, dom });
 
 		result[name] = {
@@ -81,6 +94,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 			title,
 			binary,
 			dom,
+			text,
 			width,
 			resolution,
 		};

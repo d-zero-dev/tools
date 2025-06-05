@@ -5,6 +5,7 @@ import type {
 	MediaResult,
 	PageData,
 	Result,
+	TextResult,
 	URLPair,
 } from './types.js';
 import type { PageHook } from '@d-zero/puppeteer-page-scan';
@@ -17,6 +18,7 @@ import { delay } from '@d-zero/shared/delay';
 import c from 'ansi-colors';
 
 import { diffImages } from './modules/diff-images.js';
+import { diffText } from './modules/diff-text.js';
 import { diffTree } from './modules/diff-tree.js';
 import { getData } from './modules/get-data.js';
 import { score } from './utils.js';
@@ -138,9 +140,30 @@ createChildProcess<ChildProcessParams, Result>((param) => {
 					};
 				}
 
+				let text: TextResult | null = null;
+
+				if (types.includes('text')) {
+					const contentA = screenshotA.text.textContent.trim().replaceAll(/\s+/g, ' ');
+					const contentB = screenshotB.text.textContent.trim().replaceAll(/\s+/g, ' ');
+					const altTextListA = screenshotA.text.altTextList.join('\n');
+					const altTextListB = screenshotB.text.altTextList.join('\n');
+					const textA = `${contentA}\n\n${altTextListA}`;
+					const textB = `${contentB}\n\n${altTextListB}`;
+					const textDiff = diffText(a.url, b.url, textA, textB);
+					const outFilePath = path.resolve(dir, `${id}_text.diff`);
+					await writeFile(outFilePath, textDiff.result, { encoding: 'utf8' });
+
+					text = {
+						matches: textDiff.matches,
+						diff: textDiff.changed ? textDiff.result : null,
+						file: outFilePath,
+					};
+				}
+
 				screenshotResult[name] = {
 					image,
 					dom,
+					text,
 				};
 			}
 

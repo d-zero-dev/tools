@@ -17,6 +17,7 @@ export type Result = {
 export type MediaResult = {
 	image: ImageResult | null;
 	dom: DOMResult | null;
+	text: TextResult | null;
 };
 
 export type ImageResult = {
@@ -25,6 +26,12 @@ export type ImageResult = {
 };
 
 export type DOMResult = {
+	matches: number;
+	diff: string | null;
+	file: string;
+};
+
+export type TextResult = {
 	matches: number;
 	diff: string | null;
 	file: string;
