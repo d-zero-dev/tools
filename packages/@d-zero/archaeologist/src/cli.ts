@@ -3,11 +3,13 @@ import minimist from 'minimist';
 
 import { analyze } from './analyze-main-process.js';
 import { freeze } from './freeze-main-process.js';
+import { parseTypes } from './parse-types.js';
 import { readConfig } from './read-config.js';
 
 const cli = minimist(process.argv.slice(2), {
 	alias: {
 		f: 'listfile',
+		t: 'type',
 	},
 });
 
@@ -15,6 +17,7 @@ if (cli.listfile?.length) {
 	const { pairList, hooks } = await readConfig(cli.listfile);
 	await analyze(pairList, {
 		hooks,
+		types: cli.type ? parseTypes(cli.type) : undefined,
 		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
 		debug: !!cli.debug,
 		htmlDiffOnly: !!cli.htmlDiffOnly,

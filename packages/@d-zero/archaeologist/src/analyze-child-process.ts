@@ -1,5 +1,12 @@
 import type { DiffImagesPhase } from './modules/diff-images.js';
-import type { ImageResult, MediaResult, PageData, Result, URLPair } from './types.js';
+import type {
+	DOMResult,
+	ImageResult,
+	MediaResult,
+	PageData,
+	Result,
+	URLPair,
+} from './types.js';
 import type { PageHook } from '@d-zero/puppeteer-page-scan';
 
 import { writeFile } from 'node:fs/promises';
@@ -19,11 +26,12 @@ export type ChildProcessParams = {
 	dir: string;
 	useOldMode: boolean;
 	htmlDiffOnly: boolean;
+	types?: readonly string[];
 	hooks?: readonly PageHook[];
 };
 
 createChildProcess<ChildProcessParams, Result>((param) => {
-	const { list, dir, htmlDiffOnly } = param;
+	const { list, dir, htmlDiffOnly, types = ['image', 'dom', 'text'] } = param;
 
 	return {
 		async eachPage({ page, url: urlA, index }, logger) {
@@ -69,56 +77,71 @@ createChildProcess<ChildProcessParams, Result>((param) => {
 					throw new Error(`Failed to get screenshotB: ${id}`);
 				}
 
-				const imageDiff = await diffImages(screenshotA, screenshotB, (phase, data) => {
-					switch (phase) {
-						case 'create': {
-							logger(`${sizeName} ${outputUrl} 🖼️ Create images`);
-							break;
-						}
-						case 'resize': {
-							const { width, height } = data as DiffImagesPhase['resize'];
-							logger(`${sizeName} ${outputUrl} ↔️ Resize images to ${width}x${height}`);
-							break;
-						}
-						case 'diff': {
-							logger(`${sizeName} ${outputUrl} 📊 Compare images`);
-							break;
-						}
-					}
-				});
-
 				let image: ImageResult | null = null;
 
-				if (imageDiff) {
-					logger(`${sizeName} ${outputUrl} 🧩 Matches ${score(imageDiff.matches, 0.9)}`);
-					await delay(1500);
+				if (types.includes('image')) {
+					const imageDiff = await diffImages(screenshotA, screenshotB, (phase, data) => {
+						switch (phase) {
+							case 'create': {
+								logger(`${sizeName} ${outputUrl} 🖼️ Create images`);
+								break;
+							}
+							case 'resize': {
+								const { width, height } = data as DiffImagesPhase['resize'];
+								logger(`${sizeName} ${outputUrl} ↔️ Resize images to ${width}x${height}`);
+								break;
+							}
+							case 'diff': {
+								logger(`${sizeName} ${outputUrl} 📊 Compare images`);
+								break;
+							}
+						}
+					});
 
-					await writeFile(path.resolve(dir, `${id}_a.png`), imageDiff.images.a);
-					await writeFile(path.resolve(dir, `${id}_b.png`), imageDiff.images.b);
+					if (imageDiff) {
+						logger(
+							`${sizeName} ${outputUrl} 🧩 Matches ${score(imageDiff.matches, 0.9)}`,
+						);
+						await delay(1500);
 
-					const outFilePath = path.resolve(dir, `${id}_diff.png`);
-					logger(
-						`${sizeName} ${outputUrl} 📊 Save diff image to ${path.relative(dir, outFilePath)}`,
+						await writeFile(path.resolve(dir, `${id}_a.png`), imageDiff.images.a);
+						await writeFile(path.resolve(dir, `${id}_b.png`), imageDiff.images.b);
+
+						const outFilePath = path.resolve(dir, `${id}_diff.png`);
+						logger(
+							`${sizeName} ${outputUrl} 📊 Save diff image to ${path.relative(dir, outFilePath)}`,
+						);
+						await writeFile(outFilePath, imageDiff.images.diff);
+
+						image = {
+							matches: imageDiff.matches,
+							file: outFilePath,
+						};
+					}
+				}
+
+				let dom: DOMResult | null = null;
+
+				if (types.includes('dom')) {
+					const htmlDiff = diffTree(
+						a.url,
+						b.url,
+						screenshotA.domTree,
+						screenshotB.domTree,
 					);
-					await writeFile(outFilePath, imageDiff.images.diff);
+					const outFilePath = path.resolve(dir, `${id}_html.diff`);
+					await writeFile(outFilePath, htmlDiff.result, { encoding: 'utf8' });
 
-					image = {
-						matches: imageDiff.matches,
+					dom = {
+						matches: htmlDiff.matches,
+						diff: htmlDiff.changed ? htmlDiff.result : null,
 						file: outFilePath,
 					};
 				}
 
-				const htmlDiff = diffTree(a.url, b.url, screenshotA.domTree, screenshotB.domTree);
-				const outFilePath = path.resolve(dir, `${id}_html.diff`);
-				await writeFile(outFilePath, htmlDiff.result, { encoding: 'utf8' });
-
 				screenshotResult[name] = {
 					image,
-					dom: {
-						matches: htmlDiff.matches,
-						diff: htmlDiff.changed ? htmlDiff.result : null,
-						file: outFilePath,
-					},
+					dom,
 				};
 			}
 

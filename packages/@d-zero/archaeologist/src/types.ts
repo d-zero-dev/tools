@@ -16,7 +16,7 @@ export type Result = {
 
 export type MediaResult = {
 	image: ImageResult | null;
-	dom: DOMResult;
+	dom: DOMResult | null;
 };
 
 export type ImageResult = {
@@ -35,6 +35,7 @@ export interface ArchaeologistOptions extends AnalyzeOptions {}
 
 export interface AnalyzeOptions extends GeneralOptions {
 	readonly htmlDiffOnly?: boolean;
+	readonly types?: readonly string[];
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

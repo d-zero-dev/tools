@@ -37,6 +37,7 @@ export async function analyze(list: readonly URLPair[], options?: AnalyzeOptions
 					dir,
 					useOldMode,
 					htmlDiffOnly: options?.htmlDiffOnly ?? false,
+					types: options?.types,
 					hooks: options?.hooks ?? [],
 				},
 				{
@@ -59,9 +60,11 @@ export async function analyze(list: readonly URLPair[], options?: AnalyzeOptions
 				const { matches, file } = image;
 				output.push(`  ${c.bgMagenta(` ${sizeName} `)} ${score(matches, 0.9)} ${file}`);
 			}
-			output.push(
-				`  ${c.bgBlueBright(' HTML ')}: ${score(dom.matches, 0.995)} ${dom.file}`,
-			);
+			if (dom) {
+				output.push(
+					`  ${c.bgBlueBright(' HTML ')}: ${score(dom.matches, 0.995)} ${dom.file}`,
+				);
+			}
 		}
 	}
 
