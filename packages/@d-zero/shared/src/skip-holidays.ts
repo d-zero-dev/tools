@@ -7,7 +7,7 @@ import holiday_jp from '@holiday-jp/holiday_jp';
  * @param date - The date to skip holidays and weekends from.
  * @returns The next available date after skipping holidays and weekends.
  */
-export function skipHolydays(date: dayjs.Dayjs) {
+export function skipHolidays(date: dayjs.Dayjs) {
 	let current = date.clone();
 
 	if (current.day() === 0) {

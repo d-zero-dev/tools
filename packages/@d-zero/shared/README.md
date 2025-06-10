@@ -13,8 +13,8 @@
 | `@d-zero/shered/hash`                      | Generates a hash value for the given string.                                                           |
 | `@d-zero/shared/race-with-timeout`         | Races a given promise against a timeout and returns the result of the promise or a timeout indication. |
 | `@d-zero/shared/retry`                     | Decorator factory that adds retry logic to a method.                                                   |
-| `@d-zero/shared/skip-holyday-period`       | Skips the holiday period between the start and due dates.                                              |
-| `@d-zero/shared/skip-holydays`             | Skips holidays and weekends in the given date and returns the next available date.                     |
+| `@d-zero/shared/skip-holiday-period`       | Skips the holiday period between the start and due dates.                                              |
+| `@d-zero/shared/skip-holidays`             | Skips holidays and weekends in the given date and returns the next available date.                     |
 | `@d-zero/shared/str-to-regex`              | Converts a string pattern to a regular expression.                                                     |
 | `@d-zero/shared/split-array`               | Splits an array into chunks of the specified size.                                                     |
 | `@d-zero/shared/timestamp`                 | Generates a timestamp. If no format is provided, returns the Linux time (epoch seconds) as a string.   |
