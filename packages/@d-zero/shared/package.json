@@ -56,13 +56,13 @@
 			"import": "./dist/retry.js",
 			"types": "./dist/retry.d.ts"
 		},
-		"./skip-holyday-period": {
-			"import": "./dist/skip-holyday-period.js",
-			"types": "./dist/skip-holyday-period.d.ts"
+		"./skip-holiday-period": {
+			"import": "./dist/skip-holiday-period.js",
+			"types": "./dist/skip-holiday-period.d.ts"
 		},
-		"./skip-holydays": {
-			"import": "./dist/skip-holydays.js",
-			"types": "./dist/skip-holydays.d.ts"
+		"./skip-holidays": {
+			"import": "./dist/skip-holidays.js",
+			"types": "./dist/skip-holidays.d.ts"
 		},
 		"./split-array": {
 			"import": "./dist/split-array.js",

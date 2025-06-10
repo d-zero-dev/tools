@@ -19,8 +19,8 @@ export { urlToFileName } from './url-to-file-name.js';
 
 // Date utilities
 export { betweenWeekendDays } from './between-weekend-days.js';
-export { skipHolydayPeriod } from './skip-holyday-period.js';
-export { skipHolydays } from './skip-holydays.js';
+export { skipHolidayPeriod } from './skip-holiday-period.js';
+export { skipHolidays } from './skip-holidays.js';
 
 // Sort utilities
 export { alphabeticalComparator } from './sort/alphabetical.js';
