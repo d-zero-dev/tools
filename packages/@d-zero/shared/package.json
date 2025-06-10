@@ -9,6 +9,8 @@
 		"access": "public"
 	},
 	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"exports": {
 		"./sort/dir": {
 			"import": "./dist/sort/dir.js",
@@ -84,6 +86,10 @@
 		"./url-to-file-name": {
 			"import": "./dist/url-to-file-name.js",
 			"types": "./dist/url-to-file-name.d.ts"
+		},
+		"./config-reader": {
+			"import": "./dist/config-reader.js",
+			"types": "./dist/config-reader.d.ts"
 		}
 	},
 	"files": [
@@ -98,6 +104,7 @@
 		"@holiday-jp/holiday_jp": "2.5.1",
 		"await-event-emitter": "2.0.2",
 		"dayjs": "1.11.13",
-		"escape-string-regexp": "5.0.0"
+		"escape-string-regexp": "5.0.0",
+		"front-matter": "4.0.2"
 	}
 }

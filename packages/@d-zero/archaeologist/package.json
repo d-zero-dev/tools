@@ -27,6 +27,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
+		"@d-zero/cli-core": "1.0.0",
 		"@d-zero/fs": "0.2.0",
 		"@d-zero/html-distiller": "1.0.3",
 		"@d-zero/puppeteer-dealer": "0.4.0",

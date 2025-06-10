@@ -1,39 +1,53 @@
 #!/usr/bin/env node
-import minimist from 'minimist';
+import type { BaseCLIOptions } from '@d-zero/cli-core';
+
+import { createCLI, parseCommonOptions } from '@d-zero/cli-core';
 
 import { analyze } from './analyze-main-process.js';
 import { freeze } from './freeze-main-process.js';
 import { parseTypes } from './parse-types.js';
 import { readConfig } from './read-config.js';
 
-const cli = minimist(process.argv.slice(2), {
-	alias: {
+interface ArchaeologistCLIOptions extends BaseCLIOptions {
+	type?: string;
+	freeze?: string;
+}
+
+const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
+	aliases: {
 		f: 'listfile',
 		t: 'type',
 	},
+	usage: ['Usage: archaeologist -f <listfile> [--limit <number>]'],
+	parseArgs: (cli) => ({
+		...parseCommonOptions(cli),
+		listfile: cli.listfile,
+		type: cli.type,
+		freeze: cli.freeze,
+	}),
+	validateArgs: (options) => {
+		return !!(options.listfile?.length || options.freeze?.length);
+	},
 });
 
-if (cli.listfile?.length) {
-	const { pairList, hooks } = await readConfig(cli.listfile);
+if (hasConfigFile) {
+	const { pairList, hooks } = await readConfig(options.listfile!);
 	await analyze(pairList, {
 		hooks,
-		types: cli.type ? parseTypes(cli.type) : undefined,
-		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
-		debug: !!cli.debug,
+		types: options.type ? parseTypes(options.type) : undefined,
+		limit: options.limit,
+		debug: options.debug,
 	});
 	process.exit(0);
 }
 
-if (cli.freeze) {
-	const { pairList, hooks } = await readConfig(cli.freeze);
+if (options.freeze) {
+	const { pairList, hooks } = await readConfig(options.freeze);
 	const list = pairList.map(([urlA]) => urlA);
 	await freeze(list, {
 		hooks,
-		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
-		debug: !!cli.debug,
+		limit: options.limit,
+		debug: options.debug,
 	});
 	process.exit(0);
 }
-
-process.stderr.write('Usage: archaeologist -f <listfile> [--limit <number>]\n');
-process.exit(1);
