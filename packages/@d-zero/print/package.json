@@ -27,11 +27,13 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
+		"@d-zero/cli-core": "1.0.0",
 		"@d-zero/html-distiller": "1.0.3",
 		"@d-zero/puppeteer-dealer": "0.4.0",
 		"@d-zero/puppeteer-page-scan": "4.0.0",
 		"@d-zero/puppeteer-screenshot": "3.0.1",
 		"@d-zero/readtext": "1.1.3",
+		"@d-zero/shared": "0.8.0",
 		"ansi-colors": "4.1.3",
 		"dayjs": "1.11.13",
 		"front-matter": "4.0.2",

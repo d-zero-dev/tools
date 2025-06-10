@@ -1,39 +1,57 @@
 #!/usr/bin/env node
 import type { PrintType } from './types.js';
+import type { BaseCLIOptions } from '@d-zero/cli-core';
 
-import minimist from 'minimist';
+import { createCLI, parseCommonOptions } from '@d-zero/cli-core';
 
 import { print } from './print-main-process.js';
 import { readConfig } from './read-config.js';
 
-const cli = minimist(process.argv.slice(2), {
-	alias: {
+interface PrintCLIOptions extends BaseCLIOptions {
+	type?: string;
+}
+
+const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
+	aliases: {
 		f: 'listfile',
 		t: 'type',
 	},
-});
-
-const limit = cli.limit ? Number.parseInt(cli.limit) : undefined;
-const debug = !!cli.debug;
-const verbose = !!cli.verbose;
-const type: PrintType = cli.type === 'note' ? 'note' : cli.type === 'pdf' ? 'pdf' : 'png';
-
-if (cli.listfile?.length) {
-	const { urlList, hooks } = await readConfig(cli.listfile);
-	await print(urlList, { type, limit, debug, verbose, hooks });
-	process.exit(0);
-}
-
-if (cli._.length > 0) {
-	await print(cli._, { type, limit, verbose, debug });
-	process.exit(0);
-}
-
-process.stderr.write(
-	[
+	usage: [
 		'Usage:',
 		'\tprint -f <listfile> [--type <png|pdf|note>] [--limit <number>] [--debug]',
 		'\tprint <url>... [--type <png|pdf|note>] [--limit <number>] [--debug]',
-	].join('\n') + '\n',
-);
-process.exit(1);
+	],
+	parseArgs: (cli) => ({
+		...parseCommonOptions(cli),
+		listfile: cli.listfile,
+		type: cli.type,
+	}),
+	validateArgs: (options, cli) => {
+		return !!(options.listfile?.length || cli._.length > 0);
+	},
+});
+
+const type: PrintType =
+	options.type === 'note' ? 'note' : options.type === 'pdf' ? 'pdf' : 'png';
+
+if (hasConfigFile) {
+	const { urlList, hooks } = await readConfig(options.listfile!);
+	await print(urlList, {
+		type,
+		limit: options.limit,
+		debug: options.debug,
+		verbose: options.verbose,
+		hooks,
+	});
+	process.exit(0);
+}
+
+if (args.length > 0) {
+	await print(args, {
+		type,
+		limit: options.limit,
+		verbose: options.verbose,
+		debug: options.debug,
+	});
+	process.exit(0);
+}
