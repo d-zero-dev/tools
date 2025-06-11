@@ -6,7 +6,7 @@ import type { Page } from 'puppeteer';
 import { convertResultsFromNode } from './convert-results-from-node.js';
 import { detectLevel } from './detect-level.js';
 import { inferExplanation } from './infer-explanation.js';
-import { p } from './pargraph.js';
+import { p } from './paragraph.js';
 import { tagsToSCs } from './tags-to-scs.js';
 
 /**

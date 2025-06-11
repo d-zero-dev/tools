@@ -49,7 +49,7 @@ NOTION_TOKEN=secret_xxxxxxxxxxxxxx
 
 ## API
 
-### `assing`
+### `assign`
 
 ```ts
 function assign(backlog: Backlog, params: Params): Promise<void>;
@@ -62,7 +62,7 @@ type Params = {
 };
 ```
 
-### `createBacklogClient
+### `createBacklogClient`
 
 ```ts
 function createBacklogClient(): Backlog;

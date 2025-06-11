@@ -41,12 +41,12 @@ export async function raceWithTimeout<T>(
 		return { result: undefined, timeout: true } as const;
 	};
 
-	const charanger = async () => {
+	const challenger = async () => {
 		const result: T = await promise();
 		return { result, timeout: false } as const;
 	};
 
-	const result = await Promise.race([timer(), charanger()]);
+	const result = await Promise.race([timer(), challenger()]);
 	if (timeoutId) {
 		clearTimeout(timeoutId);
 	}
