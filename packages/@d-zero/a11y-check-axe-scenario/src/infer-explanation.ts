@@ -4,7 +4,7 @@ import type { NodeResult } from 'axe-core';
 
 import { colorContrastCheck, ColorContrastError } from '@d-zero/a11y-check-core';
 
-import { br, p } from './pargraph.js';
+import { br, p } from './paragraph.js';
 
 /**
  *
@@ -143,7 +143,7 @@ export function inferExplanation(
 					}
 					case ColorContrastError.DOES_NOT_DETERMINE_BACKGROUND: {
 						needCheck = 'WARNING';
-						message = '背景色が判定できないかったので#FFFFFFとして判定しています。';
+						message = '背景色が判定できなかったので#FFFFFFとして判定しています。';
 
 						contrastResult = style
 							? colorContrastCheck({
