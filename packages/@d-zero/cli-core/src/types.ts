@@ -1,3 +1,5 @@
+import type { ParsedArgs } from 'minimist';
+
 export interface BaseCLIOptions {
 	limit?: number;
 	debug?: boolean;
@@ -12,8 +14,8 @@ export interface CLIAlias {
 export interface CLIConfig<T extends BaseCLIOptions> {
 	aliases?: CLIAlias;
 	usage: string[];
-	parseArgs: (cli: import('minimist').ParsedArgs) => T;
-	validateArgs: (options: T, cli: import('minimist').ParsedArgs) => boolean;
+	parseArgs: (cli: ParsedArgs) => T;
+	validateArgs: (options: T, cli: ParsedArgs) => boolean;
 }
 
 export interface ParsedCLI<T extends BaseCLIOptions> {
