@@ -162,6 +162,7 @@ export default createScenario((options?: ScenarioOptions) => {
 
 	return {
 		modulePath: import.meta.url,
+		moduleParams: JSON.stringify(options ?? {}),
 		id: scenarioId,
 		async exec(page, sizeName, logger) {
 			// Wait Scroll End
