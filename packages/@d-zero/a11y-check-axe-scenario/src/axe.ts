@@ -14,6 +14,7 @@ export default createScenario((options?: A11yCheckAxeOptions) => {
 
 	return {
 		modulePath: import.meta.url,
+		moduleParams: JSON.stringify(options ?? {}),
 		id: scenarioId,
 		async exec(page, sizeName, log) {
 			if (options?.cache === false) {
