@@ -129,6 +129,9 @@ async function getNewToken(
 				if (!code) {
 					throw new Error(`Bad URL: ${redirectUrl}`);
 				}
+
+				process.stdout.write(c.greenBright(`🔑 ${c.gray('Got code: ')}${code}\n`));
+
 				rl.close();
 				oAuth2Client.getToken(code, async (err, token) => {
 					if (err || !token) {
