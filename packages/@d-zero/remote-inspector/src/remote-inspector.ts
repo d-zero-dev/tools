@@ -1,28 +1,38 @@
+import type {
+	RemoteInspectorOptions,
+	ConnectionConfig,
+	FileComparison,
+} from './types.js';
+import type { Change } from 'diff';
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import c from 'ansi-colors';
 import { diffLines } from 'diff';
-import type { Change } from 'diff';
 import Client from 'ssh2-sftp-client';
-import type { RemoteInspectorOptions, ConnectionConfig, FileComparison } from './types.js';
 
+/**
+ *
+ * @param options
+ */
 export async function remoteInspector(options: RemoteInspectorOptions): Promise<void> {
 	const client = new Client();
-	
+
 	// eslint-disable-next-line no-console
 	console.log(`Connect to: ${options.host}`);
-	
+
 	const connectionConfig: ConnectionConfig = {
 		host: options.host!,
 		username: options.user!,
 		privateKey: await fs.readFile(options.keyPath!),
 		passphrase: options.passphrase,
 	};
-	
+
 	await client.connect(connectionConfig);
 	// eslint-disable-next-line no-console
 	console.log('Success!');
-	
+
 	try {
 		const localFilesText = await fs.readFile(options.listfile!, 'utf8');
 		const localFiles = localFilesText
@@ -30,37 +40,44 @@ export async function remoteInspector(options: RemoteInspectorOptions): Promise<
 			.map((line) => line.trim())
 			.filter((l) => !!l)
 			.map((line) => path.join('..', line));
-		
+
 		for (const localFile of localFiles) {
 			const comparison = await compareFile(
 				client,
 				localFile,
 				options.localDir!,
-				options.remoteDir!
+				options.remoteDir!,
 			);
-			
+
 			displayComparison(comparison);
 		}
 	} finally {
-		client.end();
+		await client.end();
 	}
 }
 
+/**
+ *
+ * @param client
+ * @param localFile
+ * @param localDir
+ * @param remoteDir
+ */
 async function compareFile(
 	client: Client,
 	localFile: string,
 	localDir: string,
-	remoteDir: string
+	remoteDir: string,
 ): Promise<FileComparison> {
 	const localPath = path.resolve(localFile);
 	const relativePath = path.relative(localDir, localFile);
 	const remotePath = path.join(remoteDir, relativePath);
-	
+
 	const ext = path.extname(localPath);
 	const isTextFile = !/^\.(?:png|jpe?g|webp|pdf|mp4|zip)$/i.test(ext);
-	
+
 	const localStat = await fs.stat(localPath).catch(() => null);
-	
+
 	if (!localStat) {
 		return {
 			localPath,
@@ -70,14 +87,14 @@ async function compareFile(
 			status: 'missing',
 		};
 	}
-	
-	const remoteStat = await client.stat(remotePath).catch((e: any) => {
-		if (e instanceof Error && 'code' in e && e.code === 'ENOENT') {
+
+	const remoteStat = await client.stat(remotePath).catch((error: unknown) => {
+		if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
 			return null;
 		}
-		throw e;
+		throw error;
 	});
-	
+
 	if (remoteStat == null) {
 		return {
 			localPath,
@@ -88,7 +105,7 @@ async function compareFile(
 			localSize: localStat.size,
 		};
 	}
-	
+
 	const comparison: FileComparison = {
 		localPath,
 		remotePath,
@@ -98,61 +115,65 @@ async function compareFile(
 		localSize: localStat.size,
 		remoteSize: remoteStat.size,
 	};
-	
+
 	if (!isTextFile) {
 		comparison.status = localStat.size === remoteStat.size ? 'same' : 'modified';
 		return comparison;
 	}
-	
+
 	const localContent = await fs.readFile(localPath, 'utf8');
 	const remoteContentBuffer = await client.get(remotePath);
-	const remoteContent = Buffer.isBuffer(remoteContentBuffer) 
+	const remoteContent = Buffer.isBuffer(remoteContentBuffer)
 		? remoteContentBuffer.toString('utf8')
 		: String(remoteContentBuffer);
-	
+
 	const blocks = diffLines(remoteContent, localContent);
-	
+
 	if (blocks.length > 1) {
 		comparison.status = 'modified';
 		comparison.diff = generateDiff(blocks, remoteContent);
 	}
-	
+
 	return comparison;
 }
 
+/**
+ *
+ * @param blocks
+ * @param remoteContent
+ */
 function generateDiff(blocks: Change[], remoteContent: string): string {
 	const termWidth = process.stdout.columns || 80;
 	const contentMaxLineNum = remoteContent.split('\n').length;
 	const output: string[] = [];
 	let lineNum = 0;
-	
+
 	for (const block of blocks) {
 		const lines = block.value.replace(/\n$/, '').split('\n');
 		const start = lineNum;
-		
+
 		if (block.added) {
-			output.push(c.green(formatLines(lines, start, termWidth)));
-			output.push('\n');
+			output.push(c.green(formatLines(lines, start, termWidth)), '\n');
 			lineNum += lines.length;
 			continue;
 		} else if (block.removed) {
-			output.push(c.red(formatLines(lines, start, termWidth)));
-			output.push('\n');
+			output.push(c.red(formatLines(lines, start, termWidth)), '\n');
 			continue;
 		}
-		
+
 		if (lines.length < 7) {
-			output.push(c.black(formatLines(lines, start, termWidth)));
-			output.push('\n');
+			output.push(c.black(formatLines(lines, start, termWidth)), '\n');
 			lineNum += lines.length;
 			continue;
 		}
-		
+
 		const range = 3;
 		const top = c.black(formatLines(lines.slice(0, range), start, termWidth));
-		const bottom = c.black(formatLines(lines.slice(range * -1), start + lines.length - range, termWidth));
+		const bottom = c.black(
+			formatLines(lines.slice(range * -1), start + lines.length - range, termWidth),
+		);
 		const hr = c.black(`\n${'─'.repeat(termWidth)}\n`);
-		
+
 		if (start === 0) {
 			output.push(bottom, '\n');
 		} else if (start + lines.length >= contentMaxLineNum - 1) {
@@ -160,13 +181,19 @@ function generateDiff(blocks: Change[], remoteContent: string): string {
 		} else {
 			output.push(top, hr, bottom, '\n');
 		}
-		
+
 		lineNum += lines.length;
 	}
-	
+
 	return output.join('');
 }
 
+/**
+ *
+ * @param lines
+ * @param start
+ * @param width
+ */
 function formatLines(lines: string[], start: number, width: number): string {
 	return lines
 		.map((line, iterator) => {
@@ -176,6 +203,11 @@ function formatLines(lines: string[], start: number, width: number): string {
 		.join('\n');
 }
 
+/**
+ *
+ * @param line
+ * @param width
+ */
 function truncateLine(line: string, width: number): string {
 	if (width < line.length) {
 		const ellipsis = 3;
@@ -188,6 +220,10 @@ function truncateLine(line: string, width: number): string {
 	return line;
 }
 
+/**
+ *
+ * @param comparison
+ */
 function displayComparison(comparison: FileComparison): void {
 	if (comparison.isTextFile) {
 		// eslint-disable-next-line no-console
@@ -196,37 +232,51 @@ function displayComparison(comparison: FileComparison): void {
 		// eslint-disable-next-line no-console
 		console.log(c.bold.magenta(comparison.relativePath));
 	}
-	
+
 	switch (comparison.status) {
-		case 'missing':
+		case 'missing': {
 			// eslint-disable-next-line no-console
 			console.log(`${c.red.bold('Local file is not found')}: ${comparison.relativePath}`);
 			break;
-		case 'new':
+		}
+		case 'new': {
 			// eslint-disable-next-line no-console
 			console.log(`${c.green.bold('New file')}: ${comparison.relativePath}`);
 			break;
-		case 'same':
+		}
+		case 'same': {
 			// eslint-disable-next-line no-console
-			console.log(`${c.bgGreen(' Same ')} ${c.black('Size:')} ${comparison.localSize} ${c.black('=')} ${comparison.remoteSize}`);
+			console.log(
+				`${c.bgGreen(' Same ')} ${c.black('Size:')} ${comparison.localSize} ${c.black('=')} ${comparison.remoteSize}`,
+			);
 			break;
-		case 'modified':
+		}
+		case 'modified': {
 			if (comparison.isTextFile && comparison.diff) {
-				const highLow = comparison.remoteSize === comparison.localSize 
-					? c.bold 
-					: (comparison.remoteSize! - comparison.localSize!) > 0 ? c.red : c.blue;
+				const highLow =
+					comparison.remoteSize === comparison.localSize
+						? c.bold
+						: comparison.remoteSize! - comparison.localSize! > 0
+							? c.red
+							: c.blue;
 				// eslint-disable-next-line no-console
-				console.log(`${c.bgRedBright(' Modified ')} ${c.black('Size:')} ${comparison.localSize} ${c.black('->')} ${highLow(comparison.remoteSize!.toString())}`);
+				console.log(
+					`${c.bgRedBright(' Modified ')} ${c.black('Size:')} ${comparison.localSize} ${c.black('->')} ${highLow(comparison.remoteSize!.toString())}`,
+				);
 				// eslint-disable-next-line no-console
 				console.log(comparison.diff);
 			} else {
-				const highLow = (comparison.remoteSize! - comparison.localSize!) > 0 ? c.red : c.blue;
+				const highLow =
+					comparison.remoteSize! - comparison.localSize! > 0 ? c.red : c.blue;
 				// eslint-disable-next-line no-console
-				console.log(`${c.bgRedBright(' Modified ')} ${c.black('Size:')} ${comparison.localSize} ${c.black('->')} ${highLow(comparison.remoteSize!.toString())}`);
+				console.log(
+					`${c.bgRedBright(' Modified ')} ${c.black('Size:')} ${comparison.localSize} ${c.black('->')} ${highLow(comparison.remoteSize!.toString())}`,
+				);
 			}
 			break;
+		}
 	}
-	
+
 	// eslint-disable-next-line no-console
 	console.log('');
 }

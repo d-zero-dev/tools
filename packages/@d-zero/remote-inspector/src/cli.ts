@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-import { config as dotenvConfig } from 'dotenv';
-import { createCLI, parseCommonOptions } from '@d-zero/cli-core';
 import type { RemoteInspectorOptions } from './types.js';
 import type { ParsedArgs } from 'minimist';
+
+import { createCLI, parseCommonOptions } from '@d-zero/cli-core';
+import { config as dotenvConfig } from 'dotenv';
+
 import { remoteInspector } from './remote-inspector.js';
 
 // Load .env file if it exists
@@ -16,7 +18,7 @@ const config = {
 		'',
 		'Options:',
 		'  --host <host>           Remote host',
-		'  --user <user>           Remote username', 
+		'  --user <user>           Remote username',
 		'  --key <path>            Path to private key file',
 		'  --passphrase <phrase>   Passphrase for private key',
 		'  --remote-dir <dir>      Remote directory',
