@@ -35,18 +35,26 @@ export async function a11yCheck(
 		sheet = await SpreadsheetReporter.setup(out, sheetName);
 	}
 
-	const result = await scenarioRunner(
-		urlList,
-		[
-			//
-			[scenarioAxe(options).modulePath, JSON.stringify(options)],
-			[scenario01(options).modulePath, JSON.stringify(options)],
-			[scenario02(options).modulePath, JSON.stringify(options)],
-		],
-		{
-			...options,
-		},
-	);
+	const scenarioList = options?.scenarios ?? ['axe'];
+
+	const scenarios = scenarioList.map((s) => {
+		switch (s) {
+			case 'axe': {
+				return scenarioAxe(options);
+			}
+			case '01': {
+				return scenario01(options);
+			}
+			case '02': {
+				return scenario02(options);
+			}
+			default: {
+				throw new Error(`Unknown scenario: ${s}`);
+			}
+		}
+	});
+
+	const result = await scenarioRunner(urlList, scenarios, options);
 
 	if (out && sheet) {
 		process.stdout.write(`Report to ${out}\n`);

@@ -9,6 +9,7 @@ import { a11yCheck } from './a11y-check.js';
 import { readConfig } from './read-config.js';
 
 interface A11yCheckCLIOptions extends BaseCLIOptions {
+	scenarios?: string;
 	cache?: boolean;
 	cacheDir?: string;
 	locale?: string;
@@ -29,6 +30,7 @@ const { options, args, hasConfigFile } = createCLI<A11yCheckCLIOptions>({
 	parseArgs: (cli) => ({
 		...parseCommonOptions(cli),
 		listfile: cli.listfile,
+		scenarios: cli.scenarios,
 		cache: cli.cache?.trim().toLowerCase() === 'false' ? false : true,
 		cacheDir: cli.cacheDir ?? '.cache',
 		locale: cli.locale,
@@ -43,6 +45,7 @@ const { options, args, hasConfigFile } = createCLI<A11yCheckCLIOptions>({
 const list: (string | { id: string | null; url: string })[] = [];
 
 let a11yOptions: A11yCheckOptions = {
+	scenarios: options.scenarios?.split(',').map((s) => s.trim().toLowerCase()),
 	screenshot: options.screenshot,
 	locale: options.locale,
 	limit: options.limit,
