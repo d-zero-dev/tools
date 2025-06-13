@@ -6,6 +6,7 @@ export { Deferred } from './deferred.js';
 export { delay } from './delay.js';
 export { kbSize } from './filesize.js';
 export { hash } from './hash.js';
+export { parseUrl, type ExURL, type ParseURLOptions } from './parse-url.js';
 export { pathToURL } from './path-to-url.js';
 export { raceWithTimeout, type RaceWithTimeoutResult } from './race-with-timeout.js';
 export { removeAuth } from './remove-auth.js';

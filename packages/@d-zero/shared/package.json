@@ -48,6 +48,10 @@
 			"import": "./dist/filesize.js",
 			"types": "./dist/filesize.d.ts"
 		},
+		"./parse-url": {
+			"import": "./dist/parse-url.js",
+			"types": "./dist/parse-url.d.ts"
+		},
 		"./race-with-timeout": {
 			"import": "./dist/race-with-timeout.js",
 			"types": "./dist/race-with-timeout.d.ts"
