@@ -6,6 +6,7 @@ import type {
 	Result,
 	ScenarioRunnerOptions,
 } from './types.js';
+import type { DealOptions } from '@d-zero/dealer';
 
 import path from 'node:path';
 
@@ -30,7 +31,7 @@ export async function scenarioRunner<O>(
 		  }
 	)[],
 	scenarios: readonly [modulePath: string, options?: string][],
-	options?: O & CoreOptions & ScenarioRunnerOptions,
+	options?: O & CoreOptions & ScenarioRunnerOptions & DealOptions,
 ): Promise<Result> {
 	const needAnalysis: NeedAnalysis[] = [];
 	const passed: Passed[] = [];
@@ -56,10 +57,13 @@ export async function scenarioRunner<O>(
 				options,
 			);
 		},
-		(result) => {
-			needAnalysis.push(...result.needAnalysis);
-			passed.push(...result.passed);
-			violations.push(...result.violations);
+		{
+			...options,
+			each(result) {
+				needAnalysis.push(...result.needAnalysis);
+				passed.push(...result.passed);
+				violations.push(...result.violations);
+			},
 		},
 	);
 

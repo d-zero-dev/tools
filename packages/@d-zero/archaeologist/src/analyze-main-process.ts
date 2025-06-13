@@ -1,5 +1,6 @@
 import type { ChildProcessParams } from './analyze-child-process.js';
 import type { AnalyzeOptions, Result, URLPair } from './types.js';
+import type { DealOptions } from '@d-zero/dealer';
 
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -15,7 +16,10 @@ import { score } from './utils.js';
  * @param list
  * @param options
  */
-export async function analyze(list: readonly URLPair[], options?: AnalyzeOptions) {
+export async function analyze(
+	list: readonly URLPair[],
+	options?: AnalyzeOptions & DealOptions,
+) {
 	const results: Result[] = [];
 
 	const dir = path.resolve(process.cwd(), '.archaeologist');
@@ -45,8 +49,11 @@ export async function analyze(list: readonly URLPair[], options?: AnalyzeOptions
 				},
 			);
 		},
-		(result) => {
-			results.push(result);
+		{
+			...options,
+			each(result) {
+				results.push(result);
+			},
 		},
 	);
 

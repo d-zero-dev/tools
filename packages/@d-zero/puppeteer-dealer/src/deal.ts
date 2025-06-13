@@ -1,6 +1,6 @@
 import type { ChildProcessManager } from './create-main-process.js';
 import type { URLInfo } from './types.js';
-import type { DealHeader } from '@d-zero/dealer';
+import type { DealHeader, DealOptions } from '@d-zero/dealer';
 
 import { deal as coreDeal } from '@d-zero/dealer';
 import c from 'ansi-colors';
@@ -10,13 +10,15 @@ import c from 'ansi-colors';
  * @param list
  * @param header
  * @param createProcess
- * @param each
+ * @param options
  */
 export function deal<T extends Record<string, unknown>, R = void>(
 	list: readonly URLInfo[],
 	header: DealHeader,
 	createProcess: () => ChildProcessManager<T, R>,
-	each?: (result: R) => void | Promise<void>,
+	options?: Omit<DealOptions, 'header'> & {
+		each?: (result: R) => void | Promise<void>;
+	},
 ) {
 	return coreDeal(
 		list,
@@ -32,13 +34,14 @@ export function deal<T extends Record<string, unknown>, R = void>(
 					update(`${lineHeader}${log}`);
 				});
 				const result = await processManager.each(fileId, url.toString(), index);
-				if (each) {
-					await each(result);
+				if (options?.each) {
+					await options.each(result);
 				}
 				await processManager.close();
 			};
 		},
 		{
+			...options,
 			header,
 		},
 	);
