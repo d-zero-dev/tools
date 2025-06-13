@@ -3,6 +3,7 @@ import type { Auth } from '@d-zero/google-auth';
 
 import { authentication } from '@d-zero/google-auth';
 import { SheetTable } from '@d-zero/google-sheets';
+import { parseUrl } from '@d-zero/shared/parse-url';
 import dotenv from 'dotenv';
 
 export class SpreadsheetReporter {
@@ -82,31 +83,35 @@ export class SpreadsheetReporter {
 
 	async report(results: readonly Violation[]) {
 		await this.#table.update(
-			results.map((result) => ({
-				id: { value: result.id },
-				url: {
-					value: result.url,
-					textFormat: { link: { uri: result.url } },
-				},
-				tool: { value: result.tool },
-				timestamp: { value: result.timestamp },
-				component: { value: result.component },
-				environment: { value: result.environment },
-				targetNode: {
-					value: result.targetNode.value,
-					note: result.targetNode.note,
-				},
-				asIs: { value: result.asIs.value, note: result.asIs.note },
-				toBe: { value: result.toBe.value, note: result.toBe.note },
-				explanation: {
-					value: result.explanation.value,
-					note: result.explanation.note,
-				},
-				wcagVersion: { value: result.wcagVersion },
-				scNumber: { value: result.scNumber },
-				level: { value: result.level },
-				screenshot: { value: result.screenshot },
-			})),
+			results.map((result) => {
+				const url = parseUrl(result.url);
+
+				return {
+					id: { value: result.id },
+					url: {
+						value: url.withoutHashAndAuth,
+						textFormat: { link: { uri: url.withoutHashAndAuth } },
+					},
+					tool: { value: result.tool },
+					timestamp: { value: result.timestamp },
+					component: { value: result.component },
+					environment: { value: result.environment },
+					targetNode: {
+						value: result.targetNode.value,
+						note: result.targetNode.note,
+					},
+					asIs: { value: result.asIs.value, note: result.asIs.note },
+					toBe: { value: result.toBe.value, note: result.toBe.note },
+					explanation: {
+						value: result.explanation.value,
+						note: result.explanation.note,
+					},
+					wcagVersion: { value: result.wcagVersion },
+					scNumber: { value: result.scNumber },
+					level: { value: result.level },
+					screenshot: { value: result.screenshot },
+				};
+			}),
 		);
 	}
 
