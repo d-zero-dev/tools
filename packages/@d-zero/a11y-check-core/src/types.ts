@@ -17,6 +17,7 @@ export type ScenarioCreator<O> = (options?: O) => Scenario;
 
 export type Scenario = {
 	readonly modulePath: string;
+	readonly moduleParams: string;
 	readonly id: string;
 	readonly exec: ScenarioExecutor;
 	readonly analyze?: ScenarioAnalyzer;

@@ -1,4 +1,4 @@
-import type { Result, NeedAnalysis, Passed } from './types.js';
+import type { Result, NeedAnalysis, Passed, Scenario } from './types.js';
 
 import { importScenarios, type Violation } from '@d-zero/a11y-check-core';
 import { createChildProcess } from '@d-zero/puppeteer-dealer';
@@ -11,7 +11,7 @@ import { Cache } from '@d-zero/shared/cache';
 import c from 'ansi-colors';
 
 export type ChildProcessParams = {
-	readonly scenarios: readonly [modulePath: string, options?: string][];
+	readonly scenarios: readonly Scenario[];
 	readonly cacheDir: string;
 };
 

@@ -4,14 +4,12 @@ import type { Scenario, ScenarioCreator } from './types.js';
  *
  * @param scenarios
  */
-export async function importScenarios(
-	scenarios: readonly [modulePath: string, options?: string][],
-) {
+export async function importScenarios(scenarios: readonly Scenario[]) {
 	return await Promise.all<Scenario>(
-		scenarios.map(async ([modulePath, options]) => {
-			const mod = await import(modulePath);
+		scenarios.map(async (scenario) => {
+			const mod = await import(scenario.modulePath);
 			const creator: ScenarioCreator<unknown> = mod.default;
-			const optionsValue = options ? JSON.parse(options) : {};
+			const optionsValue = JSON.parse(scenario.moduleParams);
 			return creator(optionsValue);
 		}),
 	);
