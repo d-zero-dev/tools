@@ -10,6 +10,7 @@ import type {
 } from './types.js';
 import type { Browser, Page } from 'puppeteer';
 
+import { parseUrl } from '@d-zero/shared/parse-url';
 import { retry } from '@d-zero/shared/retry';
 import { TypedAwaitEventEmitter } from '@d-zero/shared/typed-await-event-emitter';
 import puppeteer from 'puppeteer';
@@ -18,7 +19,7 @@ import { resourceLog, scraperLog } from './debug.js';
 import { getAnchorList, getImageList, getMeta } from './dom-evaluation.js';
 import { fetchDestination } from './fetch-destination.js';
 import { keywordCheck } from './keyword-check.js';
-import { detectCDN, detectCompress, isError, parseUrl } from './utils.js';
+import { detectCDN, detectCompress, isError } from './utils.js';
 
 const pid = `${process.pid}`;
 const log = scraperLog.extend(pid);
@@ -390,7 +391,7 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 
 		if (!isExternal) {
 			page.on('request', (request) => {
-				const url = parseUrl(request.url(), options)!;
+				const url = parseUrl(request.url(), options);
 				networkLogs[request.url()] = {
 					url,
 					status: null,
@@ -407,7 +408,7 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 
 			const uniqueRes = new Set<string>();
 			page.on('response', (response) => {
-				const resURL = parseUrl(response.url(), options)!;
+				const resURL = parseUrl(response.url(), options);
 
 				if (uniqueRes.has(resURL.withoutHash)) {
 					return;
@@ -482,7 +483,7 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 			throw new Error('The method Page.goto returned null');
 		}
 
-		const destUrl = parseUrl(page.url(), options)!;
+		const destUrl = parseUrl(page.url(), options);
 		const redirectPaths = res
 			.request()
 			.redirectChain()

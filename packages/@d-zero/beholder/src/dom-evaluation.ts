@@ -1,8 +1,9 @@
 import type { AnchorData, ImageElement, ParseURLOptions } from './types.js';
 import type { ElementHandle, Page } from 'puppeteer';
 
+import { parseUrl } from '@d-zero/shared/parse-url';
+
 import { domDetailsLog, domLog } from './debug.js';
-import { parseUrl } from './utils.js';
 
 const pid = `${process.pid}`;
 const log = domLog.extend(pid);
