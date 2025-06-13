@@ -26,7 +26,12 @@ export async function a11yCheck(
 ) {
 	let sheet: SpreadsheetReporter | null = null;
 	if (out) {
-		const sheetName = dayjs().format('YYYY-MM-DD');
+		let sheetName = dayjs().format('YYYY-MM-DD');
+
+		if (options?.debug) {
+			sheetName += `-debug-${Date.now()}`;
+		}
+
 		sheet = await SpreadsheetReporter.setup(out, sheetName);
 	}
 
