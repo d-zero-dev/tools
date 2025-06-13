@@ -12,14 +12,19 @@ import c from 'ansi-colors';
  * @param createProcess
  * @param options
  */
-export function deal<T extends Record<string, unknown>, R = void>(
+export function deal<T, R = void>(
 	list: readonly URLInfo[],
 	header: DealHeader,
-	createProcess: () => ChildProcessManager<T, R>,
+	createProcess: () => (needAuth: boolean) => ChildProcessManager<T, R>,
 	options?: Omit<DealOptions, 'header'> & {
 		each?: (result: R) => void | Promise<void>;
 	},
 ) {
+	const needAuth = list.some(({ url }) => {
+		const urlObj = new URL(url);
+		return !!(urlObj.username && urlObj.password);
+	});
+
 	return coreDeal(
 		list,
 		({ id, url }, update, index) => {
@@ -27,7 +32,8 @@ export function deal<T extends Record<string, unknown>, R = void>(
 			const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(url.toString())}: `;
 
 			return async () => {
-				const processManager = createProcess();
+				update(`${lineHeader}Using ${needAuth ? 'auth' : 'no auth'}`);
+				const processManager = createProcess()(needAuth);
 				update(`${lineHeader}Booting ChildProcess%dots%`);
 				await processManager.ready();
 				processManager.log((log) => {

@@ -1,5 +1,10 @@
-import type { Logger, PuppeteerDealerOptions } from './types.js';
-import type { Page, LaunchOptions } from 'puppeteer';
+import type {
+	ChildProcessCommands,
+	ChildProcessHandler,
+	CommonParams,
+	PuppeteerDealerOptions,
+} from './types.js';
+import type { LaunchOptions } from 'puppeteer';
 
 import { ProcTalk } from '@d-zero/proc-talk';
 import puppeteer from 'puppeteer';
@@ -8,39 +13,17 @@ import { log } from './debug.js';
 
 const childLog = log.extend(`child:${process.pid}`);
 
-export type ChildProcessMethods<R> = {
-	eachPage: (params: EachPageParams, logger: Logger) => Promise<R>;
-};
-
-type EachPageParams = {
-	readonly page: Page;
-	readonly id: string;
-	readonly url: string;
-	readonly index: number;
-};
-
-export type ChildProcessCommonParams = {
-	readonly id: string;
-	readonly url: string;
-	readonly logger: Logger;
-};
-
-export type ChildProcessHandler<P, R> = (
-	params: P,
-) => Promise<ChildProcessMethods<R>> | ChildProcessMethods<R>;
-
-export type ChildProcessCommands<P, R> = {
-	init: () => Promise<P>;
-	each: (id: string, url: string, index: number) => Promise<R>;
-	log: Logger;
-};
-
 /**
  *
  * @param handler
  */
-export function createChildProcess<P, R = void>(handler: ChildProcessHandler<P, R>) {
-	new ProcTalk<ChildProcessCommands<P, R>, PuppeteerDealerOptions & LaunchOptions>({
+export function createChildProcess<P, R = void>(
+	handler: ChildProcessHandler<P & CommonParams, R>,
+) {
+	new ProcTalk<
+		ChildProcessCommands<P & CommonParams, R>,
+		PuppeteerDealerOptions & LaunchOptions
+	>({
 		type: 'child',
 		title: '@d-zero/puppeteer-dealer',
 		async process(options) {
@@ -55,10 +38,12 @@ export function createChildProcess<P, R = void>(handler: ChildProcessHandler<P, 
 
 			childLog('Params: %O', params);
 
+			childLog('Needs auth: %s', params.needAuth);
+
 			const { eachPage } = await handler(params);
 
 			const launchOptions: LaunchOptions = {
-				headless: true,
+				headless: config.headless ?? (params.needAuth ? 'shell' : true),
 				args: [
 					//
 					`--lang=${config.locale}`,

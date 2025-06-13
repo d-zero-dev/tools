@@ -1,5 +1,9 @@
-import type { ChildProcessCommands } from './create-child-process.js';
-import type { Logger, PuppeteerDealerOptions } from './types.js';
+import type {
+	ChildProcessCommands,
+	CommonParams,
+	Logger,
+	PuppeteerDealerOptions,
+} from './types.js';
 import type { LaunchOptions } from 'puppeteer';
 
 import { ProcTalk } from '@d-zero/proc-talk';
@@ -15,19 +19,23 @@ export function createProcess<P, R = void>(
 	params: P,
 	options?: PuppeteerDealerOptions & LaunchOptions,
 ) {
-	return new ChildProcessManager<P, R>(subModulePath, params, options);
+	return (needAuth: boolean) =>
+		new ChildProcessManager<P, R>(subModulePath, { ...params, needAuth }, options);
 }
 
 export class ChildProcessManager<P, R> {
-	#procTalk: ProcTalk<ChildProcessCommands<P, R>, PuppeteerDealerOptions & LaunchOptions>;
+	#procTalk: ProcTalk<
+		ChildProcessCommands<P & CommonParams, R>,
+		PuppeteerDealerOptions & LaunchOptions
+	>;
 
 	constructor(
 		subModulePath: string,
-		params: P,
+		params: P & CommonParams,
 		options?: PuppeteerDealerOptions & LaunchOptions,
 	) {
 		this.#procTalk = new ProcTalk<
-			ChildProcessCommands<P, R>,
+			ChildProcessCommands<P & CommonParams, R>,
 			PuppeteerDealerOptions & LaunchOptions
 		>({
 			type: 'main',
