@@ -29,11 +29,12 @@ export type ChildProcessParams = {
 	useOldMode: boolean;
 	types?: readonly string[];
 	selector?: string;
+	devices?: readonly string[];
 	hooks?: readonly PageHook[];
 };
 
 createChildProcess<ChildProcessParams, Result>((param) => {
-	const { list, dir, types = ['image', 'dom', 'text'], selector } = param;
+	const { list, dir, types = ['image', 'dom', 'text'], selector, devices } = param;
 
 	return {
 		async eachPage({ page, url: urlA, index }, logger) {
@@ -52,6 +53,7 @@ createChildProcess<ChildProcessParams, Result>((param) => {
 					{
 						htmlDiffOnly: !types.includes('image'),
 						selector,
+						devices,
 					},
 					logger,
 				);

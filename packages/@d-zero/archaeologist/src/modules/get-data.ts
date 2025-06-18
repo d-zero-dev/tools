@@ -1,14 +1,17 @@
 import type { PageData } from '../types.js';
+import type { Sizes } from '@d-zero/puppeteer-page-scan';
 import type { PageHook } from '@d-zero/puppeteer-screenshot';
 import type { Page } from 'puppeteer';
 
 import { distill } from '@d-zero/html-distiller';
+import { defaultSizes } from '@d-zero/puppeteer-page-scan';
 import { screenshotListener, screenshot } from '@d-zero/puppeteer-screenshot';
 
 export interface GetDataOptions {
 	readonly hooks?: readonly PageHook[];
 	readonly htmlDiffOnly?: boolean;
 	readonly selector?: string;
+	readonly devices?: readonly string[];
 }
 
 /**
@@ -26,16 +29,15 @@ export async function getData(
 ): Promise<PageData> {
 	const htmlDiffOnly = options.htmlDiffOnly ?? false;
 
+	const devices = options.devices ?? ['desktop', 'mobile'];
+	const sizes: Sizes = {};
+	for (const device of devices) {
+		// @ts-ignore
+		sizes[device] = defaultSizes[device];
+	}
+
 	const screenshots = await screenshot(page, url, {
-		sizes: {
-			desktop: {
-				width: 1280,
-			},
-			mobile: {
-				width: 375,
-				resolution: 2,
-			},
-		},
+		sizes,
 		hooks: options?.hooks ?? [],
 		listener: screenshotListener(update),
 		domOnly: htmlDiffOnly,

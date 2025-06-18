@@ -42,6 +42,7 @@ export async function analyze(
 					useOldMode,
 					types: options?.types,
 					selector: options?.selector,
+					devices: options?.devices,
 					hooks: options?.hooks ?? [],
 				},
 				{
