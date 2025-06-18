@@ -20,10 +20,10 @@ URLリストを持つファイルを指定して実行します。
 ### オプション
 
 - `-f, --listfile <filepath>`: URLリストを持つファイルのパス（必須）
-- `-t, --type <types>`: 比較タイプの指定（カンマ区切り）
+- `-t, --type <types>`: 比較タイプの指定（`image,dom,text`、カンマ区切り）
 - `-s, --selector <selector>`: 比較対象を限定するCSSセレクター
 - `-i, --ignore <selector>`: 無視するCSSセレクター
-- `--devices <devices>`: デバイス指定（カンマ区切り）
+- `--devices <devices>`: デバイス指定（`desktop,mobile,tablet`、カンマ区切り）
 - `--freeze <filepath>`: フリーズモード用ファイルパス
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
 - `--debug`: デバッグモード（デフォルト: false）
