@@ -16,6 +16,7 @@ type Options = {
 	domOnly?: boolean;
 	path?: string;
 	selector?: string;
+	ignore?: string;
 };
 
 /**
@@ -43,6 +44,28 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 				listener?.(phase, data);
 			},
 		});
+
+		if (options?.ignore) {
+			await page.evaluate((ignore) => {
+				const scope = document.body;
+				const nodes = scope.querySelectorAll<HTMLElement>(ignore);
+				for (const node of nodes) {
+					const box = node.getBoundingClientRect();
+					const replacement = document.createElement('div');
+					replacement.style.position = node.style.position;
+					replacement.style.top = node.style.top;
+					replacement.style.left = node.style.left;
+					replacement.style.right = node.style.right;
+					replacement.style.bottom = node.style.bottom;
+					replacement.style.zIndex = node.style.zIndex;
+					replacement.style.margin = node.style.margin;
+					replacement.style.border = node.style.border;
+					replacement.style.width = `${box.width}px`;
+					replacement.style.height = `${box.height}px`;
+					node.replaceWith(replacement);
+				}
+			}, options?.ignore);
+		}
 
 		let binary: Uint8Array | null = null;
 		const filePath = options?.path?.replace(/\.png$/i, `@${name}.png`) ?? null;
