@@ -37,6 +37,7 @@ if (hasConfigFile) {
 		types: options.type ? parseTypes(options.type) : undefined,
 		limit: options.limit,
 		debug: options.debug,
+		verbose: options.verbose,
 	});
 	process.exit(0);
 }
