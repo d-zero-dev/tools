@@ -2,11 +2,12 @@ import type { ChildProcessParams } from './analyze-child-process.js';
 import type { AnalyzeOptions, Result, URLPair } from './types.js';
 import type { DealOptions } from '@d-zero/dealer';
 
-import { mkdir } from 'node:fs/promises';
+import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import { createProcess, deal } from '@d-zero/puppeteer-dealer';
 import c from 'ansi-colors';
+import stripAnsi from 'strip-ansi';
 
 import { analyzeUrlList } from './modules/analize-url.js';
 import { score } from './utils.js';
@@ -81,6 +82,12 @@ export async function analyze(
 			}
 		}
 	}
+
+	await writeFile(
+		path.resolve(dir, 'RESULT.txt'),
+		stripAnsi(output.join('\n').replaceAll(dir, '.')),
+		'utf8',
+	);
 
 	process.stdout.write(output.join('\n') + '\n');
 }
