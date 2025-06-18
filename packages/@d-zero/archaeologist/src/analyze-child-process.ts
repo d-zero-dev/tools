@@ -21,6 +21,7 @@ import { diffImages } from './modules/diff-images.js';
 import { diffText } from './modules/diff-text.js';
 import { diffTree } from './modules/diff-tree.js';
 import { getData } from './modules/get-data.js';
+import { normalizeTextDocument } from './modules/normalize-text-document.js';
 import { score } from './utils.js';
 
 export type ChildProcessParams = {
@@ -147,19 +148,23 @@ createChildProcess<ChildProcessParams, Result>((param) => {
 				let text: TextResult | null = null;
 
 				if (types.includes('text')) {
-					const contentA = screenshotA.text.textContent.trim().replaceAll(/\s+/g, ' ');
-					const contentB = screenshotB.text.textContent.trim().replaceAll(/\s+/g, ' ');
+					const contentA = normalizeTextDocument(screenshotA.text.textContent);
+					const contentB = normalizeTextDocument(screenshotB.text.textContent);
 					const altTextListA = screenshotA.text.altTextList.join('\n');
 					const altTextListB = screenshotB.text.altTextList.join('\n');
 					const textA = `${contentA}\n\n${altTextListA}`;
 					const textB = `${contentB}\n\n${altTextListB}`;
 					const textDiff = diffText(a.url, b.url, textA, textB);
 					const outFilePath = path.resolve(dir, `${id}_text.diff`);
-					await writeFile(outFilePath, textDiff.result, { encoding: 'utf8' });
+					await writeFile(
+						outFilePath,
+						`${textDiff.phrases.result}\n\n${textDiff.tokens.result}`,
+						{ encoding: 'utf8' },
+					);
 
 					text = {
-						matches: textDiff.matches,
-						diff: textDiff.changed ? textDiff.result : null,
+						matches: textDiff.tokens.matches,
+						diff: textDiff.tokens.changed ? textDiff.tokens.result : null,
 						file: outFilePath,
 					};
 				}

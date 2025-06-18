@@ -47,5 +47,8 @@ export function diffText(urlA: string, urlB: string, phraseA: string, phraseB: s
 	const frequencyMapA = frequencyMap(tokensA).join('\n');
 	const frequencyMapB = frequencyMap(tokensB).join('\n');
 
-	return diffTree(urlA, urlB, frequencyMapA, frequencyMapB);
+	return {
+		phrases: diffTree(urlA, urlB, phraseA, phraseB),
+		tokens: diffTree(urlA, urlB, frequencyMapA, frequencyMapB),
+	};
 }
