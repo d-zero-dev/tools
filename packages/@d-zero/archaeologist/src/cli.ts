@@ -11,6 +11,7 @@ interface ArchaeologistCLIOptions extends BaseCLIOptions {
 	type?: string;
 	freeze?: string;
 	selector?: string;
+	ignore?: string;
 	devices?: string;
 }
 
@@ -19,6 +20,7 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 		f: 'listfile',
 		t: 'type',
 		s: 'selector',
+		i: 'ignore',
 	},
 	usage: ['Usage: archaeologist -f <listfile> [--limit <number>]'],
 	parseArgs: (cli) => ({
@@ -27,6 +29,7 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 		type: cli.type,
 		freeze: cli.freeze,
 		selector: cli.selector,
+		ignore: cli.ignore,
 		devices:
 			cli.devices ??
 			// Alias for devices
@@ -43,6 +46,7 @@ if (hasConfigFile) {
 		hooks,
 		types: options.type ? parseList(options.type) : undefined,
 		selector: options.selector,
+		ignore: options.ignore,
 		devices: options.devices ? parseList(options.devices) : undefined,
 		limit: options.limit,
 		debug: options.debug,

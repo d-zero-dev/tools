@@ -11,6 +11,7 @@ export interface GetDataOptions {
 	readonly hooks?: readonly PageHook[];
 	readonly htmlDiffOnly?: boolean;
 	readonly selector?: string;
+	readonly ignore?: string;
 	readonly devices?: readonly string[];
 }
 
@@ -42,6 +43,7 @@ export async function getData(
 		listener: screenshotListener(update),
 		domOnly: htmlDiffOnly,
 		selector: options.selector,
+		ignore: options.ignore,
 	});
 
 	const data: PageData = { url, screenshots: {} };

@@ -43,6 +43,7 @@ export interface ArchaeologistOptions extends AnalyzeOptions {}
 export interface AnalyzeOptions extends GeneralOptions {
 	readonly types?: readonly string[];
 	readonly selector?: string;
+	readonly ignore?: string;
 	readonly devices?: readonly string[];
 }
 
