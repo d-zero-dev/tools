@@ -1,7 +1,7 @@
 import type { Screenshot, ScreenshotPhase } from './types.js';
 import type { Listener } from '@d-zero/puppeteer-general-actions';
 import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
-import type { Page } from 'puppeteer';
+import type { Page, ScreenshotOptions } from 'puppeteer';
 
 import { beforePageScan, defaultSizes } from '@d-zero/puppeteer-page-scan';
 import { urlToFileName } from '@d-zero/shared/url-to-file-name';
@@ -15,6 +15,7 @@ type Options = {
 	listener?: Listener<ScreenshotPhase>;
 	domOnly?: boolean;
 	path?: string;
+	selector?: string;
 };
 
 /**
@@ -51,11 +52,21 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 			try {
 				if (filePath && options?.path) {
 					listener?.('screenshotSaving', { name, path: options.path });
-					await page.screenshot({
+					const screenshotOptions: ScreenshotOptions = {
 						path: filePath as `${string}.png`,
 						fullPage: true,
 						type: 'png',
-					});
+					};
+
+					if (options?.selector) {
+						const element = await page.waitForSelector(options.selector);
+						if (!element) {
+							throw new Error(`Element not found: ${options.selector}`);
+						}
+						await element.screenshot(screenshotOptions);
+					} else {
+						await page.screenshot(screenshotOptions);
+					}
 				} else {
 					binary = await getBinary(page);
 					listener?.('screenshotEnd', { name, binary });
@@ -72,9 +83,12 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 		listener?.('getDOMStart', { name });
 		const title = await page.evaluate(() => document.title);
 		const dom = await page.content();
-		const text = await page.evaluate(() => {
-			const textContent = document.body.textContent ?? '';
-			const altTextList = [...document.querySelectorAll('img')]
+		const text = await page.evaluate((selector) => {
+			const scope = selector
+				? (document.querySelector(selector) ?? document.body)
+				: document.body;
+			const textContent = scope.textContent ?? '';
+			const altTextList = [...(scope.querySelectorAll('img') ?? [])]
 				.map((img) => {
 					const alt = img.getAttribute('alt');
 					return alt ?? '';
@@ -84,7 +98,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 				textContent,
 				altTextList,
 			};
-		});
+		}, options?.selector);
 		listener?.('getDOMEnd', { name, dom });
 
 		result[name] = {

@@ -17,11 +17,11 @@ export type Screenshot = {
 } & Size;
 
 export type ScreenshotPhase = {
-	screenshotStart: { name: string };
+	screenshotStart: { name: string; selector?: string };
 	screenshotEnd: { name: string; binary: Uint8Array };
-	screenshotSaving: { name: string; path: string };
+	screenshotSaving: { name: string; path: string; selector?: string };
 	screenshotError: { name: string; error: Error };
-	getDOMStart: { name: string };
+	getDOMStart: { name: string; selector?: string };
 	getDOMEnd: { name: string; dom: string };
 } & PageScanPhase;
 
