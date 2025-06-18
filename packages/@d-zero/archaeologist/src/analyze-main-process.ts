@@ -41,6 +41,7 @@ export async function analyze(
 					dir,
 					useOldMode,
 					types: options?.types,
+					selector: options?.selector,
 					hooks: options?.hooks ?? [],
 				},
 				{

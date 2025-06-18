@@ -42,6 +42,7 @@ export interface ArchaeologistOptions extends AnalyzeOptions {}
 
 export interface AnalyzeOptions extends GeneralOptions {
 	readonly types?: readonly string[];
+	readonly selector?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

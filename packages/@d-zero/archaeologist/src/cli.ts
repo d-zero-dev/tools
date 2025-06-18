@@ -11,12 +11,14 @@ import { readConfig } from './read-config.js';
 interface ArchaeologistCLIOptions extends BaseCLIOptions {
 	type?: string;
 	freeze?: string;
+	selector?: string;
 }
 
 const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 	aliases: {
 		f: 'listfile',
 		t: 'type',
+		s: 'selector',
 	},
 	usage: ['Usage: archaeologist -f <listfile> [--limit <number>]'],
 	parseArgs: (cli) => ({
@@ -24,6 +26,7 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 		listfile: cli.listfile,
 		type: cli.type,
 		freeze: cli.freeze,
+		selector: cli.selector,
 	}),
 	validateArgs: (options) => {
 		return !!(options.listfile?.length || options.freeze?.length);
@@ -35,6 +38,7 @@ if (hasConfigFile) {
 	await analyze(pairList, {
 		hooks,
 		types: options.type ? parseTypes(options.type) : undefined,
+		selector: options.selector,
 		limit: options.limit,
 		debug: options.debug,
 		verbose: options.verbose,

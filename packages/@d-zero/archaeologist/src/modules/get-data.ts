@@ -8,6 +8,7 @@ import { screenshotListener, screenshot } from '@d-zero/puppeteer-screenshot';
 export interface GetDataOptions {
 	readonly hooks?: readonly PageHook[];
 	readonly htmlDiffOnly?: boolean;
+	readonly selector?: string;
 }
 
 /**
@@ -38,6 +39,7 @@ export async function getData(
 		hooks: options?.hooks ?? [],
 		listener: screenshotListener(update),
 		domOnly: htmlDiffOnly,
+		selector: options.selector,
 	});
 
 	const data: PageData = { url, screenshots: {} };
