@@ -14,6 +14,7 @@ export default [
 		files: ['*.mjs', '**/*.spec.{js,mjs,ts}'],
 		rules: {
 			'import/no-extraneous-dependencies': 0,
+			'import-x/no-extraneous-dependencies': 0,
 		},
 	},
 	{

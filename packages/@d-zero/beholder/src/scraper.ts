@@ -13,7 +13,7 @@ import type { Browser, Page } from 'puppeteer';
 import { parseUrl } from '@d-zero/shared/parse-url';
 import { retry } from '@d-zero/shared/retry';
 import { TypedAwaitEventEmitter } from '@d-zero/shared/typed-await-event-emitter';
-import puppeteer from 'puppeteer';
+import { launch } from 'puppeteer';
 
 import { resourceLog, scraperLog } from './debug.js';
 import { getAnchorList, getImageList, getMeta } from './dom-evaluation.js';
@@ -301,24 +301,22 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 				message: executablePath || '(executablePath is default)',
 			});
 
-			const browser = await puppeteer
-				.launch({
-					headless,
-					timeout: LAUNCH_BROWSER_TIMEOUT,
-					executablePath: executablePath ?? undefined,
-					args: [
-						// TODO: Optional lang
-						'--lang=ja',
-						'--no-zygote',
-						'--ignore-certificate-errors',
-					],
-				})
-				.catch((error) => {
-					if (error instanceof Error) {
-						return error;
-					}
-					throw error;
-				});
+			const browser = await launch({
+				headless,
+				timeout: LAUNCH_BROWSER_TIMEOUT,
+				executablePath: executablePath ?? undefined,
+				args: [
+					// TODO: Optional lang
+					'--lang=ja',
+					'--no-zygote',
+					'--ignore-certificate-errors',
+				],
+			}).catch((error) => {
+				if (error instanceof Error) {
+					return error;
+				}
+				throw error;
+			});
 
 			if (browser instanceof Error) {
 				void this.emit('error', {

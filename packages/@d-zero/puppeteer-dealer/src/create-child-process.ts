@@ -7,7 +7,7 @@ import type {
 import type { LaunchOptions } from 'puppeteer';
 
 import { ProcTalk } from '@d-zero/proc-talk';
-import puppeteer from 'puppeteer';
+import { launch } from 'puppeteer';
 
 import { log } from './debug.js';
 
@@ -57,7 +57,7 @@ export function createChildProcess<P, R = void>(
 			};
 
 			childLog('Launch options: %O', launchOptions);
-			const browser = await puppeteer.launch(launchOptions);
+			const browser = await launch(launchOptions);
 
 			const page = await browser?.newPage();
 
