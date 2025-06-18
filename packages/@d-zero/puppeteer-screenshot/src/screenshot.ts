@@ -87,6 +87,14 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 			const scope = selector
 				? (document.querySelector(selector) ?? document.body)
 				: document.body;
+
+			const lineBreaks = scope.querySelectorAll(
+				'div, h1, h2, h3, h4, h5, h6, br, p, li, dt, dd, th, td',
+			);
+			for (const node of lineBreaks) {
+				node.append('\n');
+			}
+
 			const textContent = scope.textContent ?? '';
 			const altTextList = [...(scope.querySelectorAll('img') ?? [])]
 				.map((img) => {
