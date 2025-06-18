@@ -1,12 +1,16 @@
-import type { Page } from 'puppeteer';
+import type { ElementHandle, Page, ScreenshotOptions } from 'puppeteer';
 
 /**
  *
- * @param page
+ * @param scope
+ * @param options
  */
-export async function getBinary(page: Page) {
-	const buffer = await page.screenshot({
-		fullPage: true,
+export async function getBinary(
+	scope: Page | ElementHandle<Element>,
+	options?: Readonly<ScreenshotOptions>,
+) {
+	const buffer = await scope.screenshot({
+		...options,
 		type: 'png',
 		encoding: 'binary',
 	});

@@ -1,7 +1,7 @@
 import type { Screenshot, ScreenshotPhase } from './types.js';
 import type { Listener } from '@d-zero/puppeteer-general-actions';
 import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
-import type { Page, ScreenshotOptions } from 'puppeteer';
+import type { Page } from 'puppeteer';
 
 import { beforePageScan, defaultSizes } from '@d-zero/puppeteer-page-scan';
 import { urlToFileName } from '@d-zero/shared/url-to-file-name';
@@ -49,26 +49,28 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 
 		if (!options?.domOnly) {
 			listener?.('screenshotStart', { name });
+
+			const scope = options?.selector
+				? await page.waitForSelector(options.selector)
+				: page;
+			const fullPage = options?.selector ? false : true;
+
+			if (!scope) {
+				throw new Error(`Element not found: ${options?.selector}`);
+			}
+
 			try {
 				if (filePath && options?.path) {
 					listener?.('screenshotSaving', { name, path: options.path });
-					const screenshotOptions: ScreenshotOptions = {
-						path: filePath as `${string}.png`,
-						fullPage: true,
+					await scope.screenshot({
+						fullPage,
 						type: 'png',
-					};
-
-					if (options?.selector) {
-						const element = await page.waitForSelector(options.selector);
-						if (!element) {
-							throw new Error(`Element not found: ${options.selector}`);
-						}
-						await element.screenshot(screenshotOptions);
-					} else {
-						await page.screenshot(screenshotOptions);
-					}
+						path: filePath as `${string}.png`,
+					});
 				} else {
-					binary = await getBinary(page);
+					binary = await getBinary(scope, {
+						fullPage,
+					});
 					listener?.('screenshotEnd', { name, binary });
 				}
 			} catch (error: unknown) {
@@ -88,6 +90,8 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 				? (document.querySelector(selector) ?? document.body)
 				: document.body;
 
+			// Normalize text content for diff accuracy by adding line breaks between block elements
+			// This ensures consistent text extraction regardless of HTML formatting
 			const lineBreaks = scope.querySelectorAll(
 				'div, h1, h2, h3, h4, h5, h6, br, p, li, dt, dd, th, td',
 			);
