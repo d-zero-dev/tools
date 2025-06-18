@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.4.0...@d-zero/a11y-check-core@0.5.0) (2025-06-18)
+
+- feat(dealer)!: improve integration with dealer package ([fb59c1f](https://github.com/d-zero-dev/tools/commit/fb59c1f7635882cb2ff85d48f6f4729aec63d9ee))
+
+### Features
+
+- **a11y-check-core:** add moduleParams property to Scenario type ([ec794a7](https://github.com/d-zero-dev/tools/commit/ec794a7c26d1ca852313f08db9c2e4040fcfa498))
+
+### BREAKING CHANGES
+
+- integrate dealer options and update callback format
+
 # [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.3.0...@d-zero/a11y-check-core@0.4.0) (2025-05-20)
 
 - refactor(a11y-check-core)!: split scenario runner into main and child processes ([6f61a24](https://github.com/d-zero-dev/tools/commit/6f61a244b3895f1a8d4f4375742f13a8568b0a44))

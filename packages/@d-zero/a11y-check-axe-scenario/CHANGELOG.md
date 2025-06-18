@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.3.1...@d-zero/a11y-check-axe-scenario@0.4.0) (2025-06-18)
+
+### Bug Fixes
+
+- correct typos and grammar mistakes across codebase ([4ad3d78](https://github.com/d-zero-dev/tools/commit/4ad3d7806dd892de5bd68e8645e78e6ea36c27a1))
+
+### Features
+
+- **a11y-check-axe-scenario:** add moduleParams to scenario ([51ea552](https://github.com/d-zero-dev/tools/commit/51ea552d8d227c756d9fd4f40aa8cff7c6a60699))
+
 ## [0.3.1](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.3.0...@d-zero/a11y-check-axe-scenario@0.3.1) (2025-05-20)
 
 ### Bug Fixes

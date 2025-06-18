@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.8.0...@d-zero/shared@0.9.0) (2025-06-18)
+
+### Bug Fixes
+
+- correct typos and grammar mistakes across codebase ([4ad3d78](https://github.com/d-zero-dev/tools/commit/4ad3d7806dd892de5bd68e8645e78e6ea36c27a1))
+- **shared:** correct holiday spelling from holyday to holiday ([92a1a37](https://github.com/d-zero-dev/tools/commit/92a1a37fdec165102c05abaff63a6289289009ed))
+
+### Features
+
+- **cli-core:** create new CLI utilities package for common CLI patterns ([70100a2](https://github.com/d-zero-dev/tools/commit/70100a26349130dcc4da184e9afce7fa664b0d88))
+- **shared:** add parse-url module to handle URL parsing with extended properties ([33536f9](https://github.com/d-zero-dev/tools/commit/33536f910190f66c15eb2840715681a3e42dbf79))
+
+### BREAKING CHANGES
+
+- **shared:** Function and export names changed from holyday to holiday
+
+* skipHolydays -> skipHolidays
+* skipHolydayPeriod -> skipHolidayPeriod
+* File names and import paths updated accordingly
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
 # [0.8.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.7.0...@d-zero/shared@0.8.0) (2025-05-20)
 
 ### Features

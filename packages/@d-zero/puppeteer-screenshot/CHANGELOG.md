@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.0.1...@d-zero/puppeteer-screenshot@3.1.0) (2025-06-18)
+
+### Bug Fixes
+
+- **puppeteer-screenshot:** pass scope parameter to getBinary function correctly ([656f084](https://github.com/d-zero-dev/tools/commit/656f084a76d86f066d7a64abe33a5ee5271d40b5))
+
+### Features
+
+- **archaeologist:** add text diff analysis with morphological analysis ([00ed8b2](https://github.com/d-zero-dev/tools/commit/00ed8b2343b5d382cf325292dc756a2e9027c980))
+- **puppeteer-screenshot:** add ignore option to hide elements during screenshot ([d0ae053](https://github.com/d-zero-dev/tools/commit/d0ae053198bfb5d08a1d0a263b480f9b32663b96))
+- **puppeteer-screenshot:** add selector option for targeted screenshots ([13b71b5](https://github.com/d-zero-dev/tools/commit/13b71b5459c0bc925e8bbc8dd6ffb110f5f92966))
+- **puppeteer-screenshot:** normalize text content by adding line breaks for diff accuracy ([19fa0c2](https://github.com/d-zero-dev/tools/commit/19fa0c2c657c1d558a018298b0ac884aa46a6fe1))
+
 ## [3.0.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.0.0...@d-zero/puppeteer-screenshot@3.0.1) (2025-05-20)
 
 **Note:** Version bump only for package @d-zero/puppeteer-screenshot

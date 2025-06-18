@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-scenarios@0.3.1...@d-zero/a11y-check-scenarios@0.4.0) (2025-06-18)
+
+### Features
+
+- **a11y-check-scenarios:** add moduleParams to scenarios ([90827bf](https://github.com/d-zero-dev/tools/commit/90827bf5f8b8e28dae24f78279f3da555a33d32c))
+
 ## [0.3.1](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-scenarios@0.3.0...@d-zero/a11y-check-scenarios@0.3.1) (2025-05-20)
 
 ### Bug Fixes

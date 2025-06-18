@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/backlog-projects@0.3.4...@d-zero/backlog-projects@0.4.0) (2025-06-18)
+
+### Bug Fixes
+
+- correct typos and grammar mistakes across codebase ([4ad3d78](https://github.com/d-zero-dev/tools/commit/4ad3d7806dd892de5bd68e8645e78e6ea36c27a1))
+- **shared:** correct holiday spelling from holyday to holiday ([92a1a37](https://github.com/d-zero-dev/tools/commit/92a1a37fdec165102c05abaff63a6289289009ed))
+
+### BREAKING CHANGES
+
+- **shared:** Function and export names changed from holyday to holiday
+
+* skipHolydays -> skipHolidays
+* skipHolydayPeriod -> skipHolidayPeriod
+* File names and import paths updated accordingly
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
 ## [0.3.4](https://github.com/d-zero-dev/tools/compare/@d-zero/backlog-projects@0.3.3...@d-zero/backlog-projects@0.3.4) (2025-05-20)
 
 **Note:** Version bump only for package @d-zero/backlog-projects

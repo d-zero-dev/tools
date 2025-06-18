@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.0.0...@d-zero/print@2.1.0) (2025-06-18)
+
+### Bug Fixes
+
+- correct typos and grammar mistakes across codebase ([4ad3d78](https://github.com/d-zero-dev/tools/commit/4ad3d7806dd892de5bd68e8645e78e6ea36c27a1))
+
+### Features
+
+- **cli-core:** create new CLI utilities package for common CLI patterns ([70100a2](https://github.com/d-zero-dev/tools/commit/70100a26349130dcc4da184e9afce7fa664b0d88))
+
 # [2.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@1.2.0...@d-zero/print@2.0.0) (2025-05-20)
 
 - refactor(print)!: migrate to child process architecture ([01412fb](https://github.com/d-zero-dev/tools/commit/01412fb3c674de59b18ea6ae9f4594f8aee2f985))

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.4.0...@d-zero/puppeteer-dealer@0.5.0) (2025-06-18)
+
+- feat(dealer)!: improve integration with dealer package ([fb59c1f](https://github.com/d-zero-dev/tools/commit/fb59c1f7635882cb2ff85d48f6f4729aec63d9ee))
+
+### Features
+
+- **puppeteer-dealer:** add authentication support and improve type definitions ([c93aff0](https://github.com/d-zero-dev/tools/commit/c93aff051674f8cf6f33fb34635695cde447343e))
+- **puppeteer-dealer:** add Chrome security flags to child process ([329a97f](https://github.com/d-zero-dev/tools/commit/329a97f2b3c4c06c9ec8b2b18ca87aee535acd3e))
+
+### BREAKING CHANGES
+
+- integrate dealer options and update callback format
+
 # [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.3.0...@d-zero/puppeteer-dealer@0.4.0) (2025-05-20)
 
 ### Bug Fixes
