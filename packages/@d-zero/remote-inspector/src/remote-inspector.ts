@@ -33,13 +33,18 @@ export async function remoteInspector(options: RemoteInspectorOptions): Promise<
 	// eslint-disable-next-line no-console
 	console.log('Success!');
 
+	const baseDir =
+		options.localDir && path.isAbsolute(options.localDir)
+			? options.localDir
+			: path.resolve(process.cwd(), options.localDir ?? '');
+
 	try {
 		const localFilesText = await fs.readFile(options.listfile!, 'utf8');
 		const localFiles = localFilesText
 			.split('\n')
 			.map((line) => line.trim())
 			.filter((l) => !!l)
-			.map((line) => path.join('..', line));
+			.map((line) => path.resolve(baseDir, line));
 
 		for (const localFile of localFiles) {
 			const comparison = await compareFile(
