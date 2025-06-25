@@ -8,6 +8,7 @@ export interface RemoteInspectorOptions extends BaseCLIOptions {
 	remoteDir?: string;
 	localDir?: string;
 	listfile?: string;
+	root?: string;
 }
 
 export interface ConnectionConfig {

@@ -43,17 +43,18 @@ remote-inspector -h example.com -u deploy -k /path/to/key.pem -r /var/www/html
 
 #### CLIオプション
 
-| オプション     | エイリアス | 説明                   | デフォルト  |
-| -------------- | ---------- | ---------------------- | ----------- |
-| `--host`       | `-h`       | リモートホスト         | -           |
-| `--user`       | `-u`       | リモートユーザー名     | -           |
-| `--key`        | `-k`       | 秘密鍵ファイルのパス   | -           |
-| `--passphrase` | `-p`       | 秘密鍵のパスフレーズ   | -           |
-| `--remote-dir` | `-r`       | リモートディレクトリ   | -           |
-| `--local-dir`  | `-l`       | ローカルディレクトリ   | `.`         |
-| `--listfile`   | `-f`       | ファイルリスト         | `files.txt` |
-| `--debug`      | `-d`       | デバッグモードを有効化 | `false`     |
-| `--verbose`    | `-v`       | 詳細出力を有効化       | `false`     |
+| オプション     | エイリアス | 説明                       | デフォルト  |
+| -------------- | ---------- | -------------------------- | ----------- |
+| `--host`       | `-h`       | リモートホスト             | -           |
+| `--user`       | `-u`       | リモートユーザー名         | -           |
+| `--key`        | `-k`       | 秘密鍵ファイルのパス       | -           |
+| `--passphrase` | `-p`       | 秘密鍵のパスフレーズ       | -           |
+| `--remote-dir` | `-r`       | リモートディレクトリ       | -           |
+| `--local-dir`  | `-l`       | ローカルディレクトリ       | `.`         |
+| `--listfile`   | `-f`       | ファイルリスト             | `files.txt` |
+| `--root`       | `-o`       | ファイルリストのルートパス | -           |
+| `--debug`      | `-d`       | デバッグモードを有効化     | `false`     |
+| `--verbose`    | `-v`       | 詳細出力を有効化           | `false`     |
 
 #### 環境変数 / .envファイル
 
@@ -77,6 +78,26 @@ htdocs/index.html
 htdocs/images/logo.png
 htdocs/js/app.js
 ```
+
+### --root オプションについて
+
+`--root` オプションは、ファイルリスト内のパスとリモートサーバー上のパスの整合性を保つために使用します。
+
+例えば、ローカルでは `htdocs` がドキュメントルートだが、ファイルリストに `htdocs/index.html` のように記載されている場合：
+
+```bash
+# htdocs プレフィックスを除去してリモートパスを計算
+remote-inspector --root htdocs --remote-dir /var/www/html
+```
+
+この場合、`htdocs/index.html` は `/var/www/html/index.html` として比較されます。
+
+**設定例:**
+
+- ファイルリスト: `htdocs/css/style.css`
+- `--root htdocs` 指定
+- `--remote-dir /var/www/html` 指定
+- → リモートパス: `/var/www/html/css/style.css`
 
 ## 出力
 
@@ -126,6 +147,16 @@ remote-inspector --host staging-server.com
 ```bash
 # 別のファイルリストを使用
 remote-inspector --listfile production-files.txt
+```
+
+### 例4: ルートプレフィックスを指定
+
+```bash
+# ファイルリストのhtdocsプレフィックスを除去
+remote-inspector --root htdocs
+
+# .envの設定を使用しつつ、ルートプレフィックスのみ変更
+remote-inspector --root public
 ```
 
 ## 開発

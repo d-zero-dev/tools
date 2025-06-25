@@ -24,6 +24,7 @@ const config = {
 		'  --remote-dir <dir>      Remote directory',
 		'  --local-dir <dir>       Local directory (default: .)',
 		'  --listfile <file>       File list (default: files.txt)',
+		'  --root <path>           Root path prefix to strip from file list paths',
 		'  --debug                 Enable debug mode',
 		'  --verbose               Enable verbose output',
 		'',
@@ -52,6 +53,7 @@ const config = {
 		r: 'remote-dir',
 		l: 'local-dir',
 		f: 'listfile',
+		o: 'root',
 		d: 'debug',
 		v: 'verbose',
 	},
@@ -64,6 +66,7 @@ const config = {
 		remoteDir: cli['remote-dir'] || process.env.RELEASE_DIR,
 		localDir: cli['local-dir'] || '.',
 		listfile: cli.listfile || 'files.txt',
+		root: cli.root,
 	}),
 	validateArgs: (options: RemoteInspectorOptions): boolean => {
 		if (!options.host) {

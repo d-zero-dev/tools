@@ -52,6 +52,7 @@ export async function remoteInspector(options: RemoteInspectorOptions): Promise<
 				localFile,
 				options.localDir!,
 				options.remoteDir!,
+				options.root,
 			);
 
 			displayComparison(comparison);
@@ -67,16 +68,35 @@ export async function remoteInspector(options: RemoteInspectorOptions): Promise<
  * @param localFile
  * @param localDir
  * @param remoteDir
+ * @param root
  */
 async function compareFile(
 	client: Client,
 	localFile: string,
 	localDir: string,
 	remoteDir: string,
+	root?: string,
 ): Promise<FileComparison> {
 	const localPath = path.resolve(localFile);
 	const relativePath = path.relative(localDir, localFile);
-	const remotePath = path.join(remoteDir, relativePath);
+
+	// Calculate remote path by removing root prefix
+	let remoteRelativePath = relativePath;
+	if (root) {
+		// If root is set, remove root prefix from relativePath
+		const normalizedRoot = path.normalize(root);
+		const normalizedRelativePath = path.normalize(relativePath);
+
+		if (normalizedRelativePath.startsWith(normalizedRoot)) {
+			// Remove root prefix and leading separator
+			remoteRelativePath = normalizedRelativePath.slice(normalizedRoot.length);
+			if (remoteRelativePath.startsWith(path.sep)) {
+				remoteRelativePath = remoteRelativePath.slice(1);
+			}
+		}
+	}
+
+	const remotePath = path.join(remoteDir, remoteRelativePath);
 
 	const ext = path.extname(localPath);
 	const isTextFile = !/^\.(?:png|jpe?g|webp|pdf|mp4|zip)$/i.test(ext);
