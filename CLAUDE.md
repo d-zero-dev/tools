@@ -53,6 +53,13 @@
 - **Color output testing**: Verify ANSI escape sequences for terminal colors
 - **Mock usage**: Use mocks for external dependencies, side effects, and uncontrollable inputs
 
+## Package Version Management
+
+- **Check latest version**: Use `npm view <package-name> version` (fastest and most accurate)
+- **View version history**: Use `npm view <package-name> versions --json`
+- **Check outdated packages**: Use `npm outdated` for project-wide check
+- **Avoid web searches** for version checking - use npm commands directly
+
 ## Error Prevention
 
 - Test build and test commands after making changes
