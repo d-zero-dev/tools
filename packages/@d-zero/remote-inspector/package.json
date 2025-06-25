@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/remote-inspector",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Compare local and remote files via SSH/SFTP before deployment",
 	"author": "D-ZERO",
 	"license": "MIT",
