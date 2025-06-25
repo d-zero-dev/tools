@@ -4,7 +4,6 @@
 	"description": "A manipulating Backlog projects library",
 	"author": "D-ZERO",
 	"license": "MIT",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
@@ -12,9 +11,7 @@
 		"node": ">=22.1.0"
 	},
 	"type": "module",
-	"bin": {
-		"backlog-projects": "./dist/cli.js"
-	},
+	"bin": "./dist/cli.js",
 	"exports": {
 		".": {
 			"import": "./dist/index.js"

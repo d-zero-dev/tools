@@ -4,7 +4,6 @@
 	"description": "Accessibility Checker CLI",
 	"author": "D-ZERO",
 	"license": "MIT",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
@@ -15,9 +14,7 @@
 			"types": "./dist/a11y-check.d.ts"
 		}
 	},
-	"bin": {
-		"a11y-check": "./dist/cli.js"
-	},
+	"bin": "./dist/cli.js",
 	"files": [
 		"dist"
 	],

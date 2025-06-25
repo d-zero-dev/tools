@@ -4,7 +4,6 @@
 	"description": "A simple Notion API client for D-ZERO tools",
 	"author": "D-ZERO",
 	"license": "MIT",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},

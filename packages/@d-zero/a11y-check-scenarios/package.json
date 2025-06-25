@@ -4,7 +4,6 @@
 	"description": "Accessibility Checker Scenario Collection",
 	"author": "D-ZERO",
 	"license": "MIT",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
