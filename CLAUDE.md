@@ -39,6 +39,20 @@
 - Check existing usage patterns before adding new dependencies
 - Maintain backward compatibility with existing exports
 
+## Testing Guidelines
+
+- **Test file naming**: Use `.spec.ts` extension and place next to source files (e.g., `foo.ts` → `foo.spec.ts`)
+- **Test file location**: Always place test files adjacent to the source files they test
+- **Test structure**: Follow AAA pattern (Arrange, Act, Assert)
+- **Test principles**:
+  - No conditionals (if/else/switch) in test code
+  - No calculations or logic processing (except file paths)
+  - No try/catch blocks in test code
+  - Test one behavior per test case
+- **Pure function testing**: Test without mocks when possible
+- **Color output testing**: Verify ANSI escape sequences for terminal colors
+- **Mock usage**: Use mocks for external dependencies, side effects, and uncontrollable inputs
+
 ## Error Prevention
 
 - Test build and test commands after making changes
