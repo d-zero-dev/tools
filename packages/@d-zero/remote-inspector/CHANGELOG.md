@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.4.0...@d-zero/remote-inspector@0.5.0) (2025-06-26)
+
+### Features
+
+- **remote-inspector:** add remote file existence check when local file is missing ([35aeace](https://github.com/d-zero-dev/tools/commit/35aeace223cc92221c4a75d8e840f601217433ad))
+
 # [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.3.0...@d-zero/remote-inspector@0.4.0) (2025-06-26)
 
 ### Features
