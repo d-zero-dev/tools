@@ -26,9 +26,19 @@ export async function remoteInspector(options: RemoteInspectorOptions): Promise<
 	const connectionConfig: ConnectionConfig = {
 		host: options.host!,
 		username: options.user!,
-		privateKey: await fs.readFile(options.keyPath!),
-		passphrase: options.passphrase,
 	};
+
+	// Choose authentication method
+	if (options.keyPath) {
+		// Private key authentication
+		connectionConfig.privateKey = await fs.readFile(options.keyPath);
+		if (options.passphrase) {
+			connectionConfig.passphrase = options.passphrase;
+		}
+	} else if (options.password) {
+		// Password authentication
+		connectionConfig.password = options.password;
+	}
 
 	await client.connect(connectionConfig);
 	// eslint-disable-next-line no-console

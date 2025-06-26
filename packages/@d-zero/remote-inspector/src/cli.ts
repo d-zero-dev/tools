@@ -6,6 +6,7 @@ import { createCLI, parseCommonOptions } from '@d-zero/cli-core';
 import { config as dotenvConfig } from 'dotenv';
 
 import { remoteInspector } from './remote-inspector.js';
+import { validateRemoteInspectorArgs } from './validation.js';
 
 // Load .env file if it exists
 dotenvConfig();
@@ -21,6 +22,7 @@ const config = {
 		'  --user <user>           Remote username',
 		'  --key <path>            Path to private key file',
 		'  --passphrase <phrase>   Passphrase for private key',
+		'  --password <password>   Password for SSH authentication',
 		'  --remote-dir <dir>      Remote directory',
 		'  --local-dir <dir>       Local directory (default: .)',
 		'  --listfile <file>       File list (default: files.txt)',
@@ -32,11 +34,17 @@ const config = {
 		'  Settings can be provided via CLI options, environment variables, or .env file.',
 		'  Priority: CLI options > environment variables > .env file',
 		'',
+		'Authentication:',
+		'  You can use either private key authentication or password authentication.',
+		'  Private key auth: --key (and optionally --passphrase)',
+		'  Password auth: --password',
+		'',
 		'Environment variables (.env file supported):',
 		'  RELEASE_HOST            Remote host',
 		'  RELEASE_USER            Remote username',
 		'  RELEASE_KEY             Path to private key file',
 		'  RELEASE_PASS_PHRASE     Passphrase for private key',
+		'  RELEASE_PASSWORD        Password for SSH authentication',
 		'  RELEASE_DIR             Remote directory',
 		'',
 		'Example .env file:',
@@ -44,12 +52,19 @@ const config = {
 		'  RELEASE_USER=deploy',
 		'  RELEASE_KEY=/path/to/key.pem',
 		'  RELEASE_DIR=/var/www/html',
+		'',
+		'Example .env file (password auth):',
+		'  RELEASE_HOST=example.com',
+		'  RELEASE_USER=deploy',
+		'  RELEASE_PASSWORD=your_password',
+		'  RELEASE_DIR=/var/www/html',
 	],
 	aliases: {
 		h: 'host',
 		u: 'user',
 		k: 'key',
 		p: 'passphrase',
+		w: 'password',
 		r: 'remote-dir',
 		l: 'local-dir',
 		f: 'listfile',
@@ -63,33 +78,21 @@ const config = {
 		user: cli.user || process.env.RELEASE_USER,
 		keyPath: cli.key || process.env.RELEASE_KEY,
 		passphrase: cli.passphrase || process.env.RELEASE_PASS_PHRASE,
+		password: cli.password || process.env.RELEASE_PASSWORD,
 		remoteDir: cli['remote-dir'] || process.env.RELEASE_DIR,
 		localDir: cli['local-dir'] || '.',
 		listfile: cli.listfile || 'files.txt',
 		root: cli.root,
 	}),
 	validateArgs: (options: RemoteInspectorOptions): boolean => {
-		if (!options.host) {
+		try {
+			validateRemoteInspectorArgs(options);
+			return true;
+		} catch (error) {
 			// eslint-disable-next-line no-console
-			console.error('Error: --host or RELEASE_HOST is required');
+			console.error(`Error: ${error instanceof Error ? error.message : error}`);
 			return false;
 		}
-		if (!options.user) {
-			// eslint-disable-next-line no-console
-			console.error('Error: --user or RELEASE_USER is required');
-			return false;
-		}
-		if (!options.keyPath) {
-			// eslint-disable-next-line no-console
-			console.error('Error: --key or RELEASE_KEY is required');
-			return false;
-		}
-		if (!options.remoteDir) {
-			// eslint-disable-next-line no-console
-			console.error('Error: --remote-dir or RELEASE_DIR is required');
-			return false;
-		}
-		return true;
 	},
 };
 

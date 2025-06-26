@@ -5,6 +5,7 @@ export interface RemoteInspectorOptions extends BaseCLIOptions {
 	user?: string;
 	keyPath?: string;
 	passphrase?: string;
+	password?: string;
 	remoteDir?: string;
 	localDir?: string;
 	listfile?: string;
@@ -14,8 +15,9 @@ export interface RemoteInspectorOptions extends BaseCLIOptions {
 export interface ConnectionConfig {
 	host: string;
 	username: string;
-	privateKey: Buffer;
+	privateKey?: Buffer;
 	passphrase?: string;
+	password?: string;
 }
 
 export interface FileComparison {

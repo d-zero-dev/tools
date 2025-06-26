@@ -5,6 +5,7 @@ SSH/SFTP経由でローカルファイルとリモートファイルを比較し
 ## 機能
 
 - 🔍 **ファイル比較**: SSH/SFTP経由でローカルファイルとリモートファイルを比較
+- 🔐 **柔軟な認証**: 秘密鍵認証またはパスワード認証をサポート
 - 📊 **テキスト差分**: テキストファイルの行単位差分表示（カラーコード付き）
 - 📦 **バイナリチェック**: バイナリファイル（画像、PDF等）のサイズ比較
 - 🆕 **新規ファイル検出**: リモートサーバーに存在しないファイルの識別
@@ -29,17 +30,35 @@ yarn build
 # .envファイルの設定を使用
 remote-inspector
 
-# CLIオプションを使用
+# 秘密鍵認証を使用
 remote-inspector --host example.com --user deploy --key /path/to/key.pem --remote-dir /var/www/html
+
+# パスワード認証を使用
+remote-inspector --host example.com --user deploy --password your_password --remote-dir /var/www/html
 
 # 短縮エイリアスを使用
 remote-inspector -h example.com -u deploy -k /path/to/key.pem -r /var/www/html
+remote-inspector -h example.com -u deploy -w your_password -r /var/www/html
 ```
 
 ### 設定
 
 設定はCLIオプション、環境変数、.envファイルで指定できます。
 **優先順位**: CLIオプション → 環境変数 → .envファイル
+
+#### 認証方式
+
+このツールは2つの認証方式をサポートしています：
+
+1. **秘密鍵認証** (推奨):
+   - `--key` オプションで秘密鍵ファイルを指定
+   - 必要に応じて `--passphrase` でパスフレーズを指定
+
+2. **パスワード認証**:
+   - `--password` オプションでパスワードを指定
+   - セキュリティ上の理由により、可能な限り秘密鍵認証を使用することを推奨
+
+**注意**: 秘密鍵認証とパスワード認証を同時に指定することはできません。
 
 #### CLIオプション
 
@@ -49,6 +68,7 @@ remote-inspector -h example.com -u deploy -k /path/to/key.pem -r /var/www/html
 | `--user`       | `-u`       | リモートユーザー名         | -           |
 | `--key`        | `-k`       | 秘密鍵ファイルのパス       | -           |
 | `--passphrase` | `-p`       | 秘密鍵のパスフレーズ       | -           |
+| `--password`   | `-w`       | SSH認証用パスワード        | -           |
 | `--remote-dir` | `-r`       | リモートディレクトリ       | -           |
 | `--local-dir`  | `-l`       | ローカルディレクトリ       | `.`         |
 | `--listfile`   | `-f`       | ファイルリスト             | `files.txt` |
@@ -58,13 +78,22 @@ remote-inspector -h example.com -u deploy -k /path/to/key.pem -r /var/www/html
 
 #### 環境変数 / .envファイル
 
-プロジェクトルートに`.env`ファイルを作成:
+**秘密鍵認証の場合:**
 
 ```env
 RELEASE_HOST=example.com
 RELEASE_USER=deploy
 RELEASE_KEY=/path/to/private/key.pem
 RELEASE_PASS_PHRASE=必要に応じてパスフレーズ
+RELEASE_DIR=/var/www/html
+```
+
+**パスワード認証の場合:**
+
+```env
+RELEASE_HOST=example.com
+RELEASE_USER=deploy
+RELEASE_PASSWORD=your_password
 RELEASE_DIR=/var/www/html
 ```
 
@@ -142,14 +171,29 @@ remote-inspector
 remote-inspector --host staging-server.com
 ```
 
-### 例3: 異なるファイルリストを使用
+### 例3: パスワード認証を使用
+
+```bash
+# パスワード認証でサーバーに接続
+remote-inspector --host example.com --user deploy --password your_password --remote-dir /var/www/html
+
+# .envファイルでパスワード認証を設定
+echo "RELEASE_HOST=example.com
+RELEASE_USER=deploy
+RELEASE_PASSWORD=your_password
+RELEASE_DIR=/var/www/html" > .env
+
+remote-inspector
+```
+
+### 例4: 異なるファイルリストを使用
 
 ```bash
 # 別のファイルリストを使用
 remote-inspector --listfile production-files.txt
 ```
 
-### 例4: ルートプレフィックスを指定
+### 例5: ルートプレフィックスを指定
 
 ```bash
 # ファイルリストのhtdocsプレフィックスを除去
@@ -182,7 +226,9 @@ yarn clean
 ## 要件
 
 - リモートサーバーへのSSHアクセス
-- 認証用の秘密鍵ファイル
+- 以下のいずれかの認証方法:
+  - SSH秘密鍵ファイル（推奨）
+  - SSHパスワード認証
 
 ## ライセンス
 
