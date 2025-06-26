@@ -1,1 +1,1 @@
-export { default } from '@d-zero/prettier-config';
+export { default } from '@d-zero/prettier-config/base';
