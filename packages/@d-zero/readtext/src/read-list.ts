@@ -1,4 +1,4 @@
-/* eslint-disable jsdoc/require-jsdoc, jsdoc/check-param-names */
+/* eslint-disable jsdoc/check-param-names */
 
 import type { KeyValue, Separator } from './types.js';
 
