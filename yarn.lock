@@ -874,7 +874,7 @@ __metadata:
     "@d-zero/google-auth": "npm:0.4.1"
     "@d-zero/google-sheets": "npm:0.3.3"
     "@d-zero/puppeteer-page-scan": "npm:4.0.2"
-    "@d-zero/readtext": "npm:1.1.5"
+    "@d-zero/readtext": "npm:1.1.6"
     "@d-zero/shared": "npm:0.9.1"
     ansi-colors: "npm:4.1.3"
     dayjs: "npm:1.11.13"
@@ -896,7 +896,7 @@ __metadata:
     "@d-zero/puppeteer-dealer": "npm:0.5.1"
     "@d-zero/puppeteer-page-scan": "npm:4.0.2"
     "@d-zero/puppeteer-screenshot": "npm:3.1.1"
-    "@d-zero/readtext": "npm:1.1.5"
+    "@d-zero/readtext": "npm:1.1.6"
     "@d-zero/shared": "npm:0.9.1"
     "@types/diff": "npm:8.0.0"
     "@types/pixelmatch": "npm:5.2.6"
@@ -1024,7 +1024,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/filematch@workspace:packages/@d-zero/filematch"
   dependencies:
-    "@d-zero/readtext": "npm:1.1.5"
+    "@d-zero/readtext": "npm:1.1.6"
     "@types/follow-redirects": "npm:1.14.4"
     "@types/node": "npm:22.15.33"
     follow-redirects: "npm:1.15.9"
@@ -1114,7 +1114,7 @@ __metadata:
     "@d-zero/puppeteer-dealer": "npm:0.5.1"
     "@d-zero/puppeteer-page-scan": "npm:4.0.2"
     "@d-zero/puppeteer-screenshot": "npm:3.1.1"
-    "@d-zero/readtext": "npm:1.1.5"
+    "@d-zero/readtext": "npm:1.1.6"
     "@d-zero/shared": "npm:0.9.1"
     ansi-colors: "npm:4.1.3"
     dayjs: "npm:1.11.13"
@@ -1194,7 +1194,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/readtext@npm:1.1.5, @d-zero/readtext@workspace:packages/@d-zero/readtext":
+"@d-zero/readtext@npm:1.1.6, @d-zero/readtext@workspace:packages/@d-zero/readtext":
   version: 0.0.0-use.local
   resolution: "@d-zero/readtext@workspace:packages/@d-zero/readtext"
   dependencies:

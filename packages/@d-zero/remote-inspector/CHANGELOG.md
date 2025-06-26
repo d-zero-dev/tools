@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.3.0...@d-zero/remote-inspector@0.4.0) (2025-06-26)
+
+### Features
+
+- **remote-inspector:** add password authentication support ([4812629](https://github.com/d-zero-dev/tools/commit/481262948d45e5666ea2d7d6a974259e33f63830))
+
 # [0.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.2.0...@d-zero/remote-inspector@0.3.0) (2025-06-25)
 
 ### Bug Fixes
