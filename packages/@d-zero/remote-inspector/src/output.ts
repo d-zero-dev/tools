@@ -37,6 +37,15 @@ export function displayComparison(
 			outputHandler.log(
 				`${c.red.bold('Local file is not found')}: ${comparison.relativePath}`,
 			);
+			if (comparison.remoteExists) {
+				outputHandler.log(
+					`${c.yellow.bold('Remote file exists')}: ${comparison.remotePath} (size: ${comparison.remoteSize})`,
+				);
+			} else {
+				outputHandler.log(
+					`${c.gray('Remote file also not found')}: ${comparison.remotePath}`,
+				);
+			}
 			break;
 		}
 		case 'new': {

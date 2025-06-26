@@ -143,7 +143,7 @@ remote-inspector --root htdocs --remote-dir /var/www/html
 - `Same`: ファイルが同一
 - `Modified`: ファイルに差分あり
 - `New file`: ローカルに存在するがリモートに存在しない
-- `Local file is not found`: リストにあるがローカルに存在しない
+- `Local file is not found`: リストにあるがローカルに存在しない（リモートファイルの存在状況も併せて表示）
 
 ## 使用例
 

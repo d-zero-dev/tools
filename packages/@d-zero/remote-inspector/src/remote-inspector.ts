@@ -116,12 +116,22 @@ async function compareFile(
 	const localStat = await fs.stat(localPath).catch(() => null);
 
 	if (!localStat) {
+		// Check if remote file exists even when local file is missing
+		const remoteStat = await client.stat(remotePath).catch((error: unknown) => {
+			if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+				return null;
+			}
+			throw error;
+		});
+
 		return {
 			localPath,
 			remotePath,
 			relativePath,
 			isTextFile,
 			status: 'missing',
+			remoteExists: remoteStat !== null,
+			remoteSize: remoteStat?.size,
 		};
 	}
 

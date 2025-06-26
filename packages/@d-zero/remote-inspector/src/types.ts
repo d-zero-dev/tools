@@ -29,4 +29,5 @@ export interface FileComparison {
 	localSize?: number;
 	remoteSize?: number;
 	diff?: string;
+	remoteExists?: boolean;
 }
