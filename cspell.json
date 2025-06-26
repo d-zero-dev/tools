@@ -19,6 +19,10 @@
 
 		//
 		"Kuromoji",
-		"kuromojin"
+		"kuromojin",
+
+		// Test data
+		"mypassword",
+		"mypassphrase"
 	]
 }
