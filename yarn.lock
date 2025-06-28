@@ -5904,17 +5904,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:16.6.1":
+"dotenv@npm:16.6.1, dotenv@npm:^16.4.5":
   version: 16.6.1
   resolution: "dotenv@npm:16.6.1"
   checksum: 10c0/15ce56608326ea0d1d9414a5c8ee6dcf0fffc79d2c16422b4ac2268e7e2d76ff5a572d37ffe747c377de12005f14b3cc22361e79fc7f1061cce81f77d2c973dc
-  languageName: node
-  linkType: hard
-
-"dotenv@npm:^16.4.5":
-  version: 16.6.0
-  resolution: "dotenv@npm:16.6.0"
-  checksum: 10c0/c1029a8656e03abc53c0522baf733131ffd4e633d8ab66c3f2d470ebdd7c5d143ffab64945afc475e60c5f803f0e734a9f9247949d17cc8ff564fba5c15978b1
   languageName: node
   linkType: hard
 
