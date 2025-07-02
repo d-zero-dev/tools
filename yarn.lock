@@ -1026,7 +1026,7 @@ __metadata:
   dependencies:
     "@d-zero/readtext": "npm:1.1.6"
     "@types/follow-redirects": "npm:1.14.4"
-    "@types/node": "npm:22.15.34"
+    "@types/node": "npm:22.16.0"
     follow-redirects: "npm:1.15.9"
     minimist: "npm:1.2.8"
   bin:
@@ -1198,7 +1198,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/readtext@workspace:packages/@d-zero/readtext"
   dependencies:
-    "@types/node": "npm:22.15.34"
+    "@types/node": "npm:22.16.0"
   languageName: unknown
   linkType: soft
 
@@ -3345,12 +3345,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.15.34":
-  version: 22.15.34
-  resolution: "@types/node@npm:22.15.34"
+"@types/node@npm:22.16.0":
+  version: 22.16.0
+  resolution: "@types/node@npm:22.16.0"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10c0/fb6a6b36daaa1b484aaba3d33b4d1e7b37ea993e29f20b7a676affa76ed6ff6acd2ded4d5003469bc8dbc815b3d224533b4560896037ef6d5b5d552721ab7d57
+  checksum: 10c0/6219b521062f6c38d4d85ebd25807bd7f2bc703a5acba24e2c6716938d9d6cefd6fafd7b5156f61580eb58a0d82e8921751b778655675389631d813e5f261c03
   languageName: node
   linkType: hard
 
