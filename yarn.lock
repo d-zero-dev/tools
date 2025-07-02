@@ -923,7 +923,7 @@ __metadata:
   dependencies:
     "@d-zero/notion": "npm:1.0.8"
     "@d-zero/shared": "npm:0.9.1"
-    backlog-js: "npm:0.13.5"
+    backlog-js: "npm:0.13.6"
     dayjs: "npm:1.11.13"
     dotenv: "npm:16.6.1"
     enquirer: "npm:2.4.1"
@@ -4269,12 +4269,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"backlog-js@npm:0.13.5":
-  version: 0.13.5
-  resolution: "backlog-js@npm:0.13.5"
+"backlog-js@npm:0.13.6":
+  version: 0.13.6
+  resolution: "backlog-js@npm:0.13.6"
   dependencies:
     qs: "npm:^6.12.1"
-  checksum: 10c0/26b8c41340ddbe1d3a9b987978d801a2159ffdb41277016b8b8430c7a613eb342c6a37ccafdb3e51018953f44bd1c1c8174f9380b2a720d15a6b090e74dcc2ea
+  checksum: 10c0/0ba9e0d08c9206b703f825861fc9ba20f160f9670f2e81e6a3359ebdc78d890cdbcedc10f39620ffec91ec14199e527840bc3fdd6a04e26e5e477286ff931c8a
   languageName: node
   linkType: hard
 
