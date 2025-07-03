@@ -878,7 +878,7 @@ __metadata:
     "@d-zero/shared": "npm:0.9.1"
     ansi-colors: "npm:4.1.3"
     dayjs: "npm:1.11.13"
-    dotenv: "npm:16.6.1"
+    dotenv: "npm:17.0.1"
     front-matter: "npm:4.0.2"
     minimist: "npm:1.2.8"
   bin:
@@ -925,7 +925,7 @@ __metadata:
     "@d-zero/shared": "npm:0.9.1"
     backlog-js: "npm:0.13.5"
     dayjs: "npm:1.11.13"
-    dotenv: "npm:16.6.1"
+    dotenv: "npm:17.0.1"
     enquirer: "npm:2.4.1"
     minimist: "npm:1.2.8"
   bin:
@@ -1211,7 +1211,7 @@ __metadata:
     "@types/ssh2-sftp-client": "npm:9.0.4"
     ansi-colors: "npm:^4.1.3"
     diff: "npm:^7.0.0"
-    dotenv: "npm:^16.4.5"
+    dotenv: "npm:^17.0.0"
     ssh2-sftp-client: "npm:^12.0.0"
     typescript: "npm:5.8.3"
   bin:
@@ -5895,7 +5895,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:16.6.1, dotenv@npm:^16.4.5":
+"dotenv@npm:17.0.1, dotenv@npm:^17.0.0":
+  version: 17.0.1
+  resolution: "dotenv@npm:17.0.1"
+  checksum: 10c0/79d3381832ffc6ada0cab8158120c6190e8f8680c1ff985e9d4d1345229219923b23b800969ff47412a71f965da582c7a86a5ea0d257f9106f8f3522ceb5befa
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.4.5":
   version: 16.6.1
   resolution: "dotenv@npm:16.6.1"
   checksum: 10c0/15ce56608326ea0d1d9414a5c8ee6dcf0fffc79d2c16422b4ac2268e7e2d76ff5a572d37ffe747c377de12005f14b3cc22361e79fc7f1061cce81f77d2c973dc
