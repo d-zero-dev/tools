@@ -829,10 +829,10 @@ __metadata:
     "@d-zero/db-wcag": "npm:1.0.0-alpha.1"
     "@d-zero/shared": "npm:0.9.1"
     axe-core: "npm:4.10.3"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
   peerDependencies:
     axe-core: 4.10.3
-    puppeteer: 24.11.2
+    puppeteer: 24.12.0
   languageName: unknown
   linkType: soft
 
@@ -846,7 +846,7 @@ __metadata:
     "@d-zero/shared": "npm:0.9.1"
     ansi-colors: "npm:4.1.3"
     color-contrast-checker: "npm:2.1.0"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
   languageName: unknown
   linkType: soft
 
@@ -857,9 +857,9 @@ __metadata:
     "@d-zero/a11y-check-core": "npm:0.5.1"
     "@d-zero/shared": "npm:0.9.1"
     ansi-colors: "npm:4.1.3"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
   peerDependencies:
-    puppeteer: 24.11.2
+    puppeteer: 24.12.0
   languageName: unknown
   linkType: soft
 
@@ -910,7 +910,7 @@ __metadata:
     parse-diff: "npm:0.11.1"
     pixelmatch: "npm:7.1.0"
     pngjs: "npm:7.0.0"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
     strip-ansi: "npm:7.1.0"
   bin:
     archaeologist: ./dist/cli.js
@@ -942,7 +942,7 @@ __metadata:
     "@types/follow-redirects": "npm:1.14.4"
     debug: "npm:4.4.1"
     follow-redirects: "npm:1.15.9"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
     typescript-fsa: "npm:3.0.0"
   languageName: unknown
   linkType: soft
@@ -1120,7 +1120,7 @@ __metadata:
     dayjs: "npm:1.11.13"
     front-matter: "npm:4.0.2"
     minimist: "npm:1.2.8"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
   bin:
     print: ./dist/cli.js
   languageName: unknown
@@ -1144,9 +1144,9 @@ __metadata:
     "@d-zero/shared": "npm:0.9.1"
     ansi-colors: "npm:4.1.3"
     debug: "npm:4.4.1"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
   peerDependencies:
-    puppeteer: 24.11.2
+    puppeteer: 24.12.0
   languageName: unknown
   linkType: soft
 
@@ -1164,9 +1164,9 @@ __metadata:
   dependencies:
     "@d-zero/puppeteer-general-actions": "npm:1.2.1"
     "@d-zero/puppeteer-scroll": "npm:3.0.3"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
   peerDependencies:
-    puppeteer: 24.11.2
+    puppeteer: 24.12.0
   languageName: unknown
   linkType: soft
 
@@ -1177,9 +1177,9 @@ __metadata:
     "@d-zero/puppeteer-general-actions": "npm:1.2.1"
     "@d-zero/puppeteer-page-scan": "npm:4.0.2"
     "@d-zero/shared": "npm:0.9.1"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
   peerDependencies:
-    puppeteer: 24.11.2
+    puppeteer: 24.12.0
   languageName: unknown
   linkType: soft
 
@@ -1188,9 +1188,9 @@ __metadata:
   resolution: "@d-zero/puppeteer-scroll@workspace:packages/@d-zero/puppeteer-scroll"
   dependencies:
     "@d-zero/shared": "npm:0.9.1"
-    puppeteer: "npm:24.11.2"
+    puppeteer: "npm:24.12.0"
   peerDependencies:
-    puppeteer: 24.11.2
+    puppeteer: 24.12.0
   languageName: unknown
   linkType: soft
 
@@ -11527,9 +11527,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"puppeteer-core@npm:24.11.2":
-  version: 24.11.2
-  resolution: "puppeteer-core@npm:24.11.2"
+"puppeteer-core@npm:24.12.0":
+  version: 24.12.0
+  resolution: "puppeteer-core@npm:24.12.0"
   dependencies:
     "@puppeteer/browsers": "npm:2.10.5"
     chromium-bidi: "npm:5.1.0"
@@ -11537,23 +11537,23 @@ __metadata:
     devtools-protocol: "npm:0.0.1464554"
     typed-query-selector: "npm:^2.12.0"
     ws: "npm:^8.18.3"
-  checksum: 10c0/e2c15048b9dd2d793f99f1d30606aa4313842f95606507dfbd9e56d689a9c2042b5ceea119adc6ee5eb93ac01a2151f2eba88e88785099fc41561c7ac6998104
+  checksum: 10c0/5c60e83ef3b649c235f4b68b8d224d1f2e07b1d6f4464cd6c585fb2877cf0d4930951ffb30dc7a3dd150e63627573ab2dd64ff1fd0e61931cfdaccc35a5b78a2
   languageName: node
   linkType: hard
 
-"puppeteer@npm:24.11.2":
-  version: 24.11.2
-  resolution: "puppeteer@npm:24.11.2"
+"puppeteer@npm:24.12.0":
+  version: 24.12.0
+  resolution: "puppeteer@npm:24.12.0"
   dependencies:
     "@puppeteer/browsers": "npm:2.10.5"
     chromium-bidi: "npm:5.1.0"
     cosmiconfig: "npm:^9.0.0"
     devtools-protocol: "npm:0.0.1464554"
-    puppeteer-core: "npm:24.11.2"
+    puppeteer-core: "npm:24.12.0"
     typed-query-selector: "npm:^2.12.0"
   bin:
     puppeteer: lib/cjs/puppeteer/node/cli.js
-  checksum: 10c0/6d5af3ae3a96569adfdd07a91a4c053e9ea866adb1360b67cf6706b729ead440dc629d5aa2ad351aa9f068d89625c866b4be08bfd15c2b8c07e043e7e2663a4b
+  checksum: 10c0/7a54884c4b1d94e8f8db770897855b42d743763e226b6d37b51cfc1f43e6baa424a6add32e188fa9a778b823fcd4add27702af8fbbb3a02a421f80ed3ad0c556
   languageName: node
   linkType: hard
 
