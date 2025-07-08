@@ -25,22 +25,32 @@ export async function replicate(
 		}
 	};
 
+	// Always show these key progress messages
+	const progress = (message: string) => {
+		console.log(message);
+	};
+
 	const baseUrl = new URL(url);
 	const resources: Resource[] = [];
 
-	log(`🚀 Starting replication of ${url}`);
+	progress(`🚀 Starting replication of ${url}`);
+	log(`   Output directory: ${outputDir}`);
 
+	progress(`🌐 Launching browser...`);
 	const browser = await puppeteer.launch({
 		headless: true,
 		timeout,
 	});
 
+	progress(`📄 Creating new page...`);
 	const page = await browser.newPage();
 
 	if (userAgent) {
+		log(`   Setting user agent: ${userAgent}`);
 		await page.setUserAgent(userAgent);
 	}
 
+	progress(`🔍 Setting up resource detection...`);
 	// Collect all requests
 	const requestPromises: Promise<void>[] = [];
 
@@ -60,6 +70,8 @@ export async function replicate(
 				localPath,
 				type: resourceType,
 			});
+		} else {
+			log(`🚫 Skipping external resource: ${requestUrl}`);
 		}
 	});
 
@@ -95,21 +107,30 @@ export async function replicate(
 
 	try {
 		// Navigate to the page
+		progress(`📡 Navigating to ${url}...`);
 		await page.goto(url, { waitUntil: 'networkidle2', timeout });
 
+		progress(`⏳ Waiting for all resources to load...`);
 		// Wait for all downloads to complete
 		await Promise.all(requestPromises);
 
-		log(`📄 Found ${resources.length} resources to replicate`);
+		const resourceCount = resources.length;
+		const downloadedCount = resources.filter((r) => r.content).length;
+		progress(
+			`📄 Found ${resourceCount} resources (${downloadedCount} downloaded successfully)`,
+		);
 
 		// Ensure output directory exists
+		progress(`📁 Creating output directory...`);
 		await fs.mkdir(outputDir, { recursive: true });
 
 		// Save all resources
-		const savedCount = await saveResources(resources, outputDir, log);
+		progress(`💾 Saving files to disk...`);
+		const savedCount = await saveResources(resources, outputDir, log, progress);
 
-		log(`🎉 Replication complete! ${savedCount} files saved.`);
+		progress(`🎉 Replication complete! ${savedCount} files saved to ${outputDir}`);
 	} finally {
+		progress(`🔧 Cleaning up browser...`);
 		await browser.close().catch((error) => {
 			// Log browser close errors but don't throw them
 			log(
@@ -124,13 +145,16 @@ export async function replicate(
  * @param resources
  * @param outputDir
  * @param log
+ * @param progress
  */
 async function saveResources(
 	resources: Resource[],
 	outputDir: string,
 	log: (message: string) => void,
+	progress: (message: string) => void,
 ): Promise<number> {
 	let savedCount = 0;
+	const totalResources = resources.filter((r) => r.content).length;
 
 	for (const resource of resources) {
 		if (resource.content) {
@@ -140,11 +164,18 @@ async function saveResources(
 			try {
 				await fs.mkdir(dir, { recursive: true });
 				await fs.writeFile(fullPath, resource.content);
-				log(`💾 Saved: ${resource.localPath}`);
 				savedCount++;
+
+				// Show progress every 10 files or for the last file
+				if (savedCount % 10 === 0 || savedCount === totalResources) {
+					progress(`   Saved ${savedCount}/${totalResources} files...`);
+				}
+
+				log(`💾 Saved: ${resource.localPath}`);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
 				log(`❌ Failed to save ${resource.localPath}: ${errorMessage}`);
+				progress(`   ⚠️  Failed to save ${resource.localPath}`);
 				// Continue with other resources instead of failing completely
 			}
 		}
