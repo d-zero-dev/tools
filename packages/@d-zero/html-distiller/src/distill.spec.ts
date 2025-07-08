@@ -2,9 +2,9 @@ import { test, expect } from 'vitest';
 
 import { distill } from './distill.js';
 
-test('Basic', () => {
+test('Basic', async () => {
 	expect(
-		distill(`<html lang="en">
+		await distill(`<html lang="en">
 	<head>
 		<title>Test</title>
 	</head>
@@ -22,12 +22,7 @@ test('Basic', () => {
 				content: [
 					{
 						name: 'head',
-						content: [
-							{
-								name: 'title',
-								content: ['Test'],
-							},
-						],
+						content: ['<title>Test</title>'],
 					},
 					{
 						name: 'body',
@@ -44,9 +39,9 @@ test('Basic', () => {
 	});
 });
 
-test('Specific nodes', () => {
+test('Specific nodes', async () => {
 	expect(
-		distill(`<html lang="en">
+		await distill(`<html lang="en">
 	<head>
 		<title>Test</title>
 		<script>console.log("Hello, World!")</script>
@@ -70,18 +65,9 @@ test('Specific nodes', () => {
 					{
 						name: 'head',
 						content: [
-							{
-								name: 'title',
-								content: ['Test'],
-							},
-							{
-								name: 'script',
-								content: ['console.log("Hello, World!")'],
-							},
-							{
-								name: 'style',
-								content: ['h1 { color: red; }'],
-							},
+							'<script>console.log("Hello, World!");</script>',
+							'<style>h1 {\n\t\t\t\tcolor: red;\n\t\t\t}</style>',
+							'<title>Test</title>',
 						],
 					},
 					{
