@@ -49,9 +49,10 @@ export async function getData(
 	const data: PageData = { url, screenshots: {} };
 
 	for (const [sizeName, screenshot] of Object.entries(screenshots)) {
+		const dom = await distill(screenshot.dom);
 		data.screenshots[sizeName] = {
 			...screenshot,
-			domTree: JSON.stringify(distill(screenshot.dom).tree, null, 2),
+			domTree: JSON.stringify(dom.tree, null, 2),
 		};
 	}
 
