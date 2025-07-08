@@ -1,0 +1,15 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# 0.2.0 (2025-07-08)
+
+### Bug Fixes
+
+- **replicator:** resolve all ESLint warnings ([da09515](https://github.com/d-zero-dev/tools/commit/da0951560e2c22fb7ccb6ec1c504b34c0b239106))
+
+### Features
+
+- **replicator:** add web page replication tool ([2bc3561](https://github.com/d-zero-dev/tools/commit/2bc35611c34ba0fdeb3c7d5fa7a42ce1921b0bda))
+- **replicator:** improve logging with progress indicators ([f997f11](https://github.com/d-zero-dev/tools/commit/f997f117d293a1d29cc19eb26bf580dc36e3ae4a))

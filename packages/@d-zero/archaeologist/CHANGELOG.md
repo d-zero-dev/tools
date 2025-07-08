@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.0.2...@d-zero/archaeologist@3.1.0) (2025-07-08)
+
+### Features
+
+- **archaeologist:** support async distill function ([821c1b8](https://github.com/d-zero-dev/tools/commit/821c1b82cbdc46c81cbadd410b621015f5ed67d9))
+
 ## [3.0.2](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.0.1...@d-zero/archaeologist@3.0.2) (2025-06-26)
 
 **Note:** Version bump only for package @d-zero/archaeologist

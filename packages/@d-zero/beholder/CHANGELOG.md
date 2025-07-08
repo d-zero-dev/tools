@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.9](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@0.1.8...@d-zero/beholder@0.1.9) (2025-07-08)
+
+**Note:** Version bump only for package @d-zero/beholder
+
 ## [0.1.8](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@0.1.7...@d-zero/beholder@0.1.8) (2025-06-25)
 
 **Note:** Version bump only for package @d-zero/beholder
