@@ -29,6 +29,7 @@ const url = args[0];
 const outputDir = options.output!;
 
 if (!url || typeof url !== 'string') {
+	// eslint-disable-next-line no-console
 	console.error('❌ Error: URL is required');
 	process.exit(1);
 }
@@ -37,14 +38,18 @@ try {
 	await replicate(url, outputDir, {
 		verbose: options.verbose ?? false,
 	});
+	// eslint-disable-next-line no-console
 	console.log(`✅ Successfully replicated ${url} to ${outputDir}`);
 } catch (error) {
 	if (error instanceof Error) {
+		// eslint-disable-next-line no-console
 		console.error('❌ Error:', error.message);
 		if (options.verbose) {
+			// eslint-disable-next-line no-console
 			console.error('Stack trace:', error.stack);
 		}
 	} else {
+		// eslint-disable-next-line no-console
 		console.error('❌ Unknown error:', error);
 	}
 	process.exit(1);

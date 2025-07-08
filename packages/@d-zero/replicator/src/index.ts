@@ -4,7 +4,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { URL } from 'node:url';
 
-import puppeteer from 'puppeteer';
+import { launch } from 'puppeteer';
 
 /**
  *
@@ -21,12 +21,14 @@ export async function replicate(
 
 	const log = (message: string) => {
 		if (verbose) {
+			// eslint-disable-next-line no-console
 			console.log(message);
 		}
 	};
 
 	// Always show these key progress messages
 	const progress = (message: string) => {
+		// eslint-disable-next-line no-console
 		console.log(message);
 	};
 
@@ -37,7 +39,7 @@ export async function replicate(
 	log(`   Output directory: ${outputDir}`);
 
 	progress(`🌐 Launching browser...`);
-	const browser = await puppeteer.launch({
+	const browser = await launch({
 		headless: true,
 		timeout,
 	});
