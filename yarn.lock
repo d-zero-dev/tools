@@ -1222,6 +1222,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@d-zero/replicator@workspace:packages/@d-zero/replicator":
+  version: 0.0.0-use.local
+  resolution: "@d-zero/replicator@workspace:packages/@d-zero/replicator"
+  dependencies:
+    "@d-zero/cli-core": "npm:1.1.0"
+    "@d-zero/shared": "npm:0.9.1"
+    "@types/minimist": "npm:1.2.5"
+    ansi-colors: "npm:4.1.3"
+    minimist: "npm:1.2.8"
+    puppeteer: "npm:24.12.0"
+  bin:
+    replicator: ./dist/cli.js
+  languageName: unknown
+  linkType: soft
+
 "@d-zero/shared@npm:0.9.1, @d-zero/shared@workspace:packages/@d-zero/shared":
   version: 0.0.0-use.local
   resolution: "@d-zero/shared@workspace:packages/@d-zero/shared"
