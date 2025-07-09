@@ -1052,7 +1052,7 @@ __metadata:
     "@types/debug": "npm:4.1.12"
     ansi-colors: "npm:4.1.3"
     debug: "npm:4.4.1"
-    googleapis: "npm:150.0.1"
+    googleapis: "npm:152.0.0"
   languageName: unknown
   linkType: soft
 
@@ -1064,7 +1064,7 @@ __metadata:
     "@d-zero/shared": "npm:0.9.1"
     debug: "npm:4.4.1"
     gaxios: "npm:6.7.1"
-    googleapis: "npm:150.0.1"
+    googleapis: "npm:152.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7697,7 +7697,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"google-auth-library@npm:^10.0.0-rc.1":
+"google-auth-library@npm:^10.1.0":
   version: 10.1.0
   resolution: "google-auth-library@npm:10.1.0"
   dependencies:
@@ -7719,26 +7719,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"googleapis-common@npm:^8.0.2-rc.0":
-  version: 8.0.2-rc.0
-  resolution: "googleapis-common@npm:8.0.2-rc.0"
+"googleapis-common@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "googleapis-common@npm:8.0.0"
   dependencies:
     extend: "npm:^3.0.2"
     gaxios: "npm:^7.0.0-rc.4"
-    google-auth-library: "npm:^10.0.0-rc.1"
+    google-auth-library: "npm:^10.1.0"
     qs: "npm:^6.7.0"
     url-template: "npm:^2.0.8"
-  checksum: 10c0/97a8e55b4d12eafe4eef52aa2a2331f52ec36188617ae18cc2c2bbb4a9f718c6eca38c81abea156e1022c6217b50adf598ac06306129b1853cca8b3bead95546
+  checksum: 10c0/73a63def5738704199948bbcc0fdca2b49f115be240e37b3775c2c42302c03dec3dd6a6981120c2549f24fbe4eb42196f2401b6fb83f391c059c1c8cc9c3de17
   languageName: node
   linkType: hard
 
-"googleapis@npm:150.0.1":
-  version: 150.0.1
-  resolution: "googleapis@npm:150.0.1"
+"googleapis@npm:152.0.0":
+  version: 152.0.0
+  resolution: "googleapis@npm:152.0.0"
   dependencies:
-    google-auth-library: "npm:^10.0.0-rc.1"
-    googleapis-common: "npm:^8.0.2-rc.0"
-  checksum: 10c0/725c9ac5a1002e1c7bf4d27f1981445d60d7145176969faa39c788c771fd815a676d7807e57631fcf4ef6038618fc45935bcdd1ac1ef1a46c1542ec9ef409c0d
+    google-auth-library: "npm:^10.1.0"
+    googleapis-common: "npm:^8.0.0"
+  checksum: 10c0/4a636d8ed23a05b5d3f2921e6d0e72838162db189027d096998c02d17c2ff2be70d0c3b9e29cf3e4ab3e925bf8b29f105d502a54329a037d0ad3c33603000b81
   languageName: node
   linkType: hard
 
