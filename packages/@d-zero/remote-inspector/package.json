@@ -31,7 +31,7 @@
 	},
 	"devDependencies": {
 		"@types/diff": "6.0.0",
-		"@types/ssh2-sftp-client": "9.0.4",
+		"@types/ssh2-sftp-client": "9.0.5",
 		"typescript": "5.8.3"
 	},
 	"publishConfig": {

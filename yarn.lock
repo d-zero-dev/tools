@@ -1211,7 +1211,7 @@ __metadata:
   dependencies:
     "@d-zero/cli-core": "npm:1.1.0"
     "@types/diff": "npm:6.0.0"
-    "@types/ssh2-sftp-client": "npm:9.0.4"
+    "@types/ssh2-sftp-client": "npm:9.0.5"
     ansi-colors: "npm:^4.1.3"
     diff: "npm:^7.0.0"
     dotenv: "npm:^17.0.0"
@@ -3476,12 +3476,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ssh2-sftp-client@npm:9.0.4":
-  version: 9.0.4
-  resolution: "@types/ssh2-sftp-client@npm:9.0.4"
+"@types/ssh2-sftp-client@npm:9.0.5":
+  version: 9.0.5
+  resolution: "@types/ssh2-sftp-client@npm:9.0.5"
   dependencies:
     "@types/ssh2": "npm:^1.0.0"
-  checksum: 10c0/80c36b5d72412eddde4438260151bd39bc687ac00a9dfbc78b634d6b2e9cea990fae42a30fd3d4dfc98c65b5168f7651ecd101f155d33088e7584a6d22376aeb
+  checksum: 10c0/65f8aecd5647c8bae389957afd4e2a10cbf82d6b186a420596ce0213be66d6d32ee5d3c1c597e8f635805f533af30fe7ec23ad76219127b4c946da7b506c3fc4
   languageName: node
   linkType: hard
 
