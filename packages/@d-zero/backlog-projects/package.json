@@ -30,7 +30,7 @@
 		"@d-zero/shared": "0.9.1",
 		"backlog-js": "0.13.6",
 		"dayjs": "1.11.13",
-		"dotenv": "17.2.0",
+		"dotenv": "17.2.1",
 		"enquirer": "2.4.1",
 		"minimist": "1.2.8"
 	}
