@@ -941,7 +941,7 @@ __metadata:
     "@types/debug": "npm:4.1.12"
     "@types/follow-redirects": "npm:1.14.4"
     debug: "npm:4.4.1"
-    follow-redirects: "npm:1.15.9"
+    follow-redirects: "npm:1.15.11"
     puppeteer: "npm:24.15.0"
     typescript-fsa: "npm:3.0.0"
   languageName: unknown
@@ -1027,7 +1027,7 @@ __metadata:
     "@d-zero/readtext": "npm:1.1.7"
     "@types/follow-redirects": "npm:1.14.4"
     "@types/node": "npm:22.17.0"
-    follow-redirects: "npm:1.15.9"
+    follow-redirects: "npm:1.15.11"
     minimist: "npm:1.2.8"
   bin:
     filematch: ./dist/cli.js
@@ -7199,7 +7199,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:1.15.9, follow-redirects@npm:^1.15.6":
+"follow-redirects@npm:1.15.11":
+  version: 1.15.11
+  resolution: "follow-redirects@npm:1.15.11"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: 10c0/d301f430542520a54058d4aeeb453233c564aaccac835d29d15e050beb33f339ad67d9bddbce01739c5dc46a6716dbe3d9d0d5134b1ca203effa11a7ef092343
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.15.6":
   version: 1.15.9
   resolution: "follow-redirects@npm:1.15.9"
   peerDependenciesMeta:
