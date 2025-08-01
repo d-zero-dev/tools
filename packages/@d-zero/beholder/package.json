@@ -22,7 +22,7 @@
 	"dependencies": {
 		"@d-zero/shared": "0.9.1",
 		"debug": "4.4.1",
-		"follow-redirects": "1.15.9",
+		"follow-redirects": "1.15.11",
 		"puppeteer": "24.15.0",
 		"typescript-fsa": "3.0.0"
 	},
