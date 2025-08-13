@@ -27,6 +27,6 @@
 		"@d-zero/shared": "0.9.1",
 		"debug": "4.4.1",
 		"gaxios": "6.7.1",
-		"googleapis": "152.0.0"
+		"googleapis": "155.0.1"
 	}
 }
