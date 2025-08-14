@@ -1098,13 +1098,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/prettier-config@npm:5.0.0-alpha.69":
-  version: 5.0.0-alpha.69
-  resolution: "@d-zero/prettier-config@npm:5.0.0-alpha.69"
+"@d-zero/prettier-config@npm:5.0.0-alpha.70":
+  version: 5.0.0-alpha.70
+  resolution: "@d-zero/prettier-config@npm:5.0.0-alpha.70"
   dependencies:
-    "@prettier/plugin-pug": "npm:3.4.0"
+    "@prettier/plugin-pug": "npm:3.4.2"
     prettier: "npm:3.6.2"
-  checksum: 10c0/28fc8c98aa81e1b76f208d58e3b7ccc5adea657b88b2fbc255ef8860d8b79ebc377ad585a5ce75f4e4d71fc609e09fd94c0db2887528b5284adacaf9c012ab0e
+  checksum: 10c0/3c35cbc65b9aa0c29d32664add057332d9e5e4d0ddf283dd26873ed650e52a181c595ed47754f191ecbeb7ba40372308f0ae4c6f294c039454457db01f3ee72e
   languageName: node
   linkType: hard
 
@@ -2734,14 +2734,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prettier/plugin-pug@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@prettier/plugin-pug@npm:3.4.0"
+"@prettier/plugin-pug@npm:3.4.2":
+  version: 3.4.2
+  resolution: "@prettier/plugin-pug@npm:3.4.2"
   dependencies:
     pug-lexer: "npm:^5.0.1"
   peerDependencies:
     prettier: ^3.0.0
-  checksum: 10c0/79e2eb541b90c490821cf56f17169994f5d3d4334a8335020b1bad90b3d318bc5a4673d4aa7e31eb7a067beb996e24656e267e6948a0d952862b5bb8333b0f2a
+  checksum: 10c0/4c1e75cf2994714db88661916c2d2cbc4083e5d8ac63004cbd787676c92dc876765be0b74af6e014f30a880e057869fd105ddeb55f6b76b4c2b5cf53a34dea97
   languageName: node
   linkType: hard
 
@@ -12318,7 +12318,7 @@ __metadata:
     "@d-zero/cspell-config": "npm:5.0.0-alpha.70"
     "@d-zero/eslint-config": "npm:5.0.0-alpha.70"
     "@d-zero/lint-staged-config": "npm:5.0.0-alpha.70"
-    "@d-zero/prettier-config": "npm:5.0.0-alpha.69"
+    "@d-zero/prettier-config": "npm:5.0.0-alpha.70"
     "@d-zero/textlint-config": "npm:5.0.0-alpha.69"
     "@d-zero/tsconfig": "npm:0.5.0"
     husky: "npm:9.1.7"
