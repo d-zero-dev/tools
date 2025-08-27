@@ -29,7 +29,7 @@
 		"@d-zero/notion": "1.0.8",
 		"@d-zero/shared": "0.9.1",
 		"backlog-js": "0.13.6",
-		"dayjs": "1.11.13",
+		"dayjs": "1.11.14",
 		"dotenv": "17.2.1",
 		"enquirer": "2.4.1",
 		"minimist": "1.2.8"
