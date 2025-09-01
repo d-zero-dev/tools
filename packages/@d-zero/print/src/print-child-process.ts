@@ -1,5 +1,5 @@
 import type { PrintType } from './types.js';
-import type { PageHook } from '@d-zero/puppeteer-page-scan';
+import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
 
 import path from 'node:path';
 
@@ -13,10 +13,11 @@ export type ChildProcessParams = {
 	dir: string;
 	type: PrintType;
 	hooks?: readonly PageHook[];
+	devices?: Sizes;
 };
 
 createChildProcess<ChildProcessParams>((param) => {
-	const { dir, type, hooks } = param;
+	const { dir, type, hooks, devices } = param;
 
 	return {
 		async eachPage({ page, id, url }, logger) {
@@ -25,12 +26,12 @@ createChildProcess<ChildProcessParams>((param) => {
 			const filePath = path.resolve(dir, fileName);
 
 			if (type === 'pdf') {
-				await printPdf(page, url, filePath, logger, hooks);
+				await printPdf(page, url, filePath, logger, hooks, devices);
 				logger('🔚 Closing');
 				return;
 			}
 
-			const result = await printPng(page, url, id, filePath, logger, hooks);
+			const result = await printPng(page, url, id, filePath, logger, hooks, devices);
 
 			if (type === 'png') {
 				logger('🔚 Closing');

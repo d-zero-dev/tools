@@ -2,29 +2,49 @@
 import type { PrintType } from './types.js';
 import type { BaseCLIOptions } from '@d-zero/cli-core';
 
-import { createCLI, parseCommonOptions } from '@d-zero/cli-core';
+import { createCLI, parseCommonOptions, parseList } from '@d-zero/cli-core';
+import { parseDevicesOption } from '@d-zero/puppeteer-page-scan';
 
 import { print } from './print-main-process.js';
 import { readConfig } from './read-config.js';
 
 interface PrintCLIOptions extends BaseCLIOptions {
 	type?: string;
+	devices?: string;
 }
 
 const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 	aliases: {
 		f: 'listfile',
 		t: 'type',
+		d: 'devices',
 	},
 	usage: [
 		'Usage:',
-		'\tprint -f <listfile> [--type <png|pdf|note>] [--limit <number>] [--debug]',
-		'\tprint <url>... [--type <png|pdf|note>] [--limit <number>] [--debug]',
+		'\tprint -f <listfile> [options]',
+		'\tprint <url>... [options]',
+		'',
+		'Options:',
+		'\t-f, --listfile <file>     File containing URLs to print',
+		'\t-t, --type <type>         Output type: png|pdf|note (default: png)',
+		'\t-d, --devices <devices>   Device presets (comma-separated, default: desktop-compact,mobile)',
+		'\t--limit <number>          Limit concurrent processes',
+		'\t--debug                   Enable debug mode',
+		'\t--verbose                 Enable verbose logging',
+		'',
+		'Available device presets:',
+		'\tdesktop, tablet, mobile, desktop-hd, desktop-compact, mobile-large, mobile-small',
+		'',
+		'Examples:',
+		'\tprint https://example.com',
+		'\tprint -f urls.txt --type pdf',
+		'\tprint https://example.com --devices desktop,mobile',
 	],
 	parseArgs: (cli) => ({
 		...parseCommonOptions(cli),
 		listfile: cli.listfile,
 		type: cli.type,
+		devices: cli.devices,
 	}),
 	validateArgs: (options, cli) => {
 		return !!(options.listfile?.length || cli._.length > 0);
@@ -34,6 +54,9 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 const type: PrintType =
 	options.type === 'note' ? 'note' : options.type === 'pdf' ? 'pdf' : 'png';
 
+const deviceNames = options.devices ? parseList(options.devices) : undefined;
+const devices = parseDevicesOption(deviceNames);
+
 if (hasConfigFile) {
 	const { urlList, hooks } = await readConfig(options.listfile!);
 	await print(urlList, {
@@ -42,6 +65,7 @@ if (hasConfigFile) {
 		debug: options.debug,
 		verbose: options.verbose,
 		hooks,
+		devices,
 	});
 	process.exit(0);
 }
@@ -52,6 +76,7 @@ if (args.length > 0) {
 		limit: options.limit,
 		verbose: options.verbose,
 		debug: options.debug,
+		devices,
 	});
 	process.exit(0);
 }

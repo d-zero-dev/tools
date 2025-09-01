@@ -1,6 +1,6 @@
 import type { ChildProcessParams } from './print-child-process.js';
 import type { PrintType } from './types.js';
-import type { PageHook } from '@d-zero/puppeteer-page-scan';
+import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
 import type { LaunchOptions } from 'puppeteer';
 
 import { mkdir } from 'node:fs/promises';
@@ -15,6 +15,7 @@ export interface PrintOptions {
 	readonly debug?: boolean;
 	readonly verbose?: boolean;
 	readonly hooks?: readonly PageHook[];
+	readonly devices?: Sizes;
 }
 
 /**
@@ -54,6 +55,7 @@ export async function print(
 					dir,
 					type,
 					hooks: options?.hooks,
+					devices: options?.devices,
 				},
 				{
 					...options,

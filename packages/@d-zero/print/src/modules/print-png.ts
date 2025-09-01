@@ -1,6 +1,8 @@
+import type { Sizes } from '@d-zero/puppeteer-page-scan';
 import type { PageHook } from '@d-zero/puppeteer-screenshot';
 import type { Page } from 'puppeteer';
 
+import { devicePresets } from '@d-zero/puppeteer-page-scan';
 import { screenshot, screenshotListener } from '@d-zero/puppeteer-screenshot';
 
 /**
@@ -11,6 +13,7 @@ import { screenshot, screenshotListener } from '@d-zero/puppeteer-screenshot';
  * @param filePath
  * @param update
  * @param hooks
+ * @param devices
  */
 export function printPng(
 	page: Page,
@@ -19,19 +22,17 @@ export function printPng(
 	filePath: string,
 	update: (log: string) => void,
 	hooks?: readonly PageHook[],
+	devices?: Sizes,
 ) {
+	const defaultSizes = {
+		'desktop-compact': devicePresets['desktop-compact'],
+		mobile: devicePresets.mobile,
+	};
+
 	return screenshot(page, url, {
 		id: fileId,
 		path: filePath,
-		sizes: {
-			desktop: {
-				width: 1280,
-			},
-			mobile: {
-				width: 375,
-				resolution: 2,
-			},
-		},
+		sizes: devices ?? defaultSizes,
 		listener: screenshotListener(update),
 		hooks,
 	});
