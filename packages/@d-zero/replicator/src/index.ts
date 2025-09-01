@@ -5,7 +5,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { URL } from 'node:url';
 
-import { beforePageScan } from '@d-zero/puppeteer-page-scan';
+import { beforePageScan, devicePresets } from '@d-zero/puppeteer-page-scan';
 import { launch } from 'puppeteer';
 
 /**
@@ -19,14 +19,14 @@ export async function replicate(
 	outputDir: string,
 	options: ReplicateOptions = {},
 ): Promise<void> {
-	const { verbose = false, timeout = 30_000, sizes } = options;
+	const { verbose = false, timeout = 30_000, devices } = options;
 
 	const defaultSizes = {
-		desktop: { width: 1280 },
-		mobile: { width: 375, resolution: 2 },
+		'desktop-compact': devicePresets['desktop-compact'],
+		mobile: devicePresets.mobile,
 	};
 
-	const targetSizes = sizes ?? defaultSizes;
+	const targetSizes = devices ?? defaultSizes;
 
 	const log = (message: string) => {
 		if (verbose) {
