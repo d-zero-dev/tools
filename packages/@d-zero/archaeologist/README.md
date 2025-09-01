@@ -5,9 +5,10 @@
 ウェブサイトの本番環境と開発環境や、新旧のページの比較するためのツールです。
 
 - Puppeteerを実行してページのスクリーンショットを撮影します
-- スクリーンショットはデスクトップとモバイルの2つのサイズでそれぞれ撮影します
+- 複数のデバイスサイズでスクリーンショットを撮影可能（7種類のプリセット + カスタム設定）
 - スクリーンショットは画像差分（ビジュアルリグレッション）を検出・出力します
 - HTMLの差分も検出します
+- レスポンシブデザインの差分検証に最適
 
 ## CLI
 
@@ -23,11 +24,34 @@ URLリストを持つファイルを指定して実行します。
 - `-t, --type <types>`: 比較タイプの指定（`image,dom,text`、カンマ区切り）
 - `-s, --selector <selector>`: 比較対象を限定するCSSセレクター
 - `-i, --ignore <selector>`: 無視するCSSセレクター
-- `--devices <devices>`: デバイス指定（`desktop,mobile,tablet`、カンマ区切り）
+- `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
 - `--freeze <filepath>`: フリーズモード用ファイルパス
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
 - `--debug`: デバッグモード（デフォルト: false）
 - `--verbose`: 詳細ログモード（デフォルト: false）
+
+### 利用可能なデバイスプリセット
+
+- `desktop`: 1400px幅
+- `tablet`: 768px幅
+- `mobile`: 375px幅（2倍解像度）
+- `desktop-hd`: 1920px幅
+- `desktop-compact`: 1280px幅
+- `mobile-large`: 414px幅（3倍解像度）
+- `mobile-small`: 320px幅（2倍解像度）
+
+### 使用例
+
+```sh
+# デフォルトデバイス（desktop-compact, mobile）
+npx @d-zero/archaeologist -f urls.txt
+
+# カスタムデバイス指定
+npx @d-zero/archaeologist -f urls.txt --devices desktop,tablet,mobile
+
+# フリーズモード（参照用スクリーンショット作成）
+npx @d-zero/archaeologist --freeze urls.txt
+```
 
 ### ファイルフォーマット
 

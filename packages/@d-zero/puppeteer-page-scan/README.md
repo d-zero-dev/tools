@@ -1,6 +1,6 @@
 # `@d-zero/puppeteer-page-scan`
 
-PuppeteerでスクリーンショットやDOMスキャンする際に必要なヘルパー関数を提供します。
+PuppeteerでスクリーンショットやDOMスキャンする際に必要なヘルパー関数とデバイス設定を提供します。
 
 ## インストール
 
@@ -9,6 +9,36 @@ yarn install @d-zero/puppeteer-page-scan
 ```
 
 ## 使い方
+
+### デバイスプリセット
+
+複数のデバイスサイズ用のプリセットが利用可能です：
+
+```ts
+import {
+	devicePresets,
+	createSizesFromDevices,
+	parseDevicesOption,
+} from '@d-zero/puppeteer-page-scan';
+
+// 利用可能なデバイスプリセット
+console.log(devicePresets);
+// {
+//   desktop: { width: 1400 },
+//   tablet: { width: 768 },
+//   mobile: { width: 375, resolution: 2 },
+//   'desktop-hd': { width: 1920 },
+//   'desktop-compact': { width: 1280 },
+//   'mobile-large': { width: 414, resolution: 3 },
+//   'mobile-small': { width: 320, resolution: 2 }
+// }
+
+// プリセット名からSizesオブジェクトを生成
+const sizes = createSizesFromDevices(['desktop', 'mobile']);
+
+// CLI用のパーサー（コンマ区切りの文字列から）
+const parsedSizes = parseDevicesOption(['desktop', 'tablet']);
+```
 
 ### `beforePageScan`
 

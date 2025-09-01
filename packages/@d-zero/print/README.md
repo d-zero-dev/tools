@@ -4,14 +4,14 @@
 
 - Puppeteerを実行してページのスクリーンショットを撮影します
 - `png`、`pdf`、`note`の3つの形式で出力できます
-- スクリーンショットはデスクトップとモバイルの2つのサイズでそれぞれ撮影します
+- 複数のデバイスサイズでスクリーンショットを撮影可能（7種類のプリセット + カスタム設定）
+- レスポンシブデザインの検証に最適
 
 ## CLI
 
 ```sh
-npx @d-zero/print -f <listfile> [--type <png|pdf|note>] [--limit <number>] [--debug]
-
-npx @d-zero/print <url>... [--type <png|pdf|note>] [--limit <number>] [--debug]
+npx @d-zero/print -f <listfile> [options]
+npx @d-zero/print <url>... [options]
 ```
 
 リストをファイルから読み込むか、URLを直接指定して実行します。
@@ -20,14 +20,42 @@ npx @d-zero/print <url>... [--type <png|pdf|note>] [--limit <number>] [--debug]
 
 ### オプション
 
-- `-f, --file <filepath>`: URLリストを持つファイルのパス
+- `-f, --listfile <file>`: URLリストを持つファイルのパス
 - `<url>`: 対象のURL（複数指定可能）
-- `-t, --type <png|pdf|note>`: 出力形式（デフォルト: png）
-  - `png`: PNG画像（モバイルとデスクトップの2つが生成されます）
+- `-t, --type <type>`: 出力形式（デフォルト: png）
+  - `png`: PNG画像（指定されたデバイスサイズで生成されます）
   - `pdf`: PDFファイル（ブラウザの印刷機能を使用、Print CSSが適用されます）
   - `note`: PNG画像のスクリーンショットに対してメモ欄付きのPDFファイルが生成されます
+- `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
 - `--debug`: デバッグモード（デフォルト: false）
+- `--verbose`: 詳細ログモード（デフォルト: false）
+
+### 利用可能なデバイスプリセット
+
+- `desktop`: 1400px幅
+- `tablet`: 768px幅
+- `mobile`: 375px幅（2倍解像度）
+- `desktop-hd`: 1920px幅
+- `desktop-compact`: 1280px幅
+- `mobile-large`: 414px幅（3倍解像度）
+- `mobile-small`: 320px幅（2倍解像度）
+
+### 使用例
+
+```sh
+# デフォルトデバイス（desktop-compact, mobile）
+npx @d-zero/print https://example.com
+
+# カスタムデバイス指定
+npx @d-zero/print https://example.com --devices desktop,tablet,mobile
+
+# PDF出力
+npx @d-zero/print -f urls.txt --type pdf
+
+# ファイルから読み込み + デバイス指定
+npx @d-zero/print -f urls.txt --devices desktop,mobile
+```
 
 #### URLリストのファイルフォーマット
 
