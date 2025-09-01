@@ -1,7 +1,7 @@
 export interface ReplicateOptions {
 	verbose?: boolean;
-	userAgent?: string;
 	timeout?: number;
+	sizes?: Record<string, { width: number; resolution?: number }>;
 }
 
 export interface Resource {

@@ -1227,6 +1227,8 @@ __metadata:
   resolution: "@d-zero/replicator@workspace:packages/@d-zero/replicator"
   dependencies:
     "@d-zero/cli-core": "npm:1.1.0"
+    "@d-zero/puppeteer-page-scan": "npm:4.0.3"
+    "@d-zero/puppeteer-scroll": "npm:3.0.4"
     "@d-zero/shared": "npm:0.9.1"
     "@types/minimist": "npm:1.2.5"
     ansi-colors: "npm:4.1.3"

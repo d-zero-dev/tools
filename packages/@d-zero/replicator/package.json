@@ -25,6 +25,8 @@
 	},
 	"dependencies": {
 		"@d-zero/cli-core": "1.1.0",
+		"@d-zero/puppeteer-page-scan": "4.0.3",
+		"@d-zero/puppeteer-scroll": "3.0.4",
 		"@d-zero/shared": "0.9.1",
 		"ansi-colors": "4.1.3",
 		"minimist": "1.2.8",
