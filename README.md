@@ -1,23 +1,34 @@
 # ディーゼロ制作関連ツール
 
-## CLI
+ウェブサイト制作・検証・管理のためのツール群です。レスポンシブデザイン対応、ビジュアルリグレッション検証、スクリーンショット撮影、リソース複製などの機能を提供します。
 
-- [`@d-zero/archaeologist`](./packages/%40d-zero/archaeologist/README.md)
-- [`@d-zero/backlog-projects`](./packages/%40d-zero/backlog-projects/README.md)
-- [`@d-zero/print`](./packages/%40d-zero/print/README.md)
-- [`@d-zero/filematch`](./packages/%40d-zero/filematch/README.md)
+## CLI ツール
 
-## API
+- [`@d-zero/archaeologist`](./packages/%40d-zero/archaeologist/README.md) - ウェブサイトの本番環境と開発環境の差分検証ツール
+- [`@d-zero/backlog-projects`](./packages/%40d-zero/backlog-projects/README.md) - Backlogプロジェクト管理ツール
+- [`@d-zero/filematch`](./packages/%40d-zero/filematch/README.md) - ファイルマッチングツール
+- [`@d-zero/print`](./packages/%40d-zero/print/README.md) - ウェブページのスクリーンショット撮影ツール
+- [`@d-zero/replicator`](./packages/%40d-zero/replicator/README.md) - レスポンシブ対応のウェブページ複製ツール
 
-- [`@d-zero/@d-zero/beholder`](./packages/%40d-zero/beholder/README.md)
-- [`@d-zero/@d-zero/dealer`](./packages/%40d-zero/dealer/README.md)
-- [`@d-zero/@d-zero/html-distiller`](./packages/%40d-zero/html-distiller/README.md)
-- [`@d-zero/@d-zero/notion`](./packages/%40d-zero/notion/README.md)
-- [`@d-zero/puppeteer-page-scan`](./packages/%40d-zero/puppeteer-page-scan/README.md)
-- [`@d-zero/puppeteer-screenshot`](./packages/%40d-zero/puppeteer-screenshot/README.md)
-- [`@d-zero/puppeteer-scroll`](./packages/%40d-zero/puppeteer-scroll/README.md)
-- [`@d-zero/readtext`](./packages/%40d-zero/readtext/README.md)
-- [`@d-zero/shared`](./packages/%40d-zero/shared/README.md)
+## ライブラリ
+
+### ウェブスクレイピング
+
+- [`@d-zero/beholder`](./packages/%40d-zero/beholder/README.md) - ウェブページのスクレイピングと記録機能
+
+### Puppeteer関連
+
+- [`@d-zero/puppeteer-page-scan`](./packages/%40d-zero/puppeteer-page-scan/README.md) - ページスキャン用ヘルパー関数とデバイス設定
+- [`@d-zero/puppeteer-screenshot`](./packages/%40d-zero/puppeteer-screenshot/README.md) - スクリーンショット撮影機能
+- [`@d-zero/puppeteer-scroll`](./packages/%40d-zero/puppeteer-scroll/README.md) - ページスクロール機能
+
+### ユーティリティ
+
+- [`@d-zero/dealer`](./packages/%40d-zero/dealer/README.md) - 並列処理管理
+- [`@d-zero/html-distiller`](./packages/%40d-zero/html-distiller/README.md) - HTML解析・抽出機能
+- [`@d-zero/notion`](./packages/%40d-zero/notion/README.md) - Notion API連携
+- [`@d-zero/readtext`](./packages/%40d-zero/readtext/README.md) - テキスト読み取り機能
+- [`@d-zero/shared`](./packages/%40d-zero/shared/README.md) - 共通ユーティリティ関数
 
 ## メンテナンス環境
 
