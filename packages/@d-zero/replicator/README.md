@@ -1,14 +1,14 @@
-# @d-zero/replicator
+# `@d-zero/replicator`
 
-Replicate web pages with all their resources to local directories with responsive image support
+ウェブページとそのリソースをレスポンシブ画像対応でローカルディレクトリに複製するツールです。
 
-## Installation
+## インストール
 
 ```bash
 npm install @d-zero/replicator
 ```
 
-## Usage
+## 使い方
 
 ### CLI
 
@@ -16,45 +16,45 @@ npm install @d-zero/replicator
 npx @d-zero/replicator <url> -o <output-directory> [options]
 ```
 
-#### Options
+#### オプション
 
-- `-o, --output <dir>`: Output directory (required)
-- `-t, --timeout <ms>`: Request timeout in milliseconds (default: 30000)
-- `-d, --devices <devices>`: Device presets (comma-separated, default: desktop-compact,mobile)
-- `-v, --verbose`: Enable verbose logging
+- `-o, --output <dir>`: 出力ディレクトリ（必須）
+- `-t, --timeout <ms>`: リクエストタイムアウト（ミリ秒、デフォルト: 30000）
+- `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
+- `-v, --verbose`: 詳細ログモード
 
-#### Available Device Presets
+#### 利用可能なデバイスプリセット
 
-- `desktop`: 1400px width
-- `tablet`: 768px width
-- `mobile`: 375px width (2x resolution)
-- `desktop-hd`: 1920px width
-- `desktop-compact`: 1280px width
-- `mobile-large`: 414px width (3x resolution)
-- `mobile-small`: 320px width (2x resolution)
+- `desktop`: 1400px幅
+- `tablet`: 768px幅
+- `mobile`: 375px幅（2倍解像度）
+- `desktop-hd`: 1920px幅
+- `desktop-compact`: 1280px幅
+- `mobile-large`: 414px幅（3倍解像度）
+- `mobile-small`: 320px幅（2倍解像度）
 
-#### Examples
+#### 使用例
 
 ```bash
-# Default devices (desktop-compact, mobile)
+# デフォルトデバイス（desktop-compact, mobile）
 npx @d-zero/replicator https://example.com -o ./output
 
-# Custom devices
+# カスタムデバイス指定
 npx @d-zero/replicator https://example.com -o ./output --devices desktop,tablet,mobile
 
-# With timeout
+# タイムアウト指定
 npx @d-zero/replicator https://example.com -o ./output --timeout 60000
 ```
 
-### Programmatic
+### プログラマティック使用
 
 ```typescript
 import { replicate } from '@d-zero/replicator';
 
-// Default devices
+// デフォルトデバイス
 await replicate('https://example.com', './output');
 
-// Custom devices
+// カスタムデバイス
 await replicate('https://example.com', './output', {
 	devices: {
 		desktop: { width: 1400 },
@@ -65,16 +65,16 @@ await replicate('https://example.com', './output', {
 });
 ```
 
-## Features
+## 機能
 
-- **Responsive Image Support**: Captures resources from `<picture>` elements and media queries across multiple device widths
-- **Lazy Loading Support**: Automatically scrolls pages to trigger `loading=lazy` and `IntersectionObserver` based content
-- **Multi-Device Simulation**: Simulates various device widths and resolutions to ensure comprehensive resource capture
-- Download HTML pages preserving directory structure
-- Fetch all related resources (CSS, JS, images, etc.)
-- Maintain relative links between resources
-- Support for same-host resources only
-- Preserve original file extensions and paths
+- **レスポンシブ画像対応**: 複数のデバイス幅で`<picture>`要素やメディアクエリのリソースを取得
+- **遅延読み込み対応**: ページを自動スクロールして`loading=lazy`や`IntersectionObserver`ベースのコンテンツを取得
+- **マルチデバイスシミュレーション**: 様々なデバイス幅と解像度をシミュレートして包括的なリソース取得を実現
+- HTMLページのディレクトリ構造を保持してダウンロード
+- 関連するすべてのリソース（CSS、JS、画像など）を取得
+- リソース間の相対リンクを維持
+- 同一ホストのリソースのみサポート
+- 元のファイル拡張子とパスを保持
 
 ## License
 
