@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.2.0...@d-zero/replicator@0.3.0) (2025-09-01)
+
+### Features
+
+- **replicator:** add multiple device width support for responsive images ([2cabc21](https://github.com/d-zero-dev/tools/commit/2cabc2192b72ba719ea6d21405013559d6b5efbe))
+
 # 0.2.0 (2025-07-08)
 
 ### Bug Fixes

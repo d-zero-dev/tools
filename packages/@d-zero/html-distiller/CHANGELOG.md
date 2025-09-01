@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/d-zero-dev/tools/compare/@d-zero/html-distiller@2.0.0...@d-zero/html-distiller@2.0.1) (2025-09-01)
+
+**Note:** Version bump only for package @d-zero/html-distiller
+
 # [2.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/html-distiller@1.0.4...@d-zero/html-distiller@2.0.0) (2025-07-08)
 
 - feat(html-distiller)!: improve HTML processing accuracy with minification and formatting ([bb8f766](https://github.com/d-zero-dev/tools/commit/bb8f766f636d30ba7c07a5423fdbc5bfd598a14d))

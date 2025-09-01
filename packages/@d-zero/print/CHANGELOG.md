@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.4](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.1.3...@d-zero/print@2.1.4) (2025-09-01)
+
+**Note:** Version bump only for package @d-zero/print
+
 ## [2.1.3](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.1.2...@d-zero/print@2.1.3) (2025-07-08)
 
 **Note:** Version bump only for package @d-zero/print
