@@ -51,7 +51,6 @@ export async function replicate(
 	progress(`🌐 Launching browser...`);
 	const browser = await launch({
 		headless: true,
-		timeout,
 	});
 
 	try {
@@ -148,7 +147,7 @@ async function processPageForSize(
 		progress: (message: string) => void;
 	},
 ) {
-	const { sizeName, width, resolution, log, progress } = options;
+	const { sizeName, width, resolution, timeout, log, progress } = options;
 	const requestPromises: Promise<void>[] = [];
 
 	// Set up resource detection
@@ -212,6 +211,7 @@ async function processPageForSize(
 		name: sizeName,
 		width,
 		resolution,
+		timeout,
 		listener: (phase, data) => {
 			switch (phase) {
 				case 'setViewport': {
