@@ -28,7 +28,7 @@
 	"dependencies": {
 		"@d-zero/notion": "1.0.9",
 		"@d-zero/shared": "0.9.2",
-		"backlog-js": "0.13.6",
+		"backlog-js": "0.13.7",
 		"dayjs": "1.11.18",
 		"dotenv": "17.2.1",
 		"enquirer": "2.4.1",
