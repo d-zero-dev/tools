@@ -8,6 +8,7 @@ type Options = {
 	name: string;
 	hooks?: readonly PageHook[];
 	listener?: Listener<PageScanPhase>;
+	timeout?: number;
 } & Size;
 
 /**
@@ -21,6 +22,7 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 	const name = options?.name ?? 'default';
 	const width = options?.width ?? 1400;
 	const resolution = options?.resolution;
+	const timeout = options?.timeout;
 
 	listener?.('setViewport', { name, width, resolution });
 	await page.setViewport({
@@ -33,10 +35,10 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 
 	if (page.url() === url) {
 		listener?.('load', { name, type: 'reaload' });
-		await page.reload({ waitUntil: 'networkidle0' });
+		await navigateWithFallback(page, url, timeout, true, listener, name);
 	} else {
 		listener?.('load', { name, type: 'open' });
-		await page.goto(url, { waitUntil: 'networkidle0' });
+		await navigateWithFallback(page, url, timeout, false, listener, name);
 	}
 
 	for (const hook of options?.hooks ?? []) {
@@ -58,4 +60,49 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 		logger: (scrollY, scrollHeight, message) =>
 			listener?.('scroll', { name, scrollY, scrollHeight, message }),
 	});
+}
+
+/**
+ * Navigate with fallback from networkidle0 to networkidle2 on timeout
+ * @param page
+ * @param url
+ * @param timeout
+ * @param isReload
+ * @param listener
+ * @param name
+ */
+async function navigateWithFallback(
+	page: Page,
+	url: string,
+	timeout: number | undefined,
+	isReload: boolean,
+	listener: Listener<PageScanPhase> | undefined,
+	name: string,
+) {
+	try {
+		// First attempt: networkidle0 (stricter)
+		if (isReload) {
+			await page.reload({ waitUntil: 'networkidle0', timeout });
+		} else {
+			await page.goto(url, { waitUntil: 'networkidle0', timeout });
+		}
+	} catch (error) {
+		// Check if it's a timeout error
+		if (error instanceof Error && error.message.includes('timeout')) {
+			listener?.('hook', {
+				name,
+				message: `networkidle0 timeout, retrying with networkidle2...`,
+			});
+
+			// Retry with networkidle2 (more lenient)
+			if (isReload) {
+				await page.reload({ waitUntil: 'networkidle2', timeout });
+			} else {
+				await page.goto(url, { waitUntil: 'networkidle2', timeout });
+			}
+		} else {
+			// Re-throw non-timeout errors
+			throw error;
+		}
+	}
 }
