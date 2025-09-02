@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.3.0...@d-zero/replicator@0.4.0) (2025-09-02)
+
+### Features
+
+- **replicator:** remove sizes option and simplify CLI interface ([a81aaed](https://github.com/d-zero-dev/tools/commit/a81aaeddd74d4253761507667ee99271d91a119a))
+
 # [0.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.2.0...@d-zero/replicator@0.3.0) (2025-09-01)
 
 ### Features

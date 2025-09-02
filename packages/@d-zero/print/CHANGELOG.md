@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.1.4...@d-zero/print@2.2.0) (2025-09-02)
+
+### Features
+
+- **print:** add devices option support ([7addfd7](https://github.com/d-zero-dev/tools/commit/7addfd7d7b95aa926632dd24f253a186939ac167))
+
 ## [2.1.4](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.1.3...@d-zero/print@2.1.4) (2025-09-01)
 
 **Note:** Version bump only for package @d-zero/print

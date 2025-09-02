@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.1.1...@d-zero/archaeologist@3.2.0) (2025-09-02)
+
+### Features
+
+- **archaeologist:** unify device configuration with shared presets ([5caf50c](https://github.com/d-zero-dev/tools/commit/5caf50c8a8e4554e53cbbbc7e22791ea98b7533c))
+
 ## [3.1.1](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.1.0...@d-zero/archaeologist@3.1.1) (2025-09-01)
 
 **Note:** Version bump only for package @d-zero/archaeologist

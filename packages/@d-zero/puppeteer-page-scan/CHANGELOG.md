@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.0.4...@d-zero/puppeteer-page-scan@4.1.0) (2025-09-02)
+
+### Features
+
+- **puppeteer-page-scan:** add device presets and parser functions ([afd3a1d](https://github.com/d-zero-dev/tools/commit/afd3a1ded185b1656c82d3ddf56657e648f6d618))
+
 ## [4.0.4](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.0.3...@d-zero/puppeteer-page-scan@4.0.4) (2025-09-01)
 
 **Note:** Version bump only for package @d-zero/puppeteer-page-scan
