@@ -11,6 +11,7 @@ import { readConfig } from './read-config.js';
 interface PrintCLIOptions extends BaseCLIOptions {
 	type?: string;
 	devices?: string;
+	timeout?: number;
 }
 
 const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
@@ -18,6 +19,7 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 		f: 'listfile',
 		t: 'type',
 		d: 'devices',
+		T: 'timeout',
 	},
 	usage: [
 		'Usage:',
@@ -28,6 +30,7 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 		'\t-f, --listfile <file>     File containing URLs to print',
 		'\t-t, --type <type>         Output type: png|pdf|note (default: png)',
 		'\t-d, --devices <devices>   Device presets (comma-separated, default: desktop-compact,mobile)',
+		'\t-T, --timeout <ms>        Request timeout in milliseconds (default: 30000)',
 		'\t--limit <number>          Limit concurrent processes',
 		'\t--debug                   Enable debug mode',
 		'\t--verbose                 Enable verbose logging',
@@ -45,6 +48,7 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 		listfile: cli.listfile,
 		type: cli.type,
 		devices: cli.devices,
+		timeout: cli.timeout ? Number(cli.timeout) : undefined,
 	}),
 	validateArgs: (options, cli) => {
 		return !!(options.listfile?.length || cli._.length > 0);
@@ -66,6 +70,7 @@ if (hasConfigFile) {
 		verbose: options.verbose,
 		hooks,
 		devices,
+		timeout: options.timeout,
 	});
 	process.exit(0);
 }
@@ -77,6 +82,7 @@ if (args.length > 0) {
 		verbose: options.verbose,
 		debug: options.debug,
 		devices,
+		timeout: options.timeout,
 	});
 	process.exit(0);
 }
