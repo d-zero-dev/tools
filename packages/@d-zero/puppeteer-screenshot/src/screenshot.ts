@@ -17,6 +17,7 @@ type Options = {
 	path?: string;
 	selector?: string;
 	ignore?: string;
+	timeout?: number;
 };
 
 /**
