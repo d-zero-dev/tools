@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.1.4...@d-zero/puppeteer-screenshot@3.2.0) (2025-09-02)
+
+### Features
+
+- **puppeteer-screenshot:** add timeout option support ([db8196f](https://github.com/d-zero-dev/tools/commit/db8196f17c7ea1860946f847070b9d5359df4a0d))
+
 ## [3.1.4](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.1.3...@d-zero/puppeteer-screenshot@3.1.4) (2025-09-02)
 
 **Note:** Version bump only for package @d-zero/puppeteer-screenshot

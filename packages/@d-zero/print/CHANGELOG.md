@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.2.0...@d-zero/print@2.3.0) (2025-09-02)
+
+### Features
+
+- **print:** add timeout CLI option ([22033fb](https://github.com/d-zero-dev/tools/commit/22033fb8d715e58e378c8456a30d09d5b1a73be2))
+- **print:** add timeout option support for PDF and PNG generation ([58aa3b1](https://github.com/d-zero-dev/tools/commit/58aa3b1a0621ec57f3422283ba4093d6d9810e00))
+
 # [2.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.1.4...@d-zero/print@2.2.0) (2025-09-02)
 
 ### Features

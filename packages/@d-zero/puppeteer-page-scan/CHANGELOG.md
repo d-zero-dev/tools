@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.1.0...@d-zero/puppeteer-page-scan@4.2.0) (2025-09-02)
+
+### Features
+
+- **puppeteer-page-scan:** add timeout option and networkidle fallback ([78fbb6e](https://github.com/d-zero-dev/tools/commit/78fbb6ee4ebbfa243aae29a9cfdee2891e97f226))
+
 # [4.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.0.4...@d-zero/puppeteer-page-scan@4.1.0) (2025-09-02)
 
 ### Features

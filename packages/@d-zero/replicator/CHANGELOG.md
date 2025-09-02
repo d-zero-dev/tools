@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.4.0...@d-zero/replicator@0.5.0) (2025-09-02)
+
+### Features
+
+- **replicator:** integrate timeout option with beforePageScan ([8b13909](https://github.com/d-zero-dev/tools/commit/8b13909928c847a60e0aa480af18fce89622aca5))
+
 # [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.3.0...@d-zero/replicator@0.4.0) (2025-09-02)
 
 ### Features
