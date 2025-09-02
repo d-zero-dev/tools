@@ -15,6 +15,7 @@ import {
  * @param update
  * @param hooks
  * @param devices
+ * @param timeout
  */
 export async function printPdf(
 	page: Page,
@@ -23,6 +24,7 @@ export async function printPdf(
 	update: (log: string) => void,
 	hooks?: readonly PageHook[],
 	devices?: Sizes,
+	timeout?: number,
 ) {
 	// Use the first desktop device or fallback to desktop preset
 	const defaultWidth = devicePresets.desktop.width;
@@ -46,13 +48,14 @@ export async function printPdf(
 		width: pdfWidth,
 		listener: pageScanListener(update),
 		hooks,
+		timeout,
 	});
 
 	update('📄 Save as PDF');
 
 	await page.pdf({
 		path: filePath,
-		timeout: 30_000 * 10,
+		timeout: timeout ?? 30_000 * 10,
 		format: 'A4',
 		printBackground: true,
 		displayHeaderFooter: false,

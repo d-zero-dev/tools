@@ -16,6 +16,7 @@ export interface PrintOptions {
 	readonly verbose?: boolean;
 	readonly hooks?: readonly PageHook[];
 	readonly devices?: Sizes;
+	readonly timeout?: number;
 }
 
 /**
@@ -56,6 +57,7 @@ export async function print(
 					type,
 					hooks: options?.hooks,
 					devices: options?.devices,
+					timeout: options?.timeout,
 				},
 				{
 					...options,

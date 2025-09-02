@@ -14,10 +14,11 @@ export type ChildProcessParams = {
 	type: PrintType;
 	hooks?: readonly PageHook[];
 	devices?: Sizes;
+	timeout?: number;
 };
 
 createChildProcess<ChildProcessParams>((param) => {
-	const { dir, type, hooks, devices } = param;
+	const { dir, type, hooks, devices, timeout } = param;
 
 	return {
 		async eachPage({ page, id, url }, logger) {
@@ -26,12 +27,21 @@ createChildProcess<ChildProcessParams>((param) => {
 			const filePath = path.resolve(dir, fileName);
 
 			if (type === 'pdf') {
-				await printPdf(page, url, filePath, logger, hooks, devices);
+				await printPdf(page, url, filePath, logger, hooks, devices, timeout);
 				logger('🔚 Closing');
 				return;
 			}
 
-			const result = await printPng(page, url, id, filePath, logger, hooks, devices);
+			const result = await printPng(
+				page,
+				url,
+				id,
+				filePath,
+				logger,
+				hooks,
+				devices,
+				timeout,
+			);
 
 			if (type === 'png') {
 				logger('🔚 Closing');
