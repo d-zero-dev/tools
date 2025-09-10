@@ -28,9 +28,9 @@
 		"ansi-colors": "4.1.3"
 	},
 	"devDependencies": {
-		"puppeteer": "24.19.0"
+		"puppeteer": "24.20.0"
 	},
 	"peerDependencies": {
-		"puppeteer": "24.19.0"
+		"puppeteer": "24.20.0"
 	}
 }

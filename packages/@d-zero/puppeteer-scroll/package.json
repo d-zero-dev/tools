@@ -26,9 +26,9 @@
 		"@d-zero/shared": "0.9.2"
 	},
 	"devDependencies": {
-		"puppeteer": "24.19.0"
+		"puppeteer": "24.20.0"
 	},
 	"peerDependencies": {
-		"puppeteer": "24.19.0"
+		"puppeteer": "24.20.0"
 	}
 }
