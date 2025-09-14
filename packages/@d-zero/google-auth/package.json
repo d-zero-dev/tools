@@ -24,7 +24,7 @@
 	},
 	"dependencies": {
 		"ansi-colors": "4.1.3",
-		"debug": "4.4.1",
+		"debug": "4.4.3",
 		"googleapis": "152.0.0"
 	},
 	"devDependencies": {
