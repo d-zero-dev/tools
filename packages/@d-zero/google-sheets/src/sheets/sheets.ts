@@ -99,6 +99,17 @@ export class Sheets {
 	}
 
 	@ErrorHandler()
+	async get(
+		request: Omit<sheets_v4.Params$Resource$Spreadsheets$Values$Get, 'spreadsheetId'>,
+	) {
+		const res = await this.#sheets.spreadsheets.values.get({
+			...request,
+			spreadsheetId: this.#spreadsheetId,
+		});
+		return res;
+	}
+
+	@ErrorHandler()
 	async getRawSheetList() {
 		const list = await this.#sheets.spreadsheets.get({
 			spreadsheetId: this.#spreadsheetId,

@@ -133,6 +133,13 @@ export class Sheet {
 		return index;
 	}
 
+	async getValues(row: string, col: string) {
+		const res = await this.#parent.get({
+			range: `'${this.props.title}'!${row}:${col}`,
+		});
+		return res.data.values;
+	}
+
 	async hideCol(colNum: number) {
 		sendLog('Hide col %d', colNum);
 		await this.#parent.batchUpdate({
