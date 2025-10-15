@@ -37,6 +37,7 @@ export type Node = {
 	stem: string;
 	depth: number;
 	current: boolean;
+	isAncestor: boolean;
 	virtual?: true;
 	children: Node[];
 };
@@ -84,6 +85,7 @@ export function pathListToTree(pathList: string[], options?: PathListToTreeOptio
 			stem: url.stem,
 			depth: url.depth,
 			current,
+			isAncestor: !current && currentPath ? currentPath.startsWith(url.stem) : false,
 			children: [],
 		});
 	}
@@ -173,6 +175,7 @@ function addParent(node: Node, pathMap: Map<string, Node>, createVirtualParent: 
 		stem: parentStem,
 		depth: node.depth - 1,
 		current: false,
+		isAncestor: node.current || node.isAncestor,
 		virtual: true,
 		children: [node],
 	};

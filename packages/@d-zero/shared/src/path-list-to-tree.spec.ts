@@ -12,18 +12,21 @@ test('Create tree', () => {
 		stem: '/',
 		depth: 0,
 		current: false,
+		isAncestor: false,
 		children: [
 			{
 				url: '/a/',
 				stem: '/a/',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [
 					{
 						url: '/a/b',
 						stem: '/a/b',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 					{
@@ -31,6 +34,7 @@ test('Create tree', () => {
 						stem: '/a/c/',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 				],
@@ -40,6 +44,7 @@ test('Create tree', () => {
 				stem: '/e/',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [],
 			},
 		],
@@ -50,18 +55,21 @@ test('Create tree', () => {
 		stem: '/',
 		depth: 0,
 		current: false,
+		isAncestor: false,
 		children: [
 			{
 				url: '/a/index',
 				stem: '/a/',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [
 					{
 						url: '/a/b',
 						stem: '/a/b',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 					{
@@ -69,6 +77,7 @@ test('Create tree', () => {
 						stem: '/a/c/',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 				],
@@ -78,6 +87,7 @@ test('Create tree', () => {
 				stem: '/e',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [],
 			},
 		],
@@ -90,18 +100,21 @@ test('Create tree with virtual parent', () => {
 		stem: '/',
 		depth: 0,
 		current: false,
+		isAncestor: false,
 		children: [
 			{
 				url: '/a/index',
 				stem: '/a/',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [
 					{
 						url: '/a/c/',
 						stem: '/a/c/',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 				],
@@ -111,6 +124,7 @@ test('Create tree with virtual parent', () => {
 				stem: '/b/',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				virtual: true,
 				children: [
 					{
@@ -118,6 +132,7 @@ test('Create tree with virtual parent', () => {
 						stem: '/b/d',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 				],
@@ -127,6 +142,7 @@ test('Create tree with virtual parent', () => {
 				stem: '/e',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [],
 			},
 		],
@@ -153,12 +169,14 @@ test('Options: filter', () => {
 		stem: '/',
 		depth: 0,
 		current: false,
+		isAncestor: false,
 		children: [
 			{
 				url: '/e.html',
 				stem: '/e',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [],
 			},
 		],
@@ -175,18 +193,21 @@ test('Options: extensions', () => {
 		stem: '/',
 		depth: 0,
 		current: false,
+		isAncestor: false,
 		children: [
 			{
 				url: '/a/',
 				stem: '/a/',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [
 					{
 						url: '/a/b.html',
 						stem: '/a/b',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 					{
@@ -194,6 +215,7 @@ test('Options: extensions', () => {
 						stem: '/a/c',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 				],
@@ -212,12 +234,14 @@ test('Options: ignoreGlobs', () => {
 		stem: '/',
 		depth: 0,
 		current: false,
+		isAncestor: false,
 		children: [
 			{
 				url: '/b/',
 				stem: '/b/',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				virtual: true,
 				children: [
 					{
@@ -225,6 +249,7 @@ test('Options: ignoreGlobs', () => {
 						stem: '/b/d',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 				],
@@ -234,6 +259,7 @@ test('Options: ignoreGlobs', () => {
 				stem: '/e',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [],
 			},
 		],
@@ -243,25 +269,28 @@ test('Options: ignoreGlobs', () => {
 test('Options: currentPath', () => {
 	expect(
 		pathListToTree(['/', '/a/index', '/a/c/', '/b/d', '/e.html'], {
-			currentPath: '/a/index',
+			currentPath: '/a/c/',
 		}),
 	).toStrictEqual({
 		url: '/',
 		stem: '/',
 		depth: 0,
 		current: false,
+		isAncestor: true,
 		children: [
 			{
 				url: '/a/index',
 				stem: '/a/',
 				depth: 1,
-				current: true,
+				current: false,
+				isAncestor: true,
 				children: [
 					{
 						url: '/a/c/',
 						stem: '/a/c/',
 						depth: 2,
-						current: false,
+						current: true,
+						isAncestor: false,
 						children: [],
 					},
 				],
@@ -271,6 +300,7 @@ test('Options: currentPath', () => {
 				stem: '/b/',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				virtual: true,
 				children: [
 					{
@@ -278,6 +308,7 @@ test('Options: currentPath', () => {
 						stem: '/b/d',
 						depth: 2,
 						current: false,
+						isAncestor: false,
 						children: [],
 					},
 				],
@@ -287,6 +318,7 @@ test('Options: currentPath', () => {
 				stem: '/e',
 				depth: 1,
 				current: false,
+				isAncestor: false,
 				children: [],
 			},
 		],
