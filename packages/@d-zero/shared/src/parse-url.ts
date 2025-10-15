@@ -188,6 +188,7 @@ export function parseUrl(url: string, options?: ParseURLOptions): ExURL {
 		const withoutHashAndAuth = `${protocol}//${host}${body}`;
 		const href =
 			withoutHash + (hash && !body && !withoutHash.endsWith('/') ? `/${hash}` : hash);
+		const isIndex = isNoName || basename?.toLowerCase() === 'index';
 
 		return {
 			href,
@@ -206,7 +207,7 @@ export function parseUrl(url: string, options?: ParseURLOptions): ExURL {
 			depth: paths.length,
 			dirname: dirname || null,
 			basename: basename || null,
-			isIndex: !basename || basename.toLowerCase() === 'index',
+			isIndex,
 			extname: extname || null,
 			query,
 			hash: hash || null,
