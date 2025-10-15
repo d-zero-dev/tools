@@ -120,6 +120,7 @@ export type ExURL = {
 export type ParseURLOptions = {
 	disableQueries?: boolean;
 	baseUrl?: string;
+	indexAsParent?: boolean;
 };
 
 /**
@@ -204,7 +205,7 @@ export function parseUrl(url: string, options?: ParseURLOptions): ExURL {
 			port: port || null,
 			pathname: path || null,
 			paths,
-			depth: paths.length,
+			depth: paths.length - (options?.indexAsParent && isIndex ? 1 : 0),
 			dirname: dirname || null,
 			basename: basename || null,
 			isIndex,
