@@ -115,6 +115,11 @@ export type ExURL = {
 	 * - case-sensitive
 	 */
 	hash: string | null;
+
+	/**
+	 * path name without file extension and "index"
+	 */
+	stem: string;
 };
 
 export type ParseURLOptions = {
@@ -160,6 +165,7 @@ export function parseUrl(url: string, options?: ParseURLOptions): ExURL {
 				extname: null,
 				query: null,
 				hash: null,
+				stem: '',
 			};
 		}
 
@@ -190,6 +196,10 @@ export function parseUrl(url: string, options?: ParseURLOptions): ExURL {
 		const href =
 			withoutHash + (hash && !body && !withoutHash.endsWith('/') ? `/${hash}` : hash);
 		const isIndex = isNoName || basename?.toLowerCase() === 'index';
+		const stem = `${dirname ?? ''}/${isIndex ? '' : (basename ?? '')}`.replaceAll(
+			/\/+/g,
+			'/',
+		);
 
 		return {
 			href,
@@ -212,6 +222,7 @@ export function parseUrl(url: string, options?: ParseURLOptions): ExURL {
 			extname: extname || null,
 			query,
 			hash: hash || null,
+			stem,
 		};
 	} catch {
 		return {
@@ -235,6 +246,7 @@ export function parseUrl(url: string, options?: ParseURLOptions): ExURL {
 			extname: null,
 			query: null,
 			hash: null,
+			stem: '',
 		};
 	}
 }
