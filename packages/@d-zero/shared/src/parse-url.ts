@@ -133,7 +133,7 @@ export function parseUrl(url: string, options?: ParseURLOptions): ExURL {
 		const { protocol, username, password, hostname, port, pathname, search, hash } =
 			whatwgUrl;
 		const isHTTP = /^https?:$/.test(protocol);
-		const isSecure = protocol === 'https';
+		const isSecure = protocol === 'https:';
 
 		if (!isHTTP) {
 			const href = `${protocol}${pathname}`;
