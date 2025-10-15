@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/proc-talk",
-	"version": "0.4.4",
+	"version": "0.4.5",
 	"description": "Process ",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -23,7 +23,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/shared": "0.9.2",
+		"@d-zero/shared": "0.10.0",
 		"debug": "4.4.3"
 	}
 }

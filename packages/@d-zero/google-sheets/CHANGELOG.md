@@ -3,16 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.3.4...@d-zero/google-sheets@0.4.0) (2025-10-03)
+## [0.4.1](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.4.0...@d-zero/google-sheets@0.4.1) (2025-10-15)
 
+**Note:** Version bump only for package @d-zero/google-sheets
+
+# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.3.4...@d-zero/google-sheets@0.4.0) (2025-10-03)
 
 ### Features
 
-* **google-sheets:** add getValues method to Sheet class and get method to Sheets class ([57d3aec](https://github.com/d-zero-dev/tools/commit/57d3aecafd845bb1b413b278e699c47f96875e1a))
-
-
-
-
+- **google-sheets:** add getValues method to Sheet class and get method to Sheets class ([57d3aec](https://github.com/d-zero-dev/tools/commit/57d3aecafd845bb1b413b278e699c47f96875e1a))
 
 ## [0.3.4](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.3.3...@d-zero/google-sheets@0.3.4) (2025-09-01)
 

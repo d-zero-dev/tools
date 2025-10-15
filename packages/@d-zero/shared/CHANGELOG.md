@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.9.2...@d-zero/shared@0.10.0) (2025-10-15)
+
+### Bug Fixes
+
+- **shared:** correct protocol comparison in parseUrl function ([3c3fcf8](https://github.com/d-zero-dev/tools/commit/3c3fcf8cf433116dbb83055cc5f98cd3fb4497d0))
+
+### Features
+
+- **shared:** add baseUrl option to parseUrl function ([1bf9e80](https://github.com/d-zero-dev/tools/commit/1bf9e80808f6840b7f58eb5f5e5a9d99a19f39de))
+- **shared:** add indexAsParent option to parseUrl function ([8d3d3aa](https://github.com/d-zero-dev/tools/commit/8d3d3aaf526ffa565f41a04427a05921b7538435))
+- **shared:** add pathListToTree function with tests and documentation ([da211f3](https://github.com/d-zero-dev/tools/commit/da211f3f13362a99d0389f8ba16d086deb942d25))
+- **shared:** add stem property to ExURL type ([45bc112](https://github.com/d-zero-dev/tools/commit/45bc1129e35a6f4d6e273ee33406bc6cc5f5d583))
+
 ## [0.9.2](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.9.1...@d-zero/shared@0.9.2) (2025-09-01)
 
 **Note:** Version bump only for package @d-zero/shared
