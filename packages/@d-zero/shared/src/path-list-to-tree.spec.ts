@@ -239,3 +239,56 @@ test('Options: ignoreGlobs', () => {
 		],
 	});
 });
+
+test('Options: currentPath', () => {
+	expect(
+		pathListToTree(['/', '/a/index', '/a/c/', '/b/d', '/e.html'], {
+			currentPath: '/a/index',
+		}),
+	).toStrictEqual({
+		url: '/',
+		stem: '/',
+		depth: 0,
+		current: false,
+		children: [
+			{
+				url: '/a/index',
+				stem: '/a/',
+				depth: 1,
+				current: true,
+				children: [
+					{
+						url: '/a/c/',
+						stem: '/a/c/',
+						depth: 2,
+						current: false,
+						children: [],
+					},
+				],
+			},
+			{
+				url: '/b/',
+				stem: '/b/',
+				depth: 1,
+				current: false,
+				virtual: true,
+				children: [
+					{
+						url: '/b/d',
+						stem: '/b/d',
+						depth: 2,
+						current: false,
+						children: [],
+					},
+				],
+			},
+			{
+				url: '/e.html',
+				stem: '/e',
+				depth: 1,
+				current: false,
+				children: [],
+			},
+		],
+	});
+});
