@@ -51,6 +51,10 @@
 			"import": "./dist/parse-url.js",
 			"types": "./dist/parse-url.d.ts"
 		},
+		"./path-list-to-tree": {
+			"import": "./dist/path-list-to-tree.js",
+			"types": "./dist/path-list-to-tree.d.ts"
+		},
 		"./race-with-timeout": {
 			"import": "./dist/race-with-timeout.js",
 			"types": "./dist/race-with-timeout.d.ts"
