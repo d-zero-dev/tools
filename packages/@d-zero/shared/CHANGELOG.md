@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.10.0...@d-zero/shared@0.11.0) (2025-10-15)
+
+### Features
+
+- **shared:** add isAncestor property to Node type in pathListToTree ([3669633](https://github.com/d-zero-dev/tools/commit/3669633a6a1ed7a9c5283bfe5af3c1da7f3fc79f))
+
 # [0.10.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.9.2...@d-zero/shared@0.10.0) (2025-10-15)
 
 ### Bug Fixes
