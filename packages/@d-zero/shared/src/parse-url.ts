@@ -119,6 +119,7 @@ export type ExURL = {
 
 export type ParseURLOptions = {
 	disableQueries?: boolean;
+	baseUrl?: string;
 };
 
 /**
@@ -129,7 +130,7 @@ export type ParseURLOptions = {
  */
 export function parseUrl(url: string, options?: ParseURLOptions): ExURL {
 	try {
-		const whatwgUrl = new URL(url);
+		const whatwgUrl = new URL(url, options?.baseUrl);
 		const { protocol, username, password, hostname, port, pathname, search, hash } =
 			whatwgUrl;
 		const isHTTP = /^https?:$/.test(protocol);
