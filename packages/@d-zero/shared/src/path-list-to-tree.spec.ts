@@ -2,14 +2,12 @@ import { test, expect } from 'vitest';
 
 import { pathListToTree } from './path-list-to-tree.js';
 
-test('Error', async () => {
-	await expect(async () => await pathListToTree([])).rejects.toThrowError(
-		'Root node not found',
-	);
+test('Error', () => {
+	expect(() => pathListToTree([])).toThrowError('Root node not found');
 });
 
-test('Create tree', async () => {
-	expect(await pathListToTree(['/', '/a/', '/a/c/', '/a/b', '/e/'])).toStrictEqual({
+test('Create tree', () => {
+	expect(pathListToTree(['/', '/a/', '/a/c/', '/a/b', '/e/'])).toStrictEqual({
 		url: '/',
 		stem: '/',
 		depth: 0,
@@ -47,9 +45,7 @@ test('Create tree', async () => {
 		],
 	});
 
-	expect(
-		await pathListToTree(['/', '/a/index', '/a/c/', '/a/b', '/e.html']),
-	).toStrictEqual({
+	expect(pathListToTree(['/', '/a/index', '/a/c/', '/a/b', '/e.html'])).toStrictEqual({
 		url: '/',
 		stem: '/',
 		depth: 0,
@@ -88,10 +84,8 @@ test('Create tree', async () => {
 	});
 });
 
-test('Create tree with virtual parent', async () => {
-	expect(
-		await pathListToTree(['/', '/a/index', '/a/c/', '/b/d', '/e.html']),
-	).toStrictEqual({
+test('Create tree with virtual parent', () => {
+	expect(pathListToTree(['/', '/a/index', '/a/c/', '/b/d', '/e.html'])).toStrictEqual({
 		url: '/',
 		stem: '/',
 		depth: 0,
@@ -139,25 +133,21 @@ test('Create tree with virtual parent', async () => {
 	});
 });
 
-test('Options: createVirtualParent', async () => {
-	await expect(
-		async () =>
-			await pathListToTree(['/', '/a/index', '/a/c/', '/b/d', '/e.html'], {
-				createVirtualParent: false,
-			}),
-	).rejects.toThrowError('Parent node not found: "/b/"');
+test('Options: createVirtualParent', () => {
+	expect(() =>
+		pathListToTree(['/', '/a/index', '/a/c/', '/b/d', '/e.html'], {
+			createVirtualParent: false,
+		}),
+	).toThrowError('Parent node not found: "/b/"');
 });
 
-test('Options: filter', async () => {
+test('Options: filter', () => {
 	expect(
-		await pathListToTree(
-			['/', '/a/', '/a/b.txt', '/a/c.css', '/a/d.js', '/b', '/e.html'],
-			{
-				filter(node) {
-					return node.children.length > 0 || node.url.endsWith('.html');
-				},
+		pathListToTree(['/', '/a/', '/a/b.txt', '/a/c.css', '/a/d.js', '/b', '/e.html'], {
+			filter(node) {
+				return node.children.length > 0 || node.url.endsWith('.html');
 			},
-		),
+		}),
 	).toStrictEqual({
 		url: '/',
 		stem: '/',
@@ -175,9 +165,9 @@ test('Options: filter', async () => {
 	});
 });
 
-test('Options: extensions', async () => {
+test('Options: extensions', () => {
 	expect(
-		await pathListToTree(['/', '/a/', '/a/b.html', '/a/c.css', '/d.js'], {
+		pathListToTree(['/', '/a/', '/a/b.html', '/a/c.css', '/d.js'], {
 			extensions: ['.html', '.css'],
 		}),
 	).toStrictEqual({
@@ -212,9 +202,9 @@ test('Options: extensions', async () => {
 	});
 });
 
-test('Options: ignoreGlobs', async () => {
+test('Options: ignoreGlobs', () => {
 	expect(
-		await pathListToTree(['/', '/a/index', '/a/c/', '/b/d', '/e.html'], {
+		pathListToTree(['/', '/a/index', '/a/c/', '/b/d', '/e.html'], {
 			ignoreGlobs: ['/a/**/*'],
 		}),
 	).toStrictEqual({

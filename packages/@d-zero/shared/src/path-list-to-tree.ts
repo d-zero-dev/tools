@@ -29,7 +29,7 @@ export type PathListToTreeOptions = {
 	/**
 	 *
 	 */
-	filter?: (node: Node) => boolean | Promise<boolean>;
+	filter?: (node: Node) => boolean;
 };
 
 export type Node = {
@@ -46,10 +46,7 @@ export type Node = {
  * @param pathList
  * @param options
  */
-export async function pathListToTree(
-	pathList: string[],
-	options?: PathListToTreeOptions,
-) {
+export function pathListToTree(pathList: string[], options?: PathListToTreeOptions) {
 	const sortedList = pathList.toSorted(pathComparator);
 
 	const currentPath = options?.currentPath;
@@ -93,7 +90,7 @@ export async function pathListToTree(
 
 	const tree: Node = createTree(fileList, createVirtualParent);
 
-	return await walkFilter(tree, filter);
+	return walkFilter(tree, filter);
 }
 
 /**
@@ -101,16 +98,13 @@ export async function pathListToTree(
  * @param node
  * @param callback
  */
-async function walkFilter(
-	node: Node,
-	callback: (node: Node) => Promise<boolean> | boolean,
-): Promise<Node> {
+function walkFilter(node: Node, callback: (node: Node) => boolean): Node {
 	const newChildren: Node[] = [];
 	for (const child of node.children) {
-		if (!(await callback(child))) {
+		if (!callback(child)) {
 			continue;
 		}
-		const newChild = await walkFilter(child, callback);
+		const newChild = walkFilter(child, callback);
 		newChildren.push(newChild);
 	}
 	return {
