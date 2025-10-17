@@ -32,7 +32,7 @@
 		}
 	},
 	"devDependencies": {
-		"@d-zero/commitlint-config": "5.0.0-alpha.72",
+		"@d-zero/commitlint-config": "5.0.0-alpha.73",
 		"@d-zero/cspell-config": "5.0.0-alpha.71",
 		"@d-zero/eslint-config": "5.0.0-alpha.71",
 		"@d-zero/lint-staged-config": "5.0.0-alpha.71",
