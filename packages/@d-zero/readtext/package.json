@@ -27,6 +27,6 @@
 		"clean": "tsc --build --clean"
 	},
 	"devDependencies": {
-		"@types/node": "22.18.11"
+		"@types/node": "22.18.12"
 	}
 }
