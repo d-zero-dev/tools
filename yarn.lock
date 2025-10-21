@@ -1303,10 +1303,10 @@ __metadata:
   resolution: "@d-zero/remote-inspector@workspace:packages/@d-zero/remote-inspector"
   dependencies:
     "@d-zero/cli-core": "npm:1.1.3"
-    "@types/diff": "npm:6.0.0"
+    "@types/diff": "npm:8.0.0"
     "@types/ssh2-sftp-client": "npm:9.0.5"
     ansi-colors: "npm:^4.1.3"
-    diff: "npm:^7.0.0"
+    diff: "npm:^8.0.0"
     dotenv: "npm:^17.0.0"
     ssh2-sftp-client: "npm:^12.0.0"
     typescript: "npm:5.9.3"
@@ -3783,13 +3783,6 @@ __metadata:
   version: 4.0.2
   resolution: "@types/deep-eql@npm:4.0.2"
   checksum: 10c0/bf3f811843117900d7084b9d0c852da9a044d12eb40e6de73b552598a6843c21291a8a381b0532644574beecd5e3491c5ff3a0365ab86b15d59862c025384844
-  languageName: node
-  linkType: hard
-
-"@types/diff@npm:6.0.0":
-  version: 6.0.0
-  resolution: "@types/diff@npm:6.0.0"
-  checksum: 10c0/229325cd8039de546dc370d63d62eaf5774122a616eb09cd446d479181e58e941c2983303d23ebcb405109b1b2653ab3bbfcf63a24f827e976e98c8eb83dd34f
   languageName: node
   linkType: hard
 
@@ -6483,7 +6476,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"diff@npm:*, diff@npm:8.0.2":
+"diff@npm:*, diff@npm:8.0.2, diff@npm:^8.0.0":
   version: 8.0.2
   resolution: "diff@npm:8.0.2"
   checksum: 10c0/abfb387f033e089df3ec3be960205d17b54df8abf0924d982a7ced3a94c557a4e6cbff2e78b121f216b85f466b3d8d041673a386177c311aaea41459286cc9bc
@@ -6501,13 +6494,6 @@ __metadata:
   version: 5.2.0
   resolution: "diff@npm:5.2.0"
   checksum: 10c0/aed0941f206fe261ecb258dc8d0ceea8abbde3ace5827518ff8d302f0fc9cc81ce116c4d8f379151171336caf0516b79e01abdc1ed1201b6440d895a66689eb4
-  languageName: node
-  linkType: hard
-
-"diff@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "diff@npm:7.0.0"
-  checksum: 10c0/251fd15f85ffdf814cfc35a728d526b8d2ad3de338dcbd011ac6e57c461417090766b28995f8ff733135b5fbc3699c392db1d5e27711ac4e00244768cd1d577b
   languageName: node
   linkType: hard
 
