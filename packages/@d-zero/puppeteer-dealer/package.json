@@ -30,9 +30,9 @@
 		"debug": "4.4.3"
 	},
 	"devDependencies": {
-		"puppeteer": "24.25.0"
+		"puppeteer": "24.26.0"
 	},
 	"peerDependencies": {
-		"puppeteer": "24.25.0"
+		"puppeteer": "24.26.0"
 	}
 }
