@@ -5,14 +5,14 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"@axe-core/puppeteer@npm:4.10.2":
-  version: 4.10.2
-  resolution: "@axe-core/puppeteer@npm:4.10.2"
+"@axe-core/puppeteer@npm:4.11.0":
+  version: 4.11.0
+  resolution: "@axe-core/puppeteer@npm:4.11.0"
   dependencies:
-    axe-core: "npm:~4.10.3"
+    axe-core: "npm:~4.11.0"
   peerDependencies:
     puppeteer: ">=1.10.0"
-  checksum: 10c0/19520addf563b3f46f8bd5f7325802ba98da361706b1ed8764c65d6ee4ac66abff4ffd6cb6303373625428c0f3357345ee66820f4cef7805b76df8b55250ea01
+  checksum: 10c0/4599f0d8a925172bbe0f380e9330616b56f08eed93495f94c84086e4adf1ce191e73e876ec7df08eaf15252028cdfb7b70a688e1f237e1a0cb29317970a86df0
   languageName: node
   linkType: hard
 
@@ -914,7 +914,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check-axe-scenario@workspace:packages/@d-zero/a11y-check-axe-scenario"
   dependencies:
-    "@axe-core/puppeteer": "npm:4.10.2"
+    "@axe-core/puppeteer": "npm:4.11.0"
     "@d-zero/a11y-check-core": "npm:0.5.8"
     "@d-zero/db-wcag": "npm:1.0.0-alpha.1"
     "@d-zero/shared": "npm:0.11.0"
@@ -4794,17 +4794,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:4.11.0":
+"axe-core@npm:4.11.0, axe-core@npm:~4.11.0":
   version: 4.11.0
   resolution: "axe-core@npm:4.11.0"
   checksum: 10c0/7d7020a568a824c303711858c2fcfe56d001d27e46c0c2ff75dc31b436cfddfd4857a301e70536cc9e64829d25338f7fb782102d23497ebdc66801e9900fc895
-  languageName: node
-  linkType: hard
-
-"axe-core@npm:~4.10.3":
-  version: 4.10.3
-  resolution: "axe-core@npm:4.10.3"
-  checksum: 10c0/1b1c24f435b2ffe89d76eca0001cbfff42dbf012ad9bd37398b70b11f0d614281a38a28bc3069e8972e3c90ec929a8937994bd24b0ebcbaab87b8d1e241ab0c7
   languageName: node
   linkType: hard
 
