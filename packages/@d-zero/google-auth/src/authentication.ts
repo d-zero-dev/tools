@@ -11,22 +11,28 @@ import { log } from './debug.js';
 
 const FINISHED_MESSAGE = `🔑 ${c.bold.green('Authentication successful')}\n`;
 
+export type AuthenticationOptions = {
+	readonly tokenFilePath?: string;
+	readonly checkTokenExpiry?: boolean;
+};
+
 /**
  *
  * @param credentialFilePath
  * @param scope
- * @param tokenFilePath
+ * @param options
  */
 export async function authentication(
 	credentialFilePath: string,
 	scope: readonly string[],
-	tokenFilePath?: string,
+	options?: AuthenticationOptions,
 ) {
 	const credentials = await getCredentials(credentialFilePath);
 
 	const dir = path.dirname(credentialFilePath);
-	const name = path.basename(credentialFilePath, path.extname(credentialFilePath));
-	tokenFilePath = tokenFilePath ?? path.join(dir, `${name}.token`);
+	const name = path.basename(credentialFilePath);
+	const tokenFilePath = options?.tokenFilePath ?? path.join(dir, `${name}.token`);
+	const checkTokenExpiry = options?.checkTokenExpiry ?? false;
 
 	log('Authorize to Google on OAuth2');
 	const { client_secret, client_id, redirect_uris } = credentials.installed;
@@ -37,7 +43,7 @@ export async function authentication(
 		.catch((error) => new Error(error));
 
 	if (token instanceof Error) {
-		log('Failed to load token file');
+		log('You need to authorize to Google on OAuth2 because the token file is missing');
 		const newOAuth2Client = await getNewToken(oAuth2Client, scope, tokenFilePath);
 		process.stdout.write(FINISHED_MESSAGE);
 		return newOAuth2Client;
@@ -46,6 +52,12 @@ export async function authentication(
 	const tokenObj = JSON.parse(token);
 	log('Set credential token: %O', tokenObj);
 	oAuth2Client.setCredentials(tokenObj);
+
+	if (!checkTokenExpiry) {
+		log('Skip token expiry check');
+		process.stdout.write(FINISHED_MESSAGE);
+		return oAuth2Client;
+	}
 
 	const tokenInfo = await oAuth2Client
 		.getTokenInfo(oAuth2Client.credentials.access_token!)
@@ -56,9 +68,12 @@ export async function authentication(
 
 	if (tokenInfo) {
 		log('Token is valid for the following scopes:', tokenInfo.scopes);
+		log('Expires at: %s', new Date(tokenInfo.expiry_date).toLocaleString('ja-JP'));
 		process.stdout.write(FINISHED_MESSAGE);
 		return oAuth2Client;
 	}
+
+	log('Token is invalid or expired: %O', tokenInfo);
 
 	await fs.rm(tokenFilePath);
 
