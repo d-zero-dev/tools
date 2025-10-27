@@ -7,82 +7,17 @@ import { parseUrl } from '@d-zero/shared/parse-url';
 import dotenv from 'dotenv';
 
 export class SpreadsheetReporter {
-	#table: SheetTable<Violation>;
+	#table: SheetTable<Violation> | null = null;
 
 	// eslint-disable-next-line no-restricted-syntax
-	private constructor(sheetUrl: string, sheetName: string, auth: Auth) {
-		this.#table = new SheetTable<Violation>(
-			sheetUrl,
-			sheetName,
-			auth,
-			{
-				id: 'No.',
-				url: '対象画面URL',
-				tool: 'テスト方法',
-				timestamp: '日時',
-				component: 'パーツ',
-				environment: '環境',
-				targetNode: '対象箇所',
-				asIs: 'AS IS',
-				toBe: {
-					label: 'TO BE',
-					conditionalFormatRules: [
-						{
-							booleanRule: {
-								condition: { type: 'BLANK' },
-								format: {
-									backgroundColor: { red: 0.9 },
-									textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 } },
-								},
-							},
-						},
-					],
-				},
-				explanation: {
-					label: 'TO BE(補足)',
-					conditionalFormatRules: [
-						{
-							booleanRule: {
-								condition: {
-									type: 'TEXT_STARTS_WITH',
-									values: [{ userEnteredValue: 'N/A' }],
-								},
-								format: {
-									backgroundColor: { red: 0.9 },
-									textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 } },
-								},
-							},
-						},
-						{
-							booleanRule: {
-								condition: {
-									type: 'TEXT_STARTS_WITH',
-									values: [{ userEnteredValue: 'WARNING' }],
-								},
-								format: {
-									backgroundColor: { red: 1, green: 0.5, blue: 0 },
-									textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 } },
-								},
-							},
-						},
-					],
-				},
-				wcagVersion: 'WCAGバージョン',
-				scNumber: '達成基準番号',
-				level: '適合レベル',
-				screenshot: 'スクリーンショット',
-			},
-			{
-				frozen: {
-					rows: 1,
-					cols: 2,
-				},
-			},
-		);
-	}
+	private constructor() {}
 
 	async report(results: readonly Violation[]) {
-		await this.#table.update(
+		if (!this.#table) {
+			throw new Error('Table is not created');
+		}
+
+		await this.#table.addRecords(
 			results.map((result) => {
 				const url = parseUrl(result.url);
 
@@ -115,6 +50,79 @@ export class SpreadsheetReporter {
 		);
 	}
 
+	async #create(sheetUrl: string, sheetName: string, auth: Auth) {
+		this.#table = await SheetTable.create<Violation>(
+			sheetUrl,
+			sheetName,
+			auth,
+			{
+				define: {
+					id: 'No.',
+					url: '対象画面URL',
+					tool: 'テスト方法',
+					timestamp: '日時',
+					component: 'パーツ',
+					environment: '環境',
+					targetNode: '対象箇所',
+					asIs: 'AS IS',
+					toBe: {
+						label: 'TO BE',
+						conditionalFormatRules: [
+							{
+								booleanRule: {
+									condition: { type: 'BLANK' },
+									format: {
+										backgroundColor: { red: 0.9 },
+										textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 } },
+									},
+								},
+							},
+						],
+					},
+					explanation: {
+						label: 'TO BE(補足)',
+						conditionalFormatRules: [
+							{
+								booleanRule: {
+									condition: {
+										type: 'TEXT_STARTS_WITH',
+										values: [{ userEnteredValue: 'N/A' }],
+									},
+									format: {
+										backgroundColor: { red: 0.9 },
+										textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 } },
+									},
+								},
+							},
+							{
+								booleanRule: {
+									condition: {
+										type: 'TEXT_STARTS_WITH',
+										values: [{ userEnteredValue: 'WARNING' }],
+									},
+									format: {
+										backgroundColor: { red: 1, green: 0.5, blue: 0 },
+										textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 } },
+									},
+								},
+							},
+						],
+					},
+					wcagVersion: 'WCAGバージョン',
+					scNumber: '達成基準番号',
+					level: '適合レベル',
+					screenshot: 'スクリーンショット',
+				},
+			},
+			{
+				frozen: {
+					rows: 1,
+					cols: 2,
+				},
+			},
+		);
+	}
+
 	static async setup(sheetUrl: string, sheetName: string) {
 		dotenv.config();
 
@@ -126,6 +134,8 @@ export class SpreadsheetReporter {
 			'https://www.googleapis.com/auth/spreadsheets',
 		]);
 
-		return new SpreadsheetReporter(sheetUrl, sheetName, auth);
+		const reporter = new SpreadsheetReporter();
+		await reporter.#create(sheetUrl, sheetName, auth);
+		return reporter;
 	}
 }
