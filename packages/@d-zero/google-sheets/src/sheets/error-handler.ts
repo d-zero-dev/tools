@@ -145,10 +145,8 @@ export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>)
  * @param res
  */
 function userRateLimitExceededError(res: GaxiosError) {
-	return (
-		Number.parseInt(res.code ?? '') === 403 &&
-		res.message.includes('User rate limit exceeded')
-	);
+	const numCode = toNumber(res.code);
+	return numCode === 403 && res.message.includes('User rate limit exceeded');
 }
 
 /**
@@ -156,5 +154,13 @@ function userRateLimitExceededError(res: GaxiosError) {
  * @param res
  */
 function isTooManyRequestError(res: GaxiosError) {
-	return Number.parseInt(res.code ?? '') === 429;
+	return toNumber(res.code) === 429;
+}
+
+/**
+ *
+ * @param code
+ */
+function toNumber(code: string | number | undefined) {
+	return typeof code === 'number' ? code : Number.parseInt(code ?? '');
 }
