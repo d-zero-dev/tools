@@ -43,21 +43,23 @@ describe('formatLines', () => {
 
 describe('generateDiff', () => {
 	test('should generate diff for added content', () => {
-		const blocks = [{ added: true, removed: false, value: 'new line\n' }];
+		const blocks = [{ added: true, removed: false, value: 'new line\n', count: 1 }];
 		const result = generateDiff(blocks, '', 80);
 		expect(result).toContain('   0: new line');
 		expect(result).toContain('\u001B[32m');
 	});
 
 	test('should generate diff for removed content', () => {
-		const blocks = [{ added: false, removed: true, value: 'deleted line\n' }];
+		const blocks = [{ added: false, removed: true, value: 'deleted line\n', count: 1 }];
 		const result = generateDiff(blocks, 'deleted line\n', 80);
 		expect(result).toContain('   0: deleted line');
 		expect(result).toContain('\u001B[31m');
 	});
 
 	test('should generate diff for unchanged content with context', () => {
-		const blocks = [{ added: false, removed: false, value: 'line1\nline2\nline3\n' }];
+		const blocks = [
+			{ added: false, removed: false, value: 'line1\nline2\nline3\n', count: 1 },
+		];
 		const result = generateDiff(blocks, 'line1\nline2\nline3\n', 80);
 		expect(result).toContain('   0: line1');
 		expect(result).toContain('   1: line2');
@@ -67,7 +69,7 @@ describe('generateDiff', () => {
 
 	test('should truncate large unchanged blocks with separator', () => {
 		const longBlock = Array.from({ length: 10 }, (_, i) => `line${i}`).join('\n') + '\n';
-		const blocks = [{ added: false, removed: false, value: longBlock }];
+		const blocks = [{ added: false, removed: false, value: longBlock, count: 1 }];
 		const result = generateDiff(blocks, longBlock, 80);
 		expect(result).toContain('line7');
 		expect(result).toContain('line8');
@@ -76,9 +78,9 @@ describe('generateDiff', () => {
 
 	test('should handle mixed diff blocks', () => {
 		const blocks = [
-			{ added: false, removed: false, value: 'unchanged\n' },
-			{ added: true, removed: false, value: 'added\n' },
-			{ added: false, removed: true, value: 'removed\n' },
+			{ added: false, removed: false, value: 'unchanged\n', count: 1 },
+			{ added: true, removed: false, value: 'added\n', count: 1 },
+			{ added: false, removed: true, value: 'removed\n', count: 1 },
 		];
 		const result = generateDiff(blocks, 'unchanged\nremoved\n', 80);
 		expect(result).toContain('unchanged');

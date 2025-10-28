@@ -25,12 +25,12 @@
 	"dependencies": {
 		"@d-zero/cli-core": "1.1.3",
 		"ansi-colors": "^4.1.3",
-		"diff": "^7.0.0",
+		"diff": "^8.0.2",
 		"dotenv": "^17.0.0",
 		"ssh2-sftp-client": "^12.0.0"
 	},
 	"devDependencies": {
-		"@types/diff": "6.0.0",
+		"@types/diff": "8.0.0",
 		"@types/ssh2-sftp-client": "9.0.5",
 		"typescript": "5.9.3"
 	},
