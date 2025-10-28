@@ -13,3 +13,10 @@ export type CellData<T extends CellRawData = CellRawData> = {
 };
 
 export type CellRawData = string | number | boolean | Date | null | undefined;
+
+export type CellType = 'string' | 'number' | 'boolean' | 'date' | 'formula' | 'error';
+
+export type CellTypeInfo = {
+	readonly index: number;
+	readonly type: CellType;
+};

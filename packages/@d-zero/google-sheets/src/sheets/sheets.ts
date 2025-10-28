@@ -117,4 +117,14 @@ export class Sheets {
 
 		return list.data.sheets ?? [];
 	}
+
+	@ErrorHandler()
+	async getWithGridData(range: string) {
+		const res = await this.#sheets.spreadsheets.get({
+			spreadsheetId: this.#spreadsheetId,
+			ranges: [range],
+			includeGridData: true,
+		});
+		return res;
+	}
 }

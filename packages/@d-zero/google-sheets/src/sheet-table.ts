@@ -1,10 +1,13 @@
 import type { Sheet } from './sheets/sheet.js';
-import type { CellData } from './sheets/types.js';
+import type { CellData, CellType } from './sheets/types.js';
 import type { OAuth2Client } from 'google-auth-library';
 import type { sheets_v4 } from 'googleapis';
 
 import { Cell } from './sheets/cell.js';
 import { Sheets } from './sheets/sheets.js';
+
+// Google Sheets epoch (December 30, 1899)
+const SHEETS_EPOCH = new Date(1899, 11, 30).getTime();
 
 export type HeaderCell = {
 	readonly label: string;
@@ -92,6 +95,24 @@ export class SheetTable<T> {
 			this.#orderedHeaderIds,
 		);
 
+		if (headers.length === 0) {
+			return [];
+		}
+
+		const firstColIndex = headers.at(0)?.index ?? 0;
+
+		// Get type information from the first data row
+		const firstDataRowRange = `${headers.at(0)?.row ?? 'A'}${this.#bodyStartRow}:${headers.at(-1)?.row ?? 'A'}${this.#bodyStartRow}`;
+		const cellTypes = await this.#sheet.getCellTypes(firstDataRowRange);
+
+		// Convert type information to Map (managed by absolute index)
+		const typeMap = new Map<number, CellType>();
+		for (const cellType of cellTypes) {
+			// cellType.index is relative position (0-based), so add firstColIndex to convert to absolute position
+			typeMap.set(firstColIndex + cellType.index, cellType.type);
+		}
+
+		// Get all data
 		const data = await this.#sheet.getValues(
 			`${headers.at(0)?.row ?? 'A'}${this.#bodyStartRow}`,
 			headers.at(-1)?.row ?? 'A',
@@ -105,7 +126,11 @@ export class SheetTable<T> {
 			const _data: Partial<T> = {};
 
 			for (const header of headers) {
-				_data[header.key] = _d[header.index - (headers.at(0)?.index ?? 0)];
+				const relativeIndex = header.index - firstColIndex;
+				const rawValue = _d[relativeIndex];
+				const cellType = typeMap.get(header.index) ?? 'string';
+
+				_data[header.key] = convertValue(rawValue, cellType) as T[keyof T];
 			}
 
 			return _data as T;
@@ -224,4 +249,66 @@ function getClmName(col: number): string {
 				: '';
 	const child = String.fromCodePoint(CODE_POINT_A + mod - 1);
 	return parent + child;
+}
+
+/**
+ * Convert raw cell value to appropriate type
+ * @param rawValue - The raw value from the cell (typically string or any)
+ * @param cellType - The detected cell type
+ * @returns Converted value in appropriate type
+ */
+function convertValue(
+	rawValue: unknown,
+	cellType: CellType,
+): string | number | boolean | Date | null {
+	// Handle null/undefined
+	if (rawValue == null || rawValue === '') {
+		return null;
+	}
+
+	switch (cellType) {
+		case 'number': {
+			const num = Number(rawValue);
+			return Number.isNaN(num) ? null : num;
+		}
+		case 'boolean': {
+			if (typeof rawValue === 'boolean') {
+				return rawValue;
+			}
+			if (typeof rawValue === 'string') {
+				const lower = rawValue.toLowerCase();
+				if (lower === 'true' || lower === 'yes' || lower === '1') {
+					return true;
+				}
+				if (lower === 'false' || lower === 'no' || lower === '0') {
+					return false;
+				}
+			}
+			return Boolean(rawValue);
+		}
+		case 'date': {
+			// Google Sheets dates are returned as serial values (numbers)
+			const serialValue = Number(rawValue);
+			if (Number.isNaN(serialValue)) {
+				return null;
+			}
+			// Convert serial value to Date
+			const date = new Date(SHEETS_EPOCH + serialValue * 86_400_000);
+			return date;
+		}
+		case 'formula': {
+			// For formulas, return the evaluated result as a string
+			return String(rawValue);
+		}
+		case 'error': {
+			// Return null for error values
+			return null;
+		}
+		case 'string': {
+			return String(rawValue);
+		}
+		default: {
+			return String(rawValue);
+		}
+	}
 }

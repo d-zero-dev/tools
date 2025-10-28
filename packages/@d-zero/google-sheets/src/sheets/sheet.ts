@@ -1,5 +1,5 @@
 import type { Sheets } from './sheets.js';
-import type { Row } from './types.js';
+import type { Row, CellTypeInfo } from './types.js';
 import type { sheets_v4 } from 'googleapis';
 
 import { splitArray } from '@d-zero/shared/split-array';
@@ -124,6 +124,40 @@ export class Sheet {
 		sendLog('Frozen succeeded');
 	}
 
+	async getCellTypes(range: string) {
+		const res = await this.#parent.getWithGridData(`'${this.props.title}'!${range}`);
+		const sheet = res.data.sheets?.[0];
+		const rowData = sheet?.data?.[0]?.rowData?.[0];
+		const cells = rowData?.values ?? [];
+
+		const cellTypes: CellTypeInfo[] = cells.map((cell, index) => {
+			const effectiveValue = cell.effectiveValue;
+			const effectiveFormat = cell.effectiveFormat;
+
+			if (!effectiveValue) {
+				return { index, type: 'string' };
+			}
+
+			if (effectiveValue.numberValue !== undefined) {
+				const numberFormatType = effectiveFormat?.numberFormat?.type;
+				if (numberFormatType === 'DATE' || numberFormatType === 'DATE_TIME') {
+					return { index, type: 'date' };
+				}
+				return { index, type: 'number' };
+			} else if (effectiveValue.boolValue !== undefined) {
+				return { index, type: 'boolean' };
+			} else if (effectiveValue.formulaValue !== undefined) {
+				return { index, type: 'formula' };
+			} else if (effectiveValue.errorValue !== undefined) {
+				return { index, type: 'error' };
+			}
+
+			return { index, type: 'string' };
+		});
+
+		return cellTypes;
+	}
+
 	getColNumByHeaderName(name: string) {
 		if (!this.#headers) {
 			return -1;
@@ -136,6 +170,7 @@ export class Sheet {
 	async getValues(row: string, col: string) {
 		const res = await this.#parent.get({
 			range: `'${this.props.title}'!${row}:${col}`,
+			valueRenderOption: 'UNFORMATTED_VALUE',
 		});
 		return res.data.values;
 	}
