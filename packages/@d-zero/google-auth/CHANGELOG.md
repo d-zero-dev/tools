@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.4.4...@d-zero/google-auth@0.5.0) (2025-10-28)
+
+### Features
+
+- **google-auth:** add token expiry check option and improve authentication ([fad86b3](https://github.com/d-zero-dev/tools/commit/fad86b3499b6a4068fd8f94ccec28ac64f470a1a))
+
 ## [0.4.4](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.4.3...@d-zero/google-auth@0.4.4) (2025-10-15)
 
 **Note:** Version bump only for package @d-zero/google-auth

@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.4.2...@d-zero/google-sheets@0.5.0) (2025-10-28)
+
+- feat(google-sheets)!: change SheetTable to factory pattern with create method ([4fcc54e](https://github.com/d-zero-dev/tools/commit/4fcc54e5a80f2c45cf7340c58e408bd4102f95cc))
+
+### Features
+
+- **google-sheets:** add cell type detection and conversion in getData() ([93fd4f3](https://github.com/d-zero-dev/tools/commit/93fd4f3769efab7b61b4aad2f68956ad64d1667a))
+- **google-sheets:** add getData method for reading sheet data ([2336043](https://github.com/d-zero-dev/tools/commit/23360433196bdda533009af6fffc5f1c14581372))
+
+### BREAKING CHANGES
+
+- Constructor is now private. Use static create() method instead of
+
+new SheetTable(). The update() method is removed and replaced with addRecords().
+
 ## [0.4.2](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.4.1...@d-zero/google-sheets@0.4.2) (2025-10-15)
 
 **Note:** Version bump only for package @d-zero/google-sheets
