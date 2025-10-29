@@ -11,6 +11,26 @@ import { downloadResources } from './resource-downloader.js';
 
 /**
  * Replicate web pages with all their resources to local directories
+ *
+ * ## Architecture
+ *
+ * This implementation uses a two-phase architecture for memory efficiency:
+ *
+ * ### Phase 1: Metadata Collection
+ * - Each URL is processed in a separate child process using puppeteer-dealer
+ * - Child processes scan pages with Puppeteer and collect resource URLs
+ * - For URLs ending with '/' (e.g., https://example.com/), MIME type is captured
+ * and encoded as "url:::MIME/type" format
+ * - Only metadata (URLs + MIME types) is returned to parent - no buffer data
+ *
+ * ### Phase 2: Resource Download
+ * - Parent process aggregates all metadata and removes duplicates
+ * - Parses encoded URLs to determine correct local paths
+ * - Downloads resources via fetch() and immediately writes to disk
+ * - No resource content is kept in memory
+ *
+ * This approach minimizes memory usage by avoiding duplicate I/O operations
+ * and keeping buffer data out of inter-process communication.
  * @param options - Replication options
  */
 export async function replicate(options: ReplicateOptions): Promise<void> {
