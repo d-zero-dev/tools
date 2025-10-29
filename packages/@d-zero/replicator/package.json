@@ -25,6 +25,7 @@
 	},
 	"dependencies": {
 		"@d-zero/cli-core": "1.1.3",
+		"@d-zero/dealer": "1.3.2",
 		"@d-zero/puppeteer-dealer": "0.5.8",
 		"@d-zero/puppeteer-page-scan": "4.2.4",
 		"@d-zero/puppeteer-scroll": "3.0.10",

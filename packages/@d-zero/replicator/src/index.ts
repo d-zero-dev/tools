@@ -140,7 +140,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 	const baseUrl = urls[0]!;
 
 	// Download all resources
-	await downloadResources([...allEncodedUrls], baseUrl, outputDir, log);
+	await downloadResources([...allEncodedUrls], baseUrl, outputDir, progress, verbose);
 
 	progress('');
 	progress(c.bold.green(`✅ Replication complete!`));

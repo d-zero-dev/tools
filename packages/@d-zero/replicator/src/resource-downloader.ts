@@ -1,8 +1,10 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { deal } from '@d-zero/dealer';
 import { mimeToExtension } from '@d-zero/shared/mime-to-extension';
 import { urlToLocalPath } from '@d-zero/shared/url-to-local-path';
+import c from 'ansi-colors';
 
 /**
  * Parse encoded pathname and return the actual URL and local path
@@ -34,46 +36,61 @@ function parseEncodedPath(
 	return { url, localPath };
 }
 
+interface ResourceTask {
+	url: string;
+	localPath: string;
+	encodedPath: string;
+}
+
 /**
  * Download and save resources to disk
  * @param encodedPaths - Array of encoded pathnames
  * @param baseUrl - Base URL to construct full URLs
  * @param outputDir - Output directory
  * @param logger - Logger function
+ * @param verbose - Enable verbose output
  */
 export async function downloadResources(
 	encodedPaths: string[],
 	baseUrl: string,
 	outputDir: string,
 	logger: (message: string) => void,
+	verbose = false,
 ): Promise<void> {
-	const uniqueResources = new Map<string, string>();
+	const uniqueResources = new Map<string, ResourceTask>();
 
 	// Parse all encoded pathnames
 	for (const encodedPath of encodedPaths) {
 		const { url, localPath } = parseEncodedPath(encodedPath, baseUrl);
-		uniqueResources.set(localPath, url);
-		logger(`   Parsed: ${encodedPath} -> ${localPath}`);
+		if (!uniqueResources.has(localPath)) {
+			uniqueResources.set(localPath, { url, localPath, encodedPath });
+		}
 	}
 
-	logger(`📥 Downloading ${uniqueResources.size} unique resources...`);
+	const tasks = [...uniqueResources.values()];
+
+	if (tasks.length === 0) {
+		logger(c.yellow('⚠️  No resources to download'));
+		return;
+	}
+
+	logger(`📥 Downloading ${tasks.length} unique resources...`);
+	logger('');
 
 	let downloaded = 0;
 	let failed = 0;
 
-	// Download resources in parallel with limited concurrency
-	const concurrency = 10;
-	const entries = [...uniqueResources.entries()];
+	await deal(
+		tasks,
+		(task, update, index) => {
+			const fileId = index.toString().padStart(4, '0');
+			const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(task.localPath)}: `;
 
-	for (let i = 0; i < entries.length; i += concurrency) {
-		const batch = entries.slice(i, i + concurrency);
+			return async () => {
+				update(`${lineHeader}Fetching%dots%`);
 
-		await Promise.all(
-			batch.map(async ([localPath, url]) => {
-				const fullPath = path.join(outputDir, localPath);
-
-				const response = await fetch(url).catch((error) => {
-					logger(`❌ Failed to fetch ${url}: ${error.message}`);
+				const response = await fetch(task.url).catch((error) => {
+					update(`${lineHeader}${c.red(`❌ Fetch failed: ${error.message}`)}`);
 					failed++;
 					return null;
 				});
@@ -83,18 +100,23 @@ export async function downloadResources(
 				}
 
 				if (!response.ok) {
-					logger(`❌ HTTP ${response.status} for ${url}`);
+					update(`${lineHeader}${c.red(`❌ HTTP ${response.status}`)}`);
 					failed++;
 					return;
 				}
 
+				update(`${lineHeader}Reading content%dots%`);
 				const content = Buffer.from(await response.arrayBuffer());
+				const fullPath = path.join(outputDir, task.localPath);
 				const dir = path.dirname(fullPath);
 
+				update(`${lineHeader}Creating directory%dots%`);
 				const mkdirSuccess = await mkdir(dir, { recursive: true })
 					.then(() => true)
 					.catch((error) => {
-						logger(`❌ Failed to create directory ${dir}: ${error.message}`);
+						update(
+							`${lineHeader}${c.red(`❌ Failed to create directory: ${error.message}`)}`,
+						);
 						failed++;
 						return false;
 					});
@@ -103,10 +125,11 @@ export async function downloadResources(
 					return;
 				}
 
+				update(`${lineHeader}Writing file%dots%`);
 				const writeSuccess = await writeFile(fullPath, content)
 					.then(() => true)
 					.catch((error) => {
-						logger(`❌ Failed to write ${fullPath}: ${error.message}`);
+						update(`${lineHeader}${c.red(`❌ Failed to write: ${error.message}`)}`);
 						failed++;
 						return false;
 					});
@@ -116,10 +139,22 @@ export async function downloadResources(
 				}
 
 				downloaded++;
-				logger(`✅ Downloaded ${url} -> ${localPath}`);
-			}),
-		);
-	}
+				update(`${lineHeader}${c.green('✅ Downloaded')}`);
+			};
+		},
+		{
+			limit: 10,
+			verbose,
+			header: (progress, done, total, limit) => {
+				const percentage = Math.round(progress * 100);
+				if (progress === 1) {
+					return `${c.bold.green('📥 Download Complete')} ${done}/${total} (${percentage}%) - ${c.green(`✅ ${downloaded}`)} ${c.red(`❌ ${failed}`)}`;
+				}
+				return `${c.bold.cyan('📥 Downloading')} %earth% %dots% ${done}/${total} (${percentage}%) - Limit: ${limit}`;
+			},
+		},
+	);
 
-	logger(`✅ Downloaded: ${downloaded}, Failed: ${failed}`);
+	logger('');
+	logger(c.bold.green(`✅ Downloaded: ${downloaded}, Failed: ${failed}`));
 }
