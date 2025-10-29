@@ -151,58 +151,68 @@ async function processPageForSize(
 	const requestPromises: Promise<void>[] = [];
 
 	// Set up resource detection
-	page.on('request', (request) => {
-		const requestUrl = request.url();
-		const requestUrlObj = new URL(requestUrl);
-
-		// Only handle same-host resources
-		if (requestUrlObj.hostname === baseUrl.hostname) {
-			log(`📥 [${sizeName}] Intercepting: ${requestUrl}`);
-
-			const localPath = urlToLocalPath(requestUrl);
-			const resourceType = getResourceType(requestUrl);
-
-			// Check if this resource is already tracked
-			if (!resources.some((r) => r.url === requestUrl)) {
-				resources.push({
-					url: requestUrl,
-					localPath,
-					type: resourceType,
-				});
-			}
-		} else {
-			log(`🚫 [${sizeName}] Skipping external resource: ${requestUrl}`);
-		}
-	});
-
 	page.on('response', (response) => {
 		const responseUrl = response.url();
 		const responseUrlObj = new URL(responseUrl);
 
 		// Only handle same-host resources
-		if (responseUrlObj.hostname === baseUrl.hostname) {
-			const promise = (async () => {
-				const resource = resources.find((r) => r.url === responseUrl);
-				if (resource && response.ok()) {
-					await response
-						.buffer()
-						.then((buffer) => {
-							resource.content = buffer;
-							log(`✅ [${sizeName}] Downloaded: ${responseUrl}`);
-						})
-						.catch((error) => {
-							const errorMessage = error instanceof Error ? error.message : String(error);
-							log(
-								`❌ [${sizeName}] Failed to download: ${responseUrl} - ${errorMessage}`,
-							);
-						});
-				} else if (resource) {
-					log(`❌ [${sizeName}] Resource failed (${response.status()}): ${responseUrl}`);
-				}
-			})();
-
-			requestPromises.push(promise);
+		if (responseUrlObj.hostname !== baseUrl.hostname) {
+			log(`🚫 [${sizeName}] Skipping external resource: ${responseUrl}`);
+			return;
 		}
+
+		const promise = (async () => {
+			// Only process successful responses
+			if (!response.ok()) {
+				log(`❌ [${sizeName}] Resource failed (${response.status()}): ${responseUrl}`);
+				return;
+			}
+
+			// Check if this resource is already tracked
+			if (resources.some((r) => r.url === responseUrl)) {
+				log(`⏭️ [${sizeName}] Already tracked: ${responseUrl}`);
+				return;
+			}
+
+			log(`📥 [${sizeName}] Processing: ${responseUrl}`);
+
+			// Determine file extension
+			const urlExtension = getExtensionFromUrl(responseUrl);
+			const extension = urlExtension
+				? (() => {
+						log(`🔍 [${sizeName}] Extension from URL: ${urlExtension}`);
+						return urlExtension;
+					})()
+				: (() => {
+						const contentType = response.headers()['content-type'];
+						const ext = getExtensionFromMimeType(contentType);
+						log(`🔍 [${sizeName}] Extension from MIME type (${contentType}): ${ext}`);
+						return ext;
+					})();
+
+			// Generate local path
+			const localPath = urlToLocalPath(responseUrl, extension);
+
+			// Download content
+			const buffer = await response.buffer().catch((error) => {
+				const errorMessage = error instanceof Error ? error.message : String(error);
+				log(`❌ [${sizeName}] Failed to download: ${responseUrl} - ${errorMessage}`);
+				return null;
+			});
+
+			if (!buffer) {
+				return;
+			}
+
+			resources.push({
+				url: responseUrl,
+				localPath,
+				content: buffer,
+			});
+			log(`✅ [${sizeName}] Downloaded: ${responseUrl} -> ${localPath}`);
+		})();
+
+		requestPromises.push(promise);
 	});
 
 	// Set viewport and navigate using beforePageScan (which includes scrolling)
@@ -324,10 +334,68 @@ async function saveResources(
 }
 
 /**
- *
+ * Extract file extension from URL path
  * @param url
  */
-function urlToLocalPath(url: string): string {
+function getExtensionFromUrl(url: string): string | null {
+	const urlObj = new URL(url);
+	const pathname = urlObj.pathname;
+	const lastDot = pathname.lastIndexOf('.');
+	const lastSlash = pathname.lastIndexOf('/');
+
+	// Extension exists if dot comes after last slash
+	if (lastDot > lastSlash && lastDot !== -1) {
+		return pathname.slice(lastDot);
+	}
+
+	return null;
+}
+
+/**
+ * Get file extension from MIME type
+ * @param mimeType
+ */
+function getExtensionFromMimeType(mimeType: string | undefined): string {
+	if (!mimeType) {
+		return '';
+	}
+
+	// Remove charset and other parameters
+	const cleanMimeType = mimeType.split(';')[0]?.trim().toLowerCase();
+
+	if (!cleanMimeType) {
+		return '';
+	}
+
+	const mimeMap: Record<string, string> = {
+		'text/html': '.html',
+		'text/css': '.css',
+		'application/javascript': '.js',
+		'text/javascript': '.js',
+		'image/jpeg': '.jpg',
+		'image/png': '.png',
+		'image/svg+xml': '.svg',
+		'image/webp': '.webp',
+		'image/gif': '.gif',
+		'image/x-icon': '.ico',
+		'font/woff': '.woff',
+		'application/font-woff': '.woff',
+		'font/woff2': '.woff2',
+		'font/ttf': '.ttf',
+		'application/x-font-ttf': '.ttf',
+		'font/otf': '.otf',
+		'application/x-font-otf': '.otf',
+	};
+
+	return mimeMap[cleanMimeType] ?? '';
+}
+
+/**
+ * Convert URL to local file path
+ * @param url
+ * @param extension
+ */
+function urlToLocalPath(url: string, extension: string): string {
 	const urlObj = new URL(url);
 	let pathname = urlObj.pathname;
 
@@ -336,53 +404,16 @@ function urlToLocalPath(url: string): string {
 		pathname = pathname.slice(1);
 	}
 
-	// If path is empty or ends with /, treat as index.html
+	// If path is empty or ends with /, treat as index (with optional extension)
 	if (pathname === '' || pathname.endsWith('/')) {
-		pathname = pathname + 'index.html';
+		pathname = pathname + 'index' + extension;
+	} else if (!pathname.includes('.')) {
+		// If no extension in path, add the provided extension (may be empty)
+		pathname = pathname + extension;
 	}
-
-	// If no extension, add .html
-	if (!pathname.includes('.')) {
-		pathname = pathname + '.html';
-	}
+	// If extension already exists in path, keep it as-is
 
 	return pathname;
-}
-
-/**
- *
- * @param url
- */
-function getResourceType(url: string): Resource['type'] {
-	const urlObj = new URL(url);
-	const pathname = urlObj.pathname.toLowerCase();
-
-	if (
-		pathname.endsWith('.html') ||
-		pathname.endsWith('.htm') ||
-		pathname === '/' ||
-		!pathname.includes('.')
-	) {
-		return 'html';
-	}
-
-	if (pathname.endsWith('.css')) {
-		return 'css';
-	}
-
-	if (pathname.endsWith('.js') || pathname.endsWith('.mjs')) {
-		return 'js';
-	}
-
-	if (/\.(?:jpg|jpeg|png|gif|svg|webp|ico)$/.test(pathname)) {
-		return 'image';
-	}
-
-	if (/\.(?:woff|woff2|ttf|otf|eot)$/.test(pathname)) {
-		return 'font';
-	}
-
-	return 'other';
 }
 
 export type { ReplicateOptions, Resource } from './types.js';

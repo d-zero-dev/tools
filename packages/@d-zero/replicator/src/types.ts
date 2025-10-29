@@ -7,6 +7,5 @@ export interface ReplicateOptions {
 export interface Resource {
 	url: string;
 	localPath: string;
-	type: 'html' | 'css' | 'js' | 'image' | 'font' | 'other';
 	content?: Buffer;
 }
