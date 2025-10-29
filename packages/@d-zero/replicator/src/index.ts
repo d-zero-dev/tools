@@ -86,18 +86,15 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 			const percentage = Math.round((done / total) * 100);
 			return `${c.bold.cyan('🌐 Replicating')} ${done}/${total} (${percentage}%)`;
 		},
-		() => {
-			return createProcess<ChildProcessInput, ChildProcessResult>(
+		() =>
+			createProcess<ChildProcessInput, ChildProcessResult>(
 				path.resolve(import.meta.dirname, 'child-process.js'),
 				{
-					url: '', // Will be set by eachPage
-					outputDir,
 					devices: targetSizes,
 					timeout,
 				},
 				{},
-			);
-		},
+			),
 		{
 			limit,
 			each: (result) => {

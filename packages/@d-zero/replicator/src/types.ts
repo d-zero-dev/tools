@@ -13,8 +13,6 @@ export interface Resource {
 }
 
 export interface ChildProcessInput {
-	url: string;
-	outputDir: string;
 	devices?: Record<string, { width: number; resolution?: number }>;
 	timeout?: number;
 }
