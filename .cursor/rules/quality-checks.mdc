@@ -1,0 +1,100 @@
+---
+description: Always run lint, build, and test commands after completing code changes
+globs: *,**/*
+alwaysApply: true
+---
+
+# Quality Checks After Code Changes
+
+## Monorepo Context
+
+**This is a Lerna-managed monorepo.** ALL commands MUST be run from the repository root.
+
+- **NEVER use `cd` to navigate to individual package directories**
+- Lerna handles running commands across all packages from the root
+- Working directory should always be the repository root
+
+## File Type Based Checks
+
+### For TypeScript/JavaScript Files (_.ts, _.js, _.mjs, _.tsx, \*.jsx)
+
+After completing any code changes, you MUST run the following commands in order **from the repository root**:
+
+1. **Lint Check**: `yarn lint`
+   - Runs ESLint across all packages
+   - Fix all linter errors and warnings before proceeding
+   - Never leave lint warnings unresolved
+   - Ask user permission before disabling ESLint rules
+
+2. **Build Check**: `yarn build`
+   - Builds all packages via Lerna
+   - Ensure all packages build successfully
+   - Verify import paths are correct
+   - Check for TypeScript compilation errors
+
+3. **Test Check**: `yarn test`
+   - Run all test suites across all packages via Vitest
+   - Ensure all tests pass
+   - Verify no regressions introduced
+
+### For Non-Code Files (_.md, _.json, \*.mdc, config files, etc.)
+
+After completing changes to non-code files, only run:
+
+1. **Lint Check**: `yarn lint`
+   - Ensures documentation and configuration files follow formatting rules
+   - Skip build and test as they are not affected by non-code changes
+
+## When to Run
+
+Run these checks:
+
+- After implementing new features
+- After refactoring existing code
+- After fixing bugs
+- Before proposing commits
+- After resolving merge conflicts
+
+## Never Skip
+
+- Do NOT skip these checks even if changes seem trivial
+- Do NOT assume "it should work" without verification
+- Do NOT commit without successful results from all three commands
+
+## Workflow
+
+### During Implementation (Iterative Testing)
+
+For quick feedback during active development:
+
+```bash
+# Run specific test files
+yarn vitest run path/to/file.spec.ts
+```
+
+This is acceptable for:
+
+- Testing a specific feature being implemented
+- Quick verification during refactoring
+- Debugging specific test cases
+
+### Task Completion (Mandatory Full Check)
+
+Before reporting task completion or proposing a commit, you MUST run the full suite:
+
+```bash
+# 1. Lint first
+yarn lint
+
+# 2. Build if lint passes
+yarn build
+
+# 3. Test ALL suites if build passes
+yarn test
+
+# 4. Only then report completion or proceed to commit
+```
+
+## Critical Rule
+
+**NEVER report task completion** without running the full `yarn test` command. Partial test runs with `yarn vitest run` are NOT sufficient for final verification.
