@@ -29,6 +29,7 @@ describe('urlToLocalPath', () => {
 	});
 
 	test('handles empty extension', () => {
+		// When no extension is provided, no extension is added
 		expect(urlToLocalPath('https://example.com/', '')).toBe('index');
 		expect(urlToLocalPath('https://example.com/path/', '')).toBe('path/index');
 		expect(urlToLocalPath('https://example.com/file', '')).toBe('file');

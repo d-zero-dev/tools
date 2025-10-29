@@ -17,18 +17,28 @@ export function urlToLocalPath(url: string, extension: string): string {
 	const parsed = parseUrl(url);
 	let pathname = parsed.pathname ?? '/';
 
+	// Normalize empty pathname to "/"
+	if (pathname === '') {
+		pathname = '/';
+	}
+
 	// Remove leading slash
 	if (pathname.startsWith('/')) {
 		pathname = pathname.slice(1);
 	}
 
-	// If path is empty or ends with /, treat as index (with optional extension)
+	// If path is empty or ends with /, treat as index
 	if (pathname === '' || pathname.endsWith('/')) {
 		return pathname + 'index' + extension;
 	}
 
-	// If no extension in path, add the provided extension (may be empty)
-	if (!pathname.includes('.')) {
+	// Check if the last segment (after the last /) has an extension
+	const lastSlashIndex = pathname.lastIndexOf('/');
+	const lastSegment =
+		lastSlashIndex === -1 ? pathname : pathname.slice(lastSlashIndex + 1);
+
+	// If no extension in the last segment, add the provided extension (may be empty)
+	if (!lastSegment.includes('.')) {
 		return pathname + extension;
 	}
 
