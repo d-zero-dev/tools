@@ -11,6 +11,7 @@ interface ReplicatorCLIOptions extends BaseCLIOptions {
 	output?: string;
 	timeout?: number;
 	devices?: string;
+	limit?: number;
 }
 
 const { options, args } = createCLI<ReplicatorCLIOptions>({
@@ -19,14 +20,16 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		v: 'verbose',
 		t: 'timeout',
 		d: 'devices',
+		l: 'limit',
 	},
 	usage: [
-		'Usage: replicator <url> -o <output-directory> [options]',
+		'Usage: replicator <url1> [url2...] -o <output-directory> [options]',
 		'',
 		'Options:',
 		'  -o, --output <dir>        Output directory (required)',
 		'  -t, --timeout <ms>        Request timeout in milliseconds (default: 30000)',
 		'  -d, --devices <devices>   Device presets (comma-separated, default: desktop-compact,mobile)',
+		'  -l, --limit <number>      Parallel execution limit (default: 3)',
 		'  -v, --verbose             Enable verbose logging',
 		'',
 		'Available device presets:',
@@ -34,26 +37,28 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		'',
 		'Examples:',
 		'  replicator https://example.com -o ./output',
+		'  replicator https://example.com/page1 https://example.com/page2 -o ./output',
 		'  replicator https://example.com -o ./output --devices desktop,tablet',
-		'  replicator https://example.com -o ./output --timeout 60000',
+		'  replicator https://example.com -o ./output --timeout 60000 --limit 5',
 	],
 	parseArgs: (cli) => ({
 		...parseCommonOptions(cli),
 		output: cli.output,
 		timeout: cli.timeout ? Number(cli.timeout) : undefined,
 		devices: cli.devices,
+		limit: cli.limit ? Number(cli.limit) : undefined,
 	}),
 	validateArgs: (options, cli) => {
 		return !!(cli._.length > 0 && options.output);
 	},
 });
 
-const url = args[0];
+const urls = args.filter((arg): arg is string => typeof arg === 'string');
 const outputDir = options.output!;
 
-if (!url || typeof url !== 'string') {
+if (urls.length === 0) {
 	// eslint-disable-next-line no-console
-	console.error('❌ Error: URL is required');
+	console.error('❌ Error: At least one URL is required');
 	process.exit(1);
 }
 
@@ -61,13 +66,14 @@ try {
 	const deviceNames = options.devices ? parseList(options.devices) : undefined;
 	const devices = parseDevicesOption(deviceNames);
 
-	await replicate(url, outputDir, {
+	await replicate({
+		urls,
+		outputDir,
 		verbose: options.verbose ?? false,
 		timeout: options.timeout,
 		devices,
+		limit: options.limit,
 	});
-	// eslint-disable-next-line no-console
-	console.log(`✅ Successfully replicated ${url} to ${outputDir}`);
 } catch (error) {
 	if (error instanceof Error) {
 		// eslint-disable-next-line no-console
