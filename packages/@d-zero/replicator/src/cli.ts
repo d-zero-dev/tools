@@ -12,6 +12,7 @@ interface ReplicatorCLIOptions extends BaseCLIOptions {
 	timeout?: number;
 	devices?: string;
 	limit?: number;
+	only?: string;
 }
 
 const { options, args } = createCLI<ReplicatorCLIOptions>({
@@ -30,6 +31,7 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		'  -t, --timeout <ms>        Request timeout in milliseconds (default: 30000)',
 		'  -d, --devices <devices>   Device presets (comma-separated, default: desktop-compact,mobile)',
 		'  -l, --limit <number>      Parallel execution limit (default: 3)',
+		'  --only <type>             Download only specified type: page or resource',
 		'  -v, --verbose             Enable verbose logging',
 		'',
 		'Available device presets:',
@@ -40,6 +42,8 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		'  replicator https://example.com/page1 https://example.com/page2 -o ./output',
 		'  replicator https://example.com -o ./output --devices desktop,tablet',
 		'  replicator https://example.com -o ./output --timeout 60000 --limit 5',
+		'  replicator https://example.com -o ./output --only page',
+		'  replicator https://example.com -o ./output --only resource',
 	],
 	parseArgs: (cli) => ({
 		...parseCommonOptions(cli),
@@ -47,8 +51,12 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		timeout: cli.timeout ? Number(cli.timeout) : undefined,
 		devices: cli.devices,
 		limit: cli.limit ? Number(cli.limit) : undefined,
+		only: cli.only,
 	}),
 	validateArgs: (options, cli) => {
+		if (options.only && options.only !== 'page' && options.only !== 'resource') {
+			return false;
+		}
 		return !!(cli._.length > 0 && options.output);
 	},
 });
@@ -73,6 +81,7 @@ try {
 		timeout: options.timeout,
 		devices,
 		limit: options.limit,
+		only: options.only as 'page' | 'resource' | undefined,
 	});
 } catch (error) {
 	if (error instanceof Error) {

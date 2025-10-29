@@ -49,6 +49,7 @@ interface ResourceTask {
  * @param outputDir - Output directory
  * @param logger - Logger function
  * @param verbose - Enable verbose output
+ * @param only - Download only specified type: page or resource
  */
 export async function downloadResources(
 	encodedPaths: string[],
@@ -56,12 +57,31 @@ export async function downloadResources(
 	outputDir: string,
 	logger: (message: string) => void,
 	verbose = false,
+	only?: 'page' | 'resource',
 ): Promise<void> {
 	const uniqueResources = new Map<string, ResourceTask>();
 
 	// Parse all encoded pathnames
 	for (const encodedPath of encodedPaths) {
 		const { url, localPath } = parseEncodedPath(encodedPath, baseUrl);
+
+		// Filter based on 'only' option
+		// Note: HTML pages always have .html extension after parseEncodedPath
+		// - either from "pathname:::text/html" encoding via mimeToExtension
+		// - or from original URL path already having .html extension
+		const isHtmlPage = localPath.endsWith('.html');
+
+		if (only === 'resource' && isHtmlPage) {
+			// Skip HTML pages in resource-only mode
+			continue;
+		}
+
+		if (only === 'page' && !isHtmlPage) {
+			// Skip non-HTML resources in page-only mode
+			// (though this shouldn't happen if Phase 1 was skipped correctly)
+			continue;
+		}
+
 		if (!uniqueResources.has(localPath)) {
 			uniqueResources.set(localPath, { url, localPath, encodedPath });
 		}

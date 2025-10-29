@@ -22,7 +22,14 @@ npx @d-zero/replicator <url...> -o <output-directory> [options]
 - `-t, --timeout <ms>`: リクエストタイムアウト（ミリ秒、デフォルト: 30000）
 - `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
 - `-l, --limit <number>`: 並列処理数の上限（デフォルト: 3）
+- `--only <type>`: ダウンロード対象を限定（`page` または `resource`）
 - `-v, --verbose`: 詳細ログモード
+
+##### `--only` オプション
+
+- `page`: HTMLページのみをダウンロード（リソーススキャンをスキップして高速化）
+- `resource`: リソース（CSS、JS、画像など）のみをダウンロード（HTMLページを除外）
+- 未指定: すべてのファイルをダウンロード（デフォルト動作）
 
 #### 利用可能なデバイスプリセット
 
@@ -51,6 +58,12 @@ npx @d-zero/replicator https://example.com -o ./output --devices desktop,tablet,
 
 # タイムアウト指定
 npx @d-zero/replicator https://example.com -o ./output --timeout 60000
+
+# HTMLページのみダウンロード（高速）
+npx @d-zero/replicator https://example.com -o ./output --only page
+
+# リソースのみダウンロード（HTMLを除外）
+npx @d-zero/replicator https://example.com -o ./output --only resource
 ```
 
 ### プログラマティック使用
@@ -86,12 +99,27 @@ await replicate({
 	timeout: 30000,
 	verbose: true,
 });
+
+// HTMLページのみダウンロード
+await replicate({
+	urls: ['https://example.com'],
+	outputDir: './output',
+	only: 'page',
+});
+
+// リソースのみダウンロード
+await replicate({
+	urls: ['https://example.com'],
+	outputDir: './output',
+	only: 'resource',
+});
 ```
 
 ## 機能
 
 - **並列処理**: 複数のURLを並列で効率的に処理
 - **メモリ効率**: リソースを直接ディスクに保存してメモリ使用量を最小化
+- **選択的ダウンロード**: `--only`オプションでHTMLページのみまたはリソースのみをダウンロード可能
 - **レスポンシブ画像対応**: 複数のデバイス幅で`<picture>`要素やメディアクエリのリソースを取得
 - **遅延読み込み対応**: ページを自動スクロールして`loading=lazy`や`IntersectionObserver`ベースのコンテンツを取得
 - **マルチデバイスシミュレーション**: 様々なデバイス幅と解像度をシミュレートして包括的なリソース取得を実現

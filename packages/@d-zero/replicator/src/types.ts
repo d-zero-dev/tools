@@ -5,6 +5,7 @@ export interface ReplicateOptions {
 	timeout?: number;
 	devices?: Record<string, { width: number; resolution?: number }>;
 	limit?: number;
+	only?: 'page' | 'resource';
 }
 
 export interface Resource {
