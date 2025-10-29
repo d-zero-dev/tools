@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.5.4...@d-zero/replicator@0.6.0) (2025-10-29)
+
+### Bug Fixes
+
+- **replicator:** ensure HTML pages without extensions get .html suffix ([b7d90c1](https://github.com/d-zero-dev/tools/commit/b7d90c1db96294761e698ede4893491e51a82d2a))
+- **replicator:** remove unused outputDir parameter from child process ([540da83](https://github.com/d-zero-dev/tools/commit/540da8382b075f619dbbe2fd159076bc5bfd37c9))
+
+### Features
+
+- **replicator:** add --only option to download pages or resources selectively ([3a3a407](https://github.com/d-zero-dev/tools/commit/3a3a4073ea812153655bfbc26ca4ba14cf170e22))
+- **replicator:** implement parallel URL processing with puppeteer-dealer ([9dd8ded](https://github.com/d-zero-dev/tools/commit/9dd8ded07ad16ee835080ff0912a74e155df8ed1))
+- **replicator:** use dealer for parallel resource downloading ([17ea047](https://github.com/d-zero-dev/tools/commit/17ea047f969ce4c0af01dc457514cf4d5c24bc9c))
+
+### BREAKING CHANGES
+
+- **replicator:** API completely changed. replicate() now takes options object with
+  urls array instead of single url parameter.
+
 ## [0.5.4](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.5.3...@d-zero/replicator@0.5.4) (2025-10-28)
 
 **Note:** Version bump only for package @d-zero/replicator

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.5.0...@d-zero/google-sheets@0.5.1) (2025-10-29)
+
+**Note:** Version bump only for package @d-zero/google-sheets
+
 # [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.4.2...@d-zero/google-sheets@0.5.0) (2025-10-28)
 
 - feat(google-sheets)!: change SheetTable to factory pattern with create method ([4fcc54e](https://github.com/d-zero-dev/tools/commit/4fcc54e5a80f2c45cf7340c58e408bd4102f95cc))

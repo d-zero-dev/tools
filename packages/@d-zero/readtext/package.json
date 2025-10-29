@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/readtext",
-	"version": "1.1.11",
+	"version": "1.1.12",
 	"description": "A simple tool to read text files.",
 	"author": "D-ZERO",
 	"license": "MIT",

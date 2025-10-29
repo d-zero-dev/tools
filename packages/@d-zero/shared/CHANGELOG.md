@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.12.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.11.0...@d-zero/shared@0.12.0) (2025-10-29)
+
+### Bug Fixes
+
+- **shared:** improve url-to-local-path extension detection for paths with dots ([1122481](https://github.com/d-zero-dev/tools/commit/11224812d030c93bf65d9da23777200e03ed4266))
+
+### Features
+
+- **shared:** add mimeToExtension utility with tests ([66eb5b5](https://github.com/d-zero-dev/tools/commit/66eb5b57bacee96ec6f6452bb7942aabd9bc66a0))
+- **shared:** add urlToLocalPath utility with tests ([ed4a039](https://github.com/d-zero-dev/tools/commit/ed4a039deea30e1c4538f642619d72a9eb7087da))
+- **shared:** add validateSameHost utility with tests ([ab94dc1](https://github.com/d-zero-dev/tools/commit/ab94dc1ebf6afa84bd7e07f2958a061e4b4632c7))
+
 # [0.11.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.10.0...@d-zero/shared@0.11.0) (2025-10-15)
 
 ### Features
