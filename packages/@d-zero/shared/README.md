@@ -11,6 +11,7 @@
 | `@d-zero/shared/delay`                     | Delays the execution of code by the specified number of milliseconds.                                  |
 | `@d-zero/shared/filesize`                  | Converts the given byte size to kilobytes (KB) or megabytes (MB).                                      |
 | `@d-zero/shared/hash`                      | Generates a hash value for the given string.                                                           |
+| `@d-zero/shared/mime-to-extension`         | Converts a MIME type to a file extension.                                                              |
 | `@d-zero/shared/race-with-timeout`         | Races a given promise against a timeout and returns the result of the promise or a timeout indication. |
 | `@d-zero/shared/retry`                     | Decorator factory that adds retry logic to a method.                                                   |
 | `@d-zero/shared/skip-holiday-period`       | Skips the holiday period between the start and due dates.                                              |

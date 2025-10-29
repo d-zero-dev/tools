@@ -47,6 +47,10 @@
 			"import": "./dist/filesize.js",
 			"types": "./dist/filesize.d.ts"
 		},
+		"./mime-to-extension": {
+			"import": "./dist/mime-to-extension.js",
+			"types": "./dist/mime-to-extension.d.ts"
+		},
 		"./parse-url": {
 			"import": "./dist/parse-url.js",
 			"types": "./dist/parse-url.d.ts"
