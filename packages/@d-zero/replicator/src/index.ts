@@ -48,7 +48,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 	}
 
 	// Validate that all URLs share the same hostname
-	const hostname = validateSameHost(urls);
+	validateSameHost(urls);
 
 	const log = (message: string) => {
 		if (!verbose) {
@@ -70,7 +70,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 
 	const targetSizes = devices ?? defaultSizes;
 
-	progress(c.bold.cyan(`🌐 Replicating ${urls.length} URL(s) from ${hostname}`));
+	progress(c.bold.cyan(`🌐 Replicating ${urls.length} URL(s)`));
 	progress(c.gray(`   Output: ${outputDir}`));
 	progress(c.gray(`   Parallel limit: ${limit}`));
 	progress('');
@@ -96,6 +96,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 				{},
 			),
 		{
+			verbose,
 			limit,
 			each: (result) => {
 				results.push(result);
@@ -107,6 +108,19 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 	progress(
 		c.bold.green(`✅ Phase 1 complete: Collected metadata from ${results.length} URL(s)`),
 	);
+
+	// Log collected URLs in verbose mode
+	if (verbose) {
+		progress('');
+		progress(c.gray('📋 Collected URLs by page:'));
+		for (const result of results) {
+			progress(c.gray(`   ${result.url}:`));
+			for (const encodedUrl of result.encodedUrls) {
+				progress(c.gray(`     - ${encodedUrl}`));
+			}
+		}
+	}
+
 	progress('');
 
 	// Phase 2: Aggregate all resource URLs
@@ -122,10 +136,13 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 
 	log(`   Total unique resources: ${allEncodedUrls.size}`);
 
+	// Use the first URL as base URL for constructing full URLs
+	const baseUrl = urls[0]!;
+
 	// Download all resources
-	await downloadResources([...allEncodedUrls], hostname, outputDir, log);
+	await downloadResources([...allEncodedUrls], baseUrl, outputDir, log);
 
 	progress('');
 	progress(c.bold.green(`✅ Replication complete!`));
-	progress(c.gray(`   All resources saved to: ${path.join(outputDir, hostname)}`));
+	progress(c.gray(`   All resources saved to: ${outputDir}`));
 }

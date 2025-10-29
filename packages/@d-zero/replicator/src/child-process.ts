@@ -10,7 +10,8 @@ createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 
 	return {
 		async eachPage({ page, url }, logger) {
-			const resourceUrls = new Set<string>();
+			const resourcePaths = new Set<string>();
+			const pageHostname = new URL(url).hostname;
 
 			// Listen to all network responses
 			const responseHandler = (response: HTTPResponse) => {
@@ -21,21 +22,48 @@ createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 					return;
 				}
 
-				// For URLs not ending with '/', add as-is
-				if (!responseUrl.endsWith('/')) {
-					resourceUrls.add(responseUrl);
+				// Skip non-GET requests (POST, PUT, etc. cannot be replicated)
+				if (response.request().method() !== 'GET') {
 					return;
 				}
 
-				// For URLs ending with '/', encode with MIME type
+				// Skip non-successful responses (not 2xx)
+				if (response.status() < 200 || response.status() >= 300) {
+					return;
+				}
+
+				const resourceUrlObj = new URL(responseUrl);
+
+				// Skip different domain resources
+				if (resourceUrlObj.hostname !== pageHostname) {
+					return;
+				}
+
+				// Get pathname only (exclude query parameters)
+				let resourcePath = resourceUrlObj.pathname;
+
+				// Normalize empty pathname to "/"
+				if (resourcePath === '') {
+					resourcePath = '/';
+				}
+
+				// For paths not ending with '/', add as-is
+				if (!resourcePath.endsWith('/')) {
+					resourcePaths.add(resourcePath);
+					return;
+				}
+
+				// For paths ending with '/', encode with MIME type
 				const contentType = response.headers()['content-type'];
 				const mimeType = contentType?.split(';')[0]?.trim();
 				if (mimeType) {
-					resourceUrls.add(`${responseUrl}:::${mimeType}`);
+					resourcePaths.add(`${resourcePath}:::${mimeType}`);
 					return;
 				}
 
-				resourceUrls.add(responseUrl);
+				// Fallback: if no MIME type, add without encoding
+				// (This should rarely happen after skipping 304 responses)
+				resourcePaths.add(resourcePath);
 			};
 
 			page.on('response', responseHandler);
@@ -69,11 +97,11 @@ createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 
 			page.off('response', responseHandler);
 
-			logger(`📦 Collected ${resourceUrls.size} resources`);
+			logger(`📦 Collected ${resourcePaths.size} resources`);
 
 			return {
 				url,
-				encodedUrls: [...resourceUrls],
+				encodedUrls: [...resourcePaths],
 			};
 		},
 	};

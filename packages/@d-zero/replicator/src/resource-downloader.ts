@@ -5,24 +5,30 @@ import { mimeToExtension } from '@d-zero/shared/mime-to-extension';
 import { urlToLocalPath } from '@d-zero/shared/url-to-local-path';
 
 /**
- * Parse encoded URL and return the actual URL and local path
- * @param encodedUrl - URL or "url:::MIME/type" format
+ * Parse encoded pathname and return the actual URL and local path
+ * @param encodedPath - pathname or "pathname:::MIME/type" format
+ * @param baseUrl - Base URL to construct full URL from pathname
  */
-function parseEncodedUrl(encodedUrl: string): { url: string; localPath: string } {
-	const parts = encodedUrl.split(':::');
+function parseEncodedPath(
+	encodedPath: string,
+	baseUrl: string,
+): { url: string; localPath: string } {
+	const parts = encodedPath.split(':::');
 
 	if (parts.length === 2) {
-		// Format: "url:::MIME/type"
-		const url = parts[0]!;
+		// Format: "pathname:::MIME/type"
+		const pathname = parts[0]!;
 		const mimeType = parts[1];
+		const url = new URL(pathname, baseUrl).href;
 		const extension = mimeToExtension(mimeType);
 		const localPath = urlToLocalPath(url, extension);
 
 		return { url, localPath };
 	}
 
-	// Regular URL without MIME encoding
-	const url = encodedUrl;
+	// Regular pathname without MIME encoding
+	const pathname = encodedPath;
+	const url = new URL(pathname, baseUrl).href;
 	const localPath = urlToLocalPath(url, '');
 
 	return { url, localPath };
@@ -30,23 +36,24 @@ function parseEncodedUrl(encodedUrl: string): { url: string; localPath: string }
 
 /**
  * Download and save resources to disk
- * @param encodedUrls - Array of encoded URLs
- * @param hostname - The common hostname
+ * @param encodedPaths - Array of encoded pathnames
+ * @param baseUrl - Base URL to construct full URLs
  * @param outputDir - Output directory
  * @param logger - Logger function
  */
 export async function downloadResources(
-	encodedUrls: string[],
-	hostname: string,
+	encodedPaths: string[],
+	baseUrl: string,
 	outputDir: string,
 	logger: (message: string) => void,
 ): Promise<void> {
 	const uniqueResources = new Map<string, string>();
 
-	// Parse all encoded URLs
-	for (const encodedUrl of encodedUrls) {
-		const { url, localPath } = parseEncodedUrl(encodedUrl);
+	// Parse all encoded pathnames
+	for (const encodedPath of encodedPaths) {
+		const { url, localPath } = parseEncodedPath(encodedPath, baseUrl);
 		uniqueResources.set(localPath, url);
+		logger(`   Parsed: ${encodedPath} -> ${localPath}`);
 	}
 
 	logger(`📥 Downloading ${uniqueResources.size} unique resources...`);
@@ -63,6 +70,8 @@ export async function downloadResources(
 
 		await Promise.all(
 			batch.map(async ([localPath, url]) => {
+				const fullPath = path.join(outputDir, localPath);
+
 				const response = await fetch(url).catch((error) => {
 					logger(`❌ Failed to fetch ${url}: ${error.message}`);
 					failed++;
@@ -80,22 +89,34 @@ export async function downloadResources(
 				}
 
 				const content = Buffer.from(await response.arrayBuffer());
-				const fullPath = path.join(outputDir, hostname, localPath);
 				const dir = path.dirname(fullPath);
 
-				await mkdir(dir, { recursive: true }).catch((error) => {
-					logger(`❌ Failed to create directory ${dir}: ${error.message}`);
-					failed++;
-					throw error;
-				});
+				const mkdirSuccess = await mkdir(dir, { recursive: true })
+					.then(() => true)
+					.catch((error) => {
+						logger(`❌ Failed to create directory ${dir}: ${error.message}`);
+						failed++;
+						return false;
+					});
 
-				await writeFile(fullPath, content).catch((error) => {
-					logger(`❌ Failed to write ${fullPath}: ${error.message}`);
-					failed++;
-					throw error;
-				});
+				if (!mkdirSuccess) {
+					return;
+				}
+
+				const writeSuccess = await writeFile(fullPath, content)
+					.then(() => true)
+					.catch((error) => {
+						logger(`❌ Failed to write ${fullPath}: ${error.message}`);
+						failed++;
+						return false;
+					});
+
+				if (!writeSuccess) {
+					return;
+				}
 
 				downloaded++;
+				logger(`✅ Downloaded ${url} -> ${localPath}`);
 			}),
 		);
 	}
