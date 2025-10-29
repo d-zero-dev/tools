@@ -22,5 +22,6 @@
 | `@d-zero/shared/typed-await-event-emitter` | An event emitter that supports typed events and asynchronous event handling.                           |
 | `@d-zero/shared/types`                     | TypeScript types.                                                                                      |
 | `@d-zero/shared/url-to-file-name`          | Convert a URL to the string that is available as a file name.                                          |
+| `@d-zero/shared/url-to-local-path`         | Converts a URL to a local file path.                                                                   |
 | `@d-zero/shared/parse-url`                 | Parses a URL string and returns a normalized ExURL object.                                             |
 | `@d-zero/shared/path-list-to-tree`         | Converts a list of file paths into a hierarchical tree structure.                                      |

@@ -18,6 +18,7 @@ export { strToRegex } from './str-to-regex.js';
 export { timestamp } from './timestamp.js';
 export { TypedAwaitEventEmitter } from './typed-await-event-emitter.js';
 export { urlToFileName } from './url-to-file-name.js';
+export { urlToLocalPath } from './url-to-local-path.js';
 
 // Date utilities
 export { betweenWeekendDays } from './between-weekend-days.js';

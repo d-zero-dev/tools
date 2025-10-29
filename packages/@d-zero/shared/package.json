@@ -55,6 +55,10 @@
 			"import": "./dist/parse-url.js",
 			"types": "./dist/parse-url.d.ts"
 		},
+		"./url-to-local-path": {
+			"import": "./dist/url-to-local-path.js",
+			"types": "./dist/url-to-local-path.d.ts"
+		},
 		"./path-list-to-tree": {
 			"import": "./dist/path-list-to-tree.js",
 			"types": "./dist/path-list-to-tree.d.ts"
