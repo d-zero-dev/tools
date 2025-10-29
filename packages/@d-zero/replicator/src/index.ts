@@ -23,6 +23,10 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 		limit = 3,
 	} = options;
 
+	if (urls.length === 0) {
+		throw new Error('At least one URL is required');
+	}
+
 	// Validate that all URLs share the same hostname
 	const hostname = validateSameHost(urls);
 

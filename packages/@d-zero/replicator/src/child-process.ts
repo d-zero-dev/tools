@@ -21,18 +21,21 @@ createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 					return;
 				}
 
-				// For URLs ending with '/', encode with MIME type
-				if (responseUrl.endsWith('/')) {
-					const contentType = response.headers()['content-type'];
-					const mimeType = contentType?.split(';')[0]?.trim();
-					if (mimeType) {
-						resourceUrls.add(`${responseUrl}:::${mimeType}`);
-					} else {
-						resourceUrls.add(responseUrl);
-					}
-				} else {
+				// For URLs not ending with '/', add as-is
+				if (!responseUrl.endsWith('/')) {
 					resourceUrls.add(responseUrl);
+					return;
 				}
+
+				// For URLs ending with '/', encode with MIME type
+				const contentType = response.headers()['content-type'];
+				const mimeType = contentType?.split(';')[0]?.trim();
+				if (mimeType) {
+					resourceUrls.add(`${responseUrl}:::${mimeType}`);
+					return;
+				}
+
+				resourceUrls.add(responseUrl);
 			};
 
 			page.on('response', responseHandler);
