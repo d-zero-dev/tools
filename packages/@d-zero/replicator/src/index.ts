@@ -9,6 +9,14 @@ import { beforePageScan, devicePresets } from '@d-zero/puppeteer-page-scan';
 import { launch } from 'puppeteer';
 
 /**
+ * Convert error to error message string
+ * @param error
+ */
+function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
+
+/**
  *
  * @param url
  * @param outputDir
@@ -29,10 +37,11 @@ export async function replicate(
 	const targetSizes = devices ?? defaultSizes;
 
 	const log = (message: string) => {
-		if (verbose) {
-			// eslint-disable-next-line no-console
-			console.log(message);
+		if (!verbose) {
+			return;
 		}
+		// eslint-disable-next-line no-console
+		console.log(message);
 	};
 
 	// Always show these key progress messages
@@ -65,32 +74,33 @@ export async function replicate(
 			const page = await browser.newPage();
 			const sizeResources: Resource[] = [];
 
-			try {
-				await processPageForSize(page, url, baseUrl, sizeResources, {
-					sizeName,
-					width,
-					resolution,
-					timeout,
-					log,
-					progress,
-				});
+			await processPageForSize(page, url, baseUrl, sizeResources, {
+				sizeName,
+				width,
+				resolution,
+				timeout,
+				log,
+				progress,
+			});
 
-				// Merge resources, avoiding duplicates
-				for (const resource of sizeResources) {
-					const existing = allResources.find((r) => r.url === resource.url);
-					if (!existing) {
-						allResources.push(resource);
-					} else if (!existing.content && resource.content) {
-						existing.content = resource.content;
-					}
+			// Merge resources, avoiding duplicates
+			for (const resource of sizeResources) {
+				const existing = allResources.find((r) => r.url === resource.url);
+				if (!existing) {
+					allResources.push(resource);
+					continue;
 				}
-			} finally {
-				await page.close().catch((error) => {
-					log(
-						`⚠️ Warning: Failed to close page for ${sizeName}: ${error instanceof Error ? error.message : String(error)}`,
-					);
-				});
+
+				if (!existing.content && resource.content) {
+					existing.content = resource.content;
+				}
 			}
+
+			await page.close().catch((error) => {
+				log(
+					`⚠️ Warning: Failed to close page for ${sizeName}: ${getErrorMessage(error)}`,
+				);
+			});
 		}
 
 		const resourceCount = allResources.length;
@@ -112,9 +122,7 @@ export async function replicate(
 		progress(`🔧 Cleaning up browser...`);
 		await browser.close().catch((error) => {
 			// Log browser close errors but don't throw them
-			log(
-				`⚠️ Warning: Failed to close browser: ${error instanceof Error ? error.message : String(error)}`,
-			);
+			log(`⚠️ Warning: Failed to close browser: ${getErrorMessage(error)}`);
 		});
 	}
 }
@@ -178,25 +186,25 @@ async function processPageForSize(
 
 			// Determine file extension
 			const urlExtension = getExtensionFromUrl(responseUrl);
-			const extension = urlExtension
-				? (() => {
-						log(`🔍 [${sizeName}] Extension from URL: ${urlExtension}`);
-						return urlExtension;
-					})()
-				: (() => {
-						const contentType = response.headers()['content-type'];
-						const ext = getExtensionFromMimeType(contentType);
-						log(`🔍 [${sizeName}] Extension from MIME type (${contentType}): ${ext}`);
-						return ext;
-					})();
+
+			let extension: string;
+			if (urlExtension) {
+				log(`🔍 [${sizeName}] Extension from URL: ${urlExtension}`);
+				extension = urlExtension;
+			} else {
+				const contentType = response.headers()['content-type'];
+				extension = getExtensionFromMimeType(contentType);
+				log(`🔍 [${sizeName}] Extension from MIME type (${contentType}): ${extension}`);
+			}
 
 			// Generate local path
 			const localPath = urlToLocalPath(responseUrl, extension);
 
 			// Download content
 			const buffer = await response.buffer().catch((error) => {
-				const errorMessage = error instanceof Error ? error.message : String(error);
-				log(`❌ [${sizeName}] Failed to download: ${responseUrl} - ${errorMessage}`);
+				log(
+					`❌ [${sizeName}] Failed to download: ${responseUrl} - ${getErrorMessage(error)}`,
+				);
 				return null;
 			});
 
@@ -306,28 +314,39 @@ async function saveResources(
 	const totalResources = resources.filter((r) => r.content).length;
 
 	for (const resource of resources) {
-		if (resource.content) {
-			const fullPath = path.join(outputDir, resource.localPath);
-			const dir = path.dirname(fullPath);
-
-			try {
-				await fs.mkdir(dir, { recursive: true });
-				await fs.writeFile(fullPath, resource.content);
-				savedCount++;
-
-				// Show progress every 10 files or for the last file
-				if (savedCount % 10 === 0 || savedCount === totalResources) {
-					progress(`   Saved ${savedCount}/${totalResources} files...`);
-				}
-
-				log(`💾 Saved: ${resource.localPath}`);
-			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : String(error);
-				log(`❌ Failed to save ${resource.localPath}: ${errorMessage}`);
-				progress(`   ⚠️  Failed to save ${resource.localPath}`);
-				// Continue with other resources instead of failing completely
-			}
+		if (!resource.content) {
+			continue;
 		}
+
+		const fullPath = path.join(outputDir, resource.localPath);
+		const dir = path.dirname(fullPath);
+		const content = resource.content;
+
+		await fs.mkdir(dir, { recursive: true }).catch((error) => {
+			log(`❌ Failed to create directory ${dir}: ${getErrorMessage(error)}`);
+		});
+
+		const writeSuccess = await fs
+			.writeFile(fullPath, content)
+			.then(() => true)
+			.catch((error) => {
+				log(`❌ Failed to save ${resource.localPath}: ${getErrorMessage(error)}`);
+				progress(`   ⚠️  Failed to save ${resource.localPath}`);
+				return false;
+			});
+
+		if (!writeSuccess) {
+			continue;
+		}
+
+		savedCount++;
+
+		// Show progress every 10 files or for the last file
+		if (savedCount % 10 === 0 || savedCount === totalResources) {
+			progress(`   Saved ${savedCount}/${totalResources} files...`);
+		}
+
+		log(`💾 Saved: ${resource.localPath}`);
 	}
 
 	return savedCount;
