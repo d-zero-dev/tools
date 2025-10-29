@@ -1,0 +1,68 @@
+---
+description: Use Promise.catch() for async operations and minimize try-catch scope to single calls for sync operations
+globs: **/*.js,**/*.mjs,**/*.ts
+---
+
+# Error Handling Guidelines
+
+## Async Operations
+
+### Use Promise.catch() instead of try-catch
+
+For Promise-based asynchronous code, use the `.catch()` method instead of try-catch blocks.
+
+#### Good Example
+
+```typescript
+await fetchData(url).catch((error) => {
+	logger.error('Failed to fetch data', error);
+	throw error;
+});
+```
+
+#### Bad Example
+
+```typescript
+try {
+	await fetchData(url);
+} catch (error) {
+	logger.error('Failed to fetch data', error);
+	throw error;
+}
+```
+
+## Synchronous Operations
+
+### Minimal try scope - One call per try block
+
+When try-catch is necessary for synchronous functions, keep the try block scope minimal to exactly one operation.
+
+#### Good Example
+
+```typescript
+let config;
+try {
+	config = JSON.parse(configString);
+} catch (error) {
+	throw new Error(`Invalid config format: ${error.message}`);
+}
+processConfig(config);
+```
+
+#### Bad Example
+
+```typescript
+try {
+	const config = JSON.parse(configString);
+	processConfig(config);
+	saveConfig(config);
+} catch (error) {
+	throw new Error(`Config error: ${error.message}`);
+}
+```
+
+## When to Use try-catch
+
+- Synchronous functions that throw exceptions (e.g., `JSON.parse()`, `fs.readFileSync()`)
+- Third-party library APIs that explicitly require try-catch
+- Always keep the scope to the single call that may throw

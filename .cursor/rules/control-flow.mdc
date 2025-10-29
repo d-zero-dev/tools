@@ -1,0 +1,43 @@
+---
+description: Enforce early returns for conditional checks to reduce nesting and improve readability
+globs: **/*.js,**/*.mjs,**/*.ts
+---
+
+# Control Flow - Early Returns
+
+## Early Returns (Mandatory)
+
+Always use early returns when conditions allow to improve code readability and reduce nesting.
+
+### Guidelines
+
+- Check error conditions first and return/throw early
+- Avoid nested if-else structures when early returns are possible
+- Reduce indentation depth by returning early from guard clauses
+
+### Good Example
+
+```typescript
+function processUser(user: User | null): string | null {
+	if (!user) {
+		return null;
+	}
+	if (!user.isActive) {
+		return null;
+	}
+	return user.name;
+}
+```
+
+### Bad Example
+
+```typescript
+function processUser(user: User | null): string | null {
+	if (user) {
+		if (user.isActive) {
+			return user.name;
+		}
+	}
+	return null;
+}
+```
