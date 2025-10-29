@@ -19,6 +19,7 @@ export { timestamp } from './timestamp.js';
 export { TypedAwaitEventEmitter } from './typed-await-event-emitter.js';
 export { urlToFileName } from './url-to-file-name.js';
 export { urlToLocalPath } from './url-to-local-path.js';
+export { validateSameHost } from './validate-same-host.js';
 
 // Date utilities
 export { betweenWeekendDays } from './between-weekend-days.js';

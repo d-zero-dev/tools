@@ -59,6 +59,10 @@
 			"import": "./dist/url-to-local-path.js",
 			"types": "./dist/url-to-local-path.d.ts"
 		},
+		"./validate-same-host": {
+			"import": "./dist/validate-same-host.js",
+			"types": "./dist/validate-same-host.d.ts"
+		},
 		"./path-list-to-tree": {
 			"import": "./dist/path-list-to-tree.js",
 			"types": "./dist/path-list-to-tree.d.ts"
