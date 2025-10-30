@@ -1,4 +1,4 @@
-import { delay } from './delay.js';
+import { delay, type DelayOptions } from './delay.js';
 
 const TIME_NUMBER_DISPLAY = [
 	'en-US',
@@ -21,8 +21,9 @@ export type RetryDecoratorOptions = {
 
 	/**
 	 * Time to next retry.
+	 * Can be a fixed number or a random range for variability.
 	 */
-	interval?: number;
+	interval?: number | DelayOptions;
 
 	/**
 	 * With exponential backoff.
@@ -56,7 +57,7 @@ export function retry<C extends object>(options?: RetryDecoratorOptions) {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	return (method: Function, context: ClassMethodDecoratorContext) => {
 		const retries = options?.retries ?? 5;
-		const interval = Math.max(options?.interval ?? 3000, 0);
+		const intervalOption = options?.interval ?? 3000;
 		const timeoutTime = Math.max(options?.timeout ?? 0, 0);
 		const withExponentialBackoff = options?.withExponentialBackoff ?? true;
 		let retryCount = 0;
@@ -96,12 +97,31 @@ export function retry<C extends object>(options?: RetryDecoratorOptions) {
 						firstTimeError = error;
 					}
 					const exp = withExponentialBackoff ? 2 ** retryCount : 1;
-					const waitTime = interval * exp;
+					// Calculate wait time with exponential backoff
+					const waitTime: number | DelayOptions =
+						typeof intervalOption === 'number'
+							? Math.max(intervalOption, 0) * exp
+							: (() => {
+									// For DelayOptions, scale the range by the exponential factor
+									const { random } = intervalOption;
+									if (typeof random === 'number') {
+										// For random: number, scale the max value
+										return { random: random * exp };
+									}
+									// For random: {min, max}, scale both min and max
+									return { random: { min: random.min * exp, max: random.max * exp } };
+								})();
 					if (options?.log) {
+						const displayTime =
+							typeof waitTime === 'number'
+								? waitTime.toLocaleString(...TIME_NUMBER_DISPLAY)
+								: typeof waitTime.random === 'number'
+									? `0-${waitTime.random}`
+									: `${waitTime.random.min}-${waitTime.random.max}`;
 						options.log(
 							`(${methodName}) Failed ${retryCount + 1} times: ${
 								error.message
-							}; Wating ${waitTime.toLocaleString(...TIME_NUMBER_DISPLAY)}ms...`,
+							}; Wating ${displayTime}ms...`,
 						);
 					}
 					await delay(waitTime);

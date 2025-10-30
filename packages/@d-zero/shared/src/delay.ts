@@ -14,18 +14,9 @@ export type DelayOptions = {
 
 /**
  * Delays the execution of code by the specified number of milliseconds.
- * @param ms - The number of milliseconds to delay.
+ * @param msOrOptions - The number of milliseconds to delay, or options specifying a random delay range.
  * @returns A promise that resolves after the specified delay.
  */
-export function delay(ms: number): Promise<void>;
-
-/**
- * Delays the execution of code by a random duration within the specified range.
- * @param options - Options specifying the random delay range.
- * @returns A promise that resolves after the random delay.
- */
-export function delay(options: DelayOptions): Promise<void>;
-
 export function delay(msOrOptions: number | DelayOptions): Promise<void> {
 	const ms =
 		typeof msOrOptions === 'number' ? msOrOptions : randomInt(msOrOptions.random);

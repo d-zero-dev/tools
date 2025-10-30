@@ -43,6 +43,10 @@
 			"import": "./dist/random-int.js",
 			"types": "./dist/random-int.d.ts"
 		},
+		"./parse-interval": {
+			"import": "./dist/parse-interval.js",
+			"types": "./dist/parse-interval.d.ts"
+		},
 		"./hash": {
 			"import": "./dist/hash.js",
 			"types": "./dist/hash.d.ts"

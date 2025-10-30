@@ -1,10 +1,10 @@
 import type { Page } from 'puppeteer';
 
-import { delay } from '@d-zero/shared/delay';
+import { delay, type DelayOptions } from '@d-zero/shared/delay';
 
 export type Options = {
 	distance?: number;
-	interval?: number;
+	interval?: number | DelayOptions;
 	logger?: (scrollY: number, scrollHeight: number, message: string) => void;
 };
 

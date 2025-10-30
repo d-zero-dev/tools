@@ -4,6 +4,7 @@ export { readConfigFile } from './config-reader.js';
 export { decodeURISafely } from './decode-uri-safely.js';
 export { Deferred } from './deferred.js';
 export { delay, type DelayOptions } from './delay.js';
+export { parseInterval } from './parse-interval.js';
 export { randomInt, type RandomIntRange } from './random-int.js';
 export { kbSize } from './filesize.js';
 export { hash } from './hash.js';
