@@ -115,15 +115,16 @@ export async function downloadResources(
 
 	await deal(
 		tasks,
-		(task, update, index) => {
+		(task, update, index, setLineHeader) => {
 			const fileId = index.toString().padStart(4, '0');
 			const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(task.localPath)}: `;
+			setLineHeader(lineHeader);
 
 			return async () => {
-				update(`${lineHeader}Fetching%dots%`);
+				update('Fetching%dots%');
 
 				const response = await fetch(task.url).catch((error) => {
-					update(`${lineHeader}${c.red(`❌ Fetch failed: ${error.message}`)}`);
+					update(c.red(`❌ Fetch failed: ${error.message}`));
 					failed++;
 					return null;
 				});
@@ -133,23 +134,21 @@ export async function downloadResources(
 				}
 
 				if (!response.ok) {
-					update(`${lineHeader}${c.red(`❌ HTTP ${response.status}`)}`);
+					update(c.red(`❌ HTTP ${response.status}`));
 					failed++;
 					return;
 				}
 
-				update(`${lineHeader}Reading content%dots%`);
+				update('Reading content%dots%');
 				const content = Buffer.from(await response.arrayBuffer());
 				const fullPath = path.join(outputDir, task.localPath);
 				const dir = path.dirname(fullPath);
 
-				update(`${lineHeader}Creating directory%dots%`);
+				update('Creating directory%dots%');
 				const mkdirSuccess = await mkdir(dir, { recursive: true })
 					.then(() => true)
 					.catch((error) => {
-						update(
-							`${lineHeader}${c.red(`❌ Failed to create directory: ${error.message}`)}`,
-						);
+						update(c.red(`❌ Failed to create directory: ${error.message}`));
 						failed++;
 						return false;
 					});
@@ -158,11 +157,11 @@ export async function downloadResources(
 					return;
 				}
 
-				update(`${lineHeader}Writing file%dots%`);
+				update('Writing file%dots%');
 				const writeSuccess = await writeFile(fullPath, content)
 					.then(() => true)
 					.catch((error) => {
-						update(`${lineHeader}${c.red(`❌ Failed to write: ${error.message}`)}`);
+						update(c.red(`❌ Failed to write: ${error.message}`));
 						failed++;
 						return false;
 					});
@@ -172,7 +171,7 @@ export async function downloadResources(
 				}
 
 				downloaded++;
-				update(`${lineHeader}${c.green('✅ Downloaded')}`);
+				update(c.green('✅ Downloaded'));
 			};
 		},
 		{
