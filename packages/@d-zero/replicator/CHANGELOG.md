@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.6.1...@d-zero/replicator@0.7.0) (2025-10-30)
+
+### Features
+
+- **replicator:** add --interval option to CLI and pass to deal function ([14ba6c6](https://github.com/d-zero-dev/tools/commit/14ba6c6ce30414ad7f81a4f8650f306c678158d8))
+
 ## [0.6.1](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.6.0...@d-zero/replicator@0.6.1) (2025-10-30)
 
 ### Bug Fixes

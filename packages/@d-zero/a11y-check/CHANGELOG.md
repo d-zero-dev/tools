@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.4.11...@d-zero/a11y-check@0.5.0) (2025-10-30)
+
+### Features
+
+- **a11y-check:** add --interval option to CLI ([099f2fb](https://github.com/d-zero-dev/tools/commit/099f2fb59eea5fecc1b8386451f7843d7fb2142e))
+
 ## [0.4.11](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.4.10...@d-zero/a11y-check@0.4.11) (2025-10-29)
 
 **Note:** Version bump only for package @d-zero/a11y-check

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.2.6...@d-zero/archaeologist@3.3.0) (2025-10-30)
+
+### Features
+
+- **archaeologist:** add --interval option to CLI and pass to deal function ([2e84d4d](https://github.com/d-zero-dev/tools/commit/2e84d4d00b522c2933fd0da33f632bfbb5c86010))
+
 ## [3.2.6](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.2.5...@d-zero/archaeologist@3.2.6) (2025-10-29)
 
 **Note:** Version bump only for package @d-zero/archaeologist

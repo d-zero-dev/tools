@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.3.5...@d-zero/print@2.4.0) (2025-10-30)
+
+### Features
+
+- **print:** add --interval option to CLI and pass to deal function ([443cb9d](https://github.com/d-zero-dev/tools/commit/443cb9d5a0048a69f691dd01c5b68cab900ed098))
+
 ## [2.3.5](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.3.4...@d-zero/print@2.3.5) (2025-10-29)
 
 **Note:** Version bump only for package @d-zero/print

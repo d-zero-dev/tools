@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/cli-core@1.1.3...@d-zero/cli-core@1.2.0) (2025-10-30)
+
+### Features
+
+- **cli-core:** add interval option parsing to BaseCLIOptions and parseCommonOptions ([b7338c9](https://github.com/d-zero-dev/tools/commit/b7338c968a2fd603664fbf8ba384ac5871fb8ff9))
+
 ## [1.1.3](https://github.com/d-zero-dev/tools/compare/@d-zero/cli-core@1.1.2...@d-zero/cli-core@1.1.3) (2025-10-15)
 
 **Note:** Version bump only for package @d-zero/cli-core

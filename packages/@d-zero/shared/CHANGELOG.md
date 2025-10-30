@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.13.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.12.0...@d-zero/shared@0.13.0) (2025-10-30)
+
+### Features
+
+- **shared:** add callback argument to delay function ([640247d](https://github.com/d-zero-dev/tools/commit/640247d7284b52223b10856e21ca27e5e60e370f))
+- **shared:** add parse-interval utility and update delay/retry/scroll to support DelayOptions ([4c240a0](https://github.com/d-zero-dev/tools/commit/4c240a0bdd1091a8b009e7965543234c3babbccc))
+- **shared:** add randomInt function and random delay option ([a016178](https://github.com/d-zero-dev/tools/commit/a016178a9b5694522ceafdeed11d1bdedacd23b8))
+
 # [0.12.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.11.0...@d-zero/shared@0.12.0) (2025-10-29)
 
 ### Bug Fixes

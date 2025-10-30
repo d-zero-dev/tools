@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.0.11...@d-zero/puppeteer-scroll@3.1.0) (2025-10-30)
+
+### Features
+
+- **shared:** add parse-interval utility and update delay/retry/scroll to support DelayOptions ([4c240a0](https://github.com/d-zero-dev/tools/commit/4c240a0bdd1091a8b009e7965543234c3babbccc))
+
 ## [3.0.11](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.0.10...@d-zero/puppeteer-scroll@3.0.11) (2025-10-29)
 
 **Note:** Version bump only for package @d-zero/puppeteer-scroll
