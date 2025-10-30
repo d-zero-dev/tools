@@ -34,6 +34,8 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 		'\t-i, --ignore <ignore>     CSS selector for elements to ignore',
 		'\t--freeze <file>           Freeze mode: capture reference screenshots',
 		'\t--limit <number>          Limit concurrent processes',
+		'\t--interval <ms>           Interval between parallel executions (default: none)',
+		'\t                          Format: number or "min-max" for random range',
 		'\t--debug                   Enable debug mode',
 		'\t--verbose                 Enable verbose logging',
 		'',
@@ -73,6 +75,7 @@ if (hasConfigFile) {
 		limit: options.limit,
 		debug: options.debug,
 		verbose: options.verbose,
+		interval: options.interval,
 	});
 	process.exit(0);
 }
@@ -84,6 +87,7 @@ if (options.freeze) {
 		hooks,
 		limit: options.limit,
 		debug: options.debug,
+		interval: options.interval,
 	});
 	process.exit(0);
 }

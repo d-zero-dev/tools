@@ -1,5 +1,6 @@
 import type { ChildProcessParams } from './freeze-child-process.js';
 import type { FreezeOptions } from './types.js';
+import type { DealOptions } from '@d-zero/dealer';
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -16,7 +17,10 @@ import { analyzeUrlList } from './modules/analize-url.js';
  * @param list
  * @param options
  */
-export async function freeze(list: readonly string[], options?: FreezeOptions) {
+export async function freeze(
+	list: readonly string[],
+	options?: FreezeOptions & DealOptions,
+) {
 	const name = `${timestamp('YYYYMMDD')}.archae`;
 	const dir = path.resolve(process.cwd(), `.${name}`);
 	await mkdir(dir, { recursive: true }).catch(() => {});
@@ -40,6 +44,9 @@ export async function freeze(list: readonly string[], options?: FreezeOptions) {
 					headless: useOldMode ? 'shell' : true,
 				},
 			);
+		},
+		{
+			...options,
 		},
 	);
 
