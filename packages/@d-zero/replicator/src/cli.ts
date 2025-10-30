@@ -31,6 +31,8 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		'  -t, --timeout <ms>        Request timeout in milliseconds (default: 30000)',
 		'  -d, --devices <devices>   Device presets (comma-separated, default: desktop-compact,mobile)',
 		'  -l, --limit <number>      Parallel execution limit (default: 3)',
+		'  --interval <ms>           Interval between parallel executions (default: none)',
+		'                             Format: number or "min-max" for random range',
 		'  --only <type>             Download only specified type: page or resource',
 		'  -v, --verbose             Enable verbose logging',
 		'',
@@ -82,6 +84,7 @@ try {
 		devices,
 		limit: options.limit,
 		only: options.only as 'page' | 'resource' | undefined,
+		interval: options.interval,
 	});
 } catch (error) {
 	if (error instanceof Error) {

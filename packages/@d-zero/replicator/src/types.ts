@@ -1,3 +1,5 @@
+import type { DelayOptions } from '@d-zero/shared/delay';
+
 export interface ReplicateOptions {
 	urls: string[];
 	outputDir: string;
@@ -6,6 +8,7 @@ export interface ReplicateOptions {
 	devices?: Record<string, { width: number; resolution?: number }>;
 	limit?: number;
 	only?: 'page' | 'resource';
+	interval?: number | DelayOptions;
 }
 
 export interface Resource {

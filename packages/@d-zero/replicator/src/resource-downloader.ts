@@ -1,3 +1,5 @@
+import type { DelayOptions } from '@d-zero/shared/delay';
+
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -51,6 +53,16 @@ interface ResourceTask {
  * @param verbose - Enable verbose output
  * @param only - Download only specified type: page or resource
  */
+/**
+ *
+ * @param encodedPaths
+ * @param baseUrl
+ * @param outputDir
+ * @param logger
+ * @param verbose
+ * @param only
+ * @param interval
+ */
 export async function downloadResources(
 	encodedPaths: string[],
 	baseUrl: string,
@@ -58,6 +70,7 @@ export async function downloadResources(
 	logger: (message: string) => void,
 	verbose = false,
 	only?: 'page' | 'resource',
+	interval?: number | DelayOptions,
 ): Promise<void> {
 	const uniqueResources = new Map<string, ResourceTask>();
 
@@ -165,6 +178,7 @@ export async function downloadResources(
 		{
 			limit: 10,
 			verbose,
+			interval,
 			header: (progress, done, total, limit) => {
 				const percentage = Math.round(progress * 100);
 				if (progress === 1) {

@@ -1,4 +1,5 @@
 import type { ReplicateOptions, ChildProcessResult, ChildProcessInput } from './types.js';
+import type { DelayOptions } from '@d-zero/shared/delay';
 
 import path from 'node:path';
 
@@ -70,6 +71,7 @@ function collectPageUrlsOnly(
  * @param verbose - Enable verbose logging
  * @param limit - Parallel execution limit
  * @param progress - Progress logger function
+ * @param interval
  * @returns Set of encoded URLs
  */
 async function collectAllResourceUrls(
@@ -79,6 +81,7 @@ async function collectAllResourceUrls(
 	verbose: boolean,
 	limit: number,
 	progress: (message: string) => void,
+	interval?: number | DelayOptions,
 ): Promise<Set<string>> {
 	progress(c.bold.yellow('📡 Phase 1: Collecting resource metadata...'));
 
@@ -102,6 +105,7 @@ async function collectAllResourceUrls(
 		{
 			verbose,
 			limit,
+			interval,
 			each: (result) => {
 				results.push(result);
 			},
@@ -169,6 +173,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 		devices,
 		limit = 3,
 		only,
+		interval,
 	} = options;
 
 	if (urls.length === 0) {
@@ -219,6 +224,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 				verbose,
 				limit,
 				progress,
+				interval,
 			);
 			break;
 		}
@@ -245,6 +251,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 		progress,
 		verbose,
 		only,
+		interval,
 	);
 
 	progress('');
