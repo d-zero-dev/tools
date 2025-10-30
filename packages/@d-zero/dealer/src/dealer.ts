@@ -1,7 +1,10 @@
 import type { ProcessInitializer } from './types.js';
 
+import { delay, type DelayOptions } from '@d-zero/shared/delay';
+
 export interface DealerOptions {
 	limit?: number;
+	interval?: number | DelayOptions;
 }
 
 export class Dealer<T extends WeakKey> {
@@ -9,6 +12,7 @@ export class Dealer<T extends WeakKey> {
 	#done = new WeakSet<T>();
 	#doneCount = 0;
 	#finish: () => void = () => {};
+	#interval?: number | DelayOptions;
 	#items: readonly T[];
 	#limit: number;
 	#progress: (progress: number, done: number, total: number, limit: number) => void =
@@ -19,6 +23,7 @@ export class Dealer<T extends WeakKey> {
 	constructor(items: readonly T[], options?: DealerOptions) {
 		this.#items = items;
 		this.#limit = options?.limit ?? 10;
+		this.#interval = options?.interval;
 	}
 
 	debug(listener: (log: string) => void) {
@@ -76,12 +81,15 @@ export class Dealer<T extends WeakKey> {
 			if (!start) {
 				throw new Error(`Didn't have a starting function`);
 			}
-			void start().then(() => {
+			// Start worker with optional interval delay
+			void (async () => {
+				await delay(this.#interval ?? 0);
+				await start();
 				this.#workers.delete(worker);
 				this.#done.add(worker);
 				this.#doneCount++;
 				this.#deal();
-			});
+			})();
 		}
 	}
 
