@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.14.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.13.0...@d-zero/shared@0.14.0) (2025-10-30)
+
+### Features
+
+- **shared:** add distribution support to delay function ([500cf14](https://github.com/d-zero-dev/tools/commit/500cf14e08e9fb00a17639553f5cb981ca0fffa9))
+- **shared:** add sampleDistribution function with multiple distribution types ([bffb1e3](https://github.com/d-zero-dev/tools/commit/bffb1e34594f986a1e8a16fb7bc0da339b15b1de))
+- **shared:** export sampleDistribution types ([2c1e5ea](https://github.com/d-zero-dev/tools/commit/2c1e5ea17ebb9919980705134a3180ef257ac065))
+
 # [0.13.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.12.0...@d-zero/shared@0.13.0) (2025-10-30)
 
 ### Features

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.4.0...@d-zero/dealer@1.4.1) (2025-10-30)
+
+**Note:** Version bump only for package @d-zero/dealer
+
 # [1.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.3.2...@d-zero/dealer@1.4.0) (2025-10-30)
 
 ### Features
