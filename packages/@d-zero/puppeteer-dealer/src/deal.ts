@@ -27,18 +27,17 @@ export function deal<T, R = void>(
 
 	return coreDeal(
 		list,
-		({ id, url }, update, index) => {
+		({ id, url }, update, index, setLineHeader) => {
 			const fileId = id || index.toString().padStart(3, '0');
 			const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(url.toString())}: `;
+			setLineHeader(lineHeader);
 
 			return async () => {
-				update(`${lineHeader}Using ${needAuth ? 'auth' : 'no auth'}`);
+				update(`Using ${needAuth ? 'auth' : 'no auth'}`);
 				const processManager = createProcess()(needAuth);
-				update(`${lineHeader}Booting ChildProcess%dots%`);
+				update(`Booting ChildProcess%dots%`);
 				await processManager.ready();
-				processManager.log((log) => {
-					update(`${lineHeader}${log}`);
-				});
+				processManager.log((log) => update(log));
 				const result = await processManager.each(fileId, url.toString(), index);
 				if (options?.each) {
 					await options.each(result);
