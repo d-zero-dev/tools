@@ -1,6 +1,7 @@
 import type { ChildProcessParams } from './print-child-process.js';
 import type { PrintType } from './types.js';
 import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
+import type { DelayOptions } from '@d-zero/shared/delay';
 import type { LaunchOptions } from 'puppeteer';
 
 import { mkdir } from 'node:fs/promises';
@@ -17,6 +18,7 @@ export interface PrintOptions {
 	readonly hooks?: readonly PageHook[];
 	readonly devices?: Sizes;
 	readonly timeout?: number;
+	readonly interval?: number | DelayOptions;
 }
 
 /**
@@ -61,6 +63,7 @@ export async function print(
 				},
 				{
 					...options,
+					interval: options?.interval,
 				},
 			);
 		},

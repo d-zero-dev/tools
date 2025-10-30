@@ -32,6 +32,8 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 		'\t-d, --devices <devices>   Device presets (comma-separated, default: desktop-compact,mobile)',
 		'\t-T, --timeout <ms>        Request timeout in milliseconds (default: 30000)',
 		'\t--limit <number>          Limit concurrent processes',
+		'\t--interval <ms>           Interval between parallel executions (default: none)',
+		'\t                           Format: number or "min-max" for random range',
 		'\t--debug                   Enable debug mode',
 		'\t--verbose                 Enable verbose logging',
 		'',
@@ -71,6 +73,7 @@ if (hasConfigFile) {
 		hooks,
 		devices,
 		timeout: options.timeout,
+		interval: options.interval,
 	});
 	process.exit(0);
 }
@@ -83,6 +86,7 @@ if (args.length > 0) {
 		debug: options.debug,
 		devices,
 		timeout: options.timeout,
+		interval: options.interval,
 	});
 	process.exit(0);
 }
