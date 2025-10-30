@@ -107,4 +107,67 @@ describe('delay', () => {
 			expect(elapsed).toBeLessThan(ms + 50);
 		});
 	});
+
+	describe('with distribution options', () => {
+		it('should use distribution options correctly', async () => {
+			const min = 10;
+			const max = 50;
+			let receivedMs = 0;
+
+			await delay(
+				{ random: { min, max, distribution: 'normal' } },
+				(determinedInterval) => {
+					receivedMs = determinedInterval;
+				},
+			);
+
+			expect(receivedMs).toBeGreaterThanOrEqual(min);
+			expect(receivedMs).toBeLessThan(max);
+		});
+
+		it('should use bimodal distribution with custom peaks', async () => {
+			const min = 10;
+			const max = 50;
+			let receivedMs = 0;
+
+			await delay(
+				{
+					random: {
+						min,
+						max,
+						distribution: { type: 'bimodal', peaks: [0.2, 0.8] },
+					},
+				},
+				(determinedInterval) => {
+					receivedMs = determinedInterval;
+				},
+			);
+
+			expect(receivedMs).toBeGreaterThanOrEqual(min);
+			expect(receivedMs).toBeLessThan(max);
+		});
+
+		it('should use custom distribution with weight function', async () => {
+			const min = 10;
+			const max = 50;
+			const customWeight = (t: number) => t * t;
+			let receivedMs = 0;
+
+			await delay(
+				{
+					random: {
+						min,
+						max,
+						distribution: { type: 'custom', weight: customWeight },
+					},
+				},
+				(determinedInterval) => {
+					receivedMs = determinedInterval;
+				},
+			);
+
+			expect(receivedMs).toBeGreaterThanOrEqual(min);
+			expect(receivedMs).toBeLessThan(max);
+		});
+	});
 });

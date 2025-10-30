@@ -3,7 +3,7 @@ export { Cache, BinaryCache } from './cache.js';
 export { readConfigFile } from './config-reader.js';
 export { decodeURISafely } from './decode-uri-safely.js';
 export { Deferred } from './deferred.js';
-export { delay, type DelayOptions } from './delay.js';
+export { delay, type DelayOptions, type RandomDelayRange } from './delay.js';
 export {
 	sampleDistribution,
 	type BimodalDistribution,

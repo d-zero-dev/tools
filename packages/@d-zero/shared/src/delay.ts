@@ -1,4 +1,28 @@
-import { randomInt, type RandomIntRange } from './random-int.js';
+import {
+	sampleDistribution,
+	type BimodalDistribution,
+	type CustomDistribution,
+	type DistributionPreset,
+} from './sample-distribution.js';
+
+/**
+ * Random delay range configuration.
+ * - number: delays by a random value from 0 to the specified value (exclusive)
+ * - {min, max}: delays by a random value from min to max (exclusive)
+ * - {min, max, distribution?}: delays with specified probability distribution
+ */
+export type RandomDelayRange =
+	| number
+	| {
+			min: number;
+			max: number;
+			/**
+			 * Probability distribution type for random delay generation.
+			 * - If not specified, defaults to 'uniform' (backward compatible)
+			 * - Use preset types or provide a custom weight function
+			 */
+			distribution?: DistributionPreset | BimodalDistribution | CustomDistribution;
+	  };
 
 /**
  * Options for delay with random duration.
@@ -6,10 +30,8 @@ import { randomInt, type RandomIntRange } from './random-int.js';
 export type DelayOptions = {
 	/**
 	 * Random range for delay duration in milliseconds.
-	 * - number: delays by a random value from 0 to the specified value (exclusive)
-	 * - {min, max}: delays by a random value from min to max (exclusive)
 	 */
-	random: RandomIntRange;
+	random: RandomDelayRange;
 };
 
 /**
@@ -23,7 +45,18 @@ export function delay(
 	callback?: (determinedInterval: number) => void,
 ): Promise<void> {
 	const ms =
-		typeof msOrOptions === 'number' ? msOrOptions : randomInt(msOrOptions.random);
+		typeof msOrOptions === 'number'
+			? msOrOptions
+			: (() => {
+					const random = msOrOptions.random;
+					if (typeof random === 'number') {
+						return sampleDistribution(random);
+					}
+					return sampleDistribution(
+						{ min: random.min, max: random.max },
+						random.distribution,
+					);
+				})();
 	callback?.(ms);
 	return new Promise<void>((r) => setTimeout(r, ms));
 }
