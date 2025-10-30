@@ -54,4 +54,57 @@ describe('delay', () => {
 			expect(resolved).toBeUndefined();
 		});
 	});
+
+	describe('with callback argument', () => {
+		it('should call callback with determined interval before delay starts', async () => {
+			const ms = 10;
+			let callbackCalled = false;
+			let receivedMs = 0;
+			const start = Date.now();
+
+			await delay(ms, (determinedInterval) => {
+				callbackCalled = true;
+				receivedMs = determinedInterval;
+				expect(Date.now() - start).toBeLessThan(5); // Callback should be called synchronously
+			});
+
+			expect(callbackCalled).toBe(true);
+			expect(receivedMs).toBe(ms);
+		});
+
+		it('should call callback with determined random interval', async () => {
+			const maxMs = 50;
+			let receivedMs = 0;
+
+			await delay({ random: maxMs }, (determinedInterval) => {
+				receivedMs = determinedInterval;
+			});
+
+			expect(receivedMs).toBeGreaterThanOrEqual(0);
+			expect(receivedMs).toBeLessThan(maxMs);
+		});
+
+		it('should call callback with determined random {min, max} interval', async () => {
+			const min = 10;
+			const max = 50;
+			let receivedMs = 0;
+
+			await delay({ random: { min, max } }, (determinedInterval) => {
+				receivedMs = determinedInterval;
+			});
+
+			expect(receivedMs).toBeGreaterThanOrEqual(min);
+			expect(receivedMs).toBeLessThan(max);
+		});
+
+		it('should work without callback (backward compatibility)', async () => {
+			const ms = 10;
+			const start = Date.now();
+			await delay(ms);
+			const elapsed = Date.now() - start;
+
+			expect(elapsed).toBeGreaterThanOrEqual(ms - 5);
+			expect(elapsed).toBeLessThan(ms + 50);
+		});
+	});
 });
