@@ -213,10 +213,11 @@ export default createScenario((options?: ScenarioOptions) => {
 						);
 					}
 					const retryTime = retry * 1000;
-					logger(
-						`${test.name}: Retry (${retry}times) to take a screenshot%dots% %countdown(${retryTime},${hash(key)}_${retryTime})%ms`,
-					);
-					await delay(retryTime);
+					await delay(retryTime, (determinedInterval) => {
+						logger(
+							`${test.name}: Retry (${retry}times) to take a screenshot%dots% %countdown(${determinedInterval},${hash(key)}_${determinedInterval})%ms`,
+						);
+					});
 					retry++;
 				}
 				const cachedFileName = await cache.store(key, bin);
