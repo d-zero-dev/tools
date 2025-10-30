@@ -22,6 +22,7 @@
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
+		"@d-zero/shared": "0.12.0",
 		"minimist": "^1.2.8"
 	},
 	"devDependencies": {

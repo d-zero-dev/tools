@@ -1,3 +1,4 @@
+import type { DelayOptions } from '@d-zero/shared/delay';
 import type { ParsedArgs } from 'minimist';
 
 export interface BaseCLIOptions {
@@ -5,6 +6,7 @@ export interface BaseCLIOptions {
 	debug?: boolean;
 	verbose?: boolean;
 	listfile?: string;
+	interval?: number | DelayOptions;
 }
 
 export interface CLIAlias {

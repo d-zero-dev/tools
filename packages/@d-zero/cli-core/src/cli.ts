@@ -1,5 +1,6 @@
 import type { BaseCLIOptions, CLIConfig, ParsedCLI } from './types.js';
 
+import { parseInterval } from '@d-zero/shared/parse-interval';
 import minimist from 'minimist';
 
 /**
@@ -32,10 +33,15 @@ export function createCLI<T extends BaseCLIOptions>(config: CLIConfig<T>): Parse
  */
 export function parseCommonOptions(
 	cli: minimist.ParsedArgs,
-): Pick<BaseCLIOptions, 'limit' | 'debug' | 'verbose'> {
+): Pick<BaseCLIOptions, 'limit' | 'debug' | 'verbose' | 'interval'> {
 	return {
 		limit: cli.limit ? Number.parseInt(cli.limit) : undefined,
 		debug: !!cli.debug,
 		verbose: !!cli.verbose,
+		interval: cli.interval
+			? parseInterval(
+					typeof cli.interval === 'string' ? cli.interval : String(cli.interval),
+				)
+			: undefined,
 	};
 }
