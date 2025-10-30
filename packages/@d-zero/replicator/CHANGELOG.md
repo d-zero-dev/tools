@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.1](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.6.0...@d-zero/replicator@0.6.1) (2025-10-30)
+
+### Bug Fixes
+
+- **replicator:** enable composite mode in TypeScript config ([b4e6ae7](https://github.com/d-zero-dev/tools/commit/b4e6ae7cc3c15224ec568e15a8e79154ce743a9c))
+
 # [0.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.5.4...@d-zero/replicator@0.6.0) (2025-10-29)
 
 ### Bug Fixes
