@@ -2,7 +2,12 @@ import type { ExURL } from './parse-url.js';
 
 import { describe, expect, test } from 'vitest';
 
-import { encodeResourcePath } from './encode-resource-path.js';
+import {
+	decodeResourcePath,
+	encodeResourcePath,
+	parseEncodedPath,
+} from './encode-resource-path.js';
+import { urlToLocalPath } from './url-to-local-path.js';
 
 describe('encodeResourcePath', () => {
 	describe('with URL object', () => {
@@ -483,6 +488,284 @@ describe('encodeResourcePath', () => {
 		test('custom separator does not affect paths without MIME type', () => {
 			const url = new URL('https://example.com/page');
 			expect(encodeResourcePath(url, undefined, '|')).toBe('/page');
+		});
+	});
+});
+
+describe('decodeResourcePath', () => {
+	describe('with default separator', () => {
+		test('decodes path with MIME type', () => {
+			expect(decodeResourcePath('/page:::text/html')).toEqual({
+				pathname: '/page',
+				mimeType: 'text/html',
+			});
+		});
+
+		test('returns pathname and null mimeType for path without encoding', () => {
+			expect(decodeResourcePath('/style.css')).toEqual({
+				pathname: '/style.css',
+				mimeType: null,
+			});
+		});
+
+		test('handles root path with MIME type', () => {
+			expect(decodeResourcePath('/:::text/html')).toEqual({
+				pathname: '/',
+				mimeType: 'text/html',
+			});
+		});
+
+		test('handles nested path with MIME type', () => {
+			expect(decodeResourcePath('/path/to/resource:::application/json')).toEqual({
+				pathname: '/path/to/resource',
+				mimeType: 'application/json',
+			});
+		});
+
+		test('handles path ending with slash', () => {
+			expect(decodeResourcePath('/path/to/:::text/html')).toEqual({
+				pathname: '/path/to/',
+				mimeType: 'text/html',
+			});
+		});
+
+		test('handles MIME type with parameters', () => {
+			expect(decodeResourcePath('/page:::text/html; charset=utf-8')).toEqual({
+				pathname: '/page',
+				mimeType: 'text/html; charset=utf-8',
+			});
+		});
+
+		test('handles empty pathname', () => {
+			expect(decodeResourcePath('')).toEqual({
+				pathname: '',
+				mimeType: null,
+			});
+		});
+
+		test('handles separator in pathname (uses last separator)', () => {
+			expect(decodeResourcePath('/path:::with:::separator:::text/html')).toEqual({
+				pathname: '/path:::with:::separator',
+				mimeType: 'text/html',
+			});
+		});
+	});
+
+	describe('with custom separator', () => {
+		test('decodes with custom separator', () => {
+			expect(decodeResourcePath('/page|text/html', '|')).toEqual({
+				pathname: '/page',
+				mimeType: 'text/html',
+			});
+		});
+
+		test('decodes with double colon separator', () => {
+			expect(decodeResourcePath('/page::text/html', '::')).toEqual({
+				pathname: '/page',
+				mimeType: 'text/html',
+			});
+		});
+
+		test('decodes with dash separator', () => {
+			expect(decodeResourcePath('/page---text/html', '---')).toEqual({
+				pathname: '/page',
+				mimeType: 'text/html',
+			});
+		});
+
+		test('handles separator in pathname with custom separator', () => {
+			expect(decodeResourcePath('/path|with|separator|text/html', '|')).toEqual({
+				pathname: '/path|with|separator',
+				mimeType: 'text/html',
+			});
+		});
+
+		test('returns null mimeType when custom separator not found', () => {
+			expect(decodeResourcePath('/page:::text/html', '|')).toEqual({
+				pathname: '/page:::text/html',
+				mimeType: null,
+			});
+		});
+	});
+
+	describe('edge cases', () => {
+		test('handles empty separator (treats as not encoded)', () => {
+			expect(decodeResourcePath('/page:::text/html', '')).toEqual({
+				pathname: '/page:::text/html',
+				mimeType: null,
+			});
+		});
+
+		test('handles separator at start', () => {
+			expect(decodeResourcePath(':::text/html')).toEqual({
+				pathname: '',
+				mimeType: 'text/html',
+			});
+		});
+
+		test('handles separator at end (empty mimeType treated as not encoded)', () => {
+			expect(decodeResourcePath('/page:::')).toEqual({
+				pathname: '/page:::',
+				mimeType: null,
+			});
+		});
+
+		test('handles only separator', () => {
+			expect(decodeResourcePath(':::')).toEqual({
+				pathname: ':::',
+				mimeType: null,
+			});
+		});
+
+		test('handles multiple separators (uses last one)', () => {
+			expect(decodeResourcePath('/path:::mime1:::mime2')).toEqual({
+				pathname: '/path:::mime1',
+				mimeType: 'mime2',
+			});
+		});
+	});
+
+	describe('roundtrip with encodeResourcePath', () => {
+		test('encodes and decodes correctly', () => {
+			const url = new URL('https://example.com/page');
+			const encoded = encodeResourcePath(url, 'text/html');
+			const decoded = decodeResourcePath(encoded);
+			expect(decoded).toEqual({
+				pathname: '/page',
+				mimeType: 'text/html',
+			});
+		});
+
+		test('encodes and decodes with custom separator', () => {
+			const url = new URL('https://example.com/api');
+			const encoded = encodeResourcePath(url, 'application/json', '|');
+			const decoded = decodeResourcePath(encoded, '|');
+			expect(decoded).toEqual({
+				pathname: '/api',
+				mimeType: 'application/json',
+			});
+		});
+
+		test('handles path with extension (no encoding)', () => {
+			const url = new URL('https://example.com/style.css');
+			const encoded = encodeResourcePath(url, 'text/css');
+			const decoded = decodeResourcePath(encoded);
+			expect(decoded).toEqual({
+				pathname: '/style.css',
+				mimeType: null,
+			});
+		});
+	});
+
+	describe('equivalence with parseEncodedPath and urlToLocalPath', () => {
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath for root path', () => {
+			const urlString = 'https://example.com/';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'text/html');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.html');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath for page path', () => {
+			const urlString = 'https://example.com/page';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'text/html');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.html');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath for nested path', () => {
+			const urlString = 'https://example.com/path/to/resource';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'text/html');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.html');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath for directory path', () => {
+			const urlString = 'https://example.com/path/to/';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'text/html');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.html');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath with query parameters', () => {
+			const urlString = 'https://example.com/page?query=value';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'text/html');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.html');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath with hash', () => {
+			const urlString = 'https://example.com/page#hash';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'text/html');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.html');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath with query and hash', () => {
+			const urlString = 'https://example.com/page?query=value#hash';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'text/html');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.html');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath for path with existing extension', () => {
+			const urlString = 'https://example.com/page.html';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'text/html');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.html');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath for path with different extension', () => {
+			const urlString = 'https://example.com/style.css';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'text/css');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.css');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath for nested path with extension', () => {
+			const urlString = 'https://example.com/path/to/file.js';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'application/javascript');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.js');
+			expect(parsed.localPath).toBe(direct);
+		});
+
+		test('parseEncodedPath(encodeResourcePath) equals urlToLocalPath for JSON API', () => {
+			const urlString = 'https://example.com/api/data';
+			const url = new URL(urlString);
+			const baseUrl = 'https://example.com/';
+			const encoded = encodeResourcePath(url, 'application/json');
+			const parsed = parseEncodedPath(encoded, baseUrl);
+			const direct = urlToLocalPath(urlString, '.json');
+			expect(parsed.localPath).toBe(direct);
 		});
 	});
 });
