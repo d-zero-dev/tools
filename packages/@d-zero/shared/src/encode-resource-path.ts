@@ -1,5 +1,8 @@
 import type { ExURL } from './parse-url.js';
 
+import { mimeToExtension } from './mime-to-extension.js';
+import { urlToLocalPath } from './url-to-local-path.js';
+
 /**
  * Extract pathname from URL, string, or ExURL
  * @param input - URL object, URL string, or ExURL object
@@ -84,4 +87,29 @@ export function decodeResourcePath(
 	}
 
 	return { pathname, mimeType };
+}
+
+/**
+ * Parse encoded pathname and return the actual URL and local path
+ * @param encodedPath - pathname or "pathname:::MIME/type" format
+ * @param baseUrl - Base URL to construct full URL from pathname
+ * @param separator - Separator string between pathname and MIME type (default: ":::")
+ * @returns Object with url and localPath
+ */
+export function parseEncodedPath(
+	encodedPath: string,
+	baseUrl: string,
+	separator: string = ':::',
+): { url: string; localPath: string } {
+	const { pathname, mimeType } = decodeResourcePath(encodedPath, separator);
+	const url = new URL(pathname, baseUrl).href;
+
+	if (mimeType) {
+		const extension = mimeToExtension(mimeType);
+		const localPath = urlToLocalPath(url, extension);
+		return { url, localPath };
+	}
+
+	const localPath = urlToLocalPath(url, '');
+	return { url, localPath };
 }
