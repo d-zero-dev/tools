@@ -4,33 +4,7 @@ import type { HTTPResponse } from 'puppeteer';
 import { createChildProcess } from '@d-zero/puppeteer-dealer';
 import { beforePageScan, devicePresets } from '@d-zero/puppeteer-page-scan';
 import { scrollAllOver } from '@d-zero/puppeteer-scroll';
-
-/**
- * Add resource path to the set with MIME type encoding if needed
- * @param pathname - Resource pathname
- * @param mimeType - MIME type from response headers (optional)
- * @returns Encoded resource path
- */
-function encodeResourcePath(pathname: string, mimeType?: string): string {
-	// Normalize empty pathname to "/"
-	if (pathname === '') {
-		pathname = '/';
-	}
-
-	// Check if the last segment has an extension
-	const lastSlashIndex = pathname.lastIndexOf('/');
-	const lastSegment =
-		lastSlashIndex === -1 ? pathname : pathname.slice(lastSlashIndex + 1);
-	const hasExtension = lastSegment.includes('.');
-
-	// For paths without extension, encode with MIME type if available
-	if (!hasExtension && mimeType) {
-		return `${pathname}:::${mimeType}`;
-	}
-
-	// For paths with extension or without MIME type, return as-is
-	return pathname;
-}
+import { encodeResourcePath } from '@d-zero/shared/encode-resource-path';
 
 createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 	const { devices, timeout } = param;
@@ -42,8 +16,7 @@ createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 
 			// Add the page URL itself first (in case response event is missed)
 			const pageUrlObj = new URL(url);
-			const pagePathname = pageUrlObj.pathname;
-			resourcePaths.add(encodeResourcePath(pagePathname, 'text/html'));
+			resourcePaths.add(encodeResourcePath(pageUrlObj, 'text/html'));
 
 			// Listen to all network responses
 			const responseHandler = (response: HTTPResponse) => {
@@ -71,13 +44,12 @@ createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 					return;
 				}
 
-				// Get pathname and MIME type
-				const resourcePath = resourceUrlObj.pathname;
+				// Get MIME type
 				const contentType = response.headers()['content-type'];
 				const mimeType = contentType?.split(';')[0]?.trim();
 
 				// Add resource with MIME encoding if needed
-				resourcePaths.add(encodeResourcePath(resourcePath, mimeType));
+				resourcePaths.add(encodeResourcePath(resourceUrlObj, mimeType));
 			};
 
 			page.on('response', responseHandler);

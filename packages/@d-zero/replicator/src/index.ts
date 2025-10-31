@@ -5,37 +5,11 @@ import path from 'node:path';
 
 import { deal, createProcess } from '@d-zero/puppeteer-dealer';
 import { devicePresets } from '@d-zero/puppeteer-page-scan';
+import { encodeResourcePath } from '@d-zero/shared/encode-resource-path';
 import { validateSameHost } from '@d-zero/shared/validate-same-host';
 import c from 'ansi-colors';
 
 import { downloadResources } from './resource-downloader.js';
-
-/**
- * Encode resource path with MIME type if needed
- * @param pathname - Resource pathname
- * @param mimeType - MIME type (optional)
- * @returns Encoded resource path
- */
-function encodeResourcePath(pathname: string, mimeType?: string): string {
-	// Normalize empty pathname to "/"
-	if (pathname === '') {
-		pathname = '/';
-	}
-
-	// Check if the last segment has an extension
-	const lastSlashIndex = pathname.lastIndexOf('/');
-	const lastSegment =
-		lastSlashIndex === -1 ? pathname : pathname.slice(lastSlashIndex + 1);
-	const hasExtension = lastSegment.includes('.');
-
-	// For paths without extension, encode with MIME type if available
-	if (!hasExtension && mimeType) {
-		return `${pathname}:::${mimeType}`;
-	}
-
-	// For paths with extension or without MIME type, return as-is
-	return pathname;
-}
 
 /**
  * Collect page URLs without resource scanning (page-only mode)
@@ -53,9 +27,8 @@ function collectPageUrlsOnly(
 	const encodedUrls = new Set<string>();
 	for (const url of urls) {
 		const urlObj = new URL(url);
-		const pathname = urlObj.pathname || '/';
 		// Encode as HTML page
-		const encodedPath = encodeResourcePath(pathname, 'text/html');
+		const encodedPath = encodeResourcePath(urlObj, 'text/html');
 		encodedUrls.add(encodedPath);
 	}
 
