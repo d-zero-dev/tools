@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.15.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.14.0...@d-zero/shared@0.15.0) (2025-10-31)
+
+### Features
+
+- **shared:** add decodeResourcePath function ([928b558](https://github.com/d-zero-dev/tools/commit/928b55825d1ef5dde3818e69d76b023d8a4e3793))
+- **shared:** add encodeResourcePath function ([1a9481a](https://github.com/d-zero-dev/tools/commit/1a9481a2f16eb310b97c5e6c91c6920bb10b62b8))
+- **shared:** add separator option to encodeResourcePath ([56d1f66](https://github.com/d-zero-dev/tools/commit/56d1f66f48ecb32e7abf8c80255d714a01beeda6))
+- **shared:** export parseEncodedPath from shared package ([be5aa92](https://github.com/d-zero-dev/tools/commit/be5aa92aad516caf9754d237b0e1b11a0539d633))
+
 # [0.14.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.13.0...@d-zero/shared@0.14.0) (2025-10-30)
 
 ### Features
