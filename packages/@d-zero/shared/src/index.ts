@@ -14,7 +14,11 @@ export { parseInterval } from './parse-interval.js';
 export { randomInt, type RandomIntRange } from './random-int.js';
 export { kbSize } from './filesize.js';
 export { hash } from './hash.js';
-export { encodeResourcePath } from './encode-resource-path.js';
+export {
+	decodeResourcePath,
+	encodeResourcePath,
+	parseEncodedPath,
+} from './encode-resource-path.js';
 export { mimeToExtension } from './mime-to-extension.js';
 export { parseUrl, type ExURL, type ParseURLOptions } from './parse-url.js';
 export { pathToURL } from './path-to-url.js';
