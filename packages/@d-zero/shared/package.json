@@ -39,6 +39,10 @@
 			"import": "./dist/delay.js",
 			"types": "./dist/delay.d.ts"
 		},
+		"./encode-resource-path": {
+			"import": "./dist/encode-resource-path.js",
+			"types": "./dist/encode-resource-path.d.ts"
+		},
 		"./random-int": {
 			"import": "./dist/random-int.js",
 			"types": "./dist/random-int.d.ts"
