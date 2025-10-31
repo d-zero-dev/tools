@@ -4,39 +4,8 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { deal } from '@d-zero/dealer';
-import { mimeToExtension } from '@d-zero/shared/mime-to-extension';
-import { urlToLocalPath } from '@d-zero/shared/url-to-local-path';
+import { parseEncodedPath } from '@d-zero/shared/encode-resource-path';
 import c from 'ansi-colors';
-
-/**
- * Parse encoded pathname and return the actual URL and local path
- * @param encodedPath - pathname or "pathname:::MIME/type" format
- * @param baseUrl - Base URL to construct full URL from pathname
- */
-function parseEncodedPath(
-	encodedPath: string,
-	baseUrl: string,
-): { url: string; localPath: string } {
-	const parts = encodedPath.split(':::');
-
-	if (parts.length === 2) {
-		// Format: "pathname:::MIME/type"
-		const pathname = parts[0]!;
-		const mimeType = parts[1];
-		const url = new URL(pathname, baseUrl).href;
-		const extension = mimeToExtension(mimeType);
-		const localPath = urlToLocalPath(url, extension);
-
-		return { url, localPath };
-	}
-
-	// Regular pathname without MIME encoding
-	const pathname = encodedPath;
-	const url = new URL(pathname, baseUrl).href;
-	const localPath = urlToLocalPath(url, '');
-
-	return { url, localPath };
-}
 
 interface ResourceTask {
 	url: string;
