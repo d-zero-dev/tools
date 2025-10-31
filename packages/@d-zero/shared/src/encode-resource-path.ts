@@ -21,11 +21,13 @@ function extractPathname(input: URL | string | ExURL): string {
  * Encode resource path with MIME type if needed
  * @param urlOrStringOrExUrl - URL object, URL string, or ExURL object
  * @param mimeType - MIME type (optional)
+ * @param separator - Separator string between pathname and MIME type (default: ":::")
  * @returns Encoded resource path
  */
 export function encodeResourcePath(
 	urlOrStringOrExUrl: URL | string | ExURL,
 	mimeType?: string,
+	separator: string = ':::',
 ): string {
 	let pathname = extractPathname(urlOrStringOrExUrl);
 
@@ -42,7 +44,7 @@ export function encodeResourcePath(
 
 	// For paths without extension, encode with MIME type if available
 	if (!hasExtension && mimeType) {
-		return `${pathname}:::${mimeType}`;
+		return `${pathname}${separator}${mimeType}`;
 	}
 
 	// For paths with extension or without MIME type, return as-is

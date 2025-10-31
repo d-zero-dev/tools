@@ -456,4 +456,33 @@ describe('encodeResourcePath', () => {
 			);
 		});
 	});
+
+	describe('custom separator', () => {
+		test('uses default separator ":::"', () => {
+			const url = new URL('https://example.com/page');
+			expect(encodeResourcePath(url, 'text/html')).toBe('/page:::text/html');
+		});
+
+		test('uses custom separator', () => {
+			const url = new URL('https://example.com/page');
+			expect(encodeResourcePath(url, 'text/html', '|')).toBe('/page|text/html');
+			expect(encodeResourcePath(url, 'text/html', '::')).toBe('/page::text/html');
+			expect(encodeResourcePath(url, 'text/html', '---')).toBe('/page---text/html');
+		});
+
+		test('handles empty separator', () => {
+			const url = new URL('https://example.com/page');
+			expect(encodeResourcePath(url, 'text/html', '')).toBe('/pagetext/html');
+		});
+
+		test('custom separator does not affect paths with extension', () => {
+			const url = new URL('https://example.com/style.css');
+			expect(encodeResourcePath(url, 'text/css', '|')).toBe('/style.css');
+		});
+
+		test('custom separator does not affect paths without MIME type', () => {
+			const url = new URL('https://example.com/page');
+			expect(encodeResourcePath(url, undefined, '|')).toBe('/page');
+		});
+	});
 });
