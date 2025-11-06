@@ -27,9 +27,9 @@
 		"@d-zero/puppeteer-scroll": "3.1.2"
 	},
 	"devDependencies": {
-		"puppeteer": "24.29.0"
+		"puppeteer": "24.29.1"
 	},
 	"peerDependencies": {
-		"puppeteer": "24.29.0"
+		"puppeteer": "24.29.1"
 	}
 }
