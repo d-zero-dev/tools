@@ -65,6 +65,7 @@ export type Violation = ResultData & {
 	readonly wcagVersion: string | null;
 	readonly scNumber: string | null;
 	readonly level: 'A' | 'AA' | 'AAA' | null;
+	readonly severity: 'high' | 'medium' | 'low' | null;
 	readonly screenshot: string | null;
 };
 

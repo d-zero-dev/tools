@@ -44,6 +44,7 @@ export class SpreadsheetReporter {
 					wcagVersion: { value: result.wcagVersion },
 					scNumber: { value: result.scNumber },
 					level: { value: result.level },
+					severity: { value: result.severity },
 					screenshot: { value: result.screenshot },
 				};
 			}),
@@ -111,6 +112,7 @@ export class SpreadsheetReporter {
 					wcagVersion: 'WCAGバージョン',
 					scNumber: '達成基準番号',
 					level: '適合レベル',
+					severity: '深刻度',
 					screenshot: 'スクリーンショット',
 				},
 			},

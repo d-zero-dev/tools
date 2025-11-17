@@ -5,6 +5,7 @@ import type { Page } from 'puppeteer';
 
 import { convertResultsFromNode } from './convert-results-from-node.js';
 import { detectLevel } from './detect-level.js';
+import { detectSeverity } from './detect-severity.js';
 import { inferExplanation } from './infer-explanation.js';
 import { p } from './paragraph.js';
 import { tagsToSCs } from './tags-to-scs.js';
@@ -64,6 +65,7 @@ export async function convertResultsFromViolations(
 				wcagVersion: violation.tags.includes('wcag2a') ? 'WCAG2.0' : 'WCAG2.1',
 				scNumber: tagsToSCs(violation.tags),
 				level: detectLevel(violation.tags),
+				severity: detectSeverity(violation.impact),
 				screenshot: nodeResult?.screenshot ?? null,
 			});
 		}
