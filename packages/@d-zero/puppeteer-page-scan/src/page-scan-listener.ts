@@ -7,8 +7,11 @@ export const pageScanLoggers: Loggers<PageScanPhase> = (log) => ({
 	setViewport: ({ width }) => {
 		log(`↔️ Change viewport size to ${width}px`);
 	},
-	load({ type }) {
-		log(`%earth% ${type === 'open' ? 'Open' : 'Reload'} page`);
+	load({ type, timeout, id }) {
+		const timeoutSec = Math.floor(timeout / 1000);
+		log(
+			`%earth% ${type === 'open' ? 'Open' : 'Reload'} page / Timeout: %countdown(${timeoutSec},${id}_timeout,s)%s/${timeoutSec}s`,
+		);
 	},
 	hook({ message }) {
 		log(message);

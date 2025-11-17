@@ -22,7 +22,8 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 	const name = options?.name ?? 'default';
 	const width = options?.width ?? 1400;
 	const resolution = options?.resolution;
-	const timeout = options?.timeout;
+	const timeout = options?.timeout || 30_000;
+	const countDownId = `${name}${url}_timeout`;
 
 	listener?.('setViewport', { name, width, resolution });
 	await page.setViewport({
@@ -34,10 +35,10 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 	});
 
 	if (page.url() === url) {
-		listener?.('load', { name, type: 'reaload' });
+		listener?.('load', { name, type: 'reaload', timeout, id: countDownId });
 		await navigateWithFallback(page, url, timeout, true, listener, name);
 	} else {
-		listener?.('load', { name, type: 'open' });
+		listener?.('load', { name, type: 'open', timeout, id: countDownId });
 		await navigateWithFallback(page, url, timeout, false, listener, name);
 	}
 
@@ -74,7 +75,7 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 async function navigateWithFallback(
 	page: Page,
 	url: string,
-	timeout: number | undefined,
+	timeout: number,
 	isReload: boolean,
 	listener: Listener<PageScanPhase> | undefined,
 	name: string,
