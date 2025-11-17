@@ -17,6 +17,7 @@ import { createChildProcess } from '@d-zero/puppeteer-dealer';
 import { delay } from '@d-zero/shared/delay';
 import c from 'ansi-colors';
 
+import { combineImages } from './modules/combine-images.js';
 import { diffImages } from './modules/diff-images.js';
 import { diffText } from './modules/diff-text.js';
 import { diffTree } from './modules/diff-tree.js';
@@ -33,6 +34,7 @@ export type ChildProcessParams = {
 	ignore?: string;
 	devices?: readonly string[];
 	hooks?: readonly PageHook[];
+	combined?: boolean;
 };
 
 createChildProcess<ChildProcessParams, Result>((param) => {
@@ -43,6 +45,7 @@ createChildProcess<ChildProcessParams, Result>((param) => {
 		selector,
 		ignore,
 		devices,
+		combined = false,
 	} = param;
 
 	return {
@@ -127,6 +130,19 @@ createChildProcess<ChildProcessParams, Result>((param) => {
 							`${sizeName} ${outputUrl} 📊 Save diff image to ${path.relative(dir, outFilePath)}`,
 						);
 						await writeFile(outFilePath, imageDiff.images.diff);
+
+						// 合成画像を出力
+						if (combined) {
+							const combinedImage = await combineImages(
+								imageDiff.images.a,
+								imageDiff.images.b,
+							);
+							const combinedFilePath = path.resolve(dir, `${id}_combined.png`);
+							logger(
+								`${sizeName} ${outputUrl} 🖼️ Save combined image to ${path.relative(dir, combinedFilePath)}`,
+							);
+							await writeFile(combinedFilePath, combinedImage);
+						}
 
 						image = {
 							matches: imageDiff.matches,

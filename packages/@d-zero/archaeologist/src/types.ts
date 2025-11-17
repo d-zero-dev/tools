@@ -45,6 +45,7 @@ export interface AnalyzeOptions extends GeneralOptions {
 	readonly selector?: string;
 	readonly ignore?: string;
 	readonly devices?: readonly string[];
+	readonly combined?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
