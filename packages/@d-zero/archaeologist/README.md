@@ -26,6 +26,7 @@ URLリストを持つファイルを指定して実行します。
 - `-i, --ignore <selector>`: 無視するCSSセレクター
 - `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
 - `--freeze <filepath>`: フリーズモード用ファイルパス
+- `--combined`: 環境AとBのスクリーンショットを左右に並べた合成画像を出力
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
 - `--debug`: デバッグモード（デフォルト: false）
 - `--verbose`: 詳細ログモード（デフォルト: false）
@@ -48,6 +49,9 @@ npx @d-zero/archaeologist -f urls.txt
 
 # カスタムデバイス指定
 npx @d-zero/archaeologist -f urls.txt --devices desktop,tablet,mobile
+
+# 合成画像を出力（2つの環境のスクリーンショットを左右に並べて表示）
+npx @d-zero/archaeologist -f urls.txt --combined
 
 # フリーズモード（参照用スクリーンショット作成）
 npx @d-zero/archaeologist --freeze urls.txt
