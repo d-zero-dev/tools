@@ -69,7 +69,7 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 });
 
 if (hasConfigFile) {
-	const { pairList, hooks } = await readConfig(options.listfile);
+	const { pairList, hooks } = await readConfig(options.listfile!);
 	await analyze(pairList, {
 		hooks,
 		types: options.type ? parseList(options.type) : undefined,
