@@ -4,10 +4,17 @@ import type {
 	CommonParams,
 	PuppeteerDealerOptions,
 } from './types.js';
-import type { LaunchOptions } from 'puppeteer';
+import type * as Puppeteer from 'puppeteer';
 
 import { ProcTalk } from '@d-zero/proc-talk';
-import { launch } from 'puppeteer';
+import puppeteerExtra from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+// @ts-ignore
+const puppeteer: typeof Puppeteer = puppeteerExtra;
+
+// @ts-ignore
+puppeteer.use(StealthPlugin());
 
 import { log } from './debug.js';
 
@@ -22,7 +29,7 @@ export function createChildProcess<P, R = void>(
 ) {
 	new ProcTalk<
 		ChildProcessCommands<P & CommonParams, R>,
-		PuppeteerDealerOptions & LaunchOptions
+		PuppeteerDealerOptions & Puppeteer.LaunchOptions
 	>({
 		type: 'child',
 		title: '@d-zero/puppeteer-dealer',
@@ -42,7 +49,7 @@ export function createChildProcess<P, R = void>(
 
 			const { eachPage } = await handler(params);
 
-			const launchOptions: LaunchOptions = {
+			const launchOptions: Puppeteer.LaunchOptions = {
 				headless: config.headless ?? (params.needAuth ? 'shell' : true),
 				args: [
 					//
@@ -52,12 +59,16 @@ export function createChildProcess<P, R = void>(
 					'--no-sandbox',
 					'--disable-web-security',
 					'--disable-features=SafeBrowsing',
+					'--disable-setuid-sandbox',
+					'--disable-gpu',
+					'--disable-dev-shm-usage',
+					'--disable-quic',
 				],
 				...config,
 			};
 
 			childLog('Launch options: %O', launchOptions);
-			const browser = await launch(launchOptions);
+			const browser = await puppeteer.launch(launchOptions);
 
 			const page = await browser?.newPage();
 
