@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.5.13...@d-zero/a11y-check-core@0.6.0) (2025-11-20)
+
+### Features
+
+- **a11y-check:** add severity detection for violations ([3ebf708](https://github.com/d-zero-dev/tools/commit/3ebf7087969d5fa43a266acfe5db9a2467cb7ba0))
+
 ## [0.5.13](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.5.12...@d-zero/a11y-check-core@0.5.13) (2025-10-31)
 
 **Note:** Version bump only for package @d-zero/a11y-check-core

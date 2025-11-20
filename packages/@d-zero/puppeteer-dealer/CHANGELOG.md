@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.5.12...@d-zero/puppeteer-dealer@0.6.0) (2025-11-20)
+
+### Features
+
+- **puppeteer-dealer:** add puppeteer-extra and stealth plugin ([b6b0f15](https://github.com/d-zero-dev/tools/commit/b6b0f155ba692b1b7ffc5925ef9900879eadb93b))
+
 ## [0.5.12](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.5.11...@d-zero/puppeteer-dealer@0.5.12) (2025-10-31)
 
 **Note:** Version bump only for package @d-zero/puppeteer-dealer

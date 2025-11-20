@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.4.2...@d-zero/dealer@1.5.0) (2025-11-20)
+
+### Features
+
+- **dealer:** add clear method to Lanes ([ef533a7](https://github.com/d-zero-dev/tools/commit/ef533a7328f87043985bc1638ef348fa0bbe22f2))
+
 ## [1.4.2](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.4.1...@d-zero/dealer@1.4.2) (2025-10-31)
 
 **Note:** Version bump only for package @d-zero/dealer

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.2.8...@d-zero/puppeteer-page-scan@4.3.0) (2025-11-20)
+
+### Features
+
+- **puppeteer-page-scan:** add timeout display in page load logs ([b61d8b9](https://github.com/d-zero-dev/tools/commit/b61d8b9135806f5f453a32f1aaec3e692182bca7))
+
 ## [4.2.8](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.2.7...@d-zero/puppeteer-page-scan@4.2.8) (2025-10-31)
 
 **Note:** Version bump only for package @d-zero/puppeteer-page-scan
