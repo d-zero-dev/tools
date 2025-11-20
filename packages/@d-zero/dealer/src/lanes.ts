@@ -32,6 +32,19 @@ export class Lanes {
 		this.#verbose = options?.verbose ?? false;
 	}
 
+	clear(options?: { header?: boolean }) {
+		if (this.#verbose) {
+			return;
+		}
+
+		this.#logs.clear();
+
+		if (options?.header) {
+			this.#header = undefined;
+		}
+
+		this.write();
+	}
 	close() {
 		this.#display.close();
 	}
