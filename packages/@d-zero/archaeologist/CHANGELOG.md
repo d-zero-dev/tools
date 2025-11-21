@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.3.3...@d-zero/archaeologist@3.4.0) (2025-11-21)
+
+### Bug Fixes
+
+- **archaeologist:** add non-null assertion for options.listfile ([f3c5487](https://github.com/d-zero-dev/tools/commit/f3c54874a0cf802a9e71ec241481583887c09be5))
+
+### Features
+
+- **archaeologist:** add --combined option to output side-by-side comparison images ([c3445e4](https://github.com/d-zero-dev/tools/commit/c3445e460b52406a2cbcad5ddacae5148fa805c3))
+
 ## [3.3.3](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.3.2...@d-zero/archaeologist@3.3.3) (2025-11-20)
 
 **Note:** Version bump only for package @d-zero/archaeologist
