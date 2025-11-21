@@ -13,6 +13,7 @@ interface ArchaeologistCLIOptions extends BaseCLIOptions {
 	selector?: string;
 	ignore?: string;
 	devices?: string;
+	combined?: boolean;
 }
 
 const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
@@ -33,6 +34,7 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 		'\t-s, --selector <selector> CSS selector for specific elements',
 		'\t-i, --ignore <ignore>     CSS selector for elements to ignore',
 		'\t--freeze <file>           Freeze mode: capture reference screenshots',
+		'\t--combined                Output side-by-side combined images (environment A and B)',
 		'\t--limit <number>          Limit concurrent processes',
 		'\t--interval <ms>           Interval between parallel executions (default: none)',
 		'\t                          Format: number or "min-max" for random range',
@@ -45,6 +47,7 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 		'Examples:',
 		'\tarchaeologist -f urls.txt',
 		'\tarchaeologist -f urls.txt --devices desktop,mobile',
+		'\tarchaeologist -f urls.txt --combined',
 		'\tarchaeologist --freeze urls.txt',
 	],
 	parseArgs: (cli) => ({
@@ -58,6 +61,7 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 			cli.devices ??
 			// Alias for devices
 			cli.device,
+		combined: cli.combined,
 	}),
 	validateArgs: (options) => {
 		return !!(options.listfile?.length || options.freeze?.length);
@@ -72,6 +76,7 @@ if (hasConfigFile) {
 		selector: options.selector,
 		ignore: options.ignore,
 		devices: options.devices ? parseList(options.devices) : undefined,
+		combined: options.combined,
 		limit: options.limit,
 		debug: options.debug,
 		verbose: options.verbose,
