@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.16.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.15.1...@d-zero/shared@0.16.0) (2025-11-25)
+
+### Features
+
+- **shared:** add updateRatio function for ratio value management ([a6e6b95](https://github.com/d-zero-dev/tools/commit/a6e6b9597f008c4d1312cedef6f3733ce7b558ea))
+
 ## [0.15.1](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.15.0...@d-zero/shared@0.15.1) (2025-11-20)
 
 **Note:** Version bump only for package @d-zero/shared

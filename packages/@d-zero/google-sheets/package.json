@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/google-sheets",
-	"version": "0.5.5",
+	"version": "0.5.6",
 	"description": "Google Sheets API Toolkit",
 	"author": "D-ZERO Co.,Ltd.",
 	"license": "MIT",
@@ -24,8 +24,8 @@
 		"manual-test": "node test/index.js"
 	},
 	"dependencies": {
-		"@d-zero/google-auth": "0.5.0",
-		"@d-zero/shared": "0.15.1",
+		"@d-zero/google-auth": "0.5.1",
+		"@d-zero/shared": "0.16.0",
 		"debug": "4.4.3",
 		"dotenv": "17.2.3",
 		"gaxios": "7.1.3",
