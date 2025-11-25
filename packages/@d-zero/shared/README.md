@@ -67,6 +67,7 @@
 | `@d-zero/shared/filesize`                  | バイトサイズをキロバイト（KB）またはメガバイト（MB）に変換する関数                                    |
 | `@d-zero/shared/mime-to-extension`         | MIMEタイプをファイル拡張子に変換する関数                                                              |
 | `@d-zero/shared/race-with-timeout`         | 指定されたPromiseをタイムアウトと競争させ、結果またはタイムアウト指示を返す関数                       |
+| `@d-zero/shared/ratio-value`               | 絶対値と相対値の比率を自動的に維持しながら更新する関数                                                |
 | `@d-zero/shared/retry`                     | メソッドにリトライロジックを追加するデコレータファクトリ                                              |
 | `@d-zero/shared/timestamp`                 | タイムスタンプを生成する関数。フォーマットが指定されない場合は、Linux時刻（エポック秒）を文字列で返す |
 | `@d-zero/shared/typed-await-event-emitter` | 型付きイベントと非同期イベント処理をサポートするイベントエミッター                                    |

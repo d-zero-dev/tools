@@ -118,6 +118,10 @@
 			"import": "./dist/url-to-file-name.js",
 			"types": "./dist/url-to-file-name.d.ts"
 		},
+		"./ratio-value": {
+			"import": "./dist/ratio-value.js",
+			"types": "./dist/ratio-value.d.ts"
+		},
 		"./config-reader": {
 			"import": "./dist/config-reader.js",
 			"types": "./dist/config-reader.d.ts"
