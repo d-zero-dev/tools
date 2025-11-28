@@ -8,6 +8,14 @@
 		"access": "public"
 	},
 	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
 	"bin": "./dist/cli.js",
 	"files": [
 		"dist"
