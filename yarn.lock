@@ -100,6 +100,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@colors/colors@npm:1.5.0":
+  version: 1.5.0
+  resolution: "@colors/colors@npm:1.5.0"
+  checksum: 10c0/eb42729851adca56d19a08e48d5a1e95efd2a32c55ae0323de8119052be0510d4b7a1611f2abcbf28c044a6c11e6b7d38f99fccdad7429300c37a8ea5fb95b44
+  languageName: node
+  linkType: hard
+
 "@commitlint/cli@npm:19.8.1":
   version: 19.8.1
   resolution: "@commitlint/cli@npm:19.8.1"
@@ -1328,6 +1335,15 @@ __metadata:
     puppeteer: "npm:24.31.0"
   bin:
     replicator: ./dist/cli.js
+  languageName: unknown
+  linkType: soft
+
+"@d-zero/roar@workspace:packages/@d-zero/roar":
+  version: 0.0.0-use.local
+  resolution: "@d-zero/roar@workspace:packages/@d-zero/roar"
+  dependencies:
+    cli-meow-help: "npm:4.0.0"
+    meow: "npm:14.0.0"
   languageName: unknown
   linkType: soft
 
@@ -5532,6 +5548,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cli-meow-help@npm:4.0.0":
+  version: 4.0.0
+  resolution: "cli-meow-help@npm:4.0.0"
+  dependencies:
+    chalk: "npm:^5.3.0"
+    chalk-template: "npm:^1.1.0"
+    cli-table3: "npm:^0.6.0"
+  checksum: 10c0/0e7d652b586ad8fb3c7b6823e949ae2c6d22c2260b7026e1eb00911d68b8f455803698775387fd42ddd803e7d39e54dd61a522b0b15443aba0fee48b7efebe6e
+  languageName: node
+  linkType: hard
+
 "cli-spinners@npm:2.6.1":
   version: 2.6.1
   resolution: "cli-spinners@npm:2.6.1"
@@ -5543,6 +5570,19 @@ __metadata:
   version: 2.9.2
   resolution: "cli-spinners@npm:2.9.2"
   checksum: 10c0/907a1c227ddf0d7a101e7ab8b300affc742ead4b4ebe920a5bf1bc6d45dce2958fcd195eb28fa25275062fe6fa9b109b93b63bc8033396ed3bcb50297008b3a3
+  languageName: node
+  linkType: hard
+
+"cli-table3@npm:^0.6.0":
+  version: 0.6.5
+  resolution: "cli-table3@npm:0.6.5"
+  dependencies:
+    "@colors/colors": "npm:1.5.0"
+    string-width: "npm:^4.2.0"
+  dependenciesMeta:
+    "@colors/colors":
+      optional: true
+  checksum: 10c0/d7cc9ed12212ae68241cc7a3133c52b844113b17856e11f4f81308acc3febcea7cc9fd298e70933e294dd642866b29fd5d113c2c098948701d0c35f09455de78
   languageName: node
   linkType: hard
 
@@ -10299,6 +10339,13 @@ __metadata:
   version: 0.3.1
   resolution: "memorystream@npm:0.3.1"
   checksum: 10c0/4bd164657711d9747ff5edb0508b2944414da3464b7fe21ac5c67cf35bba975c4b446a0124bd0f9a8be54cfc18faf92e92bd77563a20328b1ccf2ff04e9f39b9
+  languageName: node
+  linkType: hard
+
+"meow@npm:14.0.0":
+  version: 14.0.0
+  resolution: "meow@npm:14.0.0"
+  checksum: 10c0/dbe4e136e0f858472d8b8c24d382054fe9898f6f47c58a42be25e6b1985e5ae31048573bf399f6e5877bf9d5b89cb840beae7350682019f998ff30baaa5e4106
   languageName: node
   linkType: hard
 

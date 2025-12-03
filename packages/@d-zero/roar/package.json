@@ -1,0 +1,31 @@
+{
+	"name": "@d-zero/roar",
+	"version": "0.1.0",
+	"description": "A CLI helper library built on top of meow.",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"cli-meow-help": "4.0.0",
+		"meow": "14.0.0"
+	}
+}
