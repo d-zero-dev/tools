@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/replicator",
-	"version": "0.7.5",
+	"version": "0.7.6",
 	"description": "Replicate web pages with all their resources to local directories",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -24,7 +24,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/cli-core": "1.2.4",
+		"@d-zero/cli-core": "1.2.5",
 		"@d-zero/dealer": "1.5.1",
 		"@d-zero/puppeteer-dealer": "0.6.2",
 		"@d-zero/puppeteer-page-scan": "4.3.2",
