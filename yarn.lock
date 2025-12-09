@@ -1116,7 +1116,7 @@ __metadata:
   dependencies:
     "@d-zero/readtext": "npm:1.1.13"
     "@types/follow-redirects": "npm:1.14.4"
-    "@types/node": "npm:24.10.1"
+    "@types/node": "npm:24.10.2"
     follow-redirects: "npm:1.15.11"
     minimist: "npm:1.2.8"
   bin:
@@ -1298,7 +1298,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/readtext@workspace:packages/@d-zero/readtext"
   dependencies:
-    "@types/node": "npm:24.10.1"
+    "@types/node": "npm:24.10.2"
   languageName: unknown
   linkType: soft
 
@@ -3881,7 +3881,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:24.10.1":
+"@types/node@npm:*":
   version: 24.10.1
   resolution: "@types/node@npm:24.10.1"
   dependencies:
@@ -3894,6 +3894,15 @@ __metadata:
   version: 16.9.1
   resolution: "@types/node@npm:16.9.1"
   checksum: 10c0/17877153b2fe748e85dd85432c7d6776cfaced7fd69f1998d005812d4865ac02e192a3adde7869ba8f449550f0a80ea6e3369e449a07c587e71222c56478e7d4
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:24.10.2":
+  version: 24.10.2
+  resolution: "@types/node@npm:24.10.2"
+  dependencies:
+    undici-types: "npm:~7.16.0"
+  checksum: 10c0/560c894e1a9bf7468718ceca8cd520361fd0d3fcc0b020c2f028fc722b28b5b56aecd16736a9b753d52a14837c066cf23480a8582ead59adc63a7e4333bc976c
   languageName: node
   linkType: hard
 
