@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.15](https://github.com/d-zero-dev/tools/compare/@d-zero/backlog-projects@0.4.14...@d-zero/backlog-projects@0.4.15) (2025-12-12)
+
+**Note:** Version bump only for package @d-zero/backlog-projects
+
 ## [0.4.14](https://github.com/d-zero-dev/tools/compare/@d-zero/backlog-projects@0.4.13...@d-zero/backlog-projects@0.4.14) (2025-11-25)
 
 **Note:** Version bump only for package @d-zero/backlog-projects

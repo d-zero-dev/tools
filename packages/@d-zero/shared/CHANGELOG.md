@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.17.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.16.0...@d-zero/shared@0.17.0) (2025-12-12)
+
+### Features
+
+- **shared:** add urlMatches and normalizeUrl functions ([2f9d607](https://github.com/d-zero-dev/tools/commit/2f9d6070e60e1a6daf112837385279816726decf))
+
 # [0.16.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.15.1...@d-zero/shared@0.16.0) (2025-11-25)
 
 ### Features
