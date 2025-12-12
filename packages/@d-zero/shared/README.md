@@ -33,15 +33,17 @@
 
 ### URL/パスユーティリティ
 
-| Import Path                         | Description                                                  |
-| ----------------------------------- | ------------------------------------------------------------ |
-| `@d-zero/shared/decode-uri-safely`  | URLエンコードされた文字列を安全にデコードする関数            |
-| `@d-zero/shared/parse-url`          | URL文字列をパースし、正規化されたExURLオブジェクトを返す関数 |
-| `@d-zero/shared/path-to-url`        | ファイルパスをURLオブジェクトに変換する関数                  |
-| `@d-zero/shared/url-to-file-name`   | URLをファイル名として使用可能な文字列に変換する関数          |
-| `@d-zero/shared/url-to-local-path`  | URLをローカルファイルパスに変換する関数                      |
-| `@d-zero/shared/validate-same-host` | すべてのURLが同じホスト名を持つことを検証する関数            |
-| `@d-zero/shared/remove-auth`        | URLから認証情報を削除する関数                                |
+| Import Path                         | Description                                                                                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@d-zero/shared/decode-uri-safely`  | URLエンコードされた文字列を安全にデコードする関数                                                                                                |
+| `@d-zero/shared/normalize-url`      | URLを正規化する関数。エンコーディング、パス、トレーリングスラッシュ、インデックスページのバリエーションを正規化                                  |
+| `@d-zero/shared/parse-url`          | URL文字列をパースし、正規化されたExURLオブジェクトを返す関数                                                                                     |
+| `@d-zero/shared/path-to-url`        | ファイルパスをURLオブジェクトに変換する関数                                                                                                      |
+| `@d-zero/shared/url-matches`        | 2つのURLが等価かどうかを比較する関数。エンコーディング、トレーリングスラッシュ、インデックスページのバリエーション、クエリパラメータの順序を考慮 |
+| `@d-zero/shared/url-to-file-name`   | URLをファイル名として使用可能な文字列に変換する関数                                                                                              |
+| `@d-zero/shared/url-to-local-path`  | URLをローカルファイルパスに変換する関数                                                                                                          |
+| `@d-zero/shared/validate-same-host` | すべてのURLが同じホスト名を持つことを検証する関数                                                                                                |
+| `@d-zero/shared/remove-auth`        | URLから認証情報を削除する関数                                                                                                                    |
 
 ### 配列/文字列ユーティリティ
 
