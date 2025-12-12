@@ -71,6 +71,14 @@
 			"import": "./dist/url-to-local-path.js",
 			"types": "./dist/url-to-local-path.d.ts"
 		},
+		"./url-matches": {
+			"import": "./dist/url-matches.js",
+			"types": "./dist/url-matches.d.ts"
+		},
+		"./normalize-url": {
+			"import": "./dist/normalize-url.js",
+			"types": "./dist/normalize-url.d.ts"
+		},
 		"./validate-same-host": {
 			"import": "./dist/validate-same-host.js",
 			"types": "./dist/validate-same-host.d.ts"

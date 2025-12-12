@@ -37,6 +37,8 @@ export {
 } from './ratio-value.js';
 export { urlToFileName } from './url-to-file-name.js';
 export { urlToLocalPath } from './url-to-local-path.js';
+export { normalizeUrl } from './normalize-url.js';
+export { urlMatches, type UrlMatchesOptions } from './url-matches.js';
 export { validateSameHost } from './validate-same-host.js';
 
 // Date utilities
