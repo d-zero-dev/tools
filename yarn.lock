@@ -1307,16 +1307,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/textlint-config@npm:5.0.0-alpha.76":
-  version: 5.0.0-alpha.76
-  resolution: "@d-zero/textlint-config@npm:5.0.0-alpha.76"
+"@d-zero/textlint-config@npm:5.0.0":
+  version: 5.0.0
+  resolution: "@d-zero/textlint-config@npm:5.0.0"
   dependencies:
     textlint: "npm:15.5.0"
     textlint-plugin-html: "npm:1.0.1"
     textlint-rule-preset-ja-spacing: "npm:2.4.3"
     textlint-rule-preset-japanese: "npm:10.0.4"
     textlint-rule-preset-jtf-style: "npm:3.0.3"
-  checksum: 10c0/76efd67ebe6d472733e9d9c74493e3310ea3d7f74739ba37444b0e0d96bb457e171a89c956c077c3b69af06eb24b78d1a5c1ae756baf7db0a772efafff210b4c
+  checksum: 10c0/9522d192db7efa4aa800d7b61b79cf42f80d9d76a0ee697f41e846fe9681c1cc7a3f2f9ef3dbe233ba9f44a605a30db985f85b4e0c143af31294c3ea2ae070a6
   languageName: node
   linkType: hard
 
@@ -13192,7 +13192,7 @@ __metadata:
     "@d-zero/eslint-config": "npm:5.0.0-alpha.73"
     "@d-zero/lint-staged-config": "npm:5.0.0"
     "@d-zero/prettier-config": "npm:5.0.0"
-    "@d-zero/textlint-config": "npm:5.0.0-alpha.76"
+    "@d-zero/textlint-config": "npm:5.0.0"
     "@d-zero/tsconfig": "npm:0.5.0"
     husky: "npm:9.1.7"
     lerna: "npm:9.0.3"
