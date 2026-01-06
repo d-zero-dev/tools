@@ -29,11 +29,11 @@
 		"@d-zero/shared": "0.17.0"
 	},
 	"devDependencies": {
-		"axe-core": "4.11.0",
+		"axe-core": "4.11.1",
 		"puppeteer": "24.34.0"
 	},
 	"peerDependencies": {
-		"axe-core": "4.11.0",
+		"axe-core": "4.11.1",
 		"puppeteer": "24.34.0"
 	}
 }
