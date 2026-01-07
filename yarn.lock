@@ -1092,7 +1092,7 @@ __metadata:
     ansi-colors: "npm:4.1.3"
     debug: "npm:4.4.3"
     dotenv: "npm:17.2.3"
-    googleapis: "npm:166.0.0"
+    googleapis: "npm:169.0.0"
   languageName: unknown
   linkType: soft
 
@@ -1105,7 +1105,7 @@ __metadata:
     debug: "npm:4.4.3"
     dotenv: "npm:17.2.3"
     gaxios: "npm:7.1.3"
-    googleapis: "npm:166.0.0"
+    googleapis: "npm:169.0.0"
   languageName: unknown
   linkType: soft
 
@@ -8317,13 +8317,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"googleapis@npm:166.0.0":
-  version: 166.0.0
-  resolution: "googleapis@npm:166.0.0"
+"googleapis@npm:169.0.0":
+  version: 169.0.0
+  resolution: "googleapis@npm:169.0.0"
   dependencies:
     google-auth-library: "npm:^10.2.0"
     googleapis-common: "npm:^8.0.0"
-  checksum: 10c0/be0ce8b8596c18ccbd0ff6148c8296e78ef513b4012570830f188a71f1e0e9dde6ab92df71fe78aa77830fa6bf671ef5c16fa6b65caba3d0236ea8fa3d661ba9
+  checksum: 10c0/7c57b0e76ff3f326f76d9602177fc11894d4980892ba8d3927bf123aff69172449202f57a2201771048abf1fe017fdbc937df7e60011510f2433f8ee59898248
   languageName: node
   linkType: hard
 
