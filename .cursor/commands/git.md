@@ -1,17 +1,17 @@
 ---
-description: Git commit creation following conventional commits format
+description: Git manipulation rules
 ---
 
 # Commit creation
 
-When asked to "commit":
-
-1. Check staged files using `git diff --staged` and create a commit message using _only_ the staged files.
-   - Once the message is ready, directly propose the commit command to the user.
-2. If no files are staged, check the differences using `git status`, then stage files sequentially based on the following commit granularity before committing:
-   - Separate commits by package.
-   - Commit dependencies first (if dependency order is unclear, check using `npx lerna list --graph`).
-3. If the OS, application settings, or context suggest a language other than English is being used, provide a translation and explanation of the commit message in that language immediately before proposing the commit command to the user.
+- When asked to "commit":
+  1. Check staged files using `git diff --staged` and create a commit message using _only_ the staged files.
+     - Once the message is ready, directly propose the commit command to the user.
+  2. If no files are staged, check the differences using `git status`, then stage files sequentially based on the following commit granularity before committing:
+     - Separate commits by package.
+     - Commit dependencies first (if dependency order is unclear, check using `npx lerna list --graph`).
+- If the OS, application settings, or context suggest a language other than English is being used, provide a translation and explanation of the commit message in that language immediately before proposing the commit command to the user.
+- When the commit message is ready, try to execute it directly as `git commit` (the user will approve as appropriate).
 
 # Commit message format
 
@@ -60,3 +60,7 @@ When asked to "commit":
 
 - Avoid using special characters like \n in command line commit messages
 - For multi-line messages in command line, use multiple -m parameters instead of line breaks
+- When lines exceed 100 characters, split them using multiple -m flags:
+  ```
+  git commit -m 'type(scope): subject line' -m 'First line of body' -m 'Second line of body'
+  ```
