@@ -4,7 +4,7 @@ import { pathComparator } from './path.js';
 
 test('Alphabet natural sort', () => {
 	expect(
-		['https://hostname.domain/a', 'https://hostname.domain/b'].sort(pathComparator),
+		['https://hostname.domain/a', 'https://hostname.domain/b'].toSorted(pathComparator),
 	).toStrictEqual(['https://hostname.domain/a', 'https://hostname.domain/b']);
 });
 
@@ -17,7 +17,7 @@ test('protocol', () => {
 			'https://hostname.domain/3',
 			'http://hostname.domain/3',
 			'http://hostname.domain/1',
-		].sort(pathComparator),
+		].toSorted(pathComparator),
 	).toStrictEqual([
 		'http://hostname.domain/1',
 		'https://hostname.domain/1',
@@ -37,7 +37,7 @@ test('Numeric natural sort', () => {
 			'https://hostname.domain/100',
 			'https://hostname.domain/4',
 			'https://hostname.domain/22',
-		].sort(pathComparator),
+		].toSorted(pathComparator),
 	).toStrictEqual([
 		'https://hostname.domain/1',
 		'https://hostname.domain/2',
@@ -57,7 +57,7 @@ test('Numeric natural sort', () => {
 			'https://hostname.domain/page:100',
 			'https://hostname.domain/page:4',
 			'https://hostname.domain/page:22',
-		].sort(pathComparator),
+		].toSorted(pathComparator),
 	).toStrictEqual([
 		'https://hostname.domain/page:1',
 		'https://hostname.domain/page:2',
@@ -77,7 +77,7 @@ test('Numeric natural sort', () => {
 			'https://hostname.domain/category_100/detail',
 			'https://hostname.domain/category_04/detail',
 			'https://hostname.domain/category_22/detail',
-		].sort(pathComparator),
+		].toSorted(pathComparator),
 	).toStrictEqual([
 		'https://hostname.domain/category_01/detail',
 		'https://hostname.domain/category_02/detail',
@@ -97,7 +97,7 @@ test('Numeric natural sort', () => {
 			'https://hostname.domain/?page=100',
 			'https://hostname.domain/?page=4',
 			'https://hostname.domain/?page=22',
-		].sort(pathComparator),
+		].toSorted(pathComparator),
 	).toStrictEqual([
 		'https://hostname.domain/?page=1',
 		'https://hostname.domain/?page=2',
@@ -117,7 +117,7 @@ test('Numeric natural sort', () => {
 			'https://hostname.domain/page100.html',
 			'https://hostname.domain/page4.html',
 			'https://hostname.domain/page22.html',
-		].sort(pathComparator),
+		].toSorted(pathComparator),
 	).toStrictEqual([
 		'https://hostname.domain/page1.html',
 		'https://hostname.domain/page2.html',
@@ -146,7 +146,7 @@ test('Index is first', () => {
 		'https://hostname.domain/d',
 		'https://hostname.domain/bbbb/',
 		'https://hostname.domain/c',
-	].sort(pathComparator);
+	].toSorted(pathComparator);
 	expect(r).toStrictEqual([
 		'https://hostname.domain',
 		'https://hostname.domain/',
@@ -195,7 +195,7 @@ test('Index is first', () => {
 		'http://user:pass@hostname.domain/news/20181117/',
 		'http://user:pass@hostname.domain/news/20190410/',
 		'http://user:pass@hostname.domain/news/20191220/',
-	].sort(pathComparator);
+	].toSorted(pathComparator);
 	expect(r).toStrictEqual([
 		'http://user:pass@hostname.domain/',
 		'http://user:pass@hostname.domain/company',
@@ -235,7 +235,7 @@ test('Search query', () => {
 			'https://hostname.domain/page',
 			'https://hostname.domain/page?a=b',
 			'https://hostname.domain/page/12?a=b',
-		].sort(pathComparator),
+		].toSorted(pathComparator),
 	).toStrictEqual([
 		'https://hostname.domain/page',
 		'https://hostname.domain/page?a=b',

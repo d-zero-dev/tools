@@ -47,11 +47,13 @@ export function updateRatio(
 	propName: Exclude<RatioValuePropertyName, 'maxRelNumber'>,
 	value: number,
 ): RatioValue {
-	// Create a shallow copy
-	const updated = { ...obj };
+	const updated = {
+		// Create a shallow copy
+		...obj,
 
-	// Update the specified property
-	updated[propName] = value;
+		// Update the specified property
+		[propName]: value,
+	};
 
 	// Recalculate dependent properties based on which property was updated
 	switch (propName) {
