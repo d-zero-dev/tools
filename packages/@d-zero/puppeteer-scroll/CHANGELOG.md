@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.7](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.1.6...@d-zero/puppeteer-scroll@3.1.7) (2026-01-07)
+
+**Note:** Version bump only for package @d-zero/puppeteer-scroll
+
 ## [3.1.6](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.1.5...@d-zero/puppeteer-scroll@3.1.6) (2025-12-12)
 
 **Note:** Version bump only for package @d-zero/puppeteer-scroll

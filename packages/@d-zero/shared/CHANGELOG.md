@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.1](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.17.0...@d-zero/shared@0.17.1) (2026-01-07)
+
+### Bug Fixes
+
+- **shared:** handle missing intermediate paths in pathListToTree ([3c9e821](https://github.com/d-zero-dev/tools/commit/3c9e8213f659e51ccb6c7b9e2ab209970c021693))
+
 # [0.17.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.16.0...@d-zero/shared@0.17.0) (2025-12-12)
 
 ### Features
