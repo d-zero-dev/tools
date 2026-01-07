@@ -1,0 +1,37 @@
+{
+	"name": "@d-zero/dom-scanner",
+	"version": "1.0.0",
+	"description": "Scan HTML and Pug files in a directory to find elements matching a CSS selector",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"bin": "./dist/cli.js",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"@d-zero/cli-core": "1.2.5",
+		"@d-zero/shared": "0.16.0",
+		"cheerio": "^1.0.0",
+		"pug": "^3.0.3"
+	},
+	"devDependencies": {
+		"@types/node": "24.10.1"
+	}
+}
