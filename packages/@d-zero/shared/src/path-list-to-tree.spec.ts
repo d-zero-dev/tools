@@ -94,6 +94,66 @@ test('Create tree', () => {
 	});
 });
 
+test('Create tree (intermediate path is missing)', () => {
+	expect(pathListToTree(['/a/b/', '/a/b/c/d/e'])).toStrictEqual({
+		url: '/',
+		stem: '/',
+		depth: 0,
+		current: false,
+		isAncestor: false,
+		virtual: true,
+		children: [
+			{
+				url: '/a/',
+				stem: '/a/',
+				depth: 1,
+				current: false,
+				isAncestor: false,
+				virtual: true,
+				children: [
+					{
+						url: '/a/b/',
+						stem: '/a/b/',
+						depth: 2,
+						current: false,
+						isAncestor: false,
+						children: [
+							{
+								url: '/a/b/c/',
+								stem: '/a/b/c/',
+								depth: 3,
+								current: false,
+								isAncestor: false,
+								virtual: true,
+								children: [
+									{
+										url: '/a/b/c/d/',
+										stem: '/a/b/c/d/',
+										depth: 4,
+										current: false,
+										isAncestor: false,
+										virtual: true,
+										children: [
+											{
+												url: '/a/b/c/d/e',
+												stem: '/a/b/c/d/e',
+												depth: 5,
+												current: false,
+												isAncestor: false,
+												children: [],
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+		],
+	});
+});
+
 test('Create tree with virtual parent', () => {
 	expect(pathListToTree(['/', '/a/index', '/a/c/', '/b/d', '/e.html'])).toStrictEqual({
 		url: '/',

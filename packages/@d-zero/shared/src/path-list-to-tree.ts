@@ -127,8 +127,6 @@ function createTree(fileList: Node[], createVirtualParent: boolean) {
 		pathMap.set(filePath.stem, filePath);
 	}
 
-	let root: Node | null = null;
-
 	for (const filePath of fileList) {
 		const node = pathMap.get(filePath.stem);
 
@@ -136,13 +134,10 @@ function createTree(fileList: Node[], createVirtualParent: boolean) {
 			continue;
 		}
 
-		if (node.depth === 0) {
-			root = node;
-			continue;
-		}
-
 		addParent(node, pathMap, createVirtualParent);
 	}
+
+	const root = pathMap.get('/');
 
 	if (!root) {
 		throw new Error('Root node not found');
@@ -159,6 +154,11 @@ function createTree(fileList: Node[], createVirtualParent: boolean) {
  */
 function addParent(node: Node, pathMap: Map<string, Node>, createVirtualParent: boolean) {
 	const parentStem = getParentPath(node.stem);
+
+	if (!parentStem) {
+		return;
+	}
+
 	const parent = pathMap.get(parentStem);
 
 	if (parent) {
@@ -190,6 +190,9 @@ function addParent(node: Node, pathMap: Map<string, Node>, createVirtualParent: 
  * @param filePathStem
  */
 function getParentPath(filePathStem: string) {
+	if (filePathStem === '/') {
+		return null;
+	}
 	const urlParts = filePathStem.split('/').filter(Boolean);
 	const parentParts = urlParts.slice(0, -1);
 	return parentParts.length === 0 ? '/' : '/' + parentParts.join('/') + '/';
