@@ -18,7 +18,7 @@
 		"prepare": "husky",
 		"commit": "npx cz",
 		"co": "npx cz",
-		"upgrade": "yarn upgrade-interactive"
+		"update": "yarn upgrade-interactive"
 	},
 	"workspaces": [
 		"packages/@d-zero/*"
