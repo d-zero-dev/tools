@@ -20,6 +20,7 @@ npx @d-zero/print <url>... [options]
 
 ### オプション
 
+- `-v, --version`: バージョンを表示
 - `-f, --listfile <file>`: URLリストを持つファイルのパス
 - `<url>`: 対象のURL（複数指定可能）
 - `-t, --type <type>`: 出力形式（デフォルト: png）

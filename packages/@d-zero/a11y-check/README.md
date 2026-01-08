@@ -18,6 +18,7 @@ npx @d-zero/a11y-check <url>... [options]
 
 ### オプション
 
+- `-v, --version`: バージョンを表示
 - `-f, --listfile <file>`: URLリストを持つファイルのパス
 - `<url>`: 対象のURL（複数指定可能）
 - `-s, --screenshot`: スクリーンショットを撮影する（デフォルト: false）

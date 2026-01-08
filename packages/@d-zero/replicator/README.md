@@ -18,6 +18,7 @@ npx @d-zero/replicator <url...> -o <output-directory> [options]
 
 #### オプション
 
+- `--version`: バージョンを表示（注: `-v`は`--verbose`のエイリアス）
 - `-o, --output <dir>`: 出力ディレクトリ（必須）
 - `-t, --timeout <ms>`: リクエストタイムアウト（ミリ秒、デフォルト: 30000）
 - `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）

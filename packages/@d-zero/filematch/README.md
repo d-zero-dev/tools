@@ -11,9 +11,13 @@
 
 ## 使い方
 
-### ファイル比較
+### オプション
 
-#### オプション
+- `-v, --version`: バージョンを表示
+- `-f <list_file_path>`: リストファイルからの比較
+- `--verbose`: 詳細ログモード
+
+### ファイル比較
 
 ```sh
 npx @d-zero/filematch <file_path_or_url_1> <file_path_or_url_2>

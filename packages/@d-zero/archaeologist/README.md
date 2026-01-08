@@ -20,6 +20,7 @@ URLリストを持つファイルを指定して実行します。
 
 ### オプション
 
+- `-v, --version`: バージョンを表示
 - `-f, --listfile <filepath>`: URLリストを持つファイルのパス（必須）
 - `-t, --type <types>`: 比較タイプの指定（`image,dom,text`、カンマ区切り）
 - `-s, --selector <selector>`: 比較対象を限定するCSSセレクター
