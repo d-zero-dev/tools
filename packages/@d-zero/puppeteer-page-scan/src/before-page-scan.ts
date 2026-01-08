@@ -97,9 +97,9 @@ async function navigateWithFallback(
 
 			// Retry with networkidle2 (more lenient)
 			if (isReload) {
-				await page.reload({ waitUntil: 'networkidle2', timeout: timeout * 10 });
+				await page.reload({ waitUntil: 'networkidle2', timeout: timeout * 3 });
 			} else {
-				await page.goto(url, { waitUntil: 'networkidle2', timeout: timeout * 10 });
+				await page.goto(url, { waitUntil: 'networkidle2', timeout: timeout * 3 });
 			}
 		} else {
 			// Re-throw non-timeout errors

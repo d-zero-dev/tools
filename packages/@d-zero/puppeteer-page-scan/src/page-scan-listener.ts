@@ -10,7 +10,7 @@ export const pageScanLoggers: Loggers<PageScanPhase> = (log) => ({
 	load({ type, timeout, id }) {
 		const timeoutSec = Math.floor(timeout / 1000);
 		log(
-			`%earth% ${type === 'open' ? 'Open' : 'Reload'} page / Timeout: %countdown(${timeoutSec},${id}_timeout,s)%s/${timeoutSec}s`,
+			`%earth% ${type === 'open' ? 'Open' : 'Reload'} page / Timeout: %countdown(${timeout},${id}_timeout,s)%s/${timeoutSec}s`,
 		);
 	},
 	hook({ message }) {
