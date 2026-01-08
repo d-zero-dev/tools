@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.4.4...@d-zero/archaeologist@3.5.0) (2026-01-08)
+
+### Features
+
+- **repo:** add version option to all CLIs ([12c0429](https://github.com/d-zero-dev/tools/commit/12c042975adb6c92f16fb551e561a2717db54a93))
+
 ## [3.4.4](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.4.3...@d-zero/archaeologist@3.4.4) (2026-01-07)
 
 **Note:** Version bump only for package @d-zero/archaeologist

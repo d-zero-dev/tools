@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/backlog-projects",
-	"version": "0.4.16",
+	"version": "0.5.0",
 	"description": "A manipulating Backlog projects library",
 	"author": "D-ZERO",
 	"license": "MIT",

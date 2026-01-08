@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.5](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.3.4...@d-zero/puppeteer-page-scan@4.3.5) (2026-01-08)
+
+### Bug Fixes
+
+- **puppeteer-page-scan:** adjust fallback timeout multiplier and countdown display ([bd5cd20](https://github.com/d-zero-dev/tools/commit/bd5cd2032a0893d71e0cb2062ccbdd9c010523bf))
+
 ## [4.3.4](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.3.3...@d-zero/puppeteer-page-scan@4.3.4) (2026-01-07)
 
 **Note:** Version bump only for package @d-zero/puppeteer-page-scan

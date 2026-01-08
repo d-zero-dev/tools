@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/cli-core@1.2.7...@d-zero/cli-core@1.3.0) (2026-01-08)
+
+### Features
+
+- **cli-core:** add version option support to createCLI ([cac795c](https://github.com/d-zero-dev/tools/commit/cac795c7d333ef67f3b266cd6a6c658863bc7a92))
+
 ## [1.2.7](https://github.com/d-zero-dev/tools/compare/@d-zero/cli-core@1.2.6...@d-zero/cli-core@1.2.7) (2026-01-07)
 
 **Note:** Version bump only for package @d-zero/cli-core
