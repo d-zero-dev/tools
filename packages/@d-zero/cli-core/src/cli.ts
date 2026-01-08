@@ -8,9 +8,23 @@ import minimist from 'minimist';
  * @param config
  */
 export function createCLI<T extends BaseCLIOptions>(config: CLIConfig<T>): ParsedCLI<T> {
+	// Only add -v alias for version if not already used by the CLI
+	const hasVAlias = config.aliases && 'v' in config.aliases;
+	const aliases: Record<string, string> = { ...config.aliases };
+	if (!hasVAlias) {
+		aliases.v = 'version';
+	}
+
 	const cli = minimist(process.argv.slice(2), {
-		alias: config.aliases,
+		alias: aliases,
 	});
+
+	// Handle -v / --version option
+	if (cli.version === true && config.version) {
+		const displayName = config.name ?? 'CLI';
+		process.stdout.write(`${displayName} v${config.version}\n`);
+		process.exit(0);
+	}
 
 	const options = config.parseArgs(cli);
 	const hasConfigFile = !!options.listfile;

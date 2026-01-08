@@ -14,6 +14,14 @@ export interface CLIAlias {
 }
 
 export interface CLIConfig<T extends BaseCLIOptions> {
+	/**
+	 * Package name for version display
+	 */
+	name?: string;
+	/**
+	 * Package version for -v/--version option
+	 */
+	version?: string;
 	aliases?: CLIAlias;
 	usage: string[];
 	parseArgs: (cli: ParsedArgs) => T;
