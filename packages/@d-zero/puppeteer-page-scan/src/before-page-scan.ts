@@ -22,7 +22,7 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 	const name = options?.name ?? 'default';
 	const width = options?.width ?? 1400;
 	const resolution = options?.resolution;
-	const timeout = options?.timeout || 30_000;
+	const timeout = options?.timeout || 5000;
 	const countDownId = `${name}${url}_timeout`;
 
 	listener?.('setViewport', { name, width, resolution });
@@ -97,9 +97,9 @@ async function navigateWithFallback(
 
 			// Retry with networkidle2 (more lenient)
 			if (isReload) {
-				await page.reload({ waitUntil: 'networkidle2', timeout });
+				await page.reload({ waitUntil: 'networkidle2', timeout: timeout * 10 });
 			} else {
-				await page.goto(url, { waitUntil: 'networkidle2', timeout });
+				await page.goto(url, { waitUntil: 'networkidle2', timeout: timeout * 10 });
 			}
 		} else {
 			// Re-throw non-timeout errors
