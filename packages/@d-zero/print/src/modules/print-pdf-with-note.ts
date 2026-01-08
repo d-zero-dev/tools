@@ -17,7 +17,7 @@ export async function printPdfWithNote(
 	{ id, filePath, url, title }: Screenshot,
 ) {
 	if (!filePath) {
-		throw new Error(`No file path (ID: ${id}): ${url}`);
+		throw new Error(`No file path (ID: "${id}"): ${url}`);
 	}
 
 	const datetime = dayjs().format('YYYY-MM-DD HH:mm');
@@ -47,7 +47,7 @@ export async function printPdfWithNote(
 						<div style="font-size: 0.6em">Printed: ${datetime}</div>
 					</div>
 					<div>
-						<div style="font-size: 3mm; margin-bottom: 1mm; text-align: right;">[ID: ${id}]</div>
+						<div style="font-size: 3mm; margin-bottom: 1mm; text-align: right;">[${id}]</div>
 						<div style="text-align: right; background-color: #000; color: #fff;">Note:</div>
 					</div>
 				</div>
@@ -55,7 +55,7 @@ export async function printPdfWithNote(
 		footerTemplate: `
 				<div style="font-size: 2mm; width: 100%; display: flex; justify-content: space-between; margin: 0 1cm; font-family: monospace;">
 					<div>
-						<span>[ID: ${id}] ${url}</span>
+						<span>[${id}] ${url}</span>
 					</div>
 					<div>
 						<span class="pageNumber"></span>/<span class="totalPages"></span>
