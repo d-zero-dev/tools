@@ -2,11 +2,16 @@
 import type { PrintType } from './types.js';
 import type { BaseCLIOptions } from '@d-zero/cli-core';
 
+import { createRequire } from 'node:module';
+
 import { createCLI, parseCommonOptions, parseList } from '@d-zero/cli-core';
 import { parseDevicesOption } from '@d-zero/puppeteer-page-scan';
 
 import { print } from './print-main-process.js';
 import { readConfig } from './read-config.js';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json') as { name: string; version: string };
 
 interface PrintCLIOptions extends BaseCLIOptions {
 	type?: string;
@@ -15,6 +20,8 @@ interface PrintCLIOptions extends BaseCLIOptions {
 }
 
 const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
+	name: pkg.name,
+	version: pkg.version,
 	aliases: {
 		f: 'listfile',
 		t: 'type',

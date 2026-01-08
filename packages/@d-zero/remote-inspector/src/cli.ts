@@ -2,16 +2,23 @@
 import type { RemoteInspectorOptions } from './types.js';
 import type { ParsedArgs } from 'minimist';
 
+import { createRequire } from 'node:module';
+
 import { createCLI, parseCommonOptions } from '@d-zero/cli-core';
 import { config as dotenvConfig } from 'dotenv';
 
 import { remoteInspector } from './remote-inspector.js';
 import { validateRemoteInspectorArgs } from './validation.js';
 
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json') as { name: string; version: string };
+
 // Load .env file if it exists
 dotenvConfig();
 
 const config = {
+	name: pkg.name,
+	version: pkg.version,
 	usage: [
 		'Usage: remote-inspector [options]',
 		'',

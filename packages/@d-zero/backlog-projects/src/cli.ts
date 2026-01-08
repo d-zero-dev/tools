@@ -2,6 +2,8 @@
 import type { Role } from './types.js';
 import type { User } from 'backlog-js/dist/types/entity.js';
 
+import { createRequire } from 'node:module';
+
 import dotenv from 'dotenv';
 import Enquirer from 'enquirer';
 import minimist from 'minimist';
@@ -11,13 +13,23 @@ import { createBacklogClient } from './create-backlog-client.js';
 import { roles } from './define.js';
 import { getBacklogProjectIdFromUrl } from './get-backlog-project-id-from-url.js';
 
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json') as { name: string; version: string };
+
 dotenv.config();
 
 const cli = minimist(process.argv.slice(2), {
 	alias: {
 		a: 'assign',
+		v: 'version',
 	},
 });
+
+// Handle -v / --version option
+if (cli.version === true) {
+	process.stdout.write(`${pkg.name} v${pkg.version}\n`);
+	process.exit(0);
+}
 
 const backlog = createBacklogClient();
 

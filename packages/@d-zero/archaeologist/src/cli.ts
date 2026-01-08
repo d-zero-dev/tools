@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 import type { BaseCLIOptions } from '@d-zero/cli-core';
 
+import { createRequire } from 'node:module';
+
 import { createCLI, parseCommonOptions, parseList } from '@d-zero/cli-core';
 
 import { analyze } from './analyze-main-process.js';
 import { freeze } from './freeze-main-process.js';
 import { readConfig } from './read-config.js';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json') as { name: string; version: string };
 
 interface ArchaeologistCLIOptions extends BaseCLIOptions {
 	type?: string;
@@ -17,6 +22,8 @@ interface ArchaeologistCLIOptions extends BaseCLIOptions {
 }
 
 const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
+	name: pkg.name,
+	version: pkg.version,
 	aliases: {
 		f: 'listfile',
 		t: 'type',

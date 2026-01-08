@@ -3,10 +3,15 @@
 import type { A11yCheckOptions } from './types.js';
 import type { BaseCLIOptions } from '@d-zero/cli-core';
 
+import { createRequire } from 'node:module';
+
 import { createCLI, parseCommonOptions } from '@d-zero/cli-core';
 
 import { a11yCheck } from './a11y-check.js';
 import { readConfig } from './read-config.js';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json') as { name: string; version: string };
 
 interface A11yCheckCLIOptions extends BaseCLIOptions {
 	scenarios?: string;
@@ -18,6 +23,8 @@ interface A11yCheckCLIOptions extends BaseCLIOptions {
 }
 
 const { options, args, hasConfigFile } = createCLI<A11yCheckCLIOptions>({
+	name: pkg.name,
+	version: pkg.version,
 	aliases: {
 		f: 'listfile',
 		s: 'screenshot',

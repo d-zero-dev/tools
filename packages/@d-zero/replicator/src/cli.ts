@@ -2,10 +2,15 @@
 
 import type { BaseCLIOptions } from '@d-zero/cli-core';
 
+import { createRequire } from 'node:module';
+
 import { createCLI, parseCommonOptions, parseList } from '@d-zero/cli-core';
 import { parseDevicesOption } from '@d-zero/puppeteer-page-scan';
 
 import { replicate } from './index.js';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json') as { name: string; version: string };
 
 interface ReplicatorCLIOptions extends BaseCLIOptions {
 	output?: string;
@@ -16,6 +21,8 @@ interface ReplicatorCLIOptions extends BaseCLIOptions {
 }
 
 const { options, args } = createCLI<ReplicatorCLIOptions>({
+	name: pkg.name,
+	version: pkg.version,
 	aliases: {
 		o: 'output',
 		v: 'verbose',
