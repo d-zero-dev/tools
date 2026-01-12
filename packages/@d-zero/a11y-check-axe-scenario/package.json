@@ -30,10 +30,10 @@
 	},
 	"devDependencies": {
 		"axe-core": "4.11.1",
-		"puppeteer": "24.34.0"
+		"puppeteer": "24.35.0"
 	},
 	"peerDependencies": {
 		"axe-core": "4.11.1",
-		"puppeteer": "24.34.0"
+		"puppeteer": "24.35.0"
 	}
 }
