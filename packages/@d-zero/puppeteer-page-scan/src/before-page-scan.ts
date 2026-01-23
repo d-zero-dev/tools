@@ -14,38 +14,60 @@ type Options = {
 
 /**
  * Open all disclosure elements on the page
+ * This function loops until all disclosure elements are expanded,
+ * including nested elements and dynamically-created buttons.
  * @param page
- * @returns The number of elements opened (details + buttons)
+ * @returns The total number of elements opened (details + buttons)
  */
 async function openAllDisclosures(
 	page: Page,
 ): Promise<{ details: number; buttons: number }> {
-	const result = await page.evaluate(() => {
-		// Open all <details> elements
-		const detailsElements =
-			document.querySelectorAll<HTMLDetailsElement>('details:not([open])');
-		for (const details of detailsElements) {
-			details.open = true;
+	const maxIterations = 50; // Prevent infinite loops
+	let totalDetails = 0;
+	let totalButtons = 0;
+	let iteration = 0;
+
+	while (iteration < maxIterations) {
+		const result = await page.evaluate(() => {
+			// Open all <details> elements
+			const detailsElements =
+				document.querySelectorAll<HTMLDetailsElement>('details:not([open])');
+			for (const details of detailsElements) {
+				details.open = true;
+			}
+
+			// Click all collapsed buttons
+			const collapsedButtons = document.querySelectorAll<HTMLButtonElement>(
+				'button[aria-expanded="false"]',
+			);
+			for (const button of collapsedButtons) {
+				button.click();
+			}
+
+			return {
+				details: detailsElements.length,
+				buttons: collapsedButtons.length,
+			};
+		});
+
+		totalDetails += result.details;
+		totalButtons += result.buttons;
+
+		// If no elements were opened in this iteration, we're done
+		if (result.details === 0 && result.buttons === 0) {
+			break;
 		}
 
-		// Click all collapsed buttons
-		const collapsedButtons = document.querySelectorAll<HTMLButtonElement>(
-			'button[aria-expanded="false"]',
-		);
-		for (const button of collapsedButtons) {
-			button.click();
-		}
+		// Wait for animations and content rendering before next iteration
+		await new Promise((resolve) => setTimeout(resolve, 500));
 
-		return {
-			details: detailsElements.length,
-			buttons: collapsedButtons.length,
-		};
-	});
+		iteration++;
+	}
 
-	// Wait for animations and content rendering
-	await new Promise((resolve) => setTimeout(resolve, 500));
-
-	return result;
+	return {
+		details: totalDetails,
+		buttons: totalButtons,
+	};
 }
 
 /**
