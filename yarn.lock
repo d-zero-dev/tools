@@ -1134,7 +1134,7 @@ __metadata:
   resolution: "@d-zero/notion@workspace:packages/@d-zero/notion"
   dependencies:
     "@d-zero/shared": "npm:0.17.1"
-    "@notionhq/client": "npm:5.7.0"
+    "@notionhq/client": "npm:5.8.0"
   languageName: unknown
   linkType: soft
 
@@ -2590,10 +2590,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@notionhq/client@npm:5.7.0":
-  version: 5.7.0
-  resolution: "@notionhq/client@npm:5.7.0"
-  checksum: 10c0/0b1ff7f73e1a92b461cf0034c0c02c8ad67c9d4873859496fc76c2c7e1b167b01d1b9b600ee4bb066a41793dcb5a80b700bde4fc741b165c1e2a37be2930ad6d
+"@notionhq/client@npm:5.8.0":
+  version: 5.8.0
+  resolution: "@notionhq/client@npm:5.8.0"
+  checksum: 10c0/391ace4cbe42a4f962d128ecc1200919e03e2b54a8a19077d19a2900ccc373af1d209f39d4a3df62975a1def1209a12f3a8feac901806a28e4a10f9b46e12a17
   languageName: node
   linkType: hard
 
