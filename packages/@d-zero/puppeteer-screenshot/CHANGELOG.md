@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.14...@d-zero/puppeteer-screenshot@3.3.0) (2026-01-23)
+
+### Features
+
+- **puppeteer-screenshot:** add openDisclosures option support ([e9f7c7c](https://github.com/d-zero-dev/tools/commit/e9f7c7c017e7a12b99e592e60fcc87bcfa4434b4))
+
 ## [3.2.14](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.13...@d-zero/puppeteer-screenshot@3.2.14) (2026-01-08)
 
 **Note:** Version bump only for package @d-zero/puppeteer-screenshot

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.3.5...@d-zero/puppeteer-page-scan@4.4.0) (2026-01-23)
+
+### Bug Fixes
+
+- **puppeteer-page-scan:** handle nested and dynamic disclosure elements ([089d484](https://github.com/d-zero-dev/tools/commit/089d48438c65cdf1f624d15bbee1731fd10314be))
+- **puppeteer-page-scan:** increase max iterations to 1000 and throw error ([340930a](https://github.com/d-zero-dev/tools/commit/340930a54d6d1d0b5b46055bc55a93725332caff))
+
+### Features
+
+- **puppeteer-page-scan:** add openDisclosures option to expand elements ([7d5a381](https://github.com/d-zero-dev/tools/commit/7d5a3810ccbbf7fda1fcce8114736309f096b9b5))
+
 ## [4.3.5](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.3.4...@d-zero/puppeteer-page-scan@4.3.5) (2026-01-08)
 
 ### Bug Fixes

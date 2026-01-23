@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.5.0...@d-zero/print@2.6.0) (2026-01-23)
+
+### Bug Fixes
+
+- **print:** pass verbose/debug/limit/interval options to dealer ([c5573ba](https://github.com/d-zero-dev/tools/commit/c5573bad75f18ff0d5aad805ba182b76e9f5f254))
+
+### Features
+
+- **print:** add --open-disclosures CLI option ([536cb9c](https://github.com/d-zero-dev/tools/commit/536cb9c127b6f41649ec42a356317b8d2c1f60f2))
+
 # [2.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.4.8...@d-zero/print@2.5.0) (2026-01-08)
 
 ### Features
