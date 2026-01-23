@@ -26,6 +26,6 @@ const result = await screenshot(page, 'https://example.com', {
 	listener: (phase, data) => {
 		console.log(phase, data);
 	},
-	openDisclosures: true, // すべての<details>とaria-expanded要素を展開（省略可）
+	openDisclosures: true, // オプション: disclosure要素を展開（<details>とbutton[aria-expanded="false"]、最大1000回まで繰り返す）
 });
 ```

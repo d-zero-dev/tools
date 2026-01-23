@@ -47,7 +47,10 @@ const parsedSizes = parseDevicesOption(['desktop', 'tablet']);
 - 任意のフック処理
   - ログインなどの事前処理
 - disclosure要素の展開（オプション）
-  - `<details>`要素とaria-expanded要素を展開
+  - すべての`<details>`要素を開き、すべての`button[aria-expanded="false"]`要素をクリック
+  - 新しい要素が見つからなくなるまで繰り返し処理（最大1000回）
+  - 各イテレーション後に500ms待機
+  - 最大イテレーション数に達した場合はErrorを投げる
 - ページ全体をスクロール
 
 などを行い、スキャンに必要な状態を整えるためのヘルパー関数です。
@@ -75,6 +78,6 @@ await beforePageScan(page, 'https://example.com', {
 			await page.click('button[type="submit"]');
 		},
 	],
-	openDisclosures: true, // すべての<details>とaria-expanded要素を展開
+	openDisclosures: true, // オプション: disclosure要素を展開（<details>とbutton[aria-expanded="false"]）
 });
 ```

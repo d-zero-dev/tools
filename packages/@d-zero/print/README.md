@@ -29,7 +29,10 @@ npx @d-zero/print <url>... [options]
   - `note`: PNG画像のスクリーンショットに対してメモ欄付きのPDFファイルが生成されます
 - `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
 - `-T, --timeout <ms>`: リクエストタイムアウト（ミリ秒、デフォルト: 30000）
-- `-o, --open-disclosures`: キャプチャ前にすべての`<details>`要素とaria-expanded要素を展開します
+- `-o, --open-disclosures`: キャプチャ前にすべての`<details>`要素を開き、すべての`button[aria-expanded="false"]`要素をクリックします
+  - 新しい要素が見つからなくなるまで繰り返し処理（最大1000回、各イテレーション後500ms待機）
+  - ネストされた要素や動的に生成される要素にも対応
+  - 最大イテレーション数に達した場合はエラーで終了
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
 - `--interval <ms>`: 並列実行間の間隔（デフォルト: なし）
   - 数値または"min-max"形式でランダム範囲を指定可能
