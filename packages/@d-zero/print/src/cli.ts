@@ -17,6 +17,7 @@ interface PrintCLIOptions extends BaseCLIOptions {
 	type?: string;
 	devices?: string;
 	timeout?: number;
+	openDisclosures?: boolean;
 }
 
 const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
@@ -27,6 +28,7 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 		t: 'type',
 		d: 'devices',
 		T: 'timeout',
+		o: 'openDisclosures',
 	},
 	usage: [
 		'Usage:',
@@ -38,6 +40,7 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 		'\t-t, --type <type>         Output type: png|pdf|note (default: png)',
 		'\t-d, --devices <devices>   Device presets (comma-separated, default: desktop-compact,mobile)',
 		'\t-T, --timeout <ms>        Request timeout in milliseconds (default: 30000)',
+		'\t-o, --open-disclosures    Open all <details> and aria-expanded elements before capture',
 		'\t--limit <number>          Limit concurrent processes',
 		'\t--interval <ms>           Interval between parallel executions (default: none)',
 		'\t                           Format: number or "min-max" for random range',
@@ -58,6 +61,8 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 		type: cli.type,
 		devices: cli.devices,
 		timeout: cli.timeout ? Number(cli.timeout) : undefined,
+		openDisclosures:
+			cli['open-disclosures'] === true || cli.o === true ? true : undefined,
 	}),
 	validateArgs: (options, cli) => {
 		return !!(options.listfile?.length || cli._.length > 0);
@@ -81,6 +86,7 @@ if (hasConfigFile) {
 		devices,
 		timeout: options.timeout,
 		interval: options.interval,
+		openDisclosures: options.openDisclosures,
 	});
 	process.exit(0);
 }
@@ -94,6 +100,7 @@ if (args.length > 0) {
 		devices,
 		timeout: options.timeout,
 		interval: options.interval,
+		openDisclosures: options.openDisclosures,
 	});
 	process.exit(0);
 }

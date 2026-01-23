@@ -28,7 +28,11 @@ npx @d-zero/print <url>... [options]
   - `pdf`: PDFファイル（ブラウザの印刷機能を使用、Print CSSが適用されます）
   - `note`: PNG画像のスクリーンショットに対してメモ欄付きのPDFファイルが生成されます
 - `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
+- `-T, --timeout <ms>`: リクエストタイムアウト（ミリ秒、デフォルト: 30000）
+- `-o, --open-disclosures`: キャプチャ前にすべての`<details>`要素とaria-expanded要素を展開します
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
+- `--interval <ms>`: 並列実行間の間隔（デフォルト: なし）
+  - 数値または"min-max"形式でランダム範囲を指定可能
 - `--debug`: デバッグモード（デフォルト: false）
 - `--verbose`: 詳細ログモード（デフォルト: false）
 
@@ -56,6 +60,10 @@ npx @d-zero/print -f urls.txt --type pdf
 
 # ファイルから読み込み + デバイス指定
 npx @d-zero/print -f urls.txt --devices desktop,mobile
+
+# disclosure要素を展開してキャプチャ
+npx @d-zero/print https://example.com --open-disclosures
+npx @d-zero/print https://example.com -o
 ```
 
 #### URLリストのファイルフォーマット

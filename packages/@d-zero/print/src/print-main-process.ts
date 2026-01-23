@@ -19,6 +19,7 @@ export interface PrintOptions {
 	readonly devices?: Sizes;
 	readonly timeout?: number;
 	readonly interval?: number | DelayOptions;
+	readonly openDisclosures?: boolean;
 }
 
 /**
@@ -60,6 +61,7 @@ export async function print(
 					hooks: options?.hooks,
 					devices: options?.devices,
 					timeout: options?.timeout,
+					openDisclosures: options?.openDisclosures,
 				},
 				{
 					...options,

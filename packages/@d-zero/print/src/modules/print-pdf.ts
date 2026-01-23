@@ -16,6 +16,7 @@ import {
  * @param hooks
  * @param devices
  * @param timeout
+ * @param openDisclosures
  */
 export async function printPdf(
 	page: Page,
@@ -25,6 +26,7 @@ export async function printPdf(
 	hooks?: readonly PageHook[],
 	devices?: Sizes,
 	timeout?: number,
+	openDisclosures?: boolean,
 ) {
 	// Use the first desktop device or fallback to desktop preset
 	const defaultWidth = devicePresets.desktop.width;
@@ -49,6 +51,7 @@ export async function printPdf(
 		listener: pageScanListener(update),
 		hooks,
 		timeout,
+		openDisclosures,
 	});
 
 	update('📄 Save as PDF');

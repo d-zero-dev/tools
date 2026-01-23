@@ -15,6 +15,7 @@ import { screenshot, screenshotListener } from '@d-zero/puppeteer-screenshot';
  * @param hooks
  * @param devices
  * @param timeout
+ * @param openDisclosures
  */
 export function printPng(
 	page: Page,
@@ -25,6 +26,7 @@ export function printPng(
 	hooks?: readonly PageHook[],
 	devices?: Sizes,
 	timeout?: number,
+	openDisclosures?: boolean,
 ) {
 	const defaultSizes = {
 		'desktop-compact': devicePresets['desktop-compact'],
@@ -38,5 +40,6 @@ export function printPng(
 		listener: screenshotListener(update),
 		hooks,
 		timeout,
+		openDisclosures,
 	});
 }
