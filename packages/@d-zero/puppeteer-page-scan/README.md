@@ -46,6 +46,8 @@ const parsedSizes = parseDevicesOption(['desktop', 'tablet']);
 - ページのリロード
 - 任意のフック処理
   - ログインなどの事前処理
+- disclosure要素の展開（オプション）
+  - `<details>`要素とaria-expanded要素を展開
 - ページ全体をスクロール
 
 などを行い、スキャンに必要な状態を整えるためのヘルパー関数です。
@@ -73,5 +75,6 @@ await beforePageScan(page, 'https://example.com', {
 			await page.click('button[type="submit"]');
 		},
 	],
+	openDisclosures: true, // すべての<details>とaria-expanded要素を展開
 });
 ```

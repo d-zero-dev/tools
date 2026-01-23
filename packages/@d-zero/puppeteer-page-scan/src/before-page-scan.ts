@@ -9,7 +9,44 @@ type Options = {
 	hooks?: readonly PageHook[];
 	listener?: Listener<PageScanPhase>;
 	timeout?: number;
+	openDisclosures?: boolean;
 } & Size;
+
+/**
+ * Open all disclosure elements on the page
+ * @param page
+ * @returns The number of elements opened (details + buttons)
+ */
+async function openAllDisclosures(
+	page: Page,
+): Promise<{ details: number; buttons: number }> {
+	const result = await page.evaluate(() => {
+		// Open all <details> elements
+		const detailsElements =
+			document.querySelectorAll<HTMLDetailsElement>('details:not([open])');
+		for (const details of detailsElements) {
+			details.open = true;
+		}
+
+		// Click all collapsed buttons
+		const collapsedButtons = document.querySelectorAll<HTMLButtonElement>(
+			'button[aria-expanded="false"]',
+		);
+		for (const button of collapsedButtons) {
+			button.click();
+		}
+
+		return {
+			details: detailsElements.length,
+			buttons: collapsedButtons.length,
+		};
+	});
+
+	// Wait for animations and content rendering
+	await new Promise((resolve) => setTimeout(resolve, 500));
+
+	return result;
+}
 
 /**
  *
@@ -48,6 +85,15 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 			width,
 			resolution,
 			log: (message) => listener?.('hook', { name, message }),
+		});
+	}
+
+	if (options?.openDisclosures) {
+		listener?.('hook', { name, message: 'Opening all disclosures...' });
+		const result = await openAllDisclosures(page);
+		listener?.('hook', {
+			name,
+			message: `Opened ${result.details} <details> elements and clicked ${result.buttons} [aria-expanded="false"] buttons`,
 		});
 	}
 
