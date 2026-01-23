@@ -67,5 +67,11 @@ export async function print(
 				},
 			);
 		},
+		{
+			limit: options?.limit,
+			debug: options?.debug,
+			verbose: options?.verbose,
+			interval: options?.interval,
+		},
 	);
 }
