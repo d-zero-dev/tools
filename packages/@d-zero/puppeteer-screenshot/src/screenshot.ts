@@ -18,6 +18,7 @@ type Options = {
 	selector?: string;
 	ignore?: string;
 	timeout?: number;
+	openDisclosures?: boolean;
 };
 
 /**
