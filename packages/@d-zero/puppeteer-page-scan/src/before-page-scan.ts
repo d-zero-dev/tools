@@ -18,11 +18,12 @@ type Options = {
  * including nested elements and dynamically-created buttons.
  * @param page
  * @returns The total number of elements opened (details + buttons)
+ * @throws {Error} if the maximum iterations (1000) is reached
  */
 async function openAllDisclosures(
 	page: Page,
 ): Promise<{ details: number; buttons: number }> {
-	const maxIterations = 50; // Prevent infinite loops
+	const maxIterations = 1000; // Maximum iterations to prevent infinite loops
 	let totalDetails = 0;
 	let totalButtons = 0;
 	let iteration = 0;
@@ -62,6 +63,14 @@ async function openAllDisclosures(
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
 		iteration++;
+	}
+
+	// If we reached the max iterations, throw an error
+	if (iteration === maxIterations) {
+		throw new Error(
+			`openAllDisclosures: Reached maximum iterations (${maxIterations}). ` +
+				`This may indicate an infinite loop caused by dynamically generated disclosure elements.`,
+		);
 	}
 
 	return {
