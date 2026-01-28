@@ -27,7 +27,7 @@
 		"@d-zero/shared": "0.17.1",
 		"ansi-colors": "4.1.3",
 		"color-contrast-checker": "2.1.0",
-		"puppeteer": "24.36.0"
+		"puppeteer": "24.36.1"
 	},
 	"devDependencies": {
 		"@d-zero/dealer": "1.5.3",
