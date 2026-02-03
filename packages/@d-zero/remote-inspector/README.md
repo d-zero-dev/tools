@@ -231,6 +231,78 @@ yarn clean
   - SSH秘密鍵ファイル（推奨）
   - SSHパスワード認証
 
+## API
+
+このパッケージはCLIツールとしてだけでなく、プログラムからも使用できます。
+
+### `remoteInspector(options)`
+
+リモートファイルとローカルファイルを比較します。
+
+```typescript
+import { remoteInspector } from '@d-zero/remote-inspector';
+import type {
+	RemoteInspectorOptions,
+	ConnectionConfig,
+	FileComparison,
+} from '@d-zero/remote-inspector';
+
+await remoteInspector({
+	host: 'example.com',
+	user: 'deploy',
+	keyPath: '/path/to/key.pem',
+	remoteDir: '/var/www/html',
+	localDir: './htdocs',
+	listfile: 'files.txt',
+});
+```
+
+### 型定義
+
+#### `RemoteInspectorOptions`
+
+```typescript
+interface RemoteInspectorOptions {
+	host?: string; // リモートホスト
+	user?: string; // リモートユーザー名
+	keyPath?: string; // 秘密鍵ファイルのパス
+	passphrase?: string; // 秘密鍵のパスフレーズ
+	password?: string; // SSH認証用パスワード
+	remoteDir?: string; // リモートディレクトリ
+	localDir?: string; // ローカルディレクトリ
+	listfile?: string; // ファイルリスト
+	root?: string; // ファイルリストのルートパス
+}
+```
+
+#### `ConnectionConfig`
+
+```typescript
+interface ConnectionConfig {
+	host: string; // リモートホスト
+	username: string; // ユーザー名
+	privateKey?: Buffer; // 秘密鍵
+	passphrase?: string; // パスフレーズ
+	password?: string; // パスワード
+}
+```
+
+#### `FileComparison`
+
+```typescript
+interface FileComparison {
+	localPath: string; // ローカルファイルパス
+	remotePath: string; // リモートファイルパス
+	relativePath: string; // 相対パス
+	isTextFile: boolean; // テキストファイルかどうか
+	status: 'same' | 'modified' | 'new' | 'missing'; // 比較ステータス
+	localSize?: number; // ローカルファイルサイズ
+	remoteSize?: number; // リモートファイルサイズ
+	diff?: string; // 差分テキスト
+	remoteExists?: boolean; // リモートに存在するか
+}
+```
+
 ## ライセンス
 
 MIT
