@@ -14,7 +14,7 @@
 ### オプション
 
 - `-v, --version`: バージョンを表示
-- `-f <list_file_path>`: リストファイルからの比較
+- `-f, --filelist <list_file_path>`: リストファイルからの比較
 - `--verbose`: 詳細ログモード
 
 ### ファイル比較
