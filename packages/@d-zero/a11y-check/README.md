@@ -28,6 +28,8 @@ npx @d-zero/a11y-check <url>... [options]
 - `--cacheDir <dir>`: キャッシュディレクトリ（デフォルト: .cache）
 - `--locale <locale>`: ロケール設定
 - `--limit <number>`: 並列実行数の上限
+- `--interval <ms>`: 並列実行間の間隔（デフォルト: なし）
+  - 数値または"min-max"形式でランダム範囲を指定可能
 - `--debug`: デバッグモード（デフォルト: false）
 - `--verbose`: 詳細ログモード（デフォルト: false）
 
@@ -143,6 +145,7 @@ export GOOGLE_AUTH_CREDENTIALS='/path/to/credential.json'
 - WCAGバージョン: WCAGのバージョン
 - 達成基準番号: WCAGの達成基準
 - 適合レベル: A/AA/AAA
+- 深刻度: 問題の深刻度
 - スクリーンショット: スクリーンショットのURL
 
 ## 認証
