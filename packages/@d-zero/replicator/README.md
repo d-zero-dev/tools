@@ -23,6 +23,8 @@ npx @d-zero/replicator <url...> -o <output-directory> [options]
 - `-t, --timeout <ms>`: リクエストタイムアウト（ミリ秒、デフォルト: 30000）
 - `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
 - `-l, --limit <number>`: 並列処理数の上限（デフォルト: 3）
+- `--interval <ms>`: 並列実行間の間隔（デフォルト: なし）
+  - 数値または"min-max"形式でランダム範囲を指定可能
 - `--only <type>`: ダウンロード対象を限定（`page` または `resource`）
 - `-v, --verbose`: 詳細ログモード
 
