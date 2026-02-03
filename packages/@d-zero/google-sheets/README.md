@@ -175,13 +175,40 @@ type HeaderCell = {
 #### `CellData`
 
 ```typescript
-type CellData<T = string | number | boolean | Date | null | undefined> = {
+type CellData<T = CellRawData> = {
 	readonly value: T;
 	readonly textFormat?: sheets_v4.Schema$TextFormat | null;
 	readonly cellFormat?: sheets_v4.Schema$CellFormat | null;
 	readonly image?: boolean;
 	readonly note?: string;
 	readonly ifNull?: T;
+};
+```
+
+#### `CellRawData`
+
+```typescript
+type CellRawData = string | number | boolean | Date | null | undefined;
+```
+
+#### `Row`
+
+```typescript
+type Row = readonly Cell[];
+```
+
+#### `CellType`
+
+```typescript
+type CellType = 'string' | 'number' | 'boolean' | 'date' | 'formula' | 'error';
+```
+
+#### `CellTypeInfo`
+
+```typescript
+type CellTypeInfo = {
+	readonly index: number;
+	readonly type: CellType;
 };
 ```
 
