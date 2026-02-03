@@ -103,7 +103,7 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 	});
 
 	if (page.url() === url) {
-		listener?.('load', { name, type: 'reaload', timeout, id: countDownId });
+		listener?.('load', { name, type: 'reload', timeout, id: countDownId });
 		await navigateWithFallback(page, url, timeout, true, listener, name);
 	} else {
 		listener?.('load', { name, type: 'open', timeout, id: countDownId });
