@@ -135,3 +135,29 @@ export default async function (page, { name, width, resolution, log }) {
 Basic認証が必要なページの場合はURLにユーザー名とパスワードを含めます。
 
 例: `https://user:pass@example.com`
+
+## ライブラリとしての使用
+
+CLIだけでなく、プログラムからも使用できます。
+
+```ts
+import { print } from '@d-zero/print';
+import type { PrintOptions, PrintType, PageHook } from '@d-zero/print';
+
+await print(['https://example.com', 'https://example.com/about'], {
+	type: 'png', // 出力形式: 'png' | 'pdf' | 'note'
+	devices: {
+		desktop: { width: 1400 },
+		mobile: { width: 375, resolution: 2 },
+	},
+	timeout: 30000,
+	interval: 1000, // または { min: 500, max: 1500 } でランダム間隔
+	openDisclosures: true,
+});
+```
+
+### エクスポートされる型
+
+- `PrintOptions`: `print`関数のオプション型
+- `PrintType`: 出力形式（`'png' | 'pdf' | 'note'`）
+- `PageHook`: ページフック関数の型（`@d-zero/puppeteer-page-scan`から再エクスポート）
