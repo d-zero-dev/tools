@@ -1,7 +1,7 @@
 {
 	"name": "@d-zero/proc-talk",
 	"version": "0.4.14",
-	"description": "Process ",
+	"description": "Process communication library for Node.js child processes with type-safe IPC",
 	"author": "D-ZERO",
 	"license": "MIT",
 	"publishConfig": {
