@@ -17,7 +17,7 @@ yarn add -D @d-zero/google-auth
 ```ts
 import { authentication } from '@d-zero/google-auth';
 
-const auth: OAuth2Client = await authentication(
+const auth: Auth = await authentication(
 	/**
 	 * クレデンシャルファイル
 	 *
@@ -32,6 +32,16 @@ const auth: OAuth2Client = await authentication(
 	 * @see https://developers.google.com/identity/protocols/oauth2/scopes?hl=ja
 	 */
 	['https://www.googleapis.com/auth/spreadsheets'],
+
+	/**
+	 * オプション（省略可）
+	 *
+	 * @type {AuthenticationOptions}
+	 */
+	{
+		tokenFilePath: './path/to/token.json', // カスタムトークンファイルパス
+		checkTokenExpiry: true, // トークンの有効期限をチェック
+	},
 );
 ```
 
@@ -49,3 +59,24 @@ Enter the URL from the redirected page here: |
 
 URLにアクセスしブラウザで認証をしたあとに、 http://localhost （**OAuth 2.0 クライアント ID**を発行の方法に依る）に移動します。
 サーバーの応答がなかったりページが表示されませんが、**移動した先のURLをそのままコピーして**、コマンドに貼り付けてエンターキーを押してください。
+
+## 型のエクスポート
+
+### `Auth`
+
+`google-auth-library`の`OAuth2Client`型のエイリアスです。
+
+```ts
+import type { Auth } from '@d-zero/google-auth';
+```
+
+### `AuthenticationOptions`
+
+`authentication`関数の第3引数に渡すオプションの型です。
+
+```ts
+type AuthenticationOptions = {
+	readonly tokenFilePath?: string; // トークンファイルの保存先パス（デフォルト: クレデンシャルファイルと同じディレクトリに`.token`拡張子で保存）
+	readonly checkTokenExpiry?: boolean; // トークンの有効期限をチェックするかどうか（デフォルト: false）
+};
+```
