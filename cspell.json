@@ -18,6 +18,11 @@
 		"whatwg",
 		"WCAG",
 
+		// Accessibility
+		"Deque",
+		"dequelabs",
+		"imgs",
+
 		//
 		"Kuromoji",
 		"kuromojin",
