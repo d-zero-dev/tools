@@ -3,55 +3,65 @@ import path from 'node:path';
 import { parseUrl } from './parse-url.js';
 import { pathComparator } from './sort/path.js';
 
+/**
+ * Options for building a tree from a list of file paths.
+ * @template MetaData - Type of optional meta data attached to each node via addMetaData.
+ */
 export type PathListToTreeOptions<MetaData = Record<string, unknown>> = {
+	/** Path to treat as the current item (sets current and isAncestor on nodes). */
 	currentPath?: string;
 
-	/**
-	 *
-	 */
+	/** Base URL used when parsing paths to stems (e.g. for index-as-parent). */
 	baseUrl?: string;
 
-	/**
-	 * Extensions to consider
-	 */
+	/** File extensions to include; defaults include .html and .htm. */
 	extensions?: string[];
 
-	/**
-	 * Ignore paths (glob)
-	 */
+	/** Glob patterns for paths to ignore. */
 	ignoreGlobs?: string[];
 
-	/**
-	 * Create virtual parent node
-	 */
+	/** When true, create virtual parent nodes for missing ancestors; when false, throw. */
 	createVirtualParent?: boolean;
 
-	/**
-	 *
-	 */
+	/** Predicate to include or exclude each node; excluded nodes and their descendants are removed. */
 	filter?: (node: Node<MetaData>) => boolean;
 
-	/**
-	 * Add meta data to the node
-	 */
+	/** Callback to compute meta data for each node; applied after filtering. */
 	addMetaData?: (node: Node<MetaData>) => MetaData;
 };
 
+/**
+ * A node in the path tree.
+ * @template MetaData - Type of optional meta data when addMetaData is used.
+ */
 export type Node<MetaData = Record<string, unknown>> = {
+	/** Original path/URL of the file or directory. */
 	url: string;
+	/** Normalized stem (path segment used as node key). */
 	stem: string;
+	/** Depth in the tree (0 for root). */
 	depth: number;
+	/** True if this node is the current path. */
 	current: boolean;
+	/** True if the current path is under this node. */
 	isAncestor: boolean;
+	/** Present when the node was created as a virtual parent (no real file). */
 	virtual?: true;
+	/** Optional meta data when addMetaData option is provided. */
 	meta?: MetaData;
+	/** Child nodes. */
 	children: Node<MetaData>[];
 };
 
 /**
- *
- * @param pathList
- * @param options
+ * Builds a tree from a sorted list of file paths.
+ * Paths are filtered by extensions and ignoreGlobs, then organized into a tree.
+ * Optional filter and addMetaData are applied in that order.
+ * @template MetaData - Type of meta data when addMetaData option is used.
+ * @param pathList - Array of file paths (e.g. from a file system or URL list).
+ * @param options - Options for filtering, current path, and meta data.
+ * @returns Root node of the tree (stem '/').
+ * @throws {Error} When pathList is empty or missing root, or when a parent is missing and createVirtualParent is false.
  */
 export function pathListToTree<MetaData = Record<string, unknown>>(
 	pathList: string[],
@@ -109,9 +119,11 @@ export function pathListToTree<MetaData = Record<string, unknown>>(
 }
 
 /**
- *
- * @param node
- * @param callback
+ * Recursively filters the tree; nodes for which callback returns false (and their descendants) are removed.
+ * @template MetaData - Node meta type.
+ * @param node - Current node.
+ * @param callback - Predicate; return false to exclude the node and its subtree.
+ * @returns New node with filtered children (shallow copy of node with new children array).
  */
 function walkFilter<MetaData = Record<string, unknown>>(
 	node: Node<MetaData>,
@@ -132,9 +144,11 @@ function walkFilter<MetaData = Record<string, unknown>>(
 }
 
 /**
- *
- * @param node
- * @param createMetaData
+ * Recursively attaches meta data to each node via the given callback.
+ * @template MetaData - Type of meta attached to each node.
+ * @param node - Current node.
+ * @param createMetaData - Function that returns meta for the node (receives node without meta).
+ * @returns New node with meta and recursively updated children (shallow copy).
  */
 function walkForAddMetaData<MetaData = Record<string, unknown>>(
 	node: Node<MetaData>,
@@ -154,9 +168,13 @@ function walkForAddMetaData<MetaData = Record<string, unknown>>(
 }
 
 /**
- *
- * @param fileList
- * @param createVirtualParent
+ * Builds a tree from a flat list of nodes by linking each node to its parent.
+ * Missing parents are either created as virtual nodes or cause an error depending on createVirtualParent.
+ * @template MetaData - Node meta type.
+ * @param fileList - Flat list of nodes (each with stem and empty children).
+ * @param createVirtualParent - If true, create virtual parents for missing stems; if false, throw.
+ * @returns Root node (stem '/').
+ * @throws {Error} When root node is missing or a parent is missing and createVirtualParent is false.
  */
 function createTree<MetaData = Record<string, unknown>>(
 	fileList: Node<MetaData>[],
@@ -188,10 +206,12 @@ function createTree<MetaData = Record<string, unknown>>(
 }
 
 /**
- *
- * @param node
- * @param pathMap
- * @param createVirtualParent
+ * Links a node to its parent: finds or creates the parent and appends this node to parent.children.
+ * @template MetaData - Node meta type.
+ * @param node - Node to attach to its parent.
+ * @param pathMap - Map of stem to node; may be mutated to add virtual parents.
+ * @param createVirtualParent - If true, create a virtual parent when missing; if false, throw.
+ * @throws {Error} When parent stem is missing from pathMap and createVirtualParent is false.
  */
 function addParent<MetaData = Record<string, unknown>>(
 	node: Node<MetaData>,
@@ -231,8 +251,9 @@ function addParent<MetaData = Record<string, unknown>>(
 }
 
 /**
- *
- * @param filePathStem
+ * Returns the parent path stem for a given stem (e.g. '/a/b/c/' -> '/a/b/').
+ * @param filePathStem - Stem string (path segment form, e.g. '/' or '/a/b/').
+ * @returns Parent stem, or null if the stem is root ('/').
  */
 function getParentPath(filePathStem: string) {
 	if (filePathStem === '/') {
