@@ -35,6 +35,6 @@
 		"dayjs": "1.11.19",
 		"front-matter": "4.0.2",
 		"minimist": "1.2.8",
-		"puppeteer": "24.36.1"
+		"puppeteer": "24.37.1"
 	}
 }
