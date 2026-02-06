@@ -29,6 +29,6 @@
 		"debug": "4.4.3",
 		"dotenv": "17.2.4",
 		"gaxios": "7.1.3",
-		"googleapis": "170.1.0"
+		"googleapis": "171.4.0"
 	}
 }
