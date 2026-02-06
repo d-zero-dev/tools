@@ -384,3 +384,58 @@ test('Options: currentPath', () => {
 		],
 	});
 });
+
+test('Options: addMetaData adds meta to every node', () => {
+	const result = pathListToTree(['/', '/a/', '/a/b', '/a/c/'], {
+		addMetaData: (node) => ({
+			stem: node.stem,
+			depth: node.depth,
+		}),
+	});
+
+	expect(result.meta).toStrictEqual({ stem: '/', depth: 0 });
+	expect(result.children).toHaveLength(1);
+	expect(result.children[0]?.meta).toStrictEqual({ stem: '/a/', depth: 1 });
+	expect(result.children[0]?.children).toHaveLength(2);
+	expect(result.children[0]?.children[0]?.meta).toStrictEqual({ stem: '/a/b', depth: 2 });
+	expect(result.children[0]?.children[1]?.meta).toStrictEqual({
+		stem: '/a/c/',
+		depth: 2,
+	});
+});
+
+test('Options: addMetaData with custom MetaData type', () => {
+	type CustomMeta = { label: string; isLeaf: boolean };
+	const result = pathListToTree<CustomMeta>(['/', '/a/', '/a/b'], {
+		addMetaData: (node) => ({
+			label: node.stem,
+			isLeaf: node.children.length === 0,
+		}),
+	});
+
+	expect(result.meta).toStrictEqual({ label: '/', isLeaf: false });
+	expect(result.children[0]?.meta).toStrictEqual({ label: '/a/', isLeaf: false });
+	expect(result.children[0]?.children[0]?.meta).toStrictEqual({
+		label: '/a/b',
+		isLeaf: true,
+	});
+});
+
+test('Options: addMetaData is applied after filter', () => {
+	const result = pathListToTree(['/', '/a/', '/a/b', '/a/c/'], {
+		filter: (node) => node.stem !== '/a/b',
+		addMetaData: (node) => ({ stem: node.stem }),
+	});
+
+	expect(result.meta).toStrictEqual({ stem: '/' });
+	expect(result.children[0]?.meta).toStrictEqual({ stem: '/a/' });
+	expect(result.children[0]?.children).toHaveLength(1);
+	expect(result.children[0]?.children[0]?.stem).toBe('/a/c/');
+	expect(result.children[0]?.children[0]?.meta).toStrictEqual({ stem: '/a/c/' });
+});
+
+test('Options: without addMetaData, nodes have no meta property', () => {
+	const result = pathListToTree(['/', '/a/']);
+	expect(result).not.toHaveProperty('meta');
+	expect(result.children[0]).not.toHaveProperty('meta');
+});

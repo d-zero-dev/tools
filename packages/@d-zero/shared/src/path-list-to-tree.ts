@@ -30,6 +30,11 @@ export type PathListToTreeOptions<MetaData = Record<string, unknown>> = {
 	 *
 	 */
 	filter?: (node: Node<MetaData>) => boolean;
+
+	/**
+	 * Add meta data to the node
+	 */
+	addMetaData?: (node: Node<MetaData>) => MetaData;
 };
 
 export type Node<MetaData = Record<string, unknown>> = {
@@ -94,9 +99,13 @@ export function pathListToTree<MetaData = Record<string, unknown>>(
 		});
 	}
 
-	const tree: Node<MetaData> = createTree(fileList, createVirtualParent);
+	let tree: Node<MetaData> = createTree(fileList, createVirtualParent);
+	tree = walkFilter(tree, filter);
+	if (options?.addMetaData) {
+		tree = walkForAddMetaData(tree, options.addMetaData);
+	}
 
-	return walkFilter(tree, filter);
+	return tree;
 }
 
 /**
@@ -118,6 +127,28 @@ function walkFilter<MetaData = Record<string, unknown>>(
 	}
 	return {
 		...node,
+		children: newChildren,
+	};
+}
+
+/**
+ *
+ * @param node
+ * @param createMetaData
+ */
+function walkForAddMetaData<MetaData = Record<string, unknown>>(
+	node: Node<MetaData>,
+	createMetaData: (node: Node<MetaData>) => MetaData,
+) {
+	const metaData = createMetaData(node);
+	const newChildren: Node<MetaData>[] = [];
+	for (const child of node.children) {
+		const newChild = walkForAddMetaData(child, createMetaData);
+		newChildren.push(newChild);
+	}
+	return {
+		...node,
+		meta: metaData,
 		children: newChildren,
 	};
 }
