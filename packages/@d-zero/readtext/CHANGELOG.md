@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.17](https://github.com/d-zero-dev/tools/compare/@d-zero/readtext@1.1.16...@d-zero/readtext@1.1.17) (2026-02-06)
+
+**Note:** Version bump only for package @d-zero/readtext
+
 ## [1.1.16](https://github.com/d-zero-dev/tools/compare/@d-zero/readtext@1.1.15...@d-zero/readtext@1.1.16) (2026-01-23)
 
 **Note:** Version bump only for package @d-zero/readtext

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.4.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.4.0...@d-zero/puppeteer-page-scan@4.4.1) (2026-02-06)
+
+### Bug Fixes
+
+- **puppeteer-page-scan:** fix typo reaload to reload in PageScanPhase type ([ea2e856](https://github.com/d-zero-dev/tools/commit/ea2e856e96c3b4f9f6f76daa0de6d9ea0592f904))
+
 # [4.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.3.5...@d-zero/puppeteer-page-scan@4.4.0) (2026-01-23)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.18.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.17.1...@d-zero/shared@0.18.0) (2026-02-06)
+
+### Features
+
+- **shared:** add MetaData generic and addMetaData option to pathListToTree ([fc59fa0](https://github.com/d-zero-dev/tools/commit/fc59fa03fc643c1e306bf82a074327b0b0972054))
+
 ## [0.17.1](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.17.0...@d-zero/shared@0.17.1) (2026-01-07)
 
 ### Bug Fixes

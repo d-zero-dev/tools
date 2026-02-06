@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.26](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@0.1.25...@d-zero/beholder@0.1.26) (2026-02-06)
+
+### Bug Fixes
+
+- **beholder:** fix exports path from lib to dist in package.json ([eb348f1](https://github.com/d-zero-dev/tools/commit/eb348f1842be219d1a6dd3b0a107328484b6bf1f))
+
 ## [0.1.25](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@0.1.24...@d-zero/beholder@0.1.25) (2026-01-23)
 
 **Note:** Version bump only for package @d-zero/beholder
