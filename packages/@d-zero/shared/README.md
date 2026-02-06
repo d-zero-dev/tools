@@ -38,7 +38,7 @@
 | `@d-zero/shared/encode-resource-path` | リソースパスをMIMEタイプと共にエンコード/デコードする関数群。拡張子がないURLパスにMIMEタイプ情報をエンコード。 [詳細](./src/encode-resource-path.md) |
 | `@d-zero/shared/normalize-url`        | URLを正規化する関数。エンコーディング、パス、トレーリングスラッシュ、インデックスページのバリエーションを正規化                                      |
 | `@d-zero/shared/parse-url`            | URL文字列をパースし、正規化されたExURLオブジェクトを返す関数                                                                                         |
-| `@d-zero/shared/path-list-to-tree`    | URLまたはファイルパスのリストをツリー構造に変換する関数                                                                                              |
+| `@d-zero/shared/path-list-to-tree`    | URLまたはファイルパスのリストをツリー構造に変換する関数。 [詳細](./src/path-list-to-tree.md)                                                         |
 | `@d-zero/shared/url-matches`          | 2つのURLが等価かどうかを比較する関数。エンコーディング、トレーリングスラッシュ、インデックスページのバリエーション、クエリパラメータの順序を考慮     |
 | `@d-zero/shared/url-to-file-name`     | URLをファイル名として使用可能な文字列に変換する関数                                                                                                  |
 | `@d-zero/shared/url-to-local-path`    | URLをローカルファイルパスに変換する関数。 [詳細](./src/url-to-local-path.md)                                                                         |
