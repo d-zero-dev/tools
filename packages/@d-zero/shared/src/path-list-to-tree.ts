@@ -3,7 +3,7 @@ import path from 'node:path';
 import { parseUrl } from './parse-url.js';
 import { pathComparator } from './sort/path.js';
 
-export type PathListToTreeOptions = {
+export type PathListToTreeOptions<MetaData = Record<string, unknown>> = {
 	currentPath?: string;
 
 	/**
@@ -29,17 +29,18 @@ export type PathListToTreeOptions = {
 	/**
 	 *
 	 */
-	filter?: (node: Node) => boolean;
+	filter?: (node: Node<MetaData>) => boolean;
 };
 
-export type Node = {
+export type Node<MetaData = Record<string, unknown>> = {
 	url: string;
 	stem: string;
 	depth: number;
 	current: boolean;
 	isAncestor: boolean;
 	virtual?: true;
-	children: Node[];
+	meta?: MetaData;
+	children: Node<MetaData>[];
 };
 
 /**
@@ -47,7 +48,10 @@ export type Node = {
  * @param pathList
  * @param options
  */
-export function pathListToTree(pathList: string[], options?: PathListToTreeOptions) {
+export function pathListToTree<MetaData = Record<string, unknown>>(
+	pathList: string[],
+	options?: PathListToTreeOptions<MetaData>,
+) {
 	const sortedList = pathList.toSorted(pathComparator);
 
 	const currentPath = options?.currentPath;
@@ -61,7 +65,7 @@ export function pathListToTree(pathList: string[], options?: PathListToTreeOptio
 	const createVirtualParent = options?.createVirtualParent ?? true;
 	const filter = options?.filter ?? (() => true);
 
-	const fileList: Node[] = [];
+	const fileList: Node<MetaData>[] = [];
 
 	for (const filePath of sortedList) {
 		const extname = path.extname(filePath).toLowerCase().trim();
@@ -90,7 +94,7 @@ export function pathListToTree(pathList: string[], options?: PathListToTreeOptio
 		});
 	}
 
-	const tree: Node = createTree(fileList, createVirtualParent);
+	const tree: Node<MetaData> = createTree(fileList, createVirtualParent);
 
 	return walkFilter(tree, filter);
 }
@@ -100,8 +104,11 @@ export function pathListToTree(pathList: string[], options?: PathListToTreeOptio
  * @param node
  * @param callback
  */
-function walkFilter(node: Node, callback: (node: Node) => boolean): Node {
-	const newChildren: Node[] = [];
+function walkFilter<MetaData = Record<string, unknown>>(
+	node: Node<MetaData>,
+	callback: (node: Node<MetaData>) => boolean,
+): Node<MetaData> {
+	const newChildren: Node<MetaData>[] = [];
 	for (const child of node.children) {
 		if (!callback(child)) {
 			continue;
@@ -120,8 +127,11 @@ function walkFilter(node: Node, callback: (node: Node) => boolean): Node {
  * @param fileList
  * @param createVirtualParent
  */
-function createTree(fileList: Node[], createVirtualParent: boolean) {
-	const pathMap = new Map<string, Node>();
+function createTree<MetaData = Record<string, unknown>>(
+	fileList: Node<MetaData>[],
+	createVirtualParent: boolean,
+) {
+	const pathMap = new Map<string, Node<MetaData>>();
 
 	for (const filePath of fileList) {
 		pathMap.set(filePath.stem, filePath);
@@ -152,7 +162,11 @@ function createTree(fileList: Node[], createVirtualParent: boolean) {
  * @param pathMap
  * @param createVirtualParent
  */
-function addParent(node: Node, pathMap: Map<string, Node>, createVirtualParent: boolean) {
+function addParent<MetaData = Record<string, unknown>>(
+	node: Node<MetaData>,
+	pathMap: Map<string, Node<MetaData>>,
+	createVirtualParent: boolean,
+) {
 	const parentStem = getParentPath(node.stem);
 
 	if (!parentStem) {
@@ -170,7 +184,7 @@ function addParent(node: Node, pathMap: Map<string, Node>, createVirtualParent: 
 		throw new Error(`Parent node not found: "${parentStem}"`);
 	}
 
-	const virtualParent: Node = {
+	const virtualParent: Node<MetaData> = {
 		url: parentStem,
 		stem: parentStem,
 		depth: node.depth - 1,
