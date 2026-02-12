@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.6.6...@d-zero/puppeteer-dealer@0.7.0) (2026-02-12)
+
+### Features
+
+- **puppeteer-dealer:** pass push to each callback ([a4a6cb6](https://github.com/d-zero-dev/tools/commit/a4a6cb6b0e3b0535a16ecdf162c09ca23f172daa))
+
 ## [0.6.6](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.6.5...@d-zero/puppeteer-dealer@0.6.6) (2026-02-06)
 
 **Note:** Version bump only for package @d-zero/puppeteer-dealer

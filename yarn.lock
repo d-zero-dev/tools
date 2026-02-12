@@ -856,12 +856,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@d-zero/a11y-check-axe-scenario@npm:0.5.7, @d-zero/a11y-check-axe-scenario@workspace:packages/@d-zero/a11y-check-axe-scenario":
+"@d-zero/a11y-check-axe-scenario@npm:0.5.8, @d-zero/a11y-check-axe-scenario@workspace:packages/@d-zero/a11y-check-axe-scenario":
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check-axe-scenario@workspace:packages/@d-zero/a11y-check-axe-scenario"
   dependencies:
     "@axe-core/puppeteer": "npm:4.11.0"
-    "@d-zero/a11y-check-core": "npm:0.6.7"
+    "@d-zero/a11y-check-core": "npm:0.6.8"
     "@d-zero/db-wcag": "npm:1.0.0-alpha.1"
     "@d-zero/shared": "npm:0.18.0"
     axe-core: "npm:4.11.1"
@@ -872,13 +872,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/a11y-check-core@npm:0.6.7, @d-zero/a11y-check-core@workspace:packages/@d-zero/a11y-check-core":
+"@d-zero/a11y-check-core@npm:0.6.8, @d-zero/a11y-check-core@workspace:packages/@d-zero/a11y-check-core":
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check-core@workspace:packages/@d-zero/a11y-check-core"
   dependencies:
-    "@d-zero/dealer": "npm:1.5.4"
-    "@d-zero/puppeteer-dealer": "npm:0.6.6"
-    "@d-zero/puppeteer-page-scan": "npm:4.4.1"
+    "@d-zero/dealer": "npm:1.6.0"
+    "@d-zero/puppeteer-dealer": "npm:0.7.0"
+    "@d-zero/puppeteer-page-scan": "npm:4.4.2"
     "@d-zero/shared": "npm:0.18.0"
     ansi-colors: "npm:4.1.3"
     color-contrast-checker: "npm:2.1.0"
@@ -886,11 +886,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/a11y-check-scenarios@npm:0.4.21, @d-zero/a11y-check-scenarios@workspace:packages/@d-zero/a11y-check-scenarios":
+"@d-zero/a11y-check-scenarios@npm:0.4.22, @d-zero/a11y-check-scenarios@workspace:packages/@d-zero/a11y-check-scenarios":
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check-scenarios@workspace:packages/@d-zero/a11y-check-scenarios"
   dependencies:
-    "@d-zero/a11y-check-core": "npm:0.6.7"
+    "@d-zero/a11y-check-core": "npm:0.6.8"
     "@d-zero/shared": "npm:0.18.0"
     ansi-colors: "npm:4.1.3"
     puppeteer: "npm:24.37.2"
@@ -903,14 +903,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check@workspace:packages/@d-zero/a11y-check"
   dependencies:
-    "@d-zero/a11y-check-axe-scenario": "npm:0.5.7"
-    "@d-zero/a11y-check-core": "npm:0.6.7"
-    "@d-zero/a11y-check-scenarios": "npm:0.4.21"
+    "@d-zero/a11y-check-axe-scenario": "npm:0.5.8"
+    "@d-zero/a11y-check-core": "npm:0.6.8"
+    "@d-zero/a11y-check-scenarios": "npm:0.4.22"
     "@d-zero/cli-core": "npm:1.3.1"
     "@d-zero/google-auth": "npm:0.5.4"
     "@d-zero/google-sheets": "npm:0.5.10"
-    "@d-zero/puppeteer-page-scan": "npm:4.4.1"
-    "@d-zero/readtext": "npm:1.1.17"
+    "@d-zero/puppeteer-page-scan": "npm:4.4.2"
+    "@d-zero/readtext": "npm:1.1.18"
     "@d-zero/shared": "npm:0.18.0"
     ansi-colors: "npm:4.1.3"
     dayjs: "npm:1.11.19"
@@ -929,10 +929,10 @@ __metadata:
     "@d-zero/cli-core": "npm:1.3.1"
     "@d-zero/fs": "npm:0.2.2"
     "@d-zero/html-distiller": "npm:2.0.4"
-    "@d-zero/puppeteer-dealer": "npm:0.6.6"
-    "@d-zero/puppeteer-page-scan": "npm:4.4.1"
-    "@d-zero/puppeteer-screenshot": "npm:3.3.1"
-    "@d-zero/readtext": "npm:1.1.17"
+    "@d-zero/puppeteer-dealer": "npm:0.7.0"
+    "@d-zero/puppeteer-page-scan": "npm:4.4.2"
+    "@d-zero/puppeteer-screenshot": "npm:3.3.2"
+    "@d-zero/readtext": "npm:1.1.18"
     "@d-zero/shared": "npm:0.18.0"
     "@types/diff": "npm:8.0.0"
     "@types/pixelmatch": "npm:5.2.6"
@@ -1031,7 +1031,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@d-zero/dealer@npm:1.5.4, @d-zero/dealer@workspace:packages/@d-zero/dealer":
+"@d-zero/dealer@npm:1.6.0, @d-zero/dealer@workspace:packages/@d-zero/dealer":
   version: 0.0.0-use.local
   resolution: "@d-zero/dealer@workspace:packages/@d-zero/dealer"
   dependencies:
@@ -1062,7 +1062,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/filematch@workspace:packages/@d-zero/filematch"
   dependencies:
-    "@d-zero/readtext": "npm:1.1.17"
+    "@d-zero/readtext": "npm:1.1.18"
     "@types/follow-redirects": "npm:1.14.4"
     "@types/node": "npm:24.10.13"
     follow-redirects: "npm:1.15.11"
@@ -1156,10 +1156,10 @@ __metadata:
   dependencies:
     "@d-zero/cli-core": "npm:1.3.1"
     "@d-zero/html-distiller": "npm:2.0.4"
-    "@d-zero/puppeteer-dealer": "npm:0.6.6"
-    "@d-zero/puppeteer-page-scan": "npm:4.4.1"
-    "@d-zero/puppeteer-screenshot": "npm:3.3.1"
-    "@d-zero/readtext": "npm:1.1.17"
+    "@d-zero/puppeteer-dealer": "npm:0.7.0"
+    "@d-zero/puppeteer-page-scan": "npm:4.4.2"
+    "@d-zero/puppeteer-screenshot": "npm:3.3.2"
+    "@d-zero/readtext": "npm:1.1.18"
     "@d-zero/shared": "npm:0.18.0"
     ansi-colors: "npm:4.1.3"
     dayjs: "npm:1.11.19"
@@ -1180,11 +1180,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/puppeteer-dealer@npm:0.6.6, @d-zero/puppeteer-dealer@workspace:packages/@d-zero/puppeteer-dealer":
+"@d-zero/puppeteer-dealer@npm:0.7.0, @d-zero/puppeteer-dealer@workspace:packages/@d-zero/puppeteer-dealer":
   version: 0.0.0-use.local
   resolution: "@d-zero/puppeteer-dealer@workspace:packages/@d-zero/puppeteer-dealer"
   dependencies:
-    "@d-zero/dealer": "npm:1.5.4"
+    "@d-zero/dealer": "npm:1.6.0"
     "@d-zero/proc-talk": "npm:0.4.15"
     "@d-zero/shared": "npm:0.18.0"
     ansi-colors: "npm:4.1.3"
@@ -1205,24 +1205,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/puppeteer-page-scan@npm:4.4.1, @d-zero/puppeteer-page-scan@workspace:packages/@d-zero/puppeteer-page-scan":
+"@d-zero/puppeteer-page-scan@npm:4.4.2, @d-zero/puppeteer-page-scan@workspace:packages/@d-zero/puppeteer-page-scan":
   version: 0.0.0-use.local
   resolution: "@d-zero/puppeteer-page-scan@workspace:packages/@d-zero/puppeteer-page-scan"
   dependencies:
     "@d-zero/puppeteer-general-actions": "npm:1.2.2"
-    "@d-zero/puppeteer-scroll": "npm:3.1.9"
+    "@d-zero/puppeteer-scroll": "npm:3.1.10"
     puppeteer: "npm:24.37.2"
   peerDependencies:
     puppeteer: 24.37.2
   languageName: unknown
   linkType: soft
 
-"@d-zero/puppeteer-screenshot@npm:3.3.1, @d-zero/puppeteer-screenshot@workspace:packages/@d-zero/puppeteer-screenshot":
+"@d-zero/puppeteer-screenshot@npm:3.3.2, @d-zero/puppeteer-screenshot@workspace:packages/@d-zero/puppeteer-screenshot":
   version: 0.0.0-use.local
   resolution: "@d-zero/puppeteer-screenshot@workspace:packages/@d-zero/puppeteer-screenshot"
   dependencies:
     "@d-zero/puppeteer-general-actions": "npm:1.2.2"
-    "@d-zero/puppeteer-page-scan": "npm:4.4.1"
+    "@d-zero/puppeteer-page-scan": "npm:4.4.2"
     "@d-zero/shared": "npm:0.18.0"
     puppeteer: "npm:24.37.2"
   peerDependencies:
@@ -1230,7 +1230,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/puppeteer-scroll@npm:3.1.9, @d-zero/puppeteer-scroll@workspace:packages/@d-zero/puppeteer-scroll":
+"@d-zero/puppeteer-scroll@npm:3.1.10, @d-zero/puppeteer-scroll@workspace:packages/@d-zero/puppeteer-scroll":
   version: 0.0.0-use.local
   resolution: "@d-zero/puppeteer-scroll@workspace:packages/@d-zero/puppeteer-scroll"
   dependencies:
@@ -1241,7 +1241,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/readtext@npm:1.1.17, @d-zero/readtext@workspace:packages/@d-zero/readtext":
+"@d-zero/readtext@npm:1.1.18, @d-zero/readtext@workspace:packages/@d-zero/readtext":
   version: 0.0.0-use.local
   resolution: "@d-zero/readtext@workspace:packages/@d-zero/readtext"
   dependencies:
@@ -1271,10 +1271,10 @@ __metadata:
   resolution: "@d-zero/replicator@workspace:packages/@d-zero/replicator"
   dependencies:
     "@d-zero/cli-core": "npm:1.3.1"
-    "@d-zero/dealer": "npm:1.5.4"
-    "@d-zero/puppeteer-dealer": "npm:0.6.6"
-    "@d-zero/puppeteer-page-scan": "npm:4.4.1"
-    "@d-zero/puppeteer-scroll": "npm:3.1.9"
+    "@d-zero/dealer": "npm:1.6.0"
+    "@d-zero/puppeteer-dealer": "npm:0.7.0"
+    "@d-zero/puppeteer-page-scan": "npm:4.4.2"
+    "@d-zero/puppeteer-scroll": "npm:3.1.10"
     "@d-zero/shared": "npm:0.18.0"
     "@types/minimist": "npm:1.2.5"
     ansi-colors: "npm:4.1.3"

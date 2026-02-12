@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.5.4...@d-zero/dealer@1.6.0) (2026-02-12)
+
+### Features
+
+- **dealer:** add push() to dynamically enqueue items during processing ([dc8c3c5](https://github.com/d-zero-dev/tools/commit/dc8c3c5ebf25ca82134541e550c72f85769a8c6c))
+
 ## [1.5.4](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.5.3...@d-zero/dealer@1.5.4) (2026-02-06)
 
 **Note:** Version bump only for package @d-zero/dealer
