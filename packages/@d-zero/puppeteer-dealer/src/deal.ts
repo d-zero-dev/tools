@@ -17,7 +17,10 @@ export function deal<T, R = void>(
 	header: DealHeader,
 	createProcess: () => (needAuth: boolean) => ChildProcessManager<T, R>,
 	options?: Omit<DealOptions, 'header'> & {
-		each?: (result: R) => void | Promise<void>;
+		each?: (
+			result: R,
+			push: (...items: URLInfo[]) => Promise<void>,
+		) => void | Promise<void>;
 	},
 ) {
 	const needAuth = list.some(({ url }) => {
@@ -27,7 +30,7 @@ export function deal<T, R = void>(
 
 	return coreDeal(
 		list,
-		({ id, url }, update, index, setLineHeader) => {
+		({ id, url }, update, index, setLineHeader, push) => {
 			const fileId = id || index.toString().padStart(3, '0');
 			const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(url.toString())}: `;
 			setLineHeader(lineHeader);
@@ -40,7 +43,7 @@ export function deal<T, R = void>(
 				processManager.log((log) => update(log));
 				const result = await processManager.each(fileId, url.toString(), index);
 				if (options?.each) {
-					await options.each(result);
+					await options.each(result, push);
 				}
 				await processManager.close();
 			};
