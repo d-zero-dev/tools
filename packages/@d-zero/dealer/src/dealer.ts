@@ -2,6 +2,7 @@ import type { ProcessInitializer } from './types.js';
 
 export interface DealerOptions {
 	limit?: number;
+	onPush?: (item: never) => boolean;
 }
 
 export class Dealer<T extends WeakKey> {
@@ -9,16 +10,22 @@ export class Dealer<T extends WeakKey> {
 	#done = new WeakSet<T>();
 	#doneCount = 0;
 	#finish: () => void = () => {};
-	#items: readonly T[];
+	#finished = false;
+	#initializer: ProcessInitializer<T> | null = null;
+	#items: T[];
 	#limit: number;
+	#nextIndex = 0;
+	#onPush?: (item: T) => boolean;
+	#pendingInitCount = 0;
 	#progress: (progress: number, done: number, total: number, limit: number) => void =
 		() => {};
 	#starts = new WeakMap<T, () => Promise<void>>();
 	#workers = new Set<T>();
 
 	constructor(items: readonly T[], options?: DealerOptions) {
-		this.#items = items;
+		this.#items = [...items];
 		this.#limit = options?.limit ?? 10;
+		this.#onPush = options?.onPush as ((item: T) => boolean) | undefined;
 	}
 
 	debug(listener: (log: string) => void) {
@@ -39,30 +46,48 @@ export class Dealer<T extends WeakKey> {
 		this.#progress = listener;
 	}
 
+	async push(...items: T[]) {
+		if (this.#finished) {
+			return;
+		}
+		for (const item of items) {
+			if (this.#onPush && !this.#onPush(item)) {
+				continue;
+			}
+			this.#pendingInitCount++;
+			await this.#initializeAndDispatch(item);
+		}
+	}
+
 	async setup(initializer: ProcessInitializer<T>) {
-		for (const [index, item] of this.#items.entries()) {
-			const start = await initializer(item, index);
+		this.#initializer = initializer;
+		for (const item of this.#items) {
+			const start = await initializer(item, this.#nextIndex++);
 			this.#starts.set(item, async () => await start());
 		}
+		const total = this.#items.length;
 		this.#progress(
-			this.#doneCount / this.#items.length,
+			total === 0 ? 0 : this.#doneCount / total,
 			this.#doneCount,
-			this.#items.length,
+			total,
 			this.#limit,
 		);
 	}
 
 	#deal() {
-		this.#debug(`Done: ${this.#doneCount}/${this.#items.length} (Limit: ${this.#limit})`);
+		const total = this.#items.length;
+		this.#debug(`Done: ${this.#doneCount}/${total} (Limit: ${this.#limit})`);
 		this.#progress(
-			this.#doneCount / this.#items.length,
+			total === 0 ? 0 : this.#doneCount / total,
 			this.#doneCount,
-			this.#items.length,
+			total,
 			this.#limit,
 		);
 
-		if (this.#doneCount === this.#items.length) {
+		if (total > 0 && this.#doneCount === total && this.#pendingInitCount === 0) {
+			this.#finished = true;
 			this.#finish();
+			return;
 		}
 
 		while (this.#workers.size < this.#limit) {
@@ -85,7 +110,6 @@ export class Dealer<T extends WeakKey> {
 			});
 		}
 	}
-
 	#draw() {
 		for (const item of this.#items) {
 			if (this.#done.has(item)) {
@@ -97,5 +121,15 @@ export class Dealer<T extends WeakKey> {
 			return item;
 		}
 		return null;
+	}
+	async #initializeAndDispatch(item: T) {
+		if (!this.#initializer) {
+			throw new Error('setup() must be called before push()');
+		}
+		const start = await this.#initializer(item, this.#nextIndex++);
+		this.#starts.set(item, async () => await start());
+		this.#items.push(item);
+		this.#pendingInitCount--;
+		this.#deal();
 	}
 }

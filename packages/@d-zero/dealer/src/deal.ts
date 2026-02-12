@@ -64,6 +64,7 @@ export async function deal<T extends WeakKey>(
 		update: (log: string) => void,
 		index: number,
 		setLineHeader: (lineHeader: string) => void,
+		push: (...items: T[]) => Promise<void>,
 	) => Promise<() => void | Promise<void>> | (() => void | Promise<void>),
 	options?: DealOptions,
 ) {
@@ -82,7 +83,8 @@ export async function deal<T extends WeakKey>(
 			lineHeader = header;
 		};
 		const update = (log: string) => lanes.update(index, lineHeader + log);
-		const start = await setup(process, update, index, setLineHeader);
+		const push = (...newItems: T[]) => dealer.push(...newItems);
+		const start = await setup(process, update, index, setLineHeader, push);
 		return async () => {
 			await delay(options?.interval ?? 0, (determinedInterval) => {
 				update(
