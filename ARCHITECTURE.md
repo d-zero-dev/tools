@@ -617,18 +617,24 @@ const { config, content } = await readConfigFile<{
 Using `@d-zero/dealer`:
 
 ```typescript
-import { Dealer } from '@d-zero/dealer';
+import { deal } from '@d-zero/dealer';
 
-const dealer = new Dealer({
-	limit: 10, // Max concurrent tasks
-	interval: 1000, // Delay between tasks (ms)
-});
-
-await dealer.deal(urls, async (url) => {
-	// Process each URL
-	const result = await fetchAndProcess(url);
-	return result;
-});
+await deal(
+	urls,
+	(url, update, index, setLineHeader, push) => {
+		return async () => {
+			update('Processing...');
+			const result = await fetchAndProcess(url);
+			// Dynamically enqueue new items during processing
+			const newUrls = extractLinks(result);
+			await push(...newUrls);
+		};
+	},
+	{
+		limit: 10,
+		interval: 1000,
+	},
+);
 ```
 
 ### Error Handling

@@ -15,13 +15,9 @@ npm install @d-zero/dealer
 ```ts
 import { deal } from '@d-zero/dealer';
 
-await deal(items, {
-	limit: 30,
-	header: (progress, done, total, limit) =>
-		progress === 1
-			? 'HeaderMessage: Done!'
-			: `HeaderMessage: %earth% %dots% %block% %propeller%`,
-	setup: (item, update, index) => {
+await deal(
+	items,
+	(item, update, index, setLineHeader, push) => {
 		item.setup();
 		item.addListeners((state) => {
 			update(`item(${index}): ${state}`);
@@ -32,7 +28,14 @@ await deal(items, {
 			item.cleanup();
 		};
 	},
-});
+	{
+		limit: 30,
+		header: (progress, done, total, limit) =>
+			progress === 1
+				? 'HeaderMessage: Done!'
+				: `HeaderMessage: %earth% %dots% %block% %propeller%`,
+	},
+);
 ```
 
 ### deal関数
@@ -49,6 +52,7 @@ async function deal<T extends WeakKey>(
 		update: (log: string) => void,
 		index: number,
 		setLineHeader: (lineHeader: string) => void,
+		push: (...items: T[]) => Promise<void>,
 	) => Promise<() => void | Promise<void>> | (() => void | Promise<void>),
 	options?: DealOptions,
 ): Promise<void>;
@@ -62,6 +66,7 @@ async function deal<T extends WeakKey>(
   - `update`: ログを更新する関数
   - `index`: アイテムのインデックス
   - `setLineHeader`: ログの各行にプレフィックスを設定する関数
+  - `push`: 実行中にアイテムをキューに追加する関数
   - 戻り値: アイテムを開始する関数
 - `options`: 設定オプション
 
@@ -89,6 +94,7 @@ type DealOptions = DealerOptions &
 #### プロパティ
 
 - `limit?: number`: 同時実行数の制限(デフォルト: 10)
+- `onPush?: (item: T) => boolean`: `push()`時のフィルタ関数。`false`を返すとそのアイテムは拒否される(例: 重複排除)
 - `header?: DealHeader`: 進捗ヘッダーを生成する関数
 - `debug?: boolean`: デバッグログを表示するかどうか
 - `interval?: number | DelayOptions`: 各処理の間隔(ミリ秒またはDelayOptions)
@@ -134,6 +140,7 @@ constructor(items: readonly T[], options?: DealerOptions)
 
 - `items`: 処理対象のアイテム
 - `options.limit`: 同時実行数の制限(デフォルト: 10)
+- `options.onPush`: `push()`時のフィルタ関数
 
 #### メソッド
 
@@ -174,6 +181,16 @@ dealer.progress((progress, done, total, limit) => {
 	console.log(`Progress: ${(progress * 100).toFixed(1)}% (${done}/${total})`);
 });
 ```
+
+##### async push(...items: T[])
+
+実行中にアイテムをキューに追加します。追加されたアイテムには`setup()`で設定した初期化関数が自動適用されます。完了後の呼び出しは無視されます。
+
+```ts
+await dealer.push(newItem1, newItem2);
+```
+
+- `items`: 追加するアイテム。`onPush`が設定されている場合、`false`を返したアイテムはスキップされます。
 
 ##### async setup(initializer: ProcessInitializer<T>)
 

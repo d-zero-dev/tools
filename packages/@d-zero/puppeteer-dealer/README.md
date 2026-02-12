@@ -62,7 +62,10 @@ function deal<T, R = void>(
 	header: DealHeader,
 	createProcess: () => (needAuth: boolean) => ChildProcessManager<T, R>,
 	options?: Omit<DealOptions, 'header'> & {
-		each?: (result: R) => void | Promise<void>;
+		each?: (
+			result: R,
+			push: (...items: URLInfo[]) => Promise<void>,
+		) => void | Promise<void>;
 	},
 ): Promise<void>;
 
@@ -71,7 +74,12 @@ type URLInfo = {
 	readonly url: string | URL;
 };
 
-type DealHeader = (progress: number, done: number, total: number) => string;
+type DealHeader = (
+	progress: number,
+	done: number,
+	total: number,
+	limit: number,
+) => string;
 ```
 
 ### `createProcess`
