@@ -27,7 +27,7 @@
 		"@d-zero/google-auth": "0.5.4",
 		"@d-zero/shared": "0.18.0",
 		"debug": "4.4.3",
-		"dotenv": "17.2.4",
+		"dotenv": "17.3.1",
 		"gaxios": "7.1.3",
 		"googleapis": "171.4.0"
 	}
