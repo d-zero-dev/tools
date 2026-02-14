@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.28](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@0.1.27...@d-zero/beholder@0.1.28) (2026-02-14)
+
+### Bug Fixes
+
+- **beholder:** fix port bug, remove HEAD body, and integrate beforePageScan ([ad87860](https://github.com/d-zero-dev/tools/commit/ad87860df10737993f8cb7428c7424b101536d8f))
+
 ## [0.1.27](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@0.1.26...@d-zero/beholder@0.1.27) (2026-02-12)
 
 **Note:** Version bump only for package @d-zero/beholder

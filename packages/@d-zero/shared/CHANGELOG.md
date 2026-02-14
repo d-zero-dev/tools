@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.19.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.18.0...@d-zero/shared@0.19.0) (2026-02-14)
+
+### Features
+
+- **shared:** add detectCDN utility ([6de8458](https://github.com/d-zero-dev/tools/commit/6de84581c25354944c937d8649291480933ff77e))
+- **shared:** add detectCompress utility ([360630e](https://github.com/d-zero-dev/tools/commit/360630e8b97b0075f236154faa61fd1a0902652e))
+- **shared:** add onWait callback to retry decorator options ([3144fc2](https://github.com/d-zero-dev/tools/commit/3144fc207f22f72cd09c3dcab39ba285c57b5c5f))
+
 # [0.18.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.17.1...@d-zero/shared@0.18.0) (2026-02-06)
 
 ### Features

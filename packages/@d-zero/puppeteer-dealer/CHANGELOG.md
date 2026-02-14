@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.7.0...@d-zero/puppeteer-dealer@0.7.1) (2026-02-14)
+
+### Bug Fixes
+
+- **puppeteer-dealer:** remove redundant page.close() to prevent ProtocolError during cleanup ([10b0601](https://github.com/d-zero-dev/tools/commit/10b060109d46be54f3e8802c8d516bf62d4a1720))
+
 # [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.6.6...@d-zero/puppeteer-dealer@0.7.0) (2026-02-12)
 
 ### Features
