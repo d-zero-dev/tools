@@ -1,13 +1,14 @@
 import type { Animations, FPS } from './types.js';
 
-import readline from 'node:readline';
-
 import c from 'ansi-colors';
 
 import { countDownFunctionParser } from './count-down-function-parser.js';
 import { riffle } from './riffle.js';
 
 const RESET = c.reset('');
+const CURSOR_UP = (n: number) => `\u001B[${n}A`;
+const CURSOR_TO_COL0 = '\u001B[G';
+const ERASE_DOWN = '\u001B[0J';
 
 const animationPresets: Animations = {
 	earth: [2, '🌏', '🌍', '🌎'],
@@ -60,7 +61,9 @@ export class Display {
 
 		this.#write();
 
-		process.stdin.setRawMode(false);
+		if (process.stdin.isTTY) {
+			process.stdin.setRawMode(false);
+		}
 
 		this.#lastWroteLineNum = 0;
 		this.#stack = null;
@@ -84,18 +87,6 @@ export class Display {
 		}
 
 		this.#enterFrame();
-	}
-
-	#clear() {
-		if (this.#verbose) {
-			return;
-		}
-
-		for (let i = 0; i < this.#lastWroteLineNum; i++) {
-			readline.moveCursor(process.stdout, 0, -1);
-			readline.cursorTo(process.stdout, 0);
-			readline.clearLine(process.stdout, 0);
-		}
 	}
 
 	#countDown(text: string) {
@@ -156,15 +147,20 @@ export class Display {
 			return;
 		}
 
-		this.#clear();
-
 		const outputBuffer: string[] = [];
-
 		for (const stack of this.#stack) {
 			outputBuffer.push(this.#text(stack));
 		}
 
-		process.stdout.write(outputBuffer.join('\n') + '\n');
+		const content = outputBuffer.join('\n') + '\n';
+
+		let output = '';
+		if (this.#lastWroteLineNum > 0) {
+			output += CURSOR_UP(this.#lastWroteLineNum) + CURSOR_TO_COL0 + ERASE_DOWN;
+		}
+		output += content;
+
+		process.stdout.write(output);
 		this.#lastWroteLineNum = this.#stack.length;
 	}
 }
