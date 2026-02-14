@@ -127,5 +127,6 @@ await delay({
 
 ## 関連モジュール
 
+- [retry](./retry.md) - リトライデコレータ（`delay`を内部で使用し、`onWait`コールバックを`callback`引数に渡す）
 - [sample-distribution](./sample-distribution.md) - 確率分布からサンプルを取得するロジック
 - [random-int](./random-int.md) - 基本的なランダム整数生成のロジック
