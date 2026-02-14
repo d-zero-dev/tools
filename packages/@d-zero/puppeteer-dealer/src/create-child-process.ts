@@ -95,8 +95,7 @@ export function createChildProcess<P, R = void>(
 			});
 
 			return async () => {
-				childLog('Close page and browser');
-				await page.close();
+				childLog('Close browser');
 				await browser.close();
 				childLog('Cleanup done');
 			};
