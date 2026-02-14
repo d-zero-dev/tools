@@ -58,6 +58,13 @@
 | `@d-zero/shared/sort/dir`  | 2つのディレクトリパスを比較し、順序を示す値を返す関数         |
 | `@d-zero/shared/sort/path` | 2つのURLまたはURLを表す文字列を比較し、順序を示す値を返す関数 |
 
+### HTTP検出ユーティリティ
+
+| Import Path                      | Description                                                                                   |
+| -------------------------------- | --------------------------------------------------------------------------------------------- |
+| `@d-zero/shared/detect-compress` | HTTPレスポンスヘッダから圧縮形式を検出する関数（gzip, br, compress, deflate等に対応）         |
+| `@d-zero/shared/detect-cdn`      | HTTPレスポンスヘッダからCDNプロバイダを検出する関数（Akamai, CloudFront, Cloudflare等に対応） |
+
 ### その他のユーティリティ
 
 | Import Path                                | Description                                                                                           |
