@@ -199,7 +199,7 @@ Volta automatically manages Node.js and Yarn versions based on `package.json`:
 ```json
 {
 	"volta": {
-		"node": "24.13.0",
+		"node": "24.13.1",
 		"yarn": "4.12.0"
 	}
 }
