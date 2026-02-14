@@ -1,8 +1,8 @@
 import type { ProcessInitializer } from './types.js';
 
-export interface DealerOptions {
+export interface DealerOptions<T = unknown> {
 	limit?: number;
-	onPush?: (item: never) => boolean;
+	onPush?: (item: T) => boolean;
 }
 
 export class Dealer<T extends WeakKey> {
@@ -22,10 +22,10 @@ export class Dealer<T extends WeakKey> {
 	#starts = new WeakMap<T, () => Promise<void>>();
 	#workers = new Set<T>();
 
-	constructor(items: readonly T[], options?: DealerOptions) {
+	constructor(items: readonly T[], options?: DealerOptions<T>) {
 		this.#items = [...items];
 		this.#limit = options?.limit ?? 10;
-		this.#onPush = options?.onPush as ((item: T) => boolean) | undefined;
+		this.#onPush = options?.onPush;
 	}
 
 	debug(listener: (log: string) => void) {

@@ -7,7 +7,7 @@ import { delay } from '@d-zero/shared/delay';
 import { Dealer } from './dealer.js';
 import { Lanes } from './lanes.js';
 
-export type DealOptions = DealerOptions &
+export type DealOptions<T = unknown> = DealerOptions<T> &
 	LanesOptions & {
 		readonly header?: DealHeader;
 		readonly debug?: boolean;
@@ -66,7 +66,7 @@ export async function deal<T extends WeakKey>(
 		setLineHeader: (lineHeader: string) => void,
 		push: (...items: T[]) => Promise<void>,
 	) => Promise<() => void | Promise<void>> | (() => void | Promise<void>),
-	options?: DealOptions,
+	options?: DealOptions<T>,
 ) {
 	const dealer = new Dealer(items, options);
 	const lanes = new Lanes(options);

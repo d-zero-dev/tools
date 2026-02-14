@@ -1,4 +1,6 @@
-import { describe, test, expect } from 'vitest';
+import type { DealerOptions } from './dealer.js';
+
+import { describe, test, expect, expectTypeOf } from 'vitest';
 
 import { Dealer } from './dealer.js';
 
@@ -214,6 +216,30 @@ describe('Dealer', () => {
 		expect(lastCall.progress).toBe(1);
 		expect(lastCall.done).toBe(2);
 		expect(lastCall.total).toBe(2);
+	});
+
+	test('DealerOptions onPush receives the item type', () => {
+		type Item = { id: string };
+		type Opts = DealerOptions<Item>;
+		expectTypeOf<Opts['onPush']>().toEqualTypeOf<((item: Item) => boolean) | undefined>();
+	});
+
+	test('DealerOptions defaults to unknown', () => {
+		type Opts = DealerOptions;
+		expectTypeOf<Opts['onPush']>().toEqualTypeOf<
+			((item: unknown) => boolean) | undefined
+		>();
+	});
+
+	test('Dealer constructor infers onPush type from items', () => {
+		const items = [{ id: 'a' }, { id: 'b' }];
+		const dealer = new Dealer(items, {
+			onPush: (item) => {
+				expectTypeOf(item).toEqualTypeOf<{ id: string }>();
+				return true;
+			},
+		});
+		expectTypeOf(dealer).toMatchTypeOf<Dealer<{ id: string }>>();
 	});
 
 	test('progress does not produce NaN with empty items', async () => {
