@@ -137,6 +137,10 @@
 		"./detect-compress": {
 			"import": "./dist/detect-compress.js",
 			"types": "./dist/detect-compress.d.ts"
+		},
+		"./detect-cdn": {
+			"import": "./dist/detect-cdn.js",
+			"types": "./dist/detect-cdn.d.ts"
 		}
 	},
 	"files": [
