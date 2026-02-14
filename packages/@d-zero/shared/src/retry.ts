@@ -46,6 +46,16 @@ export type RetryDecoratorOptions = {
 	 * @param message - The message to log.
 	 */
 	log?: (message: string) => void;
+
+	/**
+	 * Callback invoked when the retry wait begins.
+	 * Receives the determined interval (ms), the current retry count, and the method name.
+	 * `this` is bound to the decorated instance.
+	 * @param determinedInterval - The actual wait time in milliseconds.
+	 * @param retryCount - The current retry attempt number (0-based).
+	 * @param methodName - The fully qualified method name (e.g., "ClassName.methodName").
+	 */
+	onWait?: (determinedInterval: number, retryCount: number, methodName: string) => void;
 };
 
 /**
@@ -124,7 +134,13 @@ export function retry<C extends object>(options?: RetryDecoratorOptions) {
 							}; Wating ${displayTime}ms...`,
 						);
 					}
-					await delay(waitTime);
+					await delay(
+						waitTime,
+						options?.onWait
+							? (determinedInterval) =>
+									options.onWait!.call(this, determinedInterval, retryCount, methodName)
+							: undefined,
+					);
 					retryCount++;
 				}
 			}
