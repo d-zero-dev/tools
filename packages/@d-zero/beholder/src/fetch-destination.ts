@@ -52,13 +52,15 @@ export async function fetchDestination(
  */
 async function _fetchHead(url: ExURL, isExternal: boolean, method: string) {
 	return new Promise<PageData>((resolve, reject) => {
+		const hostHeader = url.port ? `${url.hostname}:${url.port}` : url.hostname;
 		const request: RequestOptions = {
 			protocol: url.protocol,
-			host: url.hostname,
+			hostname: url.hostname,
+			port: url.port || undefined,
 			path: url.pathname,
 			method,
 			headers: {
-				host: url.hostname,
+				host: hostHeader,
 				Connection: 'keep-alive',
 				Pragma: 'no-cache',
 				'Cache-Control': 'no-cache',
@@ -166,7 +168,6 @@ async function _fetchHead(url: ExURL, isExternal: boolean, method: string) {
 		req.on('error', (error) => {
 			reject(error);
 		});
-		req.write('head');
 		req.end();
 	});
 }

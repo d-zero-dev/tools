@@ -10,6 +10,7 @@ import type {
 } from './types.js';
 import type { Browser, Page } from 'puppeteer';
 
+import { beforePageScan } from '@d-zero/puppeteer-page-scan';
 import { parseUrl } from '@d-zero/shared/parse-url';
 import { retry } from '@d-zero/shared/retry';
 import { TypedAwaitEventEmitter } from '@d-zero/shared/typed-await-event-emitter';
@@ -631,93 +632,42 @@ export default class Scraper extends TypedAwaitEventEmitter<ScrapeEventTypes> {
 		fallback: [],
 	})
 	async #fetchImages(page: Page, isExternal: boolean): Promise<ImageElement[]> {
+		const url = this.#url!.withoutHashAndAuth;
 		const imageList: ImageElement[] = [];
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'setViewport',
-			url: this.#url,
-			isExternal,
-			message: '1280x800',
-		});
-		await page.setViewport({ width: 1280, height: 800 });
 
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'scrollToBottom',
-			url: this.#url,
-			isExternal,
-			message: '1280x800',
-		});
-		await autoScroll(page, 800);
+		const devices: { name: string; width: number; resolution?: number }[] = [
+			{ name: 'desktop', width: 1280 },
+			{ name: 'mobile', width: 320, resolution: 2 },
+		];
 
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'getImages',
-			url: this.#url,
-			isExternal,
-			message: '1280x800',
-		});
-		const imageListDesktop = await getImageList(page, 1280);
+		for (const device of devices) {
+			void this.emit('changePhase', {
+				pid: process.pid,
+				name: 'setViewport',
+				url: this.#url,
+				isExternal,
+				message: device.name,
+			});
 
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'setViewport',
-			url: this.#url,
-			isExternal,
-			message: '320x568',
-		});
-		await page.setViewport({
-			width: 320,
-			height: 568,
-			deviceScaleFactor: 2,
-			isMobile: true,
-			hasTouch: true,
-		});
+			await beforePageScan(page, url, {
+				name: device.name,
+				width: device.width,
+				resolution: device.resolution,
+				timeout: 5000,
+			});
 
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'scrollToBottom',
-			url: this.#url,
-			isExternal,
-			message: '320x568',
-		});
-		await autoScroll(page, 568);
+			void this.emit('changePhase', {
+				pid: process.pid,
+				name: 'getImages',
+				url: this.#url,
+				isExternal,
+				message: device.name,
+			});
 
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'getImages',
-			url: this.#url,
-			isExternal,
-			message: '320x568',
-		});
-		const imageListMobile = await getImageList(page, 320);
+			const images = await getImageList(page, device.width);
+			imageList.push(...images);
+		}
 
-		imageList.push(...imageListDesktop, ...imageListMobile);
 		return imageList;
 	}
-}
-
-/**
- *
- * @param page
- * @param height
- */
-async function autoScroll(page: Page, height: number) {
-	await page.evaluate(async (height: number) => {
-		/* global window */
-		await new Promise<void>((resolve) => {
-			let totalHeight = 0;
-			const distance = height;
-			const timer = setInterval(() => {
-				const scrollHeight = document.body.scrollHeight;
-				window.scrollBy(0, distance);
-				totalHeight += distance;
-
-				if (totalHeight >= scrollHeight || totalHeight >= 50_000) {
-					clearInterval(timer);
-					resolve();
-				}
-			}, 100);
-		});
-	}, height);
 }
