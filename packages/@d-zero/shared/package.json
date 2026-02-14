@@ -133,6 +133,10 @@
 		"./config-reader": {
 			"import": "./dist/config-reader.js",
 			"types": "./dist/config-reader.d.ts"
+		},
+		"./detect-compress": {
+			"import": "./dist/detect-compress.js",
+			"types": "./dist/detect-compress.d.ts"
 		}
 	},
 	"files": [

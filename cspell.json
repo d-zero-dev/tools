@@ -27,6 +27,11 @@
 		"Kuromoji",
 		"kuromojin",
 
+		// Compression types
+		"sdch",
+		"vcdiff",
+		"xdelta",
+
 		// Test data
 		"mypassword",
 		"mypassphrase"
