@@ -54,7 +54,7 @@ async function deal<T extends WeakKey>(
 		setLineHeader: (lineHeader: string) => void,
 		push: (...items: T[]) => Promise<void>,
 	) => Promise<() => void | Promise<void>> | (() => void | Promise<void>),
-	options?: DealOptions,
+	options?: DealOptions<T>,
 ): Promise<void>;
 ```
 
@@ -83,7 +83,7 @@ async function deal<T extends WeakKey>(
 ### DealOptions型
 
 ```ts
-type DealOptions = DealerOptions &
+type DealOptions<T = unknown> = DealerOptions<T> &
 	LanesOptions & {
 		readonly header?: DealHeader;
 		readonly debug?: boolean;
@@ -135,7 +135,7 @@ type DealHeader = (
 #### コンストラクタ
 
 ```ts
-constructor(items: readonly T[], options?: DealerOptions)
+constructor(items: readonly T[], options?: DealerOptions<T>)
 ```
 
 - `items`: 処理対象のアイテム
