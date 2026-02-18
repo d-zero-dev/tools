@@ -135,32 +135,24 @@ async function getNewToken(
 		output: process.stdout,
 	});
 
-	return new Promise<OAuth2Client>((resolve, reject) => {
+	const redirectUrl = await new Promise<string>((resolve) => {
 		rl.question(
 			c.blueBright(`Enter the ${c.bold('URL')} from the redirected page here: `),
-			(redirectUrl) => {
-				const url = new URL(redirectUrl);
-				const code = url.searchParams.get('code');
-				if (!code) {
-					throw new Error(`Bad URL: ${redirectUrl}`);
-				}
-
-				process.stdout.write(c.greenBright(`🔑 ${c.gray('Got code: ')}${code}\n`));
-
-				rl.close();
-				oAuth2Client.getToken(code, async (err, token) => {
-					if (err || !token) {
-						return reject(
-							new Error(
-								'Error while trying to retrieve access token, ' + (err?.message || ''),
-							),
-						);
-					}
-					oAuth2Client.setCredentials(token);
-					await fs.writeFile(tokenFilePath, JSON.stringify(token));
-					resolve(oAuth2Client);
-				});
-			},
+			resolve,
 		);
 	});
+	rl.close();
+
+	const url = new URL(redirectUrl);
+	const code = url.searchParams.get('code');
+	if (!code) {
+		throw new Error(`Bad URL: ${redirectUrl}`);
+	}
+
+	process.stdout.write(c.greenBright(`🔑 ${c.gray('Got code: ')}${code}\n`));
+
+	const { tokens } = await oAuth2Client.getToken(code);
+	oAuth2Client.setCredentials(tokens);
+	await fs.writeFile(tokenFilePath, JSON.stringify(tokens));
+	return oAuth2Client;
 }
