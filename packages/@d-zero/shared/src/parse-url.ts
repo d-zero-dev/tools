@@ -129,6 +129,29 @@ export type ParseURLOptions = {
 };
 
 /**
+ * Parses a URL string into an ExURL object, filtering out non-HTTP URLs
+ * that lack a hostname and protocol. If the input is already an ExURL object,
+ * it is returned as-is without re-parsing.
+ * @param url - The URL string to parse, or an already-parsed ExURL object.
+ * @param options - Optional parsing options forwarded to the underlying parser.
+ * @returns The parsed ExURL object, or `null` if the URL is not a valid HTTP URL
+ *          and has no hostname or protocol.
+ */
+export function tryParseUrl(
+	url: string | ExURL,
+	options?: ParseURLOptions,
+): ExURL | null {
+	if (typeof url !== 'string') {
+		return url;
+	}
+	const result = parseUrl(url, options);
+	if (!result.isHTTP && !result.hostname && !result.protocol) {
+		return null;
+	}
+	return result;
+}
+
+/**
  * Parse URL string to ExURL object
  * @param url URL string to parse
  * @param options Parse options

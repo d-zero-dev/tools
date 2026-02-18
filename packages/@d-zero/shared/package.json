@@ -11,6 +11,18 @@
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"exports": {
+		"./remove-matches": {
+			"import": "./dist/remove-matches.js",
+			"types": "./dist/remove-matches.d.ts"
+		},
+		"./sort/alphabetical": {
+			"import": "./dist/sort/alphabetical.js",
+			"types": "./dist/sort/alphabetical.d.ts"
+		},
+		"./sort/numerical": {
+			"import": "./dist/sort/numerical.js",
+			"types": "./dist/sort/numerical.d.ts"
+		},
 		"./sort/dir": {
 			"import": "./dist/sort/dir.js",
 			"types": "./dist/sort/dir.d.ts"
@@ -141,6 +153,26 @@
 		"./detect-cdn": {
 			"import": "./dist/detect-cdn.js",
 			"types": "./dist/detect-cdn.d.ts"
+		},
+		"./is-lower-layer": {
+			"import": "./dist/is-lower-layer.js",
+			"types": "./dist/is-lower-layer.d.ts"
+		},
+		"./path-match": {
+			"import": "./dist/path-match.js",
+			"types": "./dist/path-match.d.ts"
+		},
+		"./url-partial-match": {
+			"import": "./dist/url-partial-match.js",
+			"types": "./dist/url-partial-match.d.ts"
+		},
+		"./sort-url": {
+			"import": "./dist/sort-url.js",
+			"types": "./dist/sort-url.d.ts"
+		},
+		"./safe-filepath": {
+			"import": "./dist/safe-filepath.js",
+			"types": "./dist/safe-filepath.d.ts"
 		}
 	},
 	"files": [
@@ -156,6 +188,11 @@
 		"await-event-emitter": "2.0.2",
 		"dayjs": "1.11.19",
 		"escape-string-regexp": "5.0.0",
-		"front-matter": "4.0.2"
+		"front-matter": "4.0.2",
+		"micromatch": "4.0.8",
+		"sanitize-filename": "1.6.3"
+	},
+	"devDependencies": {
+		"@types/micromatch": "4.0.10"
 	}
 }
