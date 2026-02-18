@@ -78,6 +78,7 @@ export class Sheet {
 		targetCols = targetCols.filter((c) => 0 <= c);
 		if (targetCols.length === 0) {
 			sendLog('Add conditional format rule, target is empty');
+			return;
 		}
 		const ranges = targetCols.map((c) => ({
 			sheetId: this.id,
@@ -189,6 +190,43 @@ export class Sheet {
 					hiddenByUser: true,
 				},
 				fields: 'hiddenByUser',
+			},
+		});
+	}
+
+	async overwriteHeaderFormat() {
+		sendLog('Headers becomes normal format if NOT_BLANK');
+		await this.#parent.batchUpdate({
+			addConditionalFormatRule: {
+				rule: {
+					ranges: [
+						{
+							sheetId: this.id,
+							startRowIndex: 0,
+							endRowIndex: 1,
+						},
+					],
+					booleanRule: {
+						condition: {
+							type: 'NOT_BLANK',
+						},
+						format: {
+							backgroundColor: {
+								red: 1,
+								green: 1,
+								blue: 1,
+								alpha: 0,
+							},
+							textFormat: {
+								foregroundColor: {
+									red: 0,
+									green: 0,
+									blue: 0,
+								},
+							},
+						},
+					},
+				},
 			},
 		});
 	}

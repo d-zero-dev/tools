@@ -31,6 +31,18 @@ export class Sheets {
 		this.#sheets = google.sheets({ version: 'v4', auth });
 	}
 
+	/**
+	 * 1つの API リクエストを Google Sheets batchUpdate API に送信する。
+	 *
+	 * **設計上の注意: 複数リクエストのバッチ送信は意図的に行わない。**
+	 *
+	 * 理由:
+	 * - Google Sheets batchUpdate API は非アトミック（部分成功あり）
+	 * - ErrorHandler のリトライ（429/403/ECONNRESET）時に、成功済みの操作が重複実行される
+	 * - appendDimension 等の非冪等操作では行・列の二重追加が発生する
+	 * - addRowData の適応的チャンキング（RangeError 時にサイズ半減）が1リクエスト単位で機能
+	 * @param request
+	 */
 	@ErrorHandler()
 	async batchUpdate(request: sheets_v4.Schema$Request) {
 		const requestNames = Object.keys(request) as (keyof sheets_v4.Schema$Request)[];

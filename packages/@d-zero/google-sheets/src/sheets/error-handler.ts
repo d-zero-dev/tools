@@ -70,7 +70,7 @@ export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>)
 							error,
 						});
 
-						return await callee.call(this, args);
+						return await callee.apply(this, args);
 					}
 
 					if (userRateLimitExceededError(error)) {
@@ -101,7 +101,7 @@ export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>)
 							error,
 						});
 
-						return await callee.call(this, args);
+						return await callee.apply(this, args);
 					}
 
 					if (error.code === 'ECONNRESET') {
@@ -130,7 +130,7 @@ export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>)
 							error,
 						});
 
-						return await callee.call(this, args);
+						return await callee.apply(this, args);
 					}
 				}
 				errorLog(`Caught by decorator in: ${String(context.name)}.${method.name}()`);
