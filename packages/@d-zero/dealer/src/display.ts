@@ -26,10 +26,13 @@ interface Options {
 
 export class Display {
 	#animations: Animations;
+	#closed = false;
 	#coundDownMap = new Map<string, number>();
 	#debugMessages: string[] = [];
 	#frameInterval: number;
 	#lastWroteLineNum = 0;
+	#resizeHandler: (() => void) | null = null;
+	#sigintHandler: (() => void) | null = null;
 	#stack: string[] | null = null;
 	readonly #startTime = Date.now();
 	#timer: ReturnType<typeof setTimeout> | null = null;
@@ -46,13 +49,23 @@ export class Display {
 
 		this.#verbose = options?.verbose ?? false;
 
-		process.stdout.on('resize', () => this.#resize());
+		this.#resizeHandler = () => this.#resize();
+		process.stdout.on('resize', this.#resizeHandler);
+
+		if (!this.#verbose) {
+			this.#sigintHandler = () => {
+				this.close();
+				process.exit(130);
+			};
+			process.on('SIGINT', this.#sigintHandler);
+		}
 	}
 
 	close() {
-		if (this.#verbose) {
+		if (this.#verbose || this.#closed) {
 			return;
 		}
+		this.#closed = true;
 
 		if (this.#timer) {
 			clearTimeout(this.#timer);
@@ -61,8 +74,14 @@ export class Display {
 
 		this.#write();
 
-		if (process.stdin.isTTY) {
-			process.stdin.setRawMode(false);
+		if (this.#resizeHandler) {
+			process.stdout.off('resize', this.#resizeHandler);
+			this.#resizeHandler = null;
+		}
+
+		if (this.#sigintHandler) {
+			process.off('SIGINT', this.#sigintHandler);
+			this.#sigintHandler = null;
 		}
 
 		this.#lastWroteLineNum = 0;
