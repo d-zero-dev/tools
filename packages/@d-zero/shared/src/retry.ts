@@ -56,6 +56,15 @@ export type RetryDecoratorOptions = {
 	 * @param methodName - The fully qualified method name (e.g., "ClassName.methodName").
 	 */
 	onWait?: (determinedInterval: number, retryCount: number, methodName: string) => void;
+
+	/**
+	 * Callback invoked when all retries are exhausted.
+	 * `this` is bound to the decorated instance.
+	 * @param retryCount - The total number of retries attempted.
+	 * @param error - The first error that triggered retries.
+	 * @param methodName - The fully qualified method name (e.g., "ClassName.methodName").
+	 */
+	onGiveUp?: (retryCount: number, error: Error, methodName: string) => void;
 };
 
 /**
@@ -66,13 +75,17 @@ export type RetryDecoratorOptions = {
 export function retry<C extends object>(options?: RetryDecoratorOptions) {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	return (method: Function, context: ClassMethodDecoratorContext) => {
-		const retries = options?.retries ?? 5;
 		const intervalOption = options?.interval ?? 3000;
 		const timeoutTime = Math.max(options?.timeout ?? 0, 0);
 		const withExponentialBackoff = options?.withExponentialBackoff ?? true;
-		let retryCount = 0;
-		let firstTimeError: Error;
 		return async function (this: C, ...args: unknown[]) {
+			// Resolve retries per-call: instance property > decorator option > default 5
+			const retries =
+				((this as Record<string, unknown>).retries as number | undefined) ??
+				options?.retries ??
+				5;
+			let retryCount = 0;
+			let firstTimeError!: Error;
 			const constructorName = String(this.constructor?.name || this.constructor || this);
 			const methodName = `${constructorName}.${String(context.name)}`;
 
@@ -80,6 +93,7 @@ export function retry<C extends object>(options?: RetryDecoratorOptions) {
 				if (retryCount >= retries) {
 					const message = `[Retried ${retryCount} times] ${firstTimeError.message}`;
 					options?.log?.(message);
+					options?.onGiveUp?.call(this, retryCount, firstTimeError, methodName);
 
 					if (options?.fallback) {
 						return options.fallback;
