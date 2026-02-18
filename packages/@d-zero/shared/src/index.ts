@@ -25,7 +25,13 @@ export { pathToURL } from './path-to-url.js';
 export { raceWithTimeout, type RaceWithTimeoutResult } from './race-with-timeout.js';
 export { removeAuth } from './remove-auth.js';
 export { removeMatches } from './remove-matches.js';
-export { retry, type RetryDecoratorOptions, RetryTimeoutError } from './retry.js';
+export {
+	retry,
+	retryCall,
+	type RetryCallOptions,
+	type RetryDecoratorOptions,
+	RetryTimeoutError,
+} from './retry.js';
 export { splitArray } from './split-array.js';
 export { strToRegex } from './str-to-regex.js';
 export { timestamp } from './timestamp.js';
