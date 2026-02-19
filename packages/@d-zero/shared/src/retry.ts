@@ -11,6 +11,32 @@ const TIME_NUMBER_DISPLAY = [
 ] as const;
 
 /**
+ * Callback invoked when a retry wait begins.
+ * @param determinedInterval - The actual wait time in milliseconds.
+ * @param retryCount - The current retry attempt number (0-based).
+ * @param label - The label identifying this retry operation (or method name for decorators).
+ * @param error - The error that triggered this retry.
+ */
+export type RetryOnWaitCallback = (
+	determinedInterval: number,
+	retryCount: number,
+	label: string,
+	error: Error,
+) => void;
+
+/**
+ * Callback invoked when all retries are exhausted.
+ * @param retryCount - The total number of retries attempted.
+ * @param error - The first error that triggered retries.
+ * @param label - The label identifying this retry operation (or method name for decorators).
+ */
+export type RetryOnGiveUpCallback = (
+	retryCount: number,
+	error: Error,
+	label: string,
+) => void;
+
+/**
  * Options for the standalone retry function.
  */
 export type RetryCallOptions = {
@@ -56,21 +82,9 @@ export type RetryCallOptions = {
 	 */
 	label?: string;
 
-	/**
-	 * Callback invoked when the retry wait begins.
-	 * @param determinedInterval - The actual wait time in milliseconds.
-	 * @param retryCount - The current retry attempt number (0-based).
-	 * @param label - The label identifying this retry operation.
-	 */
-	onWait?: (determinedInterval: number, retryCount: number, label: string) => void;
+	onWait?: RetryOnWaitCallback;
 
-	/**
-	 * Callback invoked when all retries are exhausted.
-	 * @param retryCount - The total number of retries attempted.
-	 * @param error - The first error that triggered retries.
-	 * @param label - The label identifying this retry operation.
-	 */
-	onGiveUp?: (retryCount: number, error: Error, label: string) => void;
+	onGiveUp?: RetryOnGiveUpCallback;
 };
 
 /**
@@ -83,23 +97,9 @@ export type RetryDecoratorOptions = Omit<
 	RetryCallOptions,
 	'label' | 'onWait' | 'onGiveUp'
 > & {
-	/**
-	 * Callback invoked when the retry wait begins.
-	 * `this` is bound to the decorated instance.
-	 * @param determinedInterval - The actual wait time in milliseconds.
-	 * @param retryCount - The current retry attempt number (0-based).
-	 * @param methodName - The fully qualified method name (e.g., "ClassName.methodName").
-	 */
-	onWait?: (determinedInterval: number, retryCount: number, methodName: string) => void;
+	onWait?: RetryOnWaitCallback;
 
-	/**
-	 * Callback invoked when all retries are exhausted.
-	 * `this` is bound to the decorated instance.
-	 * @param retryCount - The total number of retries attempted.
-	 * @param error - The first error that triggered retries.
-	 * @param methodName - The fully qualified method name (e.g., "ClassName.methodName").
-	 */
-	onGiveUp?: (retryCount: number, error: Error, methodName: string) => void;
+	onGiveUp?: RetryOnGiveUpCallback;
 };
 
 /**
@@ -149,8 +149,8 @@ export function retry<C extends object>(options?: RetryDecoratorOptions) {
 			return retryLoop<any>(() => method.apply(this, args), retries, methodName, {
 				...options,
 				onWait: options?.onWait
-					? (determinedInterval, retryCount, lbl) =>
-							options.onWait!.call(this, determinedInterval, retryCount, lbl)
+					? (determinedInterval, retryCount, lbl, error) =>
+							options.onWait!.call(this, determinedInterval, retryCount, lbl, error)
 					: undefined,
 				onGiveUp: options?.onGiveUp
 					? (retryCount, error, lbl) =>
@@ -243,7 +243,8 @@ async function retryLoop<T>(
 			await delay(
 				waitTime,
 				options?.onWait
-					? (determinedInterval) => options.onWait!(determinedInterval, retryCount, label)
+					? (determinedInterval) =>
+							options.onWait!(determinedInterval, retryCount, label, error)
 					: undefined,
 			);
 			retryCount++;

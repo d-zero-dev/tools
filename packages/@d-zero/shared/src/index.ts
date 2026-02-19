@@ -30,6 +30,8 @@ export {
 	retryCall,
 	type RetryCallOptions,
 	type RetryDecoratorOptions,
+	type RetryOnWaitCallback,
+	type RetryOnGiveUpCallback,
 	RetryTimeoutError,
 } from './retry.js';
 export { splitArray } from './split-array.js';
