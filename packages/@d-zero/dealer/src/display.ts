@@ -1,11 +1,9 @@
 import type { Animations, FPS } from './types.js';
 
-import c from 'ansi-colors';
-
 import { countDownFunctionParser } from './count-down-function-parser.js';
 import { riffle } from './riffle.js';
 
-const RESET = c.reset('');
+const RESET = '\u001B[0m';
 const CURSOR_UP = (n: number) => `\u001B[${n}A`;
 const CURSOR_TO_COL0 = '\u001B[G';
 const ERASE_DOWN = '\u001B[0J';
