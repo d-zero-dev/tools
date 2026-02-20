@@ -2,6 +2,8 @@ import type { Animations, FPS } from './types.js';
 
 import { Display } from './display.js';
 
+const RESET = '\u001B[0m';
+
 type Log = readonly [id: number, message: string];
 type SortFunc = (a: Log, b: Log) => number;
 
@@ -70,7 +72,7 @@ export class Lanes {
 
 	update(id: number, log: string) {
 		if (this.#verbose) {
-			this.#display.write(this.#header + ' ' + log);
+			this.#display.write(`${RESET}${this.#header}${RESET} ${log}`);
 			return;
 		}
 
@@ -87,7 +89,9 @@ export class Lanes {
 		logs.sort(this.#sort);
 		const messages = logs.map(([, message]) => `${this.#indent}${message}`);
 		if (this.#header) {
-			messages.unshift(...this.#header.split('\n'));
+			messages.unshift(
+				...this.#header.split('\n').map((line) => `${RESET}${line}${RESET}`),
+			);
 		}
 		this.#display.write(...messages);
 	}
