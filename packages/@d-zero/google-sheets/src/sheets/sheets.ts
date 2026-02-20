@@ -1,3 +1,4 @@
+import type { ErrorHandlerMessage } from './error-handler.js';
 import type { OAuth2Client } from 'google-auth-library';
 import type { sheets_v4 } from 'googleapis';
 
@@ -12,6 +13,7 @@ import { Sheet } from './sheet.js';
 const sheetsLog = log.extend('Sheets');
 
 export class Sheets {
+	onLog?: (message: ErrorHandlerMessage) => void;
 	readonly #sheetList = new Map<string, Sheet>();
 	readonly #sheets: sheets_v4.Sheets;
 	readonly #spreadsheetId: string;
@@ -43,7 +45,11 @@ export class Sheets {
 	 * - addRowData の適応的チャンキング（RangeError 時にサイズ半減）が1リクエスト単位で機能
 	 * @param request
 	 */
-	@ErrorHandler()
+	@ErrorHandler<Sheets>({
+		log(message) {
+			this.onLog?.(message);
+		},
+	})
 	async batchUpdate(request: sheets_v4.Schema$Request) {
 		const requestNames = Object.keys(request) as (keyof sheets_v4.Schema$Request)[];
 		const requestName = requestNames[0];
@@ -110,7 +116,11 @@ export class Sheets {
 		return sheet;
 	}
 
-	@ErrorHandler()
+	@ErrorHandler<Sheets>({
+		log(message) {
+			this.onLog?.(message);
+		},
+	})
 	async get(
 		request: Omit<sheets_v4.Params$Resource$Spreadsheets$Values$Get, 'spreadsheetId'>,
 	) {
@@ -121,7 +131,11 @@ export class Sheets {
 		return res;
 	}
 
-	@ErrorHandler()
+	@ErrorHandler<Sheets>({
+		log(message) {
+			this.onLog?.(message);
+		},
+	})
 	async getRawSheetList() {
 		const list = await this.#sheets.spreadsheets.get({
 			spreadsheetId: this.#spreadsheetId,
@@ -130,7 +144,11 @@ export class Sheets {
 		return list.data.sheets ?? [];
 	}
 
-	@ErrorHandler()
+	@ErrorHandler<Sheets>({
+		log(message) {
+			this.onLog?.(message);
+		},
+	})
 	async getWithGridData(range: string) {
 		const res = await this.#sheets.spreadsheets.get({
 			spreadsheetId: this.#spreadsheetId,
