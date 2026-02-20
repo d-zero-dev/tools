@@ -62,13 +62,17 @@ export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>)
 
 						await delay(waitTime);
 
-						options?.log.call(this, {
-							message: 'TooManyRequestError',
-							waitTime,
-							waiting: false,
-							code: error.code,
-							error,
-						});
+						if (options?.log) {
+							options.log.call(this, {
+								message: 'TooManyRequestError',
+								waitTime,
+								waiting: false,
+								code: error.code,
+								error,
+							});
+						} else {
+							gaxiosErrorLog(`TooManyRequestError: Resumed after ${waitTime}ms`);
+						}
 
 						return await callee.apply(this, args);
 					}
@@ -93,13 +97,17 @@ export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>)
 
 						await delay(waitTime);
 
-						options?.log.call(this, {
-							message: 'UserRateLimitExceededError',
-							waitTime,
-							waiting: false,
-							code: error.code,
-							error,
-						});
+						if (options?.log) {
+							options.log.call(this, {
+								message: 'UserRateLimitExceededError',
+								waitTime,
+								waiting: false,
+								code: error.code,
+								error,
+							});
+						} else {
+							gaxiosErrorLog(`UserRateLimitExceededError: Resumed after ${waitTime}ms`);
+						}
 
 						return await callee.apply(this, args);
 					}
@@ -122,13 +130,17 @@ export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>)
 
 						await delay(waitTime);
 
-						options?.log.call(this, {
-							message: 'ECONNRESET',
-							waitTime,
-							waiting: false,
-							code: error.code,
-							error,
-						});
+						if (options?.log) {
+							options.log.call(this, {
+								message: 'ECONNRESET',
+								waitTime,
+								waiting: false,
+								code: error.code,
+								error,
+							});
+						} else {
+							gaxiosErrorLog(`ECONNRESET: Resumed after ${waitTime}ms`);
+						}
 
 						return await callee.apply(this, args);
 					}
