@@ -26,6 +26,6 @@
 	},
 	"dependencies": {
 		"cli-meow-help": "4.0.0",
-		"meow": "14.0.0"
+		"meow": "14.1.0"
 	}
 }
