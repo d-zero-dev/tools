@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.5.11...@d-zero/google-sheets@0.6.0) (2026-02-24)
+
+### Bug Fixes
+
+- **google-sheets:** add if guard to waiting:false log callbacks in ErrorHandler ([6d6e0bd](https://github.com/d-zero-dev/tools/commit/6d6e0bdb8dddf3fee497b66ae5b69742ef25ac3e))
+
+### Features
+
+- **google-sheets:** add exports, header formatting, and fix error handler ([72726c9](https://github.com/d-zero-dev/tools/commit/72726c966fcf06e5d993d4dd6e294d28149aa1e8))
+- **google-sheets:** add onLog callback to Sheets for rate limit notifications ([b05b74f](https://github.com/d-zero-dev/tools/commit/b05b74f0f14a854edd2def53b37d9504446a2f78))
+- **google-sheets:** add optional defaultCellFormat parameter to createCellData ([1b458e1](https://github.com/d-zero-dev/tools/commit/1b458e137c0fcdd3aec9a5056b35260e90c3ef44))
+
 ## [0.5.11](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.5.10...@d-zero/google-sheets@0.5.11) (2026-02-14)
 
 **Note:** Version bump only for package @d-zero/google-sheets

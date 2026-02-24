@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/proc-talk",
-	"version": "0.4.16",
+	"version": "0.4.17",
 	"description": "Process communication library for Node.js child processes with type-safe IPC",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -23,7 +23,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/shared": "0.19.0",
+		"@d-zero/shared": "0.20.0",
 		"debug": "4.4.3"
 	}
 }

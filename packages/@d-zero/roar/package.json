@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/roar",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "A CLI helper library built on top of meow.",
 	"author": "D-ZERO",
 	"license": "MIT",

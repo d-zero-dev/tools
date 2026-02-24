@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/backlog-projects",
-	"version": "0.5.3",
+	"version": "0.5.4",
 	"description": "A manipulating Backlog projects library",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -26,8 +26,8 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/notion": "2.0.11",
-		"@d-zero/shared": "0.19.0",
+		"@d-zero/notion": "2.0.12",
+		"@d-zero/shared": "0.20.0",
 		"backlog-js": "0.15.0",
 		"dayjs": "1.11.19",
 		"dotenv": "17.3.1",

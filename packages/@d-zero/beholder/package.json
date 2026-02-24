@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/beholder",
-	"version": "0.1.28",
+	"version": "0.1.29",
 	"description": "The tool for scraping and recording web pages",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -20,8 +20,8 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/puppeteer-page-scan": "4.4.3",
-		"@d-zero/shared": "0.19.0",
+		"@d-zero/puppeteer-page-scan": "4.4.4",
+		"@d-zero/shared": "0.20.0",
 		"debug": "4.4.3",
 		"follow-redirects": "1.15.11",
 		"puppeteer": "24.37.5",

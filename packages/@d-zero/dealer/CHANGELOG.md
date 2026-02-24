@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.2](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.6.1...@d-zero/dealer@1.6.2) (2026-02-24)
+
+### Bug Fixes
+
+- **dealer:** add ANSI reset to header lines in Lanes to prevent color bleeding ([20e314e](https://github.com/d-zero-dev/tools/commit/20e314e85adffef474ffe06a839f3a85c81a2c0a))
+- **dealer:** improve Display lifecycle with proper cleanup and SIGINT handling ([cbd7041](https://github.com/d-zero-dev/tools/commit/cbd7041660fa33cb5209adaa9f795bab989b9c72))
+- **dealer:** use literal ANSI reset code to prevent color bleeding ([a010f05](https://github.com/d-zero-dev/tools/commit/a010f05ac3eb683a5d5ddf07304f8507e4777b72))
+
 ## [1.6.1](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.6.0...@d-zero/dealer@1.6.1) (2026-02-14)
 
 ### Bug Fixes

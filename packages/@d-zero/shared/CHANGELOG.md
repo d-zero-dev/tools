@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.20.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.19.0...@d-zero/shared@0.20.0) (2026-02-24)
+
+### Features
+
+- **shared:** add error parameter to retry onWait callback ([394dc91](https://github.com/d-zero-dev/tools/commit/394dc9198c62e04b95c243650bf506f28c38645f))
+- **shared:** add onGiveUp callback and per-call retries to retry decorator ([055e819](https://github.com/d-zero-dev/tools/commit/055e81926a7024832b9663159e2d6b26198a1a1b))
+- **shared:** add standalone retryCall function for non-decorator retry ([b1fb0c4](https://github.com/d-zero-dev/tools/commit/b1fb0c461d44ae825940ffd3c77cc8d0ced49838))
+- **shared:** add URL/path utilities migrated from crawler ([4c7273d](https://github.com/d-zero-dev/tools/commit/4c7273db2de88079b393ea9fd4ee9b2751a5f2f1))
+
 # [0.19.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.18.0...@d-zero/shared@0.19.0) (2026-02-14)
 
 ### Features

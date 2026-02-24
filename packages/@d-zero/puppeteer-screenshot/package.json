@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/puppeteer-screenshot",
-	"version": "3.3.3",
+	"version": "3.3.4",
 	"description": "Screenshot utility for puppeteer",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -24,8 +24,8 @@
 	},
 	"dependencies": {
 		"@d-zero/puppeteer-general-actions": "1.2.2",
-		"@d-zero/puppeteer-page-scan": "4.4.3",
-		"@d-zero/shared": "0.19.0"
+		"@d-zero/puppeteer-page-scan": "4.4.4",
+		"@d-zero/shared": "0.20.0"
 	},
 	"devDependencies": {
 		"puppeteer": "24.37.5"
