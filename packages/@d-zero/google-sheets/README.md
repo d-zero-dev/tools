@@ -15,9 +15,13 @@ npm install @d-zero/google-sheets @d-zero/google-auth
 ```typescript
 import { authentication } from '@d-zero/google-auth';
 
+// クレデンシャルファイルのパスを直接指定
 const auth = await authentication('path/to/credentials.json', [
 	'https://www.googleapis.com/auth/spreadsheets',
 ]);
+
+// または環境変数GOOGLE_AUTH_CREDENTIALSから自動取得
+const auth = await authentication(null, ['https://www.googleapis.com/auth/spreadsheets']);
 ```
 
 認証の詳細は [@d-zero/google-auth](../google-auth/README.md) を参照してください。
