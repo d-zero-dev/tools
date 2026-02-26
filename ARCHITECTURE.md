@@ -68,7 +68,7 @@ This is a monorepo containing tools and libraries for web development, testing, 
 │       ├── readtext/                # Text reading utilities
 │       ├── remote-inspector/        # SSH/SFTP file comparison CLI
 │       ├── replicator/              # Web page replication CLI
-│       ├── roar/                    # CLI helper (meow-based)
+│       ├── roar/                    # CLI helper (yargs-parser-based)
 │       └── shared/                  # Shared utilities
 ├── lerna.json                       # Lerna configuration
 ├── package.json                     # Root package configuration
@@ -145,7 +145,7 @@ Core utility packages:
 - **@d-zero/notion**: Notion API client
 - **@d-zero/proc-talk**: Process communication
 - **@d-zero/readtext**: Text file reading with encoding detection
-- **@d-zero/roar**: CLI helper built on meow
+- **@d-zero/roar**: CLI helper with per-subcommand flag support (yargs-parser-based)
 - **@d-zero/shared**: Common utility functions (see below)
 
 ### Shared Package
@@ -546,16 +546,19 @@ const args = parseArgs(process.argv.slice(2), {
 });
 ```
 
-**Pattern 2: roar-based (meow)**
+**Pattern 2: roar-based (yargs-parser)**
 
 ```typescript
-import { roar } from '@d-zero/roar';
+import { parseCli } from '@d-zero/roar';
 
-const cli = roar({
-	flags: {
-		listfile: {
-			type: 'string',
-			alias: 'f',
+const result = parseCli({
+	name: 'my-tool',
+	commands: {
+		run: {
+			desc: 'Run the task',
+			flags: {
+				listfile: { type: 'string', shortFlag: 'f', desc: 'List file path' },
+			},
 		},
 	},
 });

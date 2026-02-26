@@ -46,7 +46,7 @@
 - [`@d-zero/notion`](./packages/%40d-zero/notion/README.md) - Notion API連携
 - [`@d-zero/proc-talk`](./packages/%40d-zero/proc-talk/README.md) - プロセス間通信
 - [`@d-zero/readtext`](./packages/%40d-zero/readtext/README.md) - テキスト読み取り機能
-- [`@d-zero/roar`](./packages/%40d-zero/roar/README.md) - CLIヘルパーライブラリ（meowベース）
+- [`@d-zero/roar`](./packages/%40d-zero/roar/README.md) - サブコマンド対応CLIヘルパーライブラリ（yargs-parserベース）
 - [`@d-zero/shared`](./packages/%40d-zero/shared/README.md) - 共通ユーティリティ関数
 
 ## メンテナンス環境
