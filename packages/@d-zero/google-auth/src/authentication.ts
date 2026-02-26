@@ -1,8 +1,9 @@
 import type { OAuth2Client } from 'google-auth-library';
 
+import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
+import http from 'node:http';
 import path from 'node:path';
-import readline from 'node:readline';
 
 import c from 'ansi-colors';
 import { google } from 'googleapis';
@@ -10,6 +11,8 @@ import { google } from 'googleapis';
 import { log } from './debug.js';
 
 const FINISHED_MESSAGE = `🔑 ${c.bold.green('Authentication successful')}\n`;
+
+const AUTH_TIMEOUT_MS = 5 * 60 * 1000;
 
 export type AuthenticationOptions = {
 	readonly tokenFilePath?: string;
@@ -23,14 +26,15 @@ export type AuthenticationOptions = {
  * @param options
  */
 export async function authentication(
-	credentialFilePath: string,
+	credentialFilePath: string | undefined | null,
 	scope: readonly string[],
 	options?: AuthenticationOptions,
 ) {
-	const credentials = await getCredentials(credentialFilePath);
+	const resolvedPath = resolveCredentialFilePath(credentialFilePath);
+	const credentials = await getCredentials(resolvedPath);
 
-	const dir = path.dirname(credentialFilePath);
-	const name = path.basename(credentialFilePath);
+	const dir = path.dirname(resolvedPath);
+	const name = path.basename(resolvedPath);
 	const tokenFilePath = options?.tokenFilePath ?? path.join(dir, `${name}.token`);
 	const checkTokenExpiry = options?.checkTokenExpiry ?? false;
 
@@ -86,6 +90,25 @@ export async function authentication(
  *
  * @param credentialFilePath
  */
+function resolveCredentialFilePath(
+	credentialFilePath: string | undefined | null,
+): string {
+	if (credentialFilePath) {
+		return credentialFilePath;
+	}
+	const envPath = process.env.GOOGLE_AUTH_CREDENTIALS;
+	if (envPath) {
+		return envPath;
+	}
+	throw new Error(
+		'Credential file path is required. Pass it as an argument or set GOOGLE_AUTH_CREDENTIALS environment variable.',
+	);
+}
+
+/**
+ *
+ * @param credentialFilePath
+ */
 async function getCredentials(credentialFilePath: string) {
 	const credentialsAbsPath = path.isAbsolute(credentialFilePath)
 		? credentialFilePath
@@ -109,11 +132,7 @@ async function getNewToken(
 	scope: readonly string[],
 	tokenFilePath: string,
 ) {
-	log('Getting new token interactively');
-	const authUrl = oAuth2Client.generateAuthUrl({
-		access_type: 'offline',
-		scope: [...scope],
-	});
+	log('Getting new token via local server redirect');
 
 	const scopeServices = scope.map((scopeUrl) => {
 		if (scopeUrl.startsWith('https://www.googleapis.com/auth/spreadsheets')) {
@@ -128,31 +147,166 @@ async function getNewToken(
 	process.stdout.write(
 		`🔑 ${c.bgGreen(`${c.bold(' Authorization')} (${scopeServices.join(',')}) `)}\n\n`,
 	);
-	process.stdout.write(`🔰 ${c.greenBright('Access this URL')}: ${authUrl}\n\n`);
 
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-	});
-
-	const redirectUrl = await new Promise<string>((resolve) => {
-		rl.question(
-			c.blueBright(`Enter the ${c.bold('URL')} from the redirected page here: `),
-			resolve,
-		);
-	});
-	rl.close();
-
-	const url = new URL(redirectUrl);
-	const code = url.searchParams.get('code');
-	if (!code) {
-		throw new Error(`Bad URL: ${redirectUrl}`);
-	}
+	const { code, redirectUri } = await waitForAuthCode(oAuth2Client, scope);
 
 	process.stdout.write(c.greenBright(`🔑 ${c.gray('Got code: ')}${code}\n`));
 
-	const { tokens } = await oAuth2Client.getToken(code);
+	const { tokens } = await oAuth2Client.getToken({ code, redirect_uri: redirectUri });
 	oAuth2Client.setCredentials(tokens);
 	await fs.writeFile(tokenFilePath, JSON.stringify(tokens));
 	return oAuth2Client;
+}
+
+/**
+ *
+ * @param oAuth2Client
+ * @param scope
+ */
+function waitForAuthCode(
+	oAuth2Client: OAuth2Client,
+	scope: readonly string[],
+): Promise<{ code: string; redirectUri: string }> {
+	return new Promise((resolve, reject) => {
+		let redirectUri = '';
+
+		const server = http.createServer((req, res) => {
+			const reqUrl = new URL(req.url ?? '/', redirectUri);
+			const code = reqUrl.searchParams.get('code');
+			const error = reqUrl.searchParams.get('error');
+
+			if (error) {
+				res.writeHead(200, {
+					'Content-Type': 'text/html; charset=utf-8',
+					Connection: 'close',
+				});
+				res.end(authResultHtml(false, error));
+				clearTimeout(timeoutId);
+				server.close();
+				reject(new Error(`Authentication error: ${error}`));
+				return;
+			}
+
+			if (code) {
+				res.writeHead(200, {
+					'Content-Type': 'text/html; charset=utf-8',
+					Connection: 'close',
+				});
+				res.end(authResultHtml(true));
+				clearTimeout(timeoutId);
+				server.close();
+				resolve({ code, redirectUri });
+				return;
+			}
+
+			res.writeHead(404, { Connection: 'close' });
+			res.end();
+		});
+
+		const timeoutId = setTimeout(() => {
+			server.close();
+			reject(new Error('Authentication timed out (5 minutes)'));
+		}, AUTH_TIMEOUT_MS);
+		timeoutId.unref();
+
+		server.listen(0, () => {
+			const address = server.address();
+			if (!address || typeof address === 'string') {
+				clearTimeout(timeoutId);
+				server.close();
+				reject(new Error('Failed to start local server'));
+				return;
+			}
+
+			redirectUri = `http://localhost:${address.port}`;
+
+			const authUrl = oAuth2Client.generateAuthUrl({
+				access_type: 'offline',
+				scope: [...scope],
+				redirect_uri: redirectUri,
+			});
+
+			process.stdout.write(
+				`🔰 ${c.greenBright('Opening browser for authentication...')}\n`,
+			);
+			process.stdout.write(
+				`   ${c.gray('If the browser does not open automatically, visit:')}\n`,
+			);
+			process.stdout.write(`   ${authUrl}\n\n`);
+
+			openBrowser(authUrl);
+		});
+	});
+}
+
+/**
+ *
+ * @param url
+ */
+function openBrowser(url: string) {
+	const command =
+		process.platform === 'darwin'
+			? 'open'
+			: process.platform === 'win32'
+				? 'cmd'
+				: 'xdg-open';
+
+	const args = process.platform === 'win32' ? ['/c', 'start', '', url] : [url];
+
+	const child = spawn(command, args, { stdio: 'ignore', detached: true });
+	child.unref();
+	child.on('error', (error) => {
+		log('Failed to open browser automatically: %s', error.message);
+	});
+}
+
+/**
+ *
+ * @param str
+ */
+function escapeHtml(str: string) {
+	return str
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;');
+}
+
+/**
+ *
+ * @param success
+ * @param error
+ */
+function authResultHtml(success: boolean, error?: string) {
+	const title = success ? '認証成功' : '認証エラー';
+	const bg = success ? '#f0fdf4' : '#fef2f2';
+	const color = success ? '#166534' : '#991b1b';
+	const icon = success ? '✅' : '❌';
+	const message = success
+		? '認証に成功しました'
+		: `認証エラー: <code>${escapeHtml(error ?? 'Unknown')}</code>`;
+	const sub = success
+		? 'このタブを閉じてターミナルに戻ってください。'
+		: 'ターミナルに戻って再度お試しください。';
+
+	return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>${title}</title>
+<style>
+body{font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:${bg};color:${color}}
+.c{text-align:center}
+h1{font-size:1.5rem}
+p{color:#6b7280}
+code{background:#fee2e2;padding:2px 6px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="c">
+<h1>${icon} ${message}</h1>
+<p>${sub}</p>
+</div>
+</body>
+</html>`;
 }
