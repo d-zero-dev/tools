@@ -32,7 +32,7 @@ export async function a11yCheck(
 			sheetName += `-debug-${Date.now()}`;
 		}
 
-		sheet = await SpreadsheetReporter.setup(out, sheetName);
+		sheet = await SpreadsheetReporter.setup(out, sheetName, options?.credentials);
 	}
 
 	const scenarioList = options?.scenarios ?? ['axe'];

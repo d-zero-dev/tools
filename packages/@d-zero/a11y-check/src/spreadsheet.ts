@@ -125,14 +125,10 @@ export class SpreadsheetReporter {
 		);
 	}
 
-	static async setup(sheetUrl: string, sheetName: string) {
+	static async setup(sheetUrl: string, sheetName: string, credentialFilePath?: string) {
 		dotenv.config();
 
-		if (!process.env.GOOGLE_AUTH_CREDENTIALS) {
-			throw new Error('GOOGLE_AUTH_CREDENTIALS is not set');
-		}
-
-		const auth = await authentication(process.env.GOOGLE_AUTH_CREDENTIALS, [
+		const auth = await authentication(credentialFilePath ?? null, [
 			'https://www.googleapis.com/auth/spreadsheets',
 		]);
 

@@ -20,6 +20,7 @@ interface A11yCheckCLIOptions extends BaseCLIOptions {
 	locale?: string;
 	screenshot?: boolean;
 	out?: string;
+	credentials?: string;
 }
 
 const { options, args, hasConfigFile } = createCLI<A11yCheckCLIOptions>({
@@ -29,6 +30,7 @@ const { options, args, hasConfigFile } = createCLI<A11yCheckCLIOptions>({
 		f: 'listfile',
 		s: 'screenshot',
 		o: 'out',
+		c: 'credentials',
 	},
 	usage: [
 		'Usage:',
@@ -37,6 +39,7 @@ const { options, args, hasConfigFile } = createCLI<A11yCheckCLIOptions>({
 		'Options:',
 		'\t-f, --listfile <file>     File containing URLs to check',
 		'\t-o, --out <file>          Output file path',
+		'\t-c, --credentials <file>  Google credentials JSON file path (or set GOOGLE_AUTH_CREDENTIALS env)',
 		'\t--limit <number>          Limit concurrent processes',
 		'\t--interval <ms>           Interval between parallel executions (default: none)',
 		'\t                          Format: number or "min-max" for random range',
@@ -53,6 +56,7 @@ const { options, args, hasConfigFile } = createCLI<A11yCheckCLIOptions>({
 		locale: cli.locale,
 		screenshot: !!cli.screenshot,
 		out: cli.out?.trim() || undefined,
+		credentials: cli.credentials?.trim() || undefined,
 	}),
 	validateArgs: (options, cli) => {
 		return !!(options.listfile?.length || cli._.length > 0);
@@ -71,6 +75,7 @@ let a11yOptions: A11yCheckOptions = {
 	cacheDir: options.cacheDir,
 	debug: options.debug,
 	verbose: options.verbose,
+	credentials: options.credentials,
 };
 
 if (hasConfigFile) {
