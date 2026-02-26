@@ -25,7 +25,7 @@ export type RatioValuePropertyName = keyof RatioValue;
  * @param propName - The property name to update
  * @param value - The new value for the property
  * @returns A new RatioValue object with updated values
- * @throws Error if attempting to update maxRelNumber (immutable)
+ * @throws {Error} if attempting to update maxRelNumber (immutable)
  * @example
  * const obj = {
  *   absNumber: 100,

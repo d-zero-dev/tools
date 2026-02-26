@@ -4,7 +4,7 @@ import { parseUrl } from './parse-url.js';
  * Validates that all URLs share the same hostname
  * @param urls - Array of URLs to validate
  * @returns The common hostname if all URLs share the same host
- * @throws Error if URLs have different hostnames
+ * @throws {Error} if URLs have different hostnames
  * @example
  * ```ts
  * validateSameHost(['https://example.com/', 'https://example.com/page']) // 'example.com'

@@ -4,7 +4,7 @@ import type { DelayOptions } from './delay.js';
  * Parses an interval string from CLI arguments into a number or DelayOptions.
  * @param intervalString - The interval string to parse
  * @returns Parsed interval as number (fixed) or DelayOptions (random range)
- * @throws Error if the string format is invalid
+ * @throws {Error} if the string format is invalid
  * @example
  * parseInterval("1000") // Returns 1000
  * parseInterval("500-1000") // Returns { random: { min: 500, max: 1000 } }
