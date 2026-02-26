@@ -1,6 +1,6 @@
 /**
  *
- * @param {...any} texts
+ * @param {...(string | null | undefined)} texts
  */
 export function p(...texts: (string | null | undefined)[]) {
 	return texts.filter(Boolean).join('\n\n');
@@ -8,7 +8,7 @@ export function p(...texts: (string | null | undefined)[]) {
 
 /**
  *
- * @param {...any} texts
+ * @param {...(string | null | undefined)} texts
  */
 export function br(...texts: (string | null | undefined)[]) {
 	return texts.filter(Boolean).join('\n');
