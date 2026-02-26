@@ -21,7 +21,9 @@ const auth: Auth = await authentication(
 	/**
 	 * クレデンシャルファイル
 	 *
-	 * @type {string}
+	 * `null`または`undefined`の場合、環境変数`GOOGLE_AUTH_CREDENTIALS`を使用します。
+	 *
+	 * @type {string | undefined | null}
 	 */
 	'./path/to/credential.json',
 
@@ -45,20 +47,36 @@ const auth: Auth = await authentication(
 );
 ```
 
-### 認証方法
+環境変数を利用する場合は、第1引数に`null`を渡します：
 
-**:warning: 実行時にローカルにトークンがない場合、対話形式で認証が要求されます。**
-
-```terminal
-🔑 [ Authorization (Google Sheets, Google Drive) ]
-
-🔰 Access this URL: https://accounts.google.com/o/oauth2/v2/..(略)..&redirect_uri=http%3A%2F%2Flocalhost
-
-Enter the URL from the redirected page here: |
+```ts
+const auth: Auth = await authentication(null, [
+	'https://www.googleapis.com/auth/spreadsheets',
+]);
 ```
 
-URLにアクセスしブラウザで認証をしたあとに、 http://localhost （**OAuth 2.0 クライアント ID**を発行の方法に依る）に移動します。
-サーバーの応答がなかったりページが表示されませんが、**移動した先のURLをそのままコピーして**、コマンドに貼り付けてエンターキーを押してください。
+クレデンシャルファイルの解決順序は以下の通りです：
+
+1. 第1引数で渡されたパス
+2. 環境変数`GOOGLE_AUTH_CREDENTIALS`
+3. いずれも未設定の場合はエラー
+
+### 認証方法
+
+**:warning: 実行時にローカルにトークンがない場合、ブラウザでの認証が要求されます。**
+
+```terminal
+🔑 [ Authorization (Google Sheets) ]
+
+🔰 Opening browser for authentication...
+   If the browser does not open automatically, visit:
+   https://accounts.google.com/o/oauth2/v2/..(略)..&redirect_uri=http%3A%2F%2Flocalhost%3A12345
+```
+
+ローカルに一時的なHTTPサーバーが起動し、ブラウザが自動的に開きます。Googleの認証画面で許可すると、ブラウザに「認証に成功しました」と表示され、ターミナルに自動で戻ります。
+
+- ブラウザが自動で開かない場合は、表示されたURLに手動でアクセスしてください
+- 5分以内に認証を完了しない場合はタイムアウトします
 
 ## 型のエクスポート
 
