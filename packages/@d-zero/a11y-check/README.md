@@ -23,6 +23,7 @@ npx @d-zero/a11y-check <url>... [options]
 - `<url>`: 対象のURL（複数指定可能）
 - `-s, --screenshot`: スクリーンショットを撮影する（デフォルト: false）
 - `-o, --out <url>`: GoogleスプレッドシートのURL（デフォルト: 標準出力）
+- `-c, --credentials <file>`: Google認証用のクレデンシャルJSONファイルのパス（または環境変数`GOOGLE_AUTH_CREDENTIALS`で指定）
 - `--scenarios <scenarios>`: チェックシナリオ（カンマ区切り、利用可能: axe,01,02、デフォルト: axe）
 - `--cache <true|false>`: キャッシュを使用する（デフォルト: true）
 - `--cacheDir <dir>`: キャッシュディレクトリ（デフォルト: .cache）
@@ -120,13 +121,24 @@ export default async function (page, { name, width, resolution, log }) {
 
 `-o`オプションでGoogleスプレッドシートのURLを指定すると、詳細なレポートが出力されます。
 
-### 必要な環境変数
+### クレデンシャルの設定
 
-Googleスプレッドシートに出力するには、以下の環境変数が必要です：
+Googleスプレッドシートに出力するには、クレデンシャルファイルが必要です。以下のいずれかの方法で指定します：
+
+**方法1: CLIオプションで指定**
+
+```bash
+npx @d-zero/a11y-check -f urls.txt -o https://docs.google.com/spreadsheets/d/xxx/edit -c /path/to/credential.json
+```
+
+**方法2: 環境変数で指定**
 
 ```bash
 export GOOGLE_AUTH_CREDENTIALS='/path/to/credential.json'
+npx @d-zero/a11y-check -f urls.txt -o https://docs.google.com/spreadsheets/d/xxx/edit
 ```
+
+CLIオプション`-c`が優先され、未指定の場合は環境変数`GOOGLE_AUTH_CREDENTIALS`が使用されます。
 
 クレデンシャルファイルは、Google Cloud Consoleの[APIとサービス](https://console.cloud.google.com/apis/credentials)から**OAuth 2.0 クライアント ID**（アプリケーションの種類は**デスクトップ**）を発行してダウンロードします。
 
