@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.7.6...@d-zero/a11y-check@0.8.0) (2026-02-26)
+
+### Features
+
+- **a11y-check:** add --credentials CLI option for Google auth ([fd63d91](https://github.com/d-zero-dev/tools/commit/fd63d91c31748c5c05ea9ef804b5bcfbbedddb84))
+
 ## [0.7.6](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.7.5...@d-zero/a11y-check@0.7.6) (2026-02-26)
 
 **Note:** Version bump only for package @d-zero/a11y-check

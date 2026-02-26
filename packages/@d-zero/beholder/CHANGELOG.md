@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@0.1.29...@d-zero/beholder@2.0.0) (2026-02-26)
+
+- feat(beholder)!: replace SubProcessRunner with in-process Scraper ([eaf2768](https://github.com/d-zero-dev/tools/commit/eaf276898d96dccf6b504b22b7c8f0234162e82e))
+
+### BREAKING CHANGES
+
+- SubProcessRunner and related event types are removed.
+  Use the new Scraper class with scrapeStart(page, url) instead.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
 ## [0.1.29](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@0.1.28...@d-zero/beholder@0.1.29) (2026-02-24)
 
 **Note:** Version bump only for package @d-zero/beholder

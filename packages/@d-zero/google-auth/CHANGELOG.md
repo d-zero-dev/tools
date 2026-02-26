@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.5.6...@d-zero/google-auth@0.6.0) (2026-02-26)
+
+### Features
+
+- **google-auth:** replace manual code entry with local server OAuth redirect ([5758667](https://github.com/d-zero-dev/tools/commit/5758667f56c9b1c09a70d67c5aa7974ad146ad0d))
+
 ## [0.5.6](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.5.5...@d-zero/google-auth@0.5.6) (2026-02-24)
 
 **Note:** Version bump only for package @d-zero/google-auth

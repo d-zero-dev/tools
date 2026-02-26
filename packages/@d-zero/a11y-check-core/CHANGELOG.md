@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.12](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.6.11...@d-zero/a11y-check-core@0.6.12) (2026-02-26)
+
+**Note:** Version bump only for package @d-zero/a11y-check-core
+
 ## [0.6.11](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.6.10...@d-zero/a11y-check-core@0.6.11) (2026-02-26)
 
 **Note:** Version bump only for package @d-zero/a11y-check-core
