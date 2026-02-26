@@ -1,246 +1,161 @@
 # `@d-zero/roar`
 
-A CLI helper library built on top of [meow](https://github.com/sindresorhus/meow) with enhanced type safety and command support.
+サブコマンドごとにフラグ定義を持てる型安全な CLI ヘルパーライブラリです。[yargs-parser](https://github.com/yargs/yargs-parser) をベースに構築されています。
 
-## Installation
+## インストール
 
 ```bash
-npm install @d-zero/roar
+yarn add @d-zero/roar
 ```
 
-## Features
+## 特徴
 
-- 🎯 **Type-safe CLI definitions** - Full TypeScript support with generic types
-- 🚀 **Command-based routing** - Easy command parsing with type inference
-- 📝 **Auto-generated help** - Beautiful help text using cli-meow-help
-- ⚡ **Built on meow** - Leverage the power of the popular meow library
-- 🎨 **Customizable** - Header, footer, and error handling support
+- **サブコマンドディスパッチ** — コマンドごとに独立したフラグ定義と型推論
+- **型安全なフラグ** — TypeScript の条件型でフラグ値を正確に推論
+- **自動ヘルプ生成** — `--help` / `-h` でコマンドごとのヘルプテキストを表示
+- **camelCase → kebab-case 変換** — フラグ名を CLI 表記に自動変換
 
-## Usage
+## 使い方
 
-### Basic CLI (No Commands)
-
-シンプルなCLIツールを作成する場合：
+### 基本的な使い方
 
 ```typescript
-import { roar } from '@d-zero/roar';
+import { parseCli } from '@d-zero/roar';
 
-const cli = roar({
+const result = parseCli({
 	name: 'my-tool',
-	description: 'A simple CLI tool',
-	flags: {
-		verbose: {
-			type: 'boolean',
-			shortFlag: 'v',
-			description: 'Enable verbose output',
-		},
-		output: {
-			type: 'string',
-			shortFlag: 'o',
-			description: 'Output file path',
-		},
-	},
-});
-
-console.log('Args:', cli.args);
-console.log('Flags:', cli.flags);
-// cli.flags.verbose: boolean
-// cli.flags.output: string | undefined
-```
-
-### CLI with Commands
-
-コマンドベースのCLIを作成する場合：
-
-```typescript
-import { roar } from '@d-zero/roar';
-
-const cli = roar({
-	name: 'git-tool',
-	description: 'A git-like CLI tool',
-	header: 'My Git Tool v1.0.0',
-	footer: 'For more information, visit https://example.com',
 	commands: {
-		clone: { desc: 'Clone a repository' },
-		pull: { desc: 'Pull changes from remote' },
-		push: { desc: 'Push changes to remote' },
-	},
-	flags: {
-		force: {
-			type: 'boolean',
-			shortFlag: 'f',
-			description: 'Force operation',
+		crawl: {
+			desc: 'Crawl a website',
+			flags: {
+				depth: { type: 'number', shortFlag: 'd', desc: 'Max depth', default: 10 },
+				verbose: { type: 'boolean', shortFlag: 'v', desc: 'Verbose output' },
+				url: { type: 'string', shortFlag: 'u', desc: 'Target URL' },
+			},
+		},
+		analyze: {
+			desc: 'Run analysis',
 		},
 	},
+	onError: () => true,
 });
 
-// cli.command: 'clone' | 'pull' | 'push' | undefined
-switch (cli.command) {
-	case 'clone':
-		console.log('Cloning repository...', cli.args);
-		break;
-	case 'pull':
-		console.log('Pulling changes...', cli.flags.force);
-		break;
-	case 'push':
-		console.log('Pushing changes...');
-		break;
+if (result.command === 'crawl') {
+	console.log(result.flags.depth); // number（default: 10 から推論）
+	console.log(result.flags.verbose); // boolean | undefined
+	console.log(result.flags.url); // string | undefined
 }
 ```
 
-### Error Handling
+### エラーハンドリング
 
-カスタムエラーハンドラを設定する場合：
+`onError` コールバックでコマンド未指定や不明なコマンドのエラーを処理できます。`true` を返すとヘルプテキストを stderr に表示してから `process.exit(1)` します。
 
 ```typescript
-const cli = roar({
-	name: 'my-cli',
+const result = parseCli({
+	name: 'my-tool',
 	commands: {
 		build: { desc: 'Build the project' },
 		test: { desc: 'Run tests' },
 	},
-	flags: {},
 	onError: (error) => {
 		console.error('Error:', error.message);
-		// true を返すとヘルプを表示してプロセス終了
-		// false を返すとヘルプを表示せずにプロセス終了
-		return true;
+		return true; // ヘルプを表示
 	},
 });
 ```
 
 ## API
 
-### `roar<CommandType, Flags>(settings)`
+### `parseCli<Commands>(settings)`
 
-CLIアプリケーションを作成します。
+`process.argv` をパースし、マッチしたサブコマンドと型付きフラグを返します。
 
-#### Parameters
+#### パラメータ
 
-- `settings`: `CliSettings<CommandType, Flags>` - CLI設定オブジェクト
+`settings` オブジェクト:
 
-##### `CliSettings` Properties
+| プロパティ | 型                           | 必須 | 説明                                                    |
+| ---------- | ---------------------------- | ---- | ------------------------------------------------------- |
+| `name`     | `string`                     | ✓    | CLI プログラム名（ヘルプテキストに表示）                |
+| `commands` | `Record<string, CommandDef>` | ✓    | サブコマンド定義のマップ                                |
+| `onError`  | `(error: Error) => boolean`  | -    | コマンド未指定時のエラーハンドラ（`true` でヘルプ表示） |
 
-| Property      | Type                                    | Required | Description                        |
-| ------------- | --------------------------------------- | -------- | ---------------------------------- |
-| `name`        | `string`                                | ✓        | CLIツールの名前                    |
-| `description` | `string`                                | -        | CLIツールの説明                    |
-| `header`      | `string`                                | -        | ヘルプテキストのヘッダー           |
-| `footer`      | `string`                                | -        | ヘルプテキストのフッター           |
-| `commands`    | `Record<CommandType, { desc: string }>` | -        | 利用可能なコマンド定義             |
-| `flags`       | `Options<Flags>['flags']`               | ✓        | フラグ定義（meow互換）             |
-| `onError`     | `(error: Error) => boolean`             | -        | エラーハンドラ（trueでヘルプ表示） |
+#### 戻り値
 
-#### Returns
+`RoarResult<Commands>` — 判別共用体:
 
-`RoarResult<CommandType, Flags>` オブジェクト：
+| プロパティ | 型              | 説明                                       |
+| ---------- | --------------- | ------------------------------------------ |
+| `command`  | `string`        | マッチしたコマンド名                       |
+| `args`     | `string[]`      | コマンド名に続く位置引数                   |
+| `flags`    | `InferFlags<F>` | コマンドのフラグ定義から推論された型付き値 |
 
-| Property  | Type                       | Description                              |
-| --------- | -------------------------- | ---------------------------------------- |
-| `command` | `CommandType \| undefined` | 実行されたコマンド（コマンド定義時のみ） |
-| `args`    | `string[]`                 | コマンドライン引数の配列                 |
-| `flags`   | `Result<Flags>['flags']`   | パースされたフラグオブジェクト           |
+### `CommandDef<F>`
 
-## Examples
+サブコマンドの定義です。
 
-### 実践的な例：ファイル処理ツール
+| プロパティ | 型       | 必須 | 説明                           |
+| ---------- | -------- | ---- | ------------------------------ |
+| `desc`     | `string` | ✓    | コマンドの説明                 |
+| `flags`    | `F`      | -    | フラグ定義。省略時はフラグなし |
 
-```typescript
-import { roar } from '@d-zero/roar';
-import { readFile, writeFile } from 'node:fs/promises';
+### フラグ定義
 
-const cli = roar({
-	name: 'file-processor',
-	description: 'Process files with various operations',
-	commands: {
-		convert: { desc: 'Convert file format' },
-		compress: { desc: 'Compress files' },
-		extract: { desc: 'Extract archive' },
-	},
-	flags: {
-		input: {
-			type: 'string',
-			shortFlag: 'i',
-			description: 'Input file path',
-			isRequired: true,
-		},
-		output: {
-			type: 'string',
-			shortFlag: 'o',
-			description: 'Output file path',
-		},
-		verbose: {
-			type: 'boolean',
-			shortFlag: 'v',
-			description: 'Verbose output',
-			default: false,
-		},
-	},
-	onError: (error) => {
-		console.error(`❌ ${error.message}`);
-		return true;
-	},
-});
+各フラグは以下のプロパティを持ちます:
 
-async function main() {
-	const inputPath = cli.flags.input;
-	const outputPath = cli.flags.output ?? `${inputPath}.out`;
-	const verbose = cli.flags.verbose;
+| プロパティ   | 型        | 対象型                              | 説明                                  |
+| ------------ | --------- | ----------------------------------- | ------------------------------------- |
+| `type`       | `string`  | `'string' \| 'number' \| 'boolean'` | フラグの型                            |
+| `shortFlag`  | `string`  | 全型                                | 1文字のエイリアス（例: `'d'` → `-d`） |
+| `desc`       | `string`  | 全型                                | ヘルプテキストに表示する説明          |
+| `default`    | 型に依存  | 全型                                | デフォルト値                          |
+| `isMultiple` | `boolean` | `string` / `number`                 | `true` で配列値として受け取り         |
+| `isRequired` | `boolean` | `string`                            | `true` で必須フラグ                   |
 
-	switch (cli.command) {
-		case 'convert':
-			if (verbose) console.log(`Converting ${inputPath} to ${outputPath}`);
-			// 変換処理
-			break;
-		case 'compress':
-			if (verbose) console.log(`Compressing ${inputPath}`);
-			// 圧縮処理
-			break;
-		case 'extract':
-			if (verbose) console.log(`Extracting ${inputPath}`);
-			// 解凍処理
-			break;
-	}
-}
+### `InferFlags<F>`
 
-main();
-```
+フラグ定義から実行時の値の型を推論するユーティリティ型です。
 
-## Type Safety
+## 型安全性
 
-`roar`はジェネリック型を活用して完全な型安全性を提供します：
+`parseCli` はジェネリック型を活用してコマンドごとに正確な型推論を提供します:
 
 ```typescript
-// コマンド型が推論される
-const cli = roar({
+const result = parseCli({
+	name: 'my-tool',
 	commands: {
-		start: { desc: 'Start server' },
-		stop: { desc: 'Stop server' },
+		serve: {
+			desc: 'Start server',
+			flags: {
+				port: { type: 'number', default: 3000 },
+				host: { type: 'string', default: 'localhost' },
+				open: { type: 'boolean' },
+			},
+		},
+		build: {
+			desc: 'Build project',
+			flags: {
+				outDir: { type: 'string', isRequired: true },
+				minify: { type: 'boolean', default: false },
+			},
+		},
 	},
-	flags: {
-		port: { type: 'number' },
-	},
+	onError: () => true,
 });
 
-// ✅ 型安全：cli.command は 'start' | 'stop' | undefined
-if (cli.command === 'start') {
-	// OK
+if (result.command === 'serve') {
+	result.flags.port; // number（default があるため undefined にならない）
+	result.flags.host; // string
+	result.flags.open; // boolean | undefined
 }
 
-// ❌ TypeScriptエラー：'invalid' は許可されていない
-if (cli.command === 'invalid') {
-	// エラー
+if (result.command === 'build') {
+	result.flags.outDir; // string（isRequired のため undefined にならない）
+	result.flags.minify; // boolean
 }
-
-// ✅ 型安全：cli.flags.port は number | undefined
-const port: number = cli.flags.port ?? 3000;
 ```
 
-## Related
-
-- [meow](https://github.com/sindresorhus/meow) - Base CLI helper
-- [cli-meow-help](https://github.com/jdillard/cli-meow-help) - Help text formatter
-
-## License
+## ライセンス
 
 MIT

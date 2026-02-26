@@ -100,13 +100,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@colors/colors@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@colors/colors@npm:1.5.0"
-  checksum: 10c0/eb42729851adca56d19a08e48d5a1e95efd2a32c55ae0323de8119052be0510d4b7a1611f2abcbf28c044a6c11e6b7d38f99fccdad7429300c37a8ea5fb95b44
-  languageName: node
-  linkType: hard
-
 "@commitlint/cli@npm:20.3.0":
   version: 20.3.0
   resolution: "@commitlint/cli@npm:20.3.0"
@@ -976,11 +969,8 @@ __metadata:
     "@d-zero/puppeteer-page-scan": "npm:4.4.4"
     "@d-zero/shared": "npm:0.20.0"
     "@types/debug": "npm:4.1.12"
-    "@types/follow-redirects": "npm:1.14.4"
     debug: "npm:4.4.3"
-    follow-redirects: "npm:1.15.11"
     puppeteer: "npm:24.37.5"
-    typescript-fsa: "npm:3.0.0"
   languageName: unknown
   linkType: soft
 
@@ -1290,8 +1280,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/roar@workspace:packages/@d-zero/roar"
   dependencies:
-    cli-meow-help: "npm:4.0.0"
-    meow: "npm:14.1.0"
+    "@types/yargs-parser": "npm:21.0.3"
+    yargs-parser: "npm:22.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3926,6 +3916,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/yargs-parser@npm:21.0.3":
+  version: 21.0.3
+  resolution: "@types/yargs-parser@npm:21.0.3"
+  checksum: 10c0/e71c3bd9d0b73ca82e10bee2064c384ab70f61034bbfb78e74f5206283fc16a6d85267b606b5c22cb2a3338373586786fed595b2009825d6a9115afba36560a0
+  languageName: node
+  linkType: hard
+
 "@types/yauzl@npm:^2.9.1":
   version: 2.10.3
   resolution: "@types/yauzl@npm:2.10.3"
@@ -5289,7 +5286,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk-template@npm:^1.1.0, chalk-template@npm:^1.1.2":
+"chalk-template@npm:^1.1.2":
   version: 1.1.2
   resolution: "chalk-template@npm:1.1.2"
   dependencies:
@@ -5329,7 +5326,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^5.2.0, chalk@npm:^5.3.0, chalk@npm:^5.6.2":
+"chalk@npm:^5.2.0, chalk@npm:^5.6.2":
   version: 5.6.2
   resolution: "chalk@npm:5.6.2"
   checksum: 10c0/99a4b0f0e7991796b1e7e3f52dceb9137cae2a9dfc8fc0784a550dc4c558e15ab32ed70b14b21b52beb2679b4892b41a0aa44249bcb996f01e125d58477c6976
@@ -5489,17 +5486,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cli-meow-help@npm:4.0.0":
-  version: 4.0.0
-  resolution: "cli-meow-help@npm:4.0.0"
-  dependencies:
-    chalk: "npm:^5.3.0"
-    chalk-template: "npm:^1.1.0"
-    cli-table3: "npm:^0.6.0"
-  checksum: 10c0/0e7d652b586ad8fb3c7b6823e949ae2c6d22c2260b7026e1eb00911d68b8f455803698775387fd42ddd803e7d39e54dd61a522b0b15443aba0fee48b7efebe6e
-  languageName: node
-  linkType: hard
-
 "cli-spinners@npm:2.6.1":
   version: 2.6.1
   resolution: "cli-spinners@npm:2.6.1"
@@ -5511,19 +5497,6 @@ __metadata:
   version: 2.9.2
   resolution: "cli-spinners@npm:2.9.2"
   checksum: 10c0/907a1c227ddf0d7a101e7ab8b300affc742ead4b4ebe920a5bf1bc6d45dce2958fcd195eb28fa25275062fe6fa9b109b93b63bc8033396ed3bcb50297008b3a3
-  languageName: node
-  linkType: hard
-
-"cli-table3@npm:^0.6.0":
-  version: 0.6.5
-  resolution: "cli-table3@npm:0.6.5"
-  dependencies:
-    "@colors/colors": "npm:1.5.0"
-    string-width: "npm:^4.2.0"
-  dependenciesMeta:
-    "@colors/colors":
-      optional: true
-  checksum: 10c0/d7cc9ed12212ae68241cc7a3133c52b844113b17856e11f4f81308acc3febcea7cc9fd298e70933e294dd642866b29fd5d113c2c098948701d0c35f09455de78
   languageName: node
   linkType: hard
 
@@ -10216,13 +10189,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"meow@npm:14.1.0":
-  version: 14.1.0
-  resolution: "meow@npm:14.1.0"
-  checksum: 10c0/f0ca4bb4fd08e4b9470fcbb7332deb61d72d40d4bda18ffb87c1a98e5014c0b44749ae9f0cab18fa532e26d61cef5d453831f9ae23ac09fa8ea0e0469be73ebc
-  languageName: node
-  linkType: hard
-
 "meow@npm:^12.0.1":
   version: 12.1.1
   resolution: "meow@npm:12.1.1"
@@ -14642,13 +14608,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-fsa@npm:3.0.0":
-  version: 3.0.0
-  resolution: "typescript-fsa@npm:3.0.0"
-  checksum: 10c0/ab688d297549d6c209db224f0f4b5353ca7463cbc9210c8fd6cc65dc1e2068847f3af7c2fd1d0a4f7a439e0e84f6a385b455b962b59df952d61396a65afb462d
-  languageName: node
-  linkType: hard
-
 "typescript@npm:5.9.3, typescript@npm:>=3 < 6":
   version: 5.9.3
   resolution: "typescript@npm:5.9.3"
@@ -15532,6 +15491,13 @@ __metadata:
   version: 21.1.1
   resolution: "yargs-parser@npm:21.1.1"
   checksum: 10c0/f84b5e48169479d2f402239c59f084cfd1c3acc197a05c59b98bab067452e6b3ea46d4dd8ba2985ba7b3d32a343d77df0debd6b343e5dae3da2aab2cdf5886b2
+  languageName: node
+  linkType: hard
+
+"yargs-parser@npm:22.0.0":
+  version: 22.0.0
+  resolution: "yargs-parser@npm:22.0.0"
+  checksum: 10c0/cb7ef81759c4271cb1d96b9351dbbc9a9ce35d3e1122d2b739bf6c432603824fa02c67cc12dcef6ea80283379d63495686e8f41cc7b06c6576e792aba4d33e1c
   languageName: node
   linkType: hard
 

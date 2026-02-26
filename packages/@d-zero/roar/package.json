@@ -1,19 +1,17 @@
 {
 	"name": "@d-zero/roar",
-	"version": "0.2.1",
-	"description": "A CLI helper library built on top of meow.",
+	"version": "1.0.0",
+	"description": "A CLI helper library with per-subcommand flag support",
 	"author": "D-ZERO",
 	"license": "MIT",
 	"publishConfig": {
 		"access": "public"
 	},
 	"type": "module",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
 	"exports": {
 		".": {
-			"import": "./dist/index.js",
-			"types": "./dist/index.d.ts"
+			"import": "./dist/parse-cli.js",
+			"types": "./dist/parse-cli.d.ts"
 		}
 	},
 	"files": [
@@ -25,7 +23,9 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"cli-meow-help": "4.0.0",
-		"meow": "14.1.0"
+		"yargs-parser": "22.0.0"
+	},
+	"devDependencies": {
+		"@types/yargs-parser": "21.0.3"
 	}
 }
