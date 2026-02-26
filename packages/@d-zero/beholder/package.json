@@ -1,7 +1,7 @@
 {
 	"name": "@d-zero/beholder",
-	"version": "0.1.29",
-	"description": "The tool for scraping and recording web pages",
+	"version": "1.0.0",
+	"description": "Page-level scraper for web crawling and auditing",
 	"author": "D-ZERO",
 	"license": "MIT",
 	"publishConfig": {
@@ -23,12 +23,9 @@
 		"@d-zero/puppeteer-page-scan": "4.4.4",
 		"@d-zero/shared": "0.20.0",
 		"debug": "4.4.3",
-		"follow-redirects": "1.15.11",
-		"puppeteer": "24.37.5",
-		"typescript-fsa": "3.0.0"
+		"puppeteer": "24.37.5"
 	},
 	"devDependencies": {
-		"@types/debug": "4.1.12",
-		"@types/follow-redirects": "1.14.4"
+		"@types/debug": "4.1.12"
 	}
 }

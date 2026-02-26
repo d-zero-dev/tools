@@ -1,16 +1,10 @@
 # `@d-zero/beholder`
 
-Webページのスクレイピングと記録を行うツールです。
+Puppeteer を使用してWebページをスクレイピングし、メタデータ・リンク・画像・ネットワークリソースを収集するライブラリです。
 
-**名前の由来**: **[Beholder](https://forgottenrealms.fandom.com/wiki/Beholder)** という名前は、多くの目を持つ神話上の生物に由来しています。この生物のように、このツールは周囲のすべてを観察する能力を象徴しており、Webページを正確かつ徹底的にスクレイピングして記録し、詳細を見逃しません。
+**名前の由来**: **[Beholder](https://forgottenrealms.fandom.com/wiki/Beholder)** という名前は、多くの目を持つ神話上の生物に由来しています。この生物のように、このツールはWebページを正確かつ徹底的にスクレイピングして記録し、詳細を見逃しません。
 
 ## インストール
-
-```bash
-npm install @d-zero/beholder
-```
-
-または
 
 ```bash
 yarn add @d-zero/beholder
@@ -18,585 +12,286 @@ yarn add @d-zero/beholder
 
 ## 概要
 
-`@d-zero/beholder` は、Puppeteerを使用してWebページをスクレイピングし、ページのメタデータ、画像、リンク、およびHTML内容を収集するための強力なツールです。サブプロセスでスクレイピングを実行することで、メモリ効率的な運用が可能です。
+`@d-zero/beholder` は、Puppeteer の `Page` オブジェクトを受け取り、単一ページのスクレイピングを行うインプロセス型のスクレイパーです。
+
+**主な特徴:**
+
+- 結果は `ScrapeResult` として戻り値で返却（イベント経由ではない）
+- ストリーミングイベント（`changePhase`, `resourceResponse`）で進捗を監視可能
+- キーワード・パス除外によるページスキップ
+- 複数デバイスプリセット対応のレスポンシブ画像キャプチャ
+- ブラウザ管理は呼び出し側の責任（Scraperはページ操作のみ）
 
 ## エクスポートされるAPI
 
-### クラス
+### `Scraper`（デフォルトエクスポート）
 
-#### `Scraper` (デフォルトエクスポート)
-
-メインのスクレイパークラスです。Puppeteerを使用してWebページをスクレイピングし、イベントを通じて進捗状況を通知します。
+ページレベルのスクレイパークラスです。`TypedAwaitEventEmitter` を継承しています。
 
 ```typescript
 import Scraper from '@d-zero/beholder';
 ```
 
-##### メソッド
+#### `scrapeStart(page, url, options?, isSkip?)`
 
-###### `scrapeStart(url: ExURL, options?: Partial<ScraperOptions>, isSkip?: boolean): Promise<PageData | void>`
-
-指定されたURLのスクレイピングを開始します。
+Puppeteer ページ上でスクレイピングを実行します。
 
 **パラメータ:**
 
-- `url` (`ExURL`): スクレイピング対象のURL
-- `options` (`Partial<ScraperOptions>`, オプション): スクレイピングオプション
-  - `isExternal` (`boolean`): 外部URLかどうか (デフォルト: `false`)
-  - `isGettingImages` (`boolean`): 画像情報を取得するかどうか (デフォルト: `true`)
-  - `excludeKeywords` (`string[]`): 除外するキーワードのリスト (デフォルト: `[]`)
-  - `executablePath` (`string | null`): Chromeの実行可能ファイルパス (デフォルト: `null`)
-  - `isTitleOnly` (`boolean`): タイトルのみを取得するかどうか (デフォルト: `false`)
-  - `screenshot` (`string | null`): スクリーンショットの保存パス (デフォルト: `null`)
-  - `disableQueries` (`boolean`, オプション): クエリパラメータを無効にするかどうか
-- `isSkip` (`boolean`, オプション): スキップするかどうか (デフォルト: `false`)
+- `page` (`Page`) — Puppeteer ページインスタンス
+- `url` (`ExURL`) — スクレイピング対象のURL
+- `options` (`Partial<ScraperOptions>`, 省略可) — スクレイピングオプション
+- `isSkip` (`boolean`, 省略可) — `true` でネットワークリクエストなしにスキップ
 
-**戻り値:**
+**戻り値:** `Promise<ScrapeResult>`
 
-- `Promise<PageData | void>`: スクレイピング結果のページデータ、またはスキップされた場合は `void`
+- `type: "success"` — `pageData` にスクレイピング結果を格納
+- `type: "skipped"` — `ignored` にスキップ理由を格納
+- `type: "error"` — `error` にエラー詳細を格納
 
 **使用例:**
 
 ```typescript
+import Scraper from '@d-zero/beholder';
+import { parseUrl } from '@d-zero/shared/parse-url';
+import { launch } from 'puppeteer';
+
+const browser = await launch();
+const page = await browser.newPage();
+
 const scraper = new Scraper();
 
-// イベントリスナーを登録
-scraper.on('scrapeEnd', async (event) => {
-	console.log('スクレイピング完了:', event.result);
-});
-
-scraper.on('error', async (event) => {
-	console.error('エラー発生:', event.error);
-});
-
-// スクレイピングを開始
-const url = parseUrl('https://example.com');
-await scraper.scrapeStart(url, {
-	isGettingImages: true,
-	excludeKeywords: ['広告', 'スポンサー'],
-});
-
-// 完了後にクリーンアップ
-await scraper.destroy(false);
-```
-
-###### `destroy(isExternal: boolean): Promise<void>`
-
-スクレイパーインスタンスを破棄し、ブラウザを閉じます。
-
-**パラメータ:**
-
-- `isExternal` (`boolean`): 外部URLのスクレイピングかどうか
-
-**戻り値:**
-
-- `Promise<void>`
-
-**使用例:**
-
-```typescript
-await scraper.destroy(false);
-```
-
-##### イベント
-
-`Scraper` クラスは `TypedAwaitEventEmitter` を継承しており、以下のイベントを発行します:
-
-- `ignoreAndSkip`: ページがキーワードマッチングによりスキップされた場合
-- `resourceResponse`: リソースが取得された場合
-- `scrapeEnd`: スクレイピングが完了した場合
-- `destroyed`: スクレイパーが破棄された場合
-- `error`: エラーが発生した場合
-- `changePhase`: スクレイピングフェーズが変更された場合
-
-**イベントの使用例:**
-
-```typescript
+// 進捗イベントを監視
 scraper.on('changePhase', async (event) => {
-	console.log(`フェーズ: ${event.name} - ${event.message}`);
+	console.log(`[${event.pid}] ${event.name}: ${event.message}`);
 });
 
-scraper.on('resourceResponse', async (event) => {
-	console.log(`リソース取得: ${event.resource.url.href}`);
-});
-```
-
-#### `SubProcessRunner`
-
-サブプロセスでスクレイパーを実行するためのクラスです。メモリ効率的なスクレイピングを実現します。
-
-```typescript
-import { SubProcessRunner } from '@d-zero/beholder';
-```
-
-##### コンストラクタ
-
-```typescript
-new SubProcessRunner(resetTime: number)
-```
-
-**パラメータ:**
-
-- `resetTime` (`number`): サブプロセスをリセットするまでのスクレイピング回数
-
-##### プロパティ
-
-###### `state: 'waiting' | 'running'` (読み取り専用)
-
-現在のサブプロセスの状態を取得します。
-
-##### メソッド
-
-###### `start(url: ExURL, options: ScraperOptions, isSkip: boolean, interval: number): void`
-
-サブプロセスでスクレイピングを開始します。
-
-**パラメータ:**
-
-- `url` (`ExURL`): スクレイピング対象のURL
-- `options` (`ScraperOptions`): スクレイピングオプション
-- `isSkip` (`boolean`): スキップするかどうか
-- `interval` (`number`): スクレイピング間隔(ミリ秒)
-
-**例外:**
-
-- サブプロセスが既に実行中の場合はエラーをスローします
-
-**使用例:**
-
-```typescript
-const runner = new SubProcessRunner(10); // 10回ごとにリセット
-
-runner.on('scrapeEvent', async (event) => {
-	if (event.type === '@@scraper/scrapeEnd') {
-		console.log('スクレイピング完了:', event.payload.result);
-	}
+// スクレイピングを実行
+const url = parseUrl('https://example.com');
+const result = await scraper.scrapeStart(page, url, {
+	captureImages: true,
+	excludeKeywords: ['広告'],
+	isExternal: false,
 });
 
-runner.start(
-	url,
-	{
-		isExternal: false,
-		isGettingImages: true,
-		excludeKeywords: [],
-		executablePath: null,
-		isTitleOnly: false,
-		screenshot: null,
-	},
-	false,
-	1000,
-);
+if (result.type === 'success') {
+	console.log('タイトル:', result.pageData?.meta.title);
+	console.log('リンク数:', result.pageData?.anchorList.length);
+	console.log('画像数:', result.pageData?.imageList.length);
+	console.log('サブリソース数:', result.resources.length);
+}
+
+// クリーンアップはブラウザレベルで行う
+await page.close();
+await browser.close();
 ```
 
-###### `destory(): void`
+#### イベント
 
-サブプロセスを破棄します。
+| イベント名         | 説明                                           |
+| ------------------ | ---------------------------------------------- |
+| `changePhase`      | スクレイピングフェーズが遷移した場合           |
+| `resourceResponse` | サブリソースのレスポンスがキャプチャされた場合 |
 
-**注意:** メソッド名は `destory` (typo) ですが、パッケージの互換性のため維持されています。
+### `ScraperOptions`
 
-**使用例:**
+| プロパティ          | 型         | デフォルト | 説明                                                             |
+| ------------------- | ---------- | ---------- | ---------------------------------------------------------------- |
+| `isExternal`        | `boolean`  | `false`    | 外部URLかどうか                                                  |
+| `captureImages`     | `boolean`  | `true`     | 画像データを取得するかどうか                                     |
+| `excludeKeywords`   | `string[]` | `[]`       | HTML内にマッチしたらスキップするキーワード                       |
+| `metadataOnly`      | `boolean`  | `false`    | メタデータのみ取得（ブラウザスクレイピングなし）                 |
+| `imageLoadTimeout`  | `number`   | `5000`     | 画像読み込み待機のタイムアウト（ms）                             |
+| `disableQueries`    | `boolean`  | -          | URLパース時にクエリパラメータを除去するかどうか                  |
+| `retries`           | `number`   | -          | ネットワーク操作のリトライ回数                                   |
+| `headCheckResult`   | `PageData` | -          | 事前取得したHEADチェック結果（省略時はHEADリクエストをスキップ） |
+| `navigationTimeout` | `number`   | `60000`    | `page.goto()` のタイムアウト（ms）                               |
+
+### ユーティリティ関数
+
+#### `isError(status)`
+
+HTTPステータスコードがエラーかどうかを判定します。200-399 は成功、それ以外はエラーです。
 
 ```typescript
-runner.destory();
+import { isError } from '@d-zero/beholder';
+
+isError(200); // false
+isError(404); // true
 ```
 
-###### `kill(): void`
+#### `detectCompress(headers)` / `detectCDN(headers)`
 
-サブプロセスを強制終了します(SIGKILL)。
-
-**使用例:**
-
-```typescript
-runner.kill();
-```
-
-###### `getUndeadPid(): number[]`
-
-終了できなかった(ゾンビ)プロセスのPIDリストを取得します。
-
-**戻り値:**
-
-- `number[]`: ゾンビプロセスのPIDリスト
-
-**使用例:**
-
-```typescript
-const zombiePids = runner.getUndeadPid();
-console.log('ゾンビプロセス:', zombiePids);
-```
-
-##### イベント
-
-- `reset`: サブプロセスがリセットされた場合
-- `scrapeEvent`: スクレイピングイベントが発生した場合
-- `changePhase`: フェーズが変更された場合
-- `error`: エラーが発生した場合
+レスポンスヘッダーから圧縮方式・CDNプロバイダを検出します（`@d-zero/shared` からの再エクスポート）。
 
 ### 型定義
 
-#### `ExURL`
+#### `ScrapeResult`
 
-拡張されたURL情報を含む型です。
+スクレイピング操作の結果を表します。
 
 ```typescript
-type ExURL = {
-	href: string; // 完全なURL
-	_originUrlString: string; // パース前の元のURL文字列
-	withoutHash: string; // ハッシュなしのURL
-	withoutHashAndAuth: string; // ハッシュと認証情報なしのURL
-	protocol: string; // プロトコル(例: "https:")
-	isHTTP: boolean; // HTTPまたはHTTPSかどうか
-	isSecure: boolean; // HTTPSかどうか
-	username: string | null; // 認証ユーザー名
-	password: string | null; // 認証パスワード
-	hostname: string; // ホスト名
-	port: string | null; // ポート番号
-	pathname: string | null; // パス
-	paths: string[]; // パスの配列
-	depth: number; // パスの深さ
-	dirname: string | null; // ディレクトリ名
-	basename: string | null; // ベース名(拡張子なしのファイル名)
-	isIndex: boolean; // インデックスページかどうか
-	extname: string | null; // ファイル拡張子
-	query: string | null; // クエリ文字列
-	hash: string | null; // ハッシュ
+type ScrapeResult = {
+	type: 'success' | 'skipped' | 'error';
+	pageData?: PageData;
+	resources: ResourceEntry[];
+	ignored?: { url: ExURL; matchedText: string; excludeKeywords: string[] };
+	error?: { name: string; message: string; stack?: string; shutdown: boolean };
 };
 ```
 
 #### `PageData`
 
-スクレイピング結果のページデータです。
+スクレイピング成功時のページデータです。
 
 ```typescript
 type PageData = {
-	url: ExURL; // ページのURL
-	redirectPaths: string[]; // リダイレクトパス
-	isTarget: boolean; // ターゲットページかどうか
-	isExternal: boolean; // 外部ページかどうか
-	status: number; // HTTPステータスコード
-	statusText: string; // HTTPステータステキスト
-	contentType: string | null; // コンテンツタイプ
-	contentLength: number | null; // コンテンツ長
-	responseHeaders: Record<string, string | string[] | undefined> | null; // レスポンスヘッダー
-	meta: Meta; // メタ情報
-	anchorList: AnchorData[]; // アンカーリスト
-	imageList: ImageElement[]; // 画像リスト
-	html: string; // HTML内容
-	isSkipped: false; // スキップされたかどうか
+	url: ExURL;
+	redirectPaths: string[];
+	isTarget: boolean;
+	isExternal: boolean;
+	status: number;
+	statusText: string;
+	contentType: string | null;
+	contentLength: number | null;
+	responseHeaders: Record<string, string | string[] | undefined> | null;
+	meta: Meta;
+	anchorList: AnchorData[];
+	imageList: ImageElement[];
+	html: string;
+	isSkipped: false;
 };
 ```
 
 #### `Meta`
 
-ページのメタデータです。
+ページの `<head>` から抽出されたメタデータです。
 
 ```typescript
 type Meta = {
-	lang?: string; // 言語
-	title: string; // タイトル
-	description?: string; // 説明
-	keywords?: string; // キーワード
-	noindex?: boolean; // noindexタグの有無
-	nofollow?: boolean; // nofollowタグの有無
-	noarchive?: boolean; // noarchiveタグの有無
-	canonical?: string; // 正規URL
-	alternate?: string; // 代替URL
-	'og:type'?: string; // Open Graph: type
-	'og:title'?: string; // Open Graph: title
-	'og:site_name'?: string; // Open Graph: site_name
-	'og:description'?: string; // Open Graph: description
-	'og:url'?: string; // Open Graph: url
-	'og:image'?: string; // Open Graph: image
-	'twitter:card'?: string; // Twitter Card: card
+	lang?: string;
+	title: string;
+	description?: string;
+	keywords?: string;
+	noindex?: boolean;
+	nofollow?: boolean;
+	noarchive?: boolean;
+	canonical?: string;
+	alternate?: string;
+	'og:type'?: string;
+	'og:title'?: string;
+	'og:site_name'?: string;
+	'og:description'?: string;
+	'og:url'?: string;
+	'og:image'?: string;
+	'twitter:card'?: string;
 };
 ```
 
 #### `AnchorData`
 
-アンカー要素のデータです。
+アンカー要素（`<a>` / `<area>`）のデータです。
 
 ```typescript
 type AnchorData = {
-	href: ExURL; // href属性の値
-	textContent: string; // アクセシブルな名前
+	href: ExURL;
+	textContent: string;
+	isExternal?: boolean;
 };
 ```
 
 #### `ImageElement`
 
-画像要素のデータです。
+画像要素のデータです。デバイスプリセットごとにキャプチャされます。
 
 ```typescript
 type ImageElement = {
-	src: string; // src属性
-	currentSrc: string; // 現在のsrc
-	alt: string; // alt属性
-	width: number; // 表示幅
-	height: number; // 表示高さ
-	naturalWidth: number; // 実際の幅
-	naturalHeight: number; // 実際の高さ
-	isLazy: boolean; // 遅延読み込みかどうか
-	viewportWidth: number; // ビューポート幅
-	sourceCode: string; // ソースコード
+	src: string;
+	currentSrc: string;
+	alt: string;
+	width: number;
+	height: number;
+	naturalWidth: number;
+	naturalHeight: number;
+	isLazy: boolean;
+	viewportWidth: number;
+	sourceCode: string;
+};
+```
+
+#### `ResourceEntry`
+
+ページ読み込み中にキャプチャされたサブリソースです。
+
+```typescript
+type ResourceEntry = {
+	log: NetworkLog;
+	resource: Omit<Resource, 'uid'>;
+	pageUrl: string;
 };
 ```
 
 #### `NetworkLog`
 
-ネットワークログの情報です。
+ネットワークリクエスト/レスポンスのログエントリです。
 
 ```typescript
 type NetworkLog = {
-	url: ExURL; // リクエストURL
-	status: number | null; // ステータスコード
-	contentLength: number; // コンテンツ長
-	contentType: string; // コンテンツタイプ
-	isError: boolean; // エラーかどうか
-	request: {
-		ts: number; // タイムスタンプ
-		headers: Record<string, string>; // リクエストヘッダー
-		method: string; // HTTPメソッド
-	};
+	url: ExURL;
+	status: number | null;
+	contentLength: number;
+	contentType: string;
+	isError: boolean;
+	request: { ts: number; headers: Record<string, string>; method: string };
 	response?: {
-		ts: number; // タイムスタンプ
-		status: number; // ステータスコード
-		statusText: string; // ステータステキスト
-		fromCache: boolean; // キャッシュから取得したかどうか
-		headers: Record<string, string>; // レスポンスヘッダー
+		ts: number;
+		status: number;
+		statusText: string;
+		fromCache: boolean;
+		headers: Record<string, string>;
 	};
 };
 ```
 
 #### `Resource`
 
-リソースの情報です。
+ネットワークリソースのメタデータです。
 
 ```typescript
 type Resource = {
-	url: ExURL; // リソースURL
-	isExternal: boolean; // 外部リソースかどうか
-	isError: boolean; // エラーかどうか
-	status: number | null; // ステータスコード
-	statusText: string | null; // ステータステキスト
-	contentType: string | null; // コンテンツタイプ
-	contentLength: number | null; // コンテンツ長
-	compress: false | CompressType; // 圧縮タイプ
-	cdn: false | CDNType; // CDNタイプ
-	headers: Record<string, string | string[] | undefined> | null; // ヘッダー
+	url: ExURL;
+	isExternal: boolean;
+	isError: boolean;
+	status: number | null;
+	statusText: string | null;
+	contentType: string | null;
+	contentLength: number | null;
+	compress: false | CompressType;
+	cdn: false | CDNType;
+	headers: Record<string, string | string[] | undefined> | null;
 };
 ```
+
+#### `ChangePhaseEvent`
+
+スクレイピングライフサイクルのフェーズ遷移イベントです。
+
+主なフェーズ: `scrapeStart` → `openPage` → `loadDOMContent` → `waitNetworkIdle` → `getHTML` → `getAnchors` → `getMeta` → `extractImages` → `getImages` → `scrapeEnd`
 
 #### `SkippedPageData`
 
-スキップされたページのデータです。
+キーワードまたはパス除外によりスキップされたページのデータです。
 
 ```typescript
 type SkippedPageData = {
-	isSkipped: true; // スキップされたかどうか
-	url: ExURL; // URL
-	matched: {
-		type: 'keyword' | 'path'; // マッチタイプ
-		text?: string; // マッチしたテキスト(keywordの場合)
-		excludeKeywords?: string[]; // 除外キーワード(keywordの場合)
-		excludes?: string[]; // 除外パス(pathの場合)
-	};
+	isSkipped: true;
+	url: ExURL;
+	matched:
+		| { type: 'keyword'; text: string; excludeKeywords: string[] }
+		| { type: 'path'; excludes: string[] };
 };
-```
-
-#### イベント型
-
-##### `ScrapeEventTypes`
-
-```typescript
-type ScrapeEventTypes = {
-	ignoreAndSkip: {
-		pid: number | undefined;
-		url: ExURL;
-		reason: {
-			matchedText: string;
-			excludeKeywords: string[];
-		};
-	};
-	resourceResponse: {
-		pid: number | undefined;
-		url: ExURL;
-		log: NetworkLog;
-		resource: Omit<Resource, 'uid'>;
-	};
-	scrapeEnd: {
-		pid: number | undefined;
-		url: ExURL;
-		timestamp: number;
-		result: PageData;
-	};
-	destroyed: {
-		pid: number | undefined;
-	};
-	error: {
-		pid: number | undefined;
-		url: ExURL;
-		shutdown: boolean;
-		error: {
-			name: string;
-			message: string;
-			stack?: string;
-		};
-	};
-	changePhase: ChangePhaseEvent;
-};
-```
-
-##### `SubProcessRunnerEventTypes`
-
-```typescript
-type SubProcessRunnerEventTypes = {
-	reset: {
-		pid: number | undefined;
-	};
-	scrapeEvent: Action<AnyScrapeEvent>;
-	changePhase: SubProcessChangeEvent;
-	error: {
-		pid: number | undefined;
-		url: ExURL;
-		shutdown: boolean;
-		error: {
-			name: string;
-			message: string;
-			stack?: string;
-		};
-	};
-};
-```
-
-### イベントアクションクリエーター
-
-#### `scraperEvent`
-
-スクレイパーイベントを作成するためのアクションクリエーターです。
-
-```typescript
-import { scraperEvent } from '@d-zero/beholder';
-
-// 利用可能なイベント:
-// - scraperEvent.ignoreAndSkip
-// - scraperEvent.resourceResponse
-// - scraperEvent.scrapeEnd
-// - scraperEvent.destroyed
-// - scraperEvent.error
-// - scraperEvent.changePhase
-```
-
-#### `subProcessEvent`
-
-サブプロセスイベントを作成するためのアクションクリエーターです。
-
-```typescript
-import { subProcessEvent } from '@d-zero/beholder';
-
-// 利用可能なイベント:
-// - subProcessEvent.start
-// - subProcessEvent.destroy
-```
-
-## 完全な使用例
-
-### 基本的なスクレイピング
-
-```typescript
-import Scraper from '@d-zero/beholder';
-import { parseUrl } from '@d-zero/shared/parse-url';
-
-const scraper = new Scraper();
-
-// イベントハンドラーを設定
-scraper.on('changePhase', async (event) => {
-	console.log(`[${event.pid}] ${event.name}: ${event.message}`);
-});
-
-scraper.on('scrapeEnd', async (event) => {
-	const { result } = event;
-	console.log('タイトル:', result.meta.title);
-	console.log('ステータス:', result.status);
-	console.log('アンカー数:', result.anchorList.length);
-	console.log('画像数:', result.imageList.length);
-});
-
-scraper.on('error', async (event) => {
-	console.error('エラー:', event.error.message);
-});
-
-// スクレイピングを実行
-const url = parseUrl('https://example.com');
-const result = await scraper.scrapeStart(url, {
-	isGettingImages: true,
-	excludeKeywords: ['広告'],
-	isExternal: false,
-});
-
-// クリーンアップ
-await scraper.destroy(false);
-```
-
-### サブプロセスでのスクレイピング
-
-```typescript
-import { SubProcessRunner } from '@d-zero/beholder';
-import { parseUrl } from '@d-zero/shared/parse-url';
-
-const runner = new SubProcessRunner(5); // 5回ごとにリセット
-
-// イベントハンドラーを設定
-runner.on('scrapeEvent', async (action) => {
-	if (action.type === '@@scraper/scrapeEnd') {
-		console.log('完了:', action.payload.result.url.href);
-	}
-	if (action.type === '@@scraper/error') {
-		console.error('エラー:', action.payload.error.message);
-	}
-});
-
-runner.on('changePhase', async (event) => {
-	console.log(`[${event.pid}] ${event.name}`);
-});
-
-// URLリストをスクレイピング
-const urls = [
-	'https://example.com',
-	'https://example.com/about',
-	'https://example.com/contact',
-];
-
-for (const urlString of urls) {
-	const url = parseUrl(urlString);
-
-	// サブプロセスが待機状態になるまで待つ
-	while (runner.state === 'running') {
-		await new Promise((resolve) => setTimeout(resolve, 100));
-	}
-
-	runner.start(
-		url,
-		{
-			isExternal: false,
-			isGettingImages: false,
-			excludeKeywords: [],
-			executablePath: null,
-			isTitleOnly: true,
-			screenshot: null,
-		},
-		false,
-		1000,
-	);
-}
-
-// 完了後にクリーンアップ
-runner.destory();
 ```
 
 ## ライセンス
 
 MIT
-
-## 作者
-
-D-ZERO
