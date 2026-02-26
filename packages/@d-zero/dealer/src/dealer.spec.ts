@@ -259,4 +259,15 @@ describe('Dealer', () => {
 			expect(Number.isNaN(call.progress)).toBe(false);
 		}
 	});
+
+	test('finish is called with empty items', async () => {
+		const items: object[] = [];
+		const dealer = new Dealer(items, { limit: 10 });
+
+		await dealer.setup(() => {
+			return Promise.resolve(() => {});
+		});
+
+		await runDealer(dealer);
+	});
 });

@@ -84,7 +84,7 @@ export class Dealer<T extends WeakKey> {
 			this.#limit,
 		);
 
-		if (total > 0 && this.#doneCount === total && this.#pendingInitCount === 0) {
+		if (this.#doneCount === total && this.#pendingInitCount === 0) {
 			this.#finished = true;
 			this.#finish();
 			return;
