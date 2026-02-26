@@ -130,7 +130,8 @@ Packages for Google API integration:
 
 1. OAuth 2.0 Desktop client credentials
 2. Local token storage
-3. Interactive authentication on first use
+3. Automatic browser-based authentication via localhost redirect on first use
+4. Credential file path resolution: argument → `GOOGLE_AUTH_CREDENTIALS` env var
 
 ### Utilities
 
