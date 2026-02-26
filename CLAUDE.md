@@ -18,7 +18,7 @@
 ### Quality Assurance Before Commit
 
 - **Always run lint before commit**: Use `yarn lint` to check for ESLint errors and fix them before committing
-- **Resolve ALL lint errors/warnings**: Never leave lint warnings unresolved, even if they seem harmless
+- **Resolve ALL lint errors AND warnings immediately**: Warnings are not acceptable — treat them as errors and fix them before committing. Never leave any lint warning unresolved, even if it seems harmless
 - **Ask user permission before disabling ESLint rules**: Always ask the user before using eslint-disable-next-line or eslint-disable
 - **Prefer code fixes over disabling**: Change code structure rather than disabling rules when possible
 - **Justify disable usage**: When user approves disabling, explain why it's necessary and what alternatives were considered
