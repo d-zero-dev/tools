@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.3](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.6.2...@d-zero/dealer@1.6.3) (2026-02-26)
+
+### Bug Fixes
+
+- **dealer:** resolve hang when deal() is called with empty items array ([3774324](https://github.com/d-zero-dev/tools/commit/377432440c86fda073d6f161cab4a7f3883a9792))
+
 ## [1.6.2](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.6.1...@d-zero/dealer@1.6.2) (2026-02-24)
 
 ### Bug Fixes

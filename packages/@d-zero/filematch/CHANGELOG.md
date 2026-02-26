@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.4](https://github.com/d-zero-dev/tools/compare/@d-zero/filematch@1.2.3...@d-zero/filematch@1.2.4) (2026-02-26)
+
+**Note:** Version bump only for package @d-zero/filematch
+
 ## [1.2.3](https://github.com/d-zero-dev/tools/compare/@d-zero/filematch@1.2.2...@d-zero/filematch@1.2.3) (2026-02-12)
 
 **Note:** Version bump only for package @d-zero/filematch
