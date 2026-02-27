@@ -31,6 +31,8 @@ interface ResourceTask {
  * @param verbose
  * @param only
  * @param interval
+ * @param username
+ * @param password
  */
 export async function downloadResources(
 	encodedPaths: string[],
@@ -40,6 +42,8 @@ export async function downloadResources(
 	verbose = false,
 	only?: 'page' | 'resource',
 	interval?: number | DelayOptions,
+	username?: string,
+	password?: string,
 ): Promise<void> {
 	const uniqueResources = new Map<string, ResourceTask>();
 
@@ -70,6 +74,10 @@ export async function downloadResources(
 	}
 
 	const tasks = [...uniqueResources.values()];
+	const authHeader =
+		username && password
+			? `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
+			: undefined;
 
 	if (tasks.length === 0) {
 		logger(c.yellow('⚠️  No resources to download'));
@@ -92,7 +100,9 @@ export async function downloadResources(
 			return async () => {
 				update('Fetching%dots%');
 
-				const response = await fetch(task.url).catch((error) => {
+				const response = await fetch(task.url, {
+					headers: authHeader ? { Authorization: authHeader } : {},
+				}).catch((error) => {
 					update(c.red(`❌ Fetch failed: ${error.message}`));
 					failed++;
 					return null;

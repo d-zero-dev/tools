@@ -9,6 +9,8 @@ export interface ReplicateOptions {
 	limit?: number;
 	only?: 'page' | 'resource';
 	interval?: number | DelayOptions;
+	username?: string;
+	password?: string;
 }
 
 export interface Resource {
@@ -19,6 +21,8 @@ export interface Resource {
 export interface ChildProcessInput {
 	devices?: Record<string, { width: number; resolution?: number }>;
 	timeout?: number;
+	username?: string;
+	password?: string;
 }
 
 export interface ChildProcessResult {
