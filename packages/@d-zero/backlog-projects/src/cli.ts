@@ -11,6 +11,7 @@ import minimist from 'minimist';
 import { assign } from './assign.js';
 import { createBacklogClient } from './create-backlog-client.js';
 import { roles } from './define.js';
+import { deleteAttachments } from './delete-attachments.js';
 import { getBacklogProjectIdFromUrl } from './get-backlog-project-id-from-url.js';
 
 const require = createRequire(import.meta.url);
@@ -21,7 +22,9 @@ dotenv.config();
 const cli = minimist(process.argv.slice(2), {
 	alias: {
 		a: 'assign',
+		d: 'delete',
 		v: 'version',
+		V: 'verbose',
 	},
 });
 
@@ -87,6 +90,30 @@ if (cli.assign) {
 		backlogProject: project,
 		backlogCategory: category || undefined,
 		assignedUsers: assignedUsers as Record<Role, User.User>,
+		log(message) {
+			process.stdout.write(message + '\n');
+		},
+	});
+} else if (cli.delete) {
+	const { updatedUntil } = await Enquirer.prompt<{ updatedUntil: string }>({
+		name: 'updatedUntil',
+		message:
+			'添付ファイル削除の基準日を入力してください。\nこの日以前（この日を含む）に最終更新された課題の添付ファイルが削除対象になります。\n例: 2024-01-01',
+		type: 'input',
+		required: true,
+	});
+
+	const { outDir } = await Enquirer.prompt<{ outDir: string }>({
+		name: 'outDir',
+		message: 'ダウンロードしたファイルの保存先ディレクトリを入力してください',
+		type: 'input',
+		required: true,
+	});
+
+	await deleteAttachments(backlog, {
+		updatedUntil,
+		outDir,
+		verbose: !!cli.verbose,
 		log(message) {
 			process.stdout.write(message + '\n');
 		},
