@@ -1,12 +1,12 @@
 import type { Backlog } from 'backlog-js';
-import type { Issue, Project } from 'backlog-js/dist/types/entity.js';
+import type { Issue } from 'backlog-js/dist/types/entity.js';
 
 import { createWriteStream } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 
-import { deal } from '@d-zero/dealer';
+import { Lanes } from '@d-zero/dealer';
 import { delay } from '@d-zero/shared/delay';
 import { kbSize } from '@d-zero/shared/filesize';
 import c from 'ansi-colors';
@@ -21,14 +21,12 @@ interface DeleteAttachmentsParams {
 	updatedUntil: string;
 	outDir: string;
 	verbose?: boolean;
-	log?: (message: string) => void;
 }
 
 interface AttachmentTask {
 	issueKey: string;
 	projectKey: string;
 	attachment: Issue.Issue['attachments'][number];
-	outDir: string;
 }
 
 const BATCH_SIZE = 20;
@@ -44,9 +42,13 @@ export async function deleteAttachments(
 	backlog: Backlog,
 	params: DeleteAttachmentsParams,
 ) {
-	const { updatedUntil, outDir, verbose, log } = params;
+	const { updatedUntil, outDir, verbose } = params;
+	const lanes = new Lanes({ verbose });
 
-	log?.('プロジェクト一覧を取得中...');
+	// ── Phase 1: 対象の添付ファイルを収集 ──
+
+	lanes.header(`${c.bold.cyan('収集中')} %earth% プロジェクト一覧を取得中%dots%`);
+	lanes.update(0, '%braille% API リクエスト中%dots%');
 
 	const [archivedProjects, activeProjects] = await Promise.all([
 		backlog.getProjects({ archived: true }),
@@ -54,110 +56,20 @@ export async function deleteAttachments(
 	]);
 	const allProjects = [...archivedProjects, ...activeProjects];
 	const totalBatches = Math.ceil(allProjects.length / BATCH_SIZE);
-
-	log?.(`対象プロジェクト数: ${allProjects.length} (${totalBatches} バッチ)`);
-
-	const tasks = await collectAttachmentTasks(
-		backlog,
-		allProjects,
-		updatedUntil,
-		outDir,
-		log,
-	);
-
-	if (tasks.length === 0) {
-		log?.('対象の添付ファイルはありません');
-		return;
-	}
-
-	log?.(`\n添付ファイル ${tasks.length} 件の処理を開始します\n`);
-
-	let downloaded = 0;
-	let deleted = 0;
-	let totalSize = 0;
-
-	await deal(
-		tasks,
-		(task, update, _index, setLineHeader) => {
-			const lineHeader = `%braille% ${c.bgWhite(c.black(` ${task.issueKey} `))} ${c.gray(task.attachment.name)}: `;
-			setLineHeader(lineHeader);
-
-			return async () => {
-				update('ダウンロード中%dots%');
-
-				const issueDir = path.join(task.outDir, task.projectKey, task.issueKey);
-				await mkdir(issueDir, { recursive: true });
-
-				const filePath = path.join(
-					issueDir,
-					`${dayjs(task.attachment.created).format('YYYYMMDD')}_${task.attachment.id}_${task.attachment.name}`,
-				);
-
-				const fileData = await backlog.getIssueAttachment(
-					task.issueKey,
-					task.attachment.id,
-				);
-
-				await pipeline(fileData.body, createWriteStream(filePath));
-				downloaded++;
-				totalSize += task.attachment.size;
-
-				update(`DL ${c.green('✓')} (${kbSize(task.attachment.size)}) → 削除中%dots%`);
-
-				const deleteResult = await backlog.deleteIssueAttachment(
-					task.issueKey,
-					String(task.attachment.id),
-				);
-
-				const metaPath = `${filePath}.json`;
-				await writeFile(metaPath, JSON.stringify(deleteResult, null, 2));
-				deleted++;
-
-				update(c.green(`✓ ${kbSize(task.attachment.size)}`));
-			};
-		},
-		{
-			limit: 1,
-			verbose,
-			interval: API_DELAY_MS,
-			header: (progress, done, total) => {
-				const pct = Math.round(progress * 100);
-				if (progress === 1) {
-					return c.bold.green(
-						`✓ 完了: ${done}/${total} (${pct}%) — DL: ${downloaded} / DEL: ${deleted} / ${kbSize(totalSize)}`,
-					);
-				}
-				return `${c.bold.cyan('処理中')} %earth% ${done}/${total} (${pct}%) — DL: ${c.green(String(downloaded))} / DEL: ${c.green(String(deleted))} / ${kbSize(totalSize)}`;
-			},
-		},
-	);
-}
-
-/**
- *
- * @param backlog
- * @param projects
- * @param updatedUntil
- * @param outDir
- * @param log
- */
-async function collectAttachmentTasks(
-	backlog: Backlog,
-	projects: Project.Project[],
-	updatedUntil: string,
-	outDir: string,
-	log?: (message: string) => void,
-): Promise<AttachmentTask[]> {
 	const tasks: AttachmentTask[] = [];
-	const totalBatches = Math.ceil(projects.length / BATCH_SIZE);
+	let issueCount = 0;
 
-	for (let i = 0; i < projects.length; i += BATCH_SIZE) {
-		const batch = projects.slice(i, i + BATCH_SIZE);
+	for (let i = 0; i < allProjects.length; i += BATCH_SIZE) {
+		const batch = allProjects.slice(i, i + BATCH_SIZE);
 		const projectIds = batch.map((p) => p.id);
 		const batchIndex = Math.floor(i / BATCH_SIZE) + 1;
 
-		log?.(
-			`[${batchIndex}/${totalBatches}] ${batch.map((p) => p.projectKey).join(', ')} — 課題を検索中...`,
+		lanes.header(
+			`${c.bold.cyan('収集中')} %earth% バッチ ${batchIndex}/${totalBatches} | 課題: ${issueCount} | ファイル: ${tasks.length}`,
+		);
+		lanes.update(
+			0,
+			`%braille% ${c.gray(batch.map((p) => p.projectKey).join(', '))}: 課題を検索中%dots%`,
 		);
 
 		let hasMore = true;
@@ -182,6 +94,7 @@ async function collectAttachmentTasks(
 					continue;
 				}
 
+				issueCount++;
 				const project = await backlog.getProject(issue.projectId);
 
 				for (const attachment of issue.attachments) {
@@ -189,14 +102,86 @@ async function collectAttachmentTasks(
 						issueKey: issue.issueKey,
 						projectKey: project.projectKey,
 						attachment,
-						outDir,
 					});
 				}
 			}
 
-			log?.(`  課題 ${issues.length} 件 → 累計添付ファイル ${tasks.length} 件`);
+			lanes.header(
+				`${c.bold.cyan('収集中')} %earth% バッチ ${batchIndex}/${totalBatches} | 課題: ${issueCount} | ファイル: ${tasks.length}`,
+			);
 		}
 	}
 
-	return tasks;
+	if (tasks.length === 0) {
+		lanes.header(c.bold.yellow('対象の添付ファイルはありません'));
+		lanes.delete(0);
+		lanes.close();
+		return;
+	}
+
+	// ── Phase 2: ダウンロード＆削除 ──
+
+	let done = 0;
+	let totalSize = 0;
+	const total = tasks.length;
+
+	const updateProgress = () => {
+		const pct = Math.round((done / total) * 100);
+		lanes.header(
+			`${c.bold.cyan('処理中')} %earth% ${done}/${total} (${pct}%) | 課題: ${issueCount} | ${kbSize(totalSize)}`,
+		);
+	};
+
+	updateProgress();
+
+	for (const task of tasks) {
+		await delay(API_DELAY_MS);
+
+		lanes.update(
+			0,
+			`%braille% ${c.bgWhite(c.black(` ${task.issueKey} `))} ${task.attachment.name}: ダウンロード中%dots%`,
+		);
+
+		const issueDir = path.join(outDir, task.projectKey, task.issueKey);
+		await mkdir(issueDir, { recursive: true });
+
+		const filePath = path.join(
+			issueDir,
+			`${dayjs(task.attachment.created).format('YYYYMMDD')}_${task.attachment.id}_${task.attachment.name}`,
+		);
+
+		const fileData = await backlog.getIssueAttachment(task.issueKey, task.attachment.id);
+		await pipeline(fileData.body, createWriteStream(filePath));
+		totalSize += task.attachment.size;
+
+		lanes.update(
+			0,
+			`%braille% ${c.bgWhite(c.black(` ${task.issueKey} `))} ${task.attachment.name} (${kbSize(task.attachment.size)}): 削除中%dots%`,
+		);
+
+		await delay(API_DELAY_MS);
+
+		const deleteResult = await backlog.deleteIssueAttachment(
+			task.issueKey,
+			String(task.attachment.id),
+		);
+
+		const metaPath = `${filePath}.json`;
+		await writeFile(metaPath, JSON.stringify(deleteResult, null, 2));
+
+		done++;
+		updateProgress();
+		lanes.update(
+			0,
+			`${c.green('✓')} ${c.bgWhite(c.black(` ${task.issueKey} `))} ${task.attachment.name} (${kbSize(task.attachment.size)})`,
+		);
+	}
+
+	lanes.header(
+		c.bold.green(
+			`✓ 完了 | 課題: ${issueCount} | ファイル: ${done}/${total} | ${kbSize(totalSize)}`,
+		),
+	);
+	lanes.delete(0);
+	lanes.close();
 }

@@ -95,17 +95,20 @@ if (cli.assign) {
 		},
 	});
 } else if (cli.delete) {
+	process.stdout.write(
+		'この日以前（この日を含む）に最終更新された課題の添付ファイルが削除対象になります。\n',
+	);
+
 	const { updatedUntil } = await Enquirer.prompt<{ updatedUntil: string }>({
 		name: 'updatedUntil',
-		message:
-			'添付ファイル削除の基準日を入力してください。\nこの日以前（この日を含む）に最終更新された課題の添付ファイルが削除対象になります。\n例: 2024-01-01',
+		message: '基準日（例: 2024-01-01）',
 		type: 'input',
 		required: true,
 	});
 
 	const { outDir } = await Enquirer.prompt<{ outDir: string }>({
 		name: 'outDir',
-		message: 'ダウンロードしたファイルの保存先ディレクトリを入力してください',
+		message: '保存先ディレクトリ',
 		type: 'input',
 		required: true,
 	});
@@ -114,8 +117,5 @@ if (cli.assign) {
 		updatedUntil,
 		outDir,
 		verbose: !!cli.verbose,
-		log(message) {
-			process.stdout.write(message + '\n');
-		},
 	});
 }
