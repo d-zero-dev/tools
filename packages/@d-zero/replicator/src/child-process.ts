@@ -7,7 +7,7 @@ import { scrollAllOver } from '@d-zero/puppeteer-scroll';
 import { encodeResourcePath } from '@d-zero/shared/encode-resource-path';
 
 createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
-	const { devices, timeout } = param;
+	const { devices, timeout, username, password } = param;
 
 	return {
 		async eachPage({ page, url }, logger) {
@@ -53,6 +53,10 @@ createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 			};
 
 			page.on('response', responseHandler);
+
+			if (username && password) {
+				await page.authenticate({ username, password });
+			}
 
 			const defaultSizes = {
 				'desktop-compact': devicePresets['desktop-compact'],

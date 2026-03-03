@@ -18,6 +18,7 @@ interface ReplicatorCLIOptions extends BaseCLIOptions {
 	devices?: string;
 	limit?: number;
 	only?: string;
+	auth?: string;
 }
 
 const { options, args } = createCLI<ReplicatorCLIOptions>({
@@ -29,6 +30,7 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		t: 'timeout',
 		d: 'devices',
 		l: 'limit',
+		a: 'auth',
 	},
 	usage: [
 		'Usage: replicator <url1> [url2...] -o <output-directory> [options]',
@@ -41,6 +43,7 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		'  --interval <ms>           Interval between parallel executions (default: none)',
 		'                             Format: number or "min-max" for random range',
 		'  --only <type>             Download only specified type: page or resource',
+		'  -a, --auth <user:pass>    Credentials for Basic authentication',
 		'  -v, --verbose             Enable verbose logging',
 		'',
 		'Available device presets:',
@@ -61,6 +64,7 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		devices: cli.devices,
 		limit: cli.limit ? Number(cli.limit) : undefined,
 		only: cli.only,
+		auth: cli.auth,
 	}),
 	validateArgs: (options, cli) => {
 		if (options.only && options.only !== 'page' && options.only !== 'resource') {
@@ -83,6 +87,10 @@ try {
 	const deviceNames = options.devices ? parseList(options.devices) : undefined;
 	const devices = parseDevicesOption(deviceNames);
 
+	const colonIndex = options.auth ? options.auth.indexOf(':') : -1;
+	const username = colonIndex >= 0 ? options.auth!.slice(0, colonIndex) : undefined;
+	const password = colonIndex >= 0 ? options.auth!.slice(colonIndex + 1) : undefined;
+
 	await replicate({
 		urls,
 		outputDir,
@@ -92,6 +100,8 @@ try {
 		limit: options.limit,
 		only: options.only as 'page' | 'resource' | undefined,
 		interval: options.interval,
+		username,
+		password,
 	});
 } catch (error) {
 	if (error instanceof Error) {

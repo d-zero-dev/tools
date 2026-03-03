@@ -26,6 +26,7 @@ npx @d-zero/replicator <url...> -o <output-directory> [options]
 - `--interval <ms>`: 並列実行間の間隔（デフォルト: なし）
   - 数値または"min-max"形式でランダム範囲を指定可能
 - `--only <type>`: ダウンロード対象を限定（`page` または `resource`）
+- `-a, --auth <user:pass>`: Basic認証の認証情報（`ユーザー名:パスワード` 形式）
 - `-v, --verbose`: 詳細ログモード
 
 ##### `--only` オプション
@@ -67,6 +68,9 @@ npx @d-zero/replicator https://example.com -o ./output --only page
 
 # リソースのみダウンロード（HTMLを除外）
 npx @d-zero/replicator https://example.com -o ./output --only resource
+
+# Basic認証が必要なページ
+npx @d-zero/replicator https://example.com -o ./output -a username:password
 ```
 
 ### プログラマティック使用
@@ -116,10 +120,19 @@ await replicate({
 	outputDir: './output',
 	only: 'resource',
 });
+
+// Basic認証が必要なページ
+await replicate({
+	urls: ['https://example.com'],
+	outputDir: './output',
+	username: 'username',
+	password: 'password',
+});
 ```
 
 ## 機能
 
+- **Basic認証対応**: `--auth user:pass`オプションでBasic認証が必要なページにアクセス可能
 - **並列処理**: 複数のURLを並列で効率的に処理
 - **メモリ効率**: リソースを直接ディスクに保存してメモリ使用量を最小化
 - **選択的ダウンロード**: `--only`オプションでHTMLページのみまたはリソースのみをダウンロード可能

@@ -45,6 +45,8 @@ function collectPageUrlsOnly(
  * @param limit - Parallel execution limit
  * @param progress - Progress logger function
  * @param interval
+ * @param username
+ * @param password
  * @returns Set of encoded URLs
  */
 async function collectAllResourceUrls(
@@ -55,6 +57,8 @@ async function collectAllResourceUrls(
 	limit: number,
 	progress: (message: string) => void,
 	interval?: number | DelayOptions,
+	username?: string,
+	password?: string,
 ): Promise<Set<string>> {
 	progress(c.bold.yellow('📡 Phase 1: Collecting resource metadata...'));
 
@@ -72,6 +76,8 @@ async function collectAllResourceUrls(
 				{
 					devices: targetSizes,
 					timeout,
+					username,
+					password,
 				},
 				{},
 			),
@@ -147,6 +153,8 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 		limit = 3,
 		only,
 		interval,
+		username,
+		password,
 	} = options;
 
 	if (urls.length === 0) {
@@ -198,6 +206,8 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 				limit,
 				progress,
 				interval,
+				username,
+				password,
 			);
 			break;
 		}
@@ -225,6 +235,8 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 		verbose,
 		only,
 		interval,
+		username,
+		password,
 	);
 
 	progress('');
