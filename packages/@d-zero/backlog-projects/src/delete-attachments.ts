@@ -9,6 +9,7 @@ import { pipeline } from 'node:stream/promises';
 import { Lanes } from '@d-zero/dealer';
 import { delay } from '@d-zero/shared/delay';
 import { kbSize } from '@d-zero/shared/filesize';
+import { retryCall } from '@d-zero/shared/retry';
 import c from 'ansi-colors';
 import dayjs from 'dayjs';
 
@@ -32,6 +33,10 @@ interface AttachmentTask {
 const BATCH_SIZE = 20;
 const ISSUES_PER_REQUEST = 100;
 const API_DELAY_MS = 1000;
+const RETRY_OPTIONS = {
+	retries: 5,
+	interval: { random: { min: 5000, max: 15_000 } },
+};
 
 /**
  *
@@ -44,6 +49,18 @@ export async function deleteAttachments(
 ) {
 	const { updatedUntil, outDir, verbose } = params;
 	const lanes = new Lanes({ verbose });
+	const projectKeyCache = new Map<number, string>();
+
+	const resolveProjectKey = async (projectId: number) => {
+		const cached = projectKeyCache.get(projectId);
+		if (cached) {
+			return cached;
+		}
+		await delay(API_DELAY_MS);
+		const project = await retryCall(() => backlog.getProject(projectId), RETRY_OPTIONS);
+		projectKeyCache.set(projectId, project.projectKey);
+		return project.projectKey;
+	};
 
 	// ── Phase 1: 対象の添付ファイルを収集 ──
 
@@ -51,8 +68,8 @@ export async function deleteAttachments(
 	lanes.update(0, '%braille% API リクエスト中%dots%');
 
 	const [archivedProjects, activeProjects] = await Promise.all([
-		backlog.getProjects({ archived: true }),
-		backlog.getProjects({ archived: false }),
+		retryCall(() => backlog.getProjects({ archived: true }), RETRY_OPTIONS),
+		retryCall(() => backlog.getProjects({ archived: false }), RETRY_OPTIONS),
 	]);
 	const allProjects = [...archivedProjects, ...activeProjects];
 	const totalBatches = Math.ceil(allProjects.length / BATCH_SIZE);
@@ -63,6 +80,11 @@ export async function deleteAttachments(
 		const batch = allProjects.slice(i, i + BATCH_SIZE);
 		const projectIds = batch.map((p) => p.id);
 		const batchIndex = Math.floor(i / BATCH_SIZE) + 1;
+
+		// バッチ内のプロジェクトキーをキャッシュに登録
+		for (const p of batch) {
+			projectKeyCache.set(p.id, p.projectKey);
+		}
 
 		lanes.header(
 			`${c.bold.cyan('収集中')} %earth% バッチ ${batchIndex}/${totalBatches} | 課題: ${issueCount} | ファイル: ${tasks.length}`,
@@ -77,12 +99,16 @@ export async function deleteAttachments(
 		while (hasMore) {
 			await delay(API_DELAY_MS);
 
-			const issues = await backlog.getIssues({
-				projectId: projectIds,
-				attachment: true,
-				count: ISSUES_PER_REQUEST,
-				updatedUntil,
-			});
+			const issues = await retryCall(
+				() =>
+					backlog.getIssues({
+						projectId: projectIds,
+						attachment: true,
+						count: ISSUES_PER_REQUEST,
+						updatedUntil,
+					}),
+				RETRY_OPTIONS,
+			);
 
 			if (issues.length === 0) {
 				hasMore = false;
@@ -95,12 +121,12 @@ export async function deleteAttachments(
 				}
 
 				issueCount++;
-				const project = await backlog.getProject(issue.projectId);
+				const projectKey = await resolveProjectKey(issue.projectId);
 
 				for (const attachment of issue.attachments) {
 					tasks.push({
 						issueKey: issue.issueKey,
-						projectKey: project.projectKey,
+						projectKey,
 						attachment,
 					});
 				}
@@ -150,7 +176,10 @@ export async function deleteAttachments(
 			`${dayjs(task.attachment.created).format('YYYYMMDD')}_${task.attachment.id}_${task.attachment.name}`,
 		);
 
-		const fileData = await backlog.getIssueAttachment(task.issueKey, task.attachment.id);
+		const fileData = await retryCall(
+			() => backlog.getIssueAttachment(task.issueKey, task.attachment.id),
+			RETRY_OPTIONS,
+		);
 		await pipeline(fileData.body, createWriteStream(filePath));
 		totalSize += task.attachment.size;
 
@@ -161,9 +190,9 @@ export async function deleteAttachments(
 
 		await delay(API_DELAY_MS);
 
-		const deleteResult = await backlog.deleteIssueAttachment(
-			task.issueKey,
-			String(task.attachment.id),
+		const deleteResult = await retryCall(
+			() => backlog.deleteIssueAttachment(task.issueKey, String(task.attachment.id)),
+			RETRY_OPTIONS,
 		);
 
 		const metaPath = `${filePath}.json`;
