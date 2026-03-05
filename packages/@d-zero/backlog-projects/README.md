@@ -6,6 +6,8 @@
 
 - `-v, --version`: バージョンを表示
 - `-a, --assign`: プロジェクトアサインモード
+- `-d, --delete`: 添付ファイル削除モード
+- `-V, --verbose`: 詳細出力
 
 ### プロジェクトアサイン
 
@@ -27,6 +29,29 @@ npx @d-zero/backlog-projects --assign
 ```
 
 逐次、課題が登録されます。
+
+### 添付ファイル削除
+
+```sh
+npx @d-zero/backlog-projects --delete
+```
+
+指定した基準日以前に最終更新された課題の添付ファイルをダウンロードしてから削除します。
+
+プロンプトに従って入力してください。
+
+```sh
+? 基準日（例: 2024-01-01） ›
+? 保存先ディレクトリ ›
+```
+
+添付ファイルは保存先ディレクトリに `プロジェクトキー/課題キー/` の階層で保存されます。各ファイルには削除結果のメタデータ（`.json`）も併せて保存されます。
+
+`-V` オプションで詳細出力を有効にできます。
+
+```sh
+npx @d-zero/backlog-projects --delete -V
+```
 
 ```sh
 ︙
@@ -64,6 +89,21 @@ type Params = {
 	assignedUsers: Record<Role, User.User>;
 	backlogCategory?: string;
 	log?: (message: string) => void;
+};
+```
+
+### `deleteAttachments`
+
+```ts
+function deleteAttachments(
+	backlog: Backlog,
+	params: DeleteAttachmentsParams,
+): Promise<void>;
+
+type DeleteAttachmentsParams = {
+	updatedUntil: string;
+	outDir: string;
+	verbose?: boolean;
 };
 ```
 
