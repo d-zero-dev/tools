@@ -6,6 +6,7 @@ import http from 'node:http';
 import path from 'node:path';
 
 import c from 'ansi-colors';
+import { GoogleAuth, JWT } from 'google-auth-library';
 import { google } from 'googleapis';
 
 import { log } from './debug.js';
@@ -29,10 +30,86 @@ export async function authentication(
 	credentialFilePath: string | undefined | null,
 	scope: readonly string[],
 	options?: AuthenticationOptions,
-) {
+): Promise<OAuth2Client> {
 	const resolvedPath = resolveCredentialFilePath(credentialFilePath);
+
+	if (resolvedPath) {
+		return authenticateWithFile(resolvedPath, scope, options);
+	}
+
+	log('No credential file found, trying ADC');
+	return tryADC(scope);
+}
+
+/**
+ * Authenticate using a credential file (OAuth2 Desktop, Service Account, or Authorized User).
+ * @param resolvedPath
+ * @param scope
+ * @param options
+ */
+async function authenticateWithFile(
+	resolvedPath: string,
+	scope: readonly string[],
+	options?: AuthenticationOptions,
+): Promise<OAuth2Client> {
 	const credentials = await getCredentials(resolvedPath);
 
+	// Service Account
+	if (credentials.type === 'service_account') {
+		log('Detected service account credentials');
+		const client = new JWT({
+			email: credentials.client_email,
+			key: credentials.private_key,
+			scopes: [...scope],
+		});
+		await client.authorize();
+		process.stdout.write(FINISHED_MESSAGE);
+		return client;
+	}
+
+	// Authorized User (e.g., gcloud auth application-default login output)
+	if (credentials.type === 'authorized_user') {
+		log('Detected authorized_user credentials');
+		const auth = new GoogleAuth({
+			credentials,
+			scopes: [...scope],
+		});
+		const client = (await auth.getClient()) as OAuth2Client;
+		process.stdout.write(FINISHED_MESSAGE);
+		return client;
+	}
+
+	// OAuth2 Desktop (existing flow)
+	if (credentials.installed) {
+		log('Detected OAuth2 Desktop credentials');
+		return authenticateOAuth2Desktop(resolvedPath, credentials, scope, options);
+	}
+
+	throw new Error(
+		`Unsupported credential file format: ${resolvedPath}\n` +
+			'Expected one of: OAuth2 Desktop (installed), Service Account, or Authorized User credentials.',
+	);
+}
+
+/**
+ * Authenticate using OAuth2 Desktop flow (existing behavior).
+ * @param resolvedPath
+ * @param credentials
+ * @param credentials.installed
+ * @param credentials.installed.client_secret
+ * @param credentials.installed.client_id
+ * @param credentials.installed.redirect_uris
+ * @param scope
+ * @param options
+ */
+async function authenticateOAuth2Desktop(
+	resolvedPath: string,
+	credentials: {
+		installed: { client_secret: string; client_id: string; redirect_uris: string[] };
+	},
+	scope: readonly string[],
+	options?: AuthenticationOptions,
+): Promise<OAuth2Client> {
 	const dir = path.dirname(resolvedPath);
 	const name = path.basename(resolvedPath);
 	const tokenFilePath = options?.tokenFilePath ?? path.join(dir, `${name}.token`);
@@ -87,12 +164,47 @@ export async function authentication(
 }
 
 /**
+ * Try Application Default Credentials (ADC).
+ * @param scope
+ */
+async function tryADC(scope: readonly string[]): Promise<OAuth2Client> {
+	log('Attempting ADC (Application Default Credentials)');
+	const auth = new GoogleAuth({ scopes: [...scope] });
+	const client = await auth.getClient().catch((error: unknown) => {
+		log('ADC failed: %O', error);
+		throw new Error(buildSetupGuideMessage());
+	});
+	log('ADC authentication succeeded');
+	process.stdout.write(FINISHED_MESSAGE);
+	return client as OAuth2Client;
+}
+
+/**
  *
+ */
+function buildSetupGuideMessage(): string {
+	return [
+		'No authentication method available. Set up one of the following:',
+		'',
+		'  1. gcloud CLI (推奨):',
+		'     gcloud auth application-default login --scopes=...',
+		'',
+		'  2. OAuth2 Desktop credentials:',
+		'     クレデンシャルファイルのパスを指定、または GOOGLE_AUTH_CREDENTIALS 環境変数を設定',
+		'',
+		'  3. サービスアカウント:',
+		'     サービスアカウントキーJSONのパスを指定、または GOOGLE_APPLICATION_CREDENTIALS 環境変数を設定',
+	].join('\n');
+}
+
+/**
+ * Resolve credential file path from argument or environment variable.
+ * Returns null if no path is available (to allow ADC fallback).
  * @param credentialFilePath
  */
 function resolveCredentialFilePath(
 	credentialFilePath: string | undefined | null,
-): string {
+): string | null {
 	if (credentialFilePath) {
 		return credentialFilePath;
 	}
@@ -100,9 +212,7 @@ function resolveCredentialFilePath(
 	if (envPath) {
 		return envPath;
 	}
-	throw new Error(
-		'Credential file path is required. Pass it as an argument or set GOOGLE_AUTH_CREDENTIALS environment variable.',
-	);
+	return null;
 }
 
 /**

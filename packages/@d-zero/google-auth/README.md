@@ -2,66 +2,51 @@
 
 Google APIの認証のための汎用ライブラリです。各Google APIで必要な[`OAuth2Client`](https://cloud.google.com/nodejs/docs/reference/google-auth-library/latest/google-auth-library/oauth2client)オブジェクトを生成します。
 
-## CLI版
+複数の認証方式をサポートしており、以下の優先順位で認証を試みます：
 
-CLIで利用する関数の使用方法と、クレデンシャルファイルの準備、認証方法を解説します。
+1. 引数で渡されたクレデンシャルファイルパス
+2. 環境変数 `GOOGLE_AUTH_CREDENTIALS` で指定されたファイル
+3. **ADC（Application Default Credentials）** — `GOOGLE_APPLICATION_CREDENTIALS` 環境変数、`gcloud auth application-default login`、GCEメタデータなど
+4. すべて未設定の場合はセットアップガイダンス付きエラー
 
-使用にあたって、Google Cloud Consoleの[APIとサービス](https://console.cloud.google.com/apis/credentials)から**OAuth 2.0 クライアント ID**を（アプリケーションの種類は**デスクトップ**とする）発行し、JSON形式のクレデンシャルファイルをローカルにダウンロードする必要があります。
+## セットアップ方法
+
+### 方法1: gcloud CLI（最も簡単）
+
+Google Cloud SDKの`gcloud`コマンドでログインするだけで使えます。クレデンシャルファイルの管理が不要です。
 
 ```shell
-yarn add -D @d-zero/google-auth
+# インストール: https://cloud.google.com/sdk/docs/install
+gcloud auth application-default login --scopes=https://www.googleapis.com/auth/spreadsheets
 ```
 
-クレデンシャルファイルと[スコープ](https://developers.google.com/identity/protocols/oauth2/scopes?hl=ja)を設定します。
+コード側ではクレデンシャルファイルの指定が不要です：
 
 ```ts
-import { authentication } from '@d-zero/google-auth';
-
-const auth: Auth = await authentication(
-	/**
-	 * クレデンシャルファイル
-	 *
-	 * `null`または`undefined`の場合、環境変数`GOOGLE_AUTH_CREDENTIALS`を使用します。
-	 *
-	 * @type {string | undefined | null}
-	 */
-	'./path/to/credential.json',
-
-	/**
-	 * スコープ
-	 *
-	 * @type {string[]}
-	 * @see https://developers.google.com/identity/protocols/oauth2/scopes?hl=ja
-	 */
-	['https://www.googleapis.com/auth/spreadsheets'],
-
-	/**
-	 * オプション（省略可）
-	 *
-	 * @type {AuthenticationOptions}
-	 */
-	{
-		tokenFilePath: './path/to/token.json', // カスタムトークンファイルパス
-		checkTokenExpiry: true, // トークンの有効期限をチェック
-	},
-);
+const auth = await authentication(null, ['https://www.googleapis.com/auth/spreadsheets']);
 ```
 
-環境変数を利用する場合は、第1引数に`null`を渡します：
+### 方法2: Google Workspace CLI (gws)
+
+[Google Workspace CLI (`gws`)](https://github.com/googleworkspace/cli)を使うと、Google Cloudプロジェクトの作成からAPI有効化までを自動化できます。
+
+```shell
+# インストール
+go install github.com/googleworkspace/cli/cmd/gws@latest
+
+# プロジェクトセットアップ
+gws auth setup
+```
+
+### 方法3: OAuth2 Desktop（従来の方法）
+
+Google Cloud Consoleの[APIとサービス](https://console.cloud.google.com/apis/credentials)から**OAuth 2.0 クライアント ID**を（アプリケーションの種類は**デスクトップ**とする）発行し、JSON形式のクレデンシャルファイルをローカルにダウンロードします。
 
 ```ts
-const auth: Auth = await authentication(null, [
+const auth = await authentication('./path/to/credential.json', [
 	'https://www.googleapis.com/auth/spreadsheets',
 ]);
 ```
-
-クレデンシャルファイルの解決順序は以下の通りです：
-
-1. 第1引数で渡されたパス
-2. 環境変数`GOOGLE_AUTH_CREDENTIALS`
-3. いずれも未設定の場合はエラー
-
-### 認証方法
 
 **:warning: 実行時にローカルにトークンがない場合、ブラウザでの認証が要求されます。**
 
@@ -77,6 +62,70 @@ const auth: Auth = await authentication(null, [
 
 - ブラウザが自動で開かない場合は、表示されたURLに手動でアクセスしてください
 - 5分以内に認証を完了しない場合はタイムアウトします
+
+### 方法4: サービスアカウント（CI/CD向け）
+
+サービスアカウントキーのJSONファイルを指定するだけで認証できます。CI/CD環境やブラウザ認証が使えない環境に適しています。
+
+```ts
+const auth = await authentication('./service-account-key.json', [
+	'https://www.googleapis.com/auth/spreadsheets',
+]);
+```
+
+環境変数でも指定可能です：
+
+```shell
+export GOOGLE_APPLICATION_CREDENTIALS=./service-account-key.json
+```
+
+```ts
+// GOOGLE_APPLICATION_CREDENTIALS が設定されていれば、ADCで自動検出される
+const auth = await authentication(null, ['https://www.googleapis.com/auth/spreadsheets']);
+```
+
+## CLI版
+
+```shell
+yarn add -D @d-zero/google-auth
+```
+
+クレデンシャルファイルと[スコープ](https://developers.google.com/identity/protocols/oauth2/scopes?hl=ja)を設定します。
+
+```ts
+import { authentication } from '@d-zero/google-auth';
+
+const auth: Auth = await authentication(
+	/**
+	 * クレデンシャルファイル
+	 *
+	 * `null`または`undefined`の場合、環境変数`GOOGLE_AUTH_CREDENTIALS`を確認し、
+	 * それもなければADC（Application Default Credentials）にフォールバックします。
+	 *
+	 * @type {string | undefined | null}
+	 */
+	'./path/to/credential.json',
+
+	/**
+	 * スコープ
+	 *
+	 * @type {string[]}
+	 * @see https://developers.google.com/identity/protocols/oauth2/scopes?hl=ja
+	 */
+	['https://www.googleapis.com/auth/spreadsheets'],
+
+	/**
+	 * オプション（省略可）
+	 * OAuth2 Desktopフローでのみ使用されます。
+	 *
+	 * @type {AuthenticationOptions}
+	 */
+	{
+		tokenFilePath: './path/to/token.json', // カスタムトークンファイルパス
+		checkTokenExpiry: true, // トークンの有効期限をチェック
+	},
+);
+```
 
 ## 型のエクスポート
 
