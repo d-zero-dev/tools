@@ -9,6 +9,7 @@ export class Dealer<T extends WeakKey> {
 	#debug: (log: string) => void = () => {};
 	#done = new WeakSet<T>();
 	#doneCount = 0;
+	#errors: { item: T; error: unknown }[] = [];
 	#finish: () => void = () => {};
 	#finished = false;
 	#initializer: ProcessInitializer<T> | null = null;
@@ -21,6 +22,10 @@ export class Dealer<T extends WeakKey> {
 		() => {};
 	#starts = new WeakMap<T, () => Promise<void>>();
 	#workers = new Set<T>();
+
+	get errors(): ReadonlyArray<{ item: T; error: unknown }> {
+		return this.#errors;
+	}
 
 	constructor(items: readonly T[], options?: DealerOptions<T>) {
 		this.#items = [...items];
@@ -74,6 +79,13 @@ export class Dealer<T extends WeakKey> {
 		);
 	}
 
+	#completeWorker(worker: T) {
+		this.#workers.delete(worker);
+		this.#done.add(worker);
+		this.#doneCount++;
+		this.#deal();
+	}
+
 	#deal() {
 		const total = this.#items.length;
 		this.#debug(`Done: ${this.#doneCount}/${total} (Limit: ${this.#limit})`);
@@ -102,12 +114,14 @@ export class Dealer<T extends WeakKey> {
 				throw new Error(`Didn't have a starting function`);
 			}
 
-			void start().then(() => {
-				this.#workers.delete(worker);
-				this.#done.add(worker);
-				this.#doneCount++;
-				this.#deal();
-			});
+			void start()
+				.then(() => {
+					this.#completeWorker(worker);
+				})
+				.catch((error: unknown) => {
+					this.#errors.push({ item: worker, error });
+					this.#completeWorker(worker);
+				});
 		}
 	}
 	#draw() {

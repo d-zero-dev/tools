@@ -270,4 +270,63 @@ describe('Dealer', () => {
 
 		await runDealer(dealer);
 	});
+
+	test('collects errors from failed workers without deadlocking', async () => {
+		const items = createItems(3);
+		const processed: number[] = [];
+		const dealer = new Dealer(items, { limit: 10 });
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(() => {
+				if (index === 1) {
+					throw new Error('worker failed');
+				}
+				processed.push(index);
+			});
+		});
+
+		await runDealer(dealer);
+		expect(processed).toHaveLength(2);
+		expect(processed).toContain(0);
+		expect(processed).toContain(2);
+		expect(dealer.errors).toHaveLength(1);
+		expect(dealer.errors[0]!.item).toBe(items[1]);
+		expect(dealer.errors[0]!.error).toBeInstanceOf(Error);
+	});
+
+	test('completes all remaining workers after one fails', async () => {
+		const items = createItems(5);
+		const processed: number[] = [];
+		const dealer = new Dealer(items, { limit: 2 });
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(async () => {
+				await new Promise((r) => setTimeout(r, 5));
+				if (index === 0) {
+					throw new Error('first worker failed');
+				}
+				processed.push(index);
+			});
+		});
+
+		await runDealer(dealer);
+		expect(processed).toHaveLength(4);
+		expect(dealer.errors).toHaveLength(1);
+	});
+
+	test('collects multiple errors from multiple failed workers', async () => {
+		const items = createItems(4);
+		const dealer = new Dealer(items, { limit: 10 });
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(() => {
+				if (index % 2 === 0) {
+					throw new Error(`worker ${index} failed`);
+				}
+			});
+		});
+
+		await runDealer(dealer);
+		expect(dealer.errors).toHaveLength(2);
+	});
 });

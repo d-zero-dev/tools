@@ -102,10 +102,19 @@ export async function deal<T extends WeakKey>(
 		});
 	}
 
-	return new Promise<void>((resolve) => {
+	return new Promise<void>((resolve, reject) => {
 		dealer.finish(() => {
 			lanes.close();
-			resolve();
+			if (dealer.errors.length > 0) {
+				reject(
+					new AggregateError(
+						dealer.errors.map((e) => e.error),
+						`${dealer.errors.length} worker(s) failed`,
+					),
+				);
+			} else {
+				resolve();
+			}
 		});
 
 		dealer.play();
