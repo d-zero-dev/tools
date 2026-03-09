@@ -56,6 +56,9 @@ const DEBUG_ID = Number.MIN_SAFE_INTEGER;
  * @param setup - Function that initializes each item and returns a start function
  * @param options - Configuration options including interval delay
  * @returns Promise that resolves when all items are processed
+ * @throws {AggregateError} When one or more workers throw errors. All workers run to
+ *   completion regardless of individual failures. The AggregateError.errors array
+ *   contains the original errors from each failed worker.
  */
 export async function deal<T extends WeakKey>(
 	items: readonly T[],
