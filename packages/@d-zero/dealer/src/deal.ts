@@ -91,8 +91,11 @@ export async function deal<T extends WeakKey>(
 					`Waiting interval: %countdown(${determinedInterval},${index}_interval)%ms`,
 				);
 			});
-			await start();
-			lanes.delete(index);
+			try {
+				await start();
+			} finally {
+				lanes.delete(index);
+			}
 		};
 	});
 

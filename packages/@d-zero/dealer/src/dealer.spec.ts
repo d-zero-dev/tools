@@ -292,6 +292,7 @@ describe('Dealer', () => {
 		expect(dealer.errors).toHaveLength(1);
 		expect(dealer.errors[0]!.item).toBe(items[1]);
 		expect(dealer.errors[0]!.error).toBeInstanceOf(Error);
+		expect((dealer.errors[0]!.error as Error).message).toBe('worker failed');
 	});
 
 	test('completes all remaining workers after one fails', async () => {
@@ -328,5 +329,64 @@ describe('Dealer', () => {
 
 		await runDealer(dealer);
 		expect(dealer.errors).toHaveLength(2);
+	});
+
+	test('progress reports completion even when workers fail', async () => {
+		const items = createItems(3);
+		const progressCalls: Array<{ progress: number; done: number; total: number }> = [];
+		const dealer = new Dealer(items, { limit: 10 });
+
+		dealer.progress((progress, done, total) => {
+			progressCalls.push({ progress, done, total });
+		});
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(() => {
+				if (index === 1) {
+					throw new Error('fail');
+				}
+			});
+		});
+
+		await runDealer(dealer);
+		const lastCall = progressCalls.at(-1)!;
+		expect(lastCall.progress).toBe(1);
+		expect(lastCall.done).toBe(3);
+		expect(lastCall.total).toBe(3);
+	});
+
+	test('pushed items that throw are collected in errors', async () => {
+		const items = createItems(1);
+		const dealer = new Dealer(items, { limit: 10 });
+		const pushed = createItems(1);
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(async () => {
+				if (index === 0) {
+					await dealer.push(...pushed);
+				}
+				if (index === 1) {
+					throw new Error('pushed item failed');
+				}
+			});
+		});
+
+		await runDealer(dealer);
+		expect(dealer.errors).toHaveLength(1);
+		expect((dealer.errors[0]!.error as Error).message).toBe('pushed item failed');
+	});
+
+	test('finish is called even when all workers fail', async () => {
+		const items = createItems(3);
+		const dealer = new Dealer(items, { limit: 10 });
+
+		await dealer.setup(() => {
+			return Promise.resolve(() => {
+				throw new Error('all fail');
+			});
+		});
+
+		await runDealer(dealer);
+		expect(dealer.errors).toHaveLength(3);
 	});
 });
