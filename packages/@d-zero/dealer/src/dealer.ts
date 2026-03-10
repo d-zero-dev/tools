@@ -1,29 +1,40 @@
 import type { ProcessInitializer } from './types.js';
 
 /**
- * Configuration options for the {@link Dealer} class.
- * @template T - The type of items being processed
+ * {@link Dealer} のコンストラクタオプション。
+ * @template T - 処理対象アイテムの型
  */
 export interface DealerOptions<T = unknown> {
-	/** Maximum number of concurrent workers (default: 10) */
+	/** 同時実行ワーカー数の上限。デフォルトは `10`。 */
 	limit?: number;
-	/** Filter function called when items are added via {@link Dealer.push}. Return `false` to reject the item. */
+
+	/**
+	 * {@link Dealer.push} 時に呼ばれるフィルタ関数。
+	 * `false` を返すとそのアイテムはキューに追加されない。
+	 * @param item - push されたアイテム
+	 * @returns アイテムを受け入れる場合は `true`
+	 */
 	onPush?: (item: T) => boolean;
+
+	/**
+	 * 処理のキャンセルに使用する `AbortSignal`。
+	 * シグナルが abort されると新しいワーカーの起動を停止し、
+	 * 実行中のワーカーの完了を待ってから終了する。
+	 */
+	signal?: AbortSignal;
 }
 
 /**
- * Manages parallel processing of items with configurable concurrency limits.
+ * アイテムを並列処理するワーカープールマネージャー。
  *
- * Items are dispatched to workers up to the configured limit. When a worker
- * completes (successfully or with error), the next pending item is dispatched.
- * Errors are collected and accessible via the `errors` property.
- * @template T - The type of items to process, must extend WeakKey
+ * 典型的な使用順序: {@link setup} → {@link finish} / {@link progress} → {@link play}。
+ * 処理中に {@link push} で動的にアイテムを追加できる。
+ * @template T - 処理対象アイテムの型（WeakKey 制約）
  */
 export class Dealer<T extends WeakKey> {
 	#debug: (log: string) => void = () => {};
 	#done = new WeakSet<T>();
 	#doneCount = 0;
-	#errors: { item: T; error: unknown }[] = [];
 	#finish: () => void = () => {};
 	#finished = false;
 	#initializer: ProcessInitializer<T> | null = null;
@@ -34,53 +45,45 @@ export class Dealer<T extends WeakKey> {
 	#pendingInitCount = 0;
 	#progress: (progress: number, done: number, total: number, limit: number) => void =
 		() => {};
+	#signal?: AbortSignal;
 	#starts = new WeakMap<T, () => Promise<void>>();
 	#workers = new Set<T>();
 
-	/**
-	 * Errors collected from failed workers during processing.
-	 * @returns Array of objects containing the failed item and its error
-	 */
-	get errors(): ReadonlyArray<{ item: T; error: unknown }> {
-		return this.#errors;
-	}
-
-	/**
-	 * @param items - Collection of items to process
-	 * @param options - Configuration options
-	 */
 	constructor(items: readonly T[], options?: DealerOptions<T>) {
 		this.#items = [...items];
 		this.#limit = options?.limit ?? 10;
 		this.#onPush = options?.onPush;
+		this.#signal = options?.signal;
 	}
 
 	/**
-	 * Sets a listener for debug log messages.
-	 * @param listener - Callback invoked with debug log strings
+	 * デバッグログのリスナーを設定する。
+	 * @param listener - デバッグメッセージを受け取るコールバック
 	 */
 	debug(listener: (log: string) => void) {
 		this.#debug = listener;
 	}
 
 	/**
-	 * Sets a listener called when all items have been processed (including failures).
-	 * @param listener - Callback invoked on completion
+	 * 全アイテムの処理完了（またはキャンセル完了）時に呼ばれるリスナーを設定する。
+	 * @param listener - 完了時に呼ばれるコールバック
 	 */
 	finish(listener: () => void) {
 		this.#finish = listener;
 	}
 
 	/**
-	 * Starts dispatching items to workers.
+	 * 並列処理を開始する。
+	 * {@link setup} を先に呼び出す必要がある。
 	 */
 	play() {
 		this.#deal();
 	}
 
 	/**
-	 * Sets a listener for progress updates, called each time a worker completes.
-	 * @param listener - Callback receiving progress ratio (0–1), done count (including errors), total count, and concurrency limit
+	 * 進捗更新のリスナーを設定する。
+	 * アイテムが完了するたびに呼び出される。
+	 * @param listener - 進捗情報を受け取るコールバック
 	 */
 	progress(
 		listener: (progress: number, done: number, total: number, limit: number) => void,
@@ -89,13 +92,13 @@ export class Dealer<T extends WeakKey> {
 	}
 
 	/**
-	 * Adds items to the processing queue during execution.
-	 * Added items are initialized using the same initializer set via {@link setup}.
-	 * Calls after all processing has finished are silently ignored.
-	 * @param items - Items to add. If `onPush` is configured, items returning `false` are skipped.
+	 * 実行中にアイテムをキューに追加する。
+	 * 追加されたアイテムには {@link setup} で設定した初期化関数が自動適用される。
+	 * 処理完了後または signal が abort 済みの場合、呼び出しは無視される。
+	 * @param items - 追加するアイテム
 	 */
 	async push(...items: T[]) {
-		if (this.#finished) {
+		if (this.#finished || this.#signal?.aborted) {
 			return;
 		}
 		for (const item of items) {
@@ -108,9 +111,9 @@ export class Dealer<T extends WeakKey> {
 	}
 
 	/**
-	 * Registers the initializer function and prepares all items for processing.
-	 * Must be called before {@link play}.
-	 * @param initializer - Function that receives each item and its index, returning a start function
+	 * 各アイテムの初期化関数を設定する。
+	 * {@link play} を呼ぶ前に必ず呼び出すこと。
+	 * @param initializer - 各アイテムを初期化し、実行関数を返すコールバック
 	 */
 	async setup(initializer: ProcessInitializer<T>) {
 		this.#initializer = initializer;
@@ -127,14 +130,10 @@ export class Dealer<T extends WeakKey> {
 		);
 	}
 
-	#completeWorker(worker: T) {
-		this.#workers.delete(worker);
-		this.#done.add(worker);
-		this.#doneCount++;
-		this.#deal();
-	}
-
 	#deal() {
+		if (this.#finished) {
+			return;
+		}
 		const total = this.#items.length;
 		this.#debug(`Done: ${this.#doneCount}/${total} (Limit: ${this.#limit})`);
 		this.#progress(
@@ -150,6 +149,14 @@ export class Dealer<T extends WeakKey> {
 			return;
 		}
 
+		if (this.#signal?.aborted) {
+			if (this.#workers.size === 0) {
+				this.#finished = true;
+				this.#finish();
+			}
+			return;
+		}
+
 		while (this.#workers.size < this.#limit) {
 			const worker = this.#draw();
 			if (!worker) {
@@ -162,14 +169,12 @@ export class Dealer<T extends WeakKey> {
 				throw new Error(`Didn't have a starting function`);
 			}
 
-			void start()
-				.then(() => {
-					this.#completeWorker(worker);
-				})
-				.catch((error: unknown) => {
-					this.#errors.push({ item: worker, error });
-					this.#completeWorker(worker);
-				});
+			void start().then(() => {
+				this.#workers.delete(worker);
+				this.#done.add(worker);
+				this.#doneCount++;
+				this.#deal();
+			});
 		}
 	}
 	#draw() {
@@ -189,9 +194,13 @@ export class Dealer<T extends WeakKey> {
 			throw new Error('setup() must be called before push()');
 		}
 		const start = await this.#initializer(item, this.#nextIndex++);
+		this.#pendingInitCount--;
+		if (this.#signal?.aborted) {
+			this.#deal();
+			return;
+		}
 		this.#starts.set(item, async () => await start());
 		this.#items.push(item);
-		this.#pendingInitCount--;
 		this.#deal();
 	}
 }

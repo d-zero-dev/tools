@@ -38,6 +38,31 @@ await deal(
 );
 ```
 
+### キャンセル
+
+`AbortSignal`を渡すことで、処理を途中で中断できます。実行中のワーカーは完了まで待機し、新しいワーカーの起動のみが停止されます。
+
+```ts
+const controller = new AbortController();
+
+// 外部イベント（タイムアウトなど）でキャンセル
+setTimeout(() => controller.abort(), 30_000);
+
+await deal(
+	items,
+	(item, update, index) => {
+		return async () => {
+			update(`Processing item ${index}...`);
+			await item.process();
+		};
+	},
+	{
+		limit: 10,
+		signal: controller.signal,
+	},
+);
+```
+
 ### deal関数
 
 コレクションを並列処理し、ログを順次出力します。
@@ -80,23 +105,6 @@ async function deal<T extends WeakKey>(
      - これはアイテム開始**後**、最初の出力の**前**に発生
    - 実際の処理が始まる(ユーザーコードからの最初の `update()` 呼び出し)
 
-#### エラーハンドリング
-
-ワーカー（`start()`関数）がエラーを投げた場合、残りのワーカーの処理は継続されます。すべてのワーカーが完了（成功または失敗）した後、1つ以上のエラーがあれば`AggregateError`でrejectされます。
-
-```ts
-try {
-	await deal(items, setup, options);
-} catch (error) {
-	if (error instanceof AggregateError) {
-		console.error(`${error.errors.length} workers failed:`);
-		for (const e of error.errors) {
-			console.error(e);
-		}
-	}
-}
-```
-
 ### DealOptions型
 
 ```ts
@@ -112,13 +120,14 @@ type DealOptions<T = unknown> = DealerOptions<T> &
 
 - `limit?: number`: 同時実行数の制限(デフォルト: 10)
 - `onPush?: (item: T) => boolean`: `push()`時のフィルタ関数。`false`を返すとそのアイテムは拒否される(例: 重複排除)
+- `signal?: AbortSignal`: 処理のキャンセルに使用する`AbortSignal`。シグナルがabortされると新しいワーカーの起動を停止し、実行中のワーカーの完了を待ってから終了する
 - `header?: DealHeader`: 進捗ヘッダーを生成する関数
 - `debug?: boolean`: デバッグログを表示するかどうか
 - `interval?: number | DelayOptions`: 各処理の間隔(ミリ秒またはDelayOptions)
 - `animations?: Animations`: アニメーション定義
 - `fps?: FPS`: フレームレート(12, 24, 30, 60)
 - `indent?: string`: ログのインデント文字列
-- `sort?: (a: readonly [number, string], b: readonly [number, string]) => number`: ログのソート関数
+- `sort?: (a: [number, string], b: [number, string]) => number`: ログのソート関数
 - `verbose?: boolean`: 詳細ログモード
 
 ### DealHeader型
@@ -137,7 +146,7 @@ type DealHeader = (
 #### パラメータ
 
 - `progress`: 進捗率(0〜1)
-- `done`: 処理済みアイテム数（エラーで失敗したアイテムを含む）
+- `done`: 完了したアイテム数
 - `total`: 総アイテム数
 - `limit`: 同時実行数制限
 
@@ -158,19 +167,7 @@ constructor(items: readonly T[], options?: DealerOptions<T>)
 - `items`: 処理対象のアイテム
 - `options.limit`: 同時実行数の制限(デフォルト: 10)
 - `options.onPush`: `push()`時のフィルタ関数
-
-#### プロパティ
-
-##### get errors(): ReadonlyArray<{ item: T; error: unknown }>
-
-ワーカーの実行中に発生したエラーの一覧を返します。各エントリにはエラーを起こしたアイテムとエラーオブジェクトが含まれます。
-
-```ts
-await runDealer(dealer);
-for (const { item, error } of dealer.errors) {
-	console.error('Failed item:', item, error);
-}
-```
+- `options.signal`: 処理のキャンセルに使用する`AbortSignal`
 
 #### メソッド
 
@@ -214,7 +211,7 @@ dealer.progress((progress, done, total, limit) => {
 
 ##### async push(...items: T[])
 
-実行中にアイテムをキューに追加します。追加されたアイテムには`setup()`で設定した初期化関数が自動適用されます。完了後の呼び出しは無視されます。
+実行中にアイテムをキューに追加します。追加されたアイテムには`setup()`で設定した初期化関数が自動適用されます。処理完了後または`signal`がabort済みの場合、呼び出しは無視されます。
 
 ```ts
 await dealer.push(newItem1, newItem2);

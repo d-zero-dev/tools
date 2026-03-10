@@ -260,6 +260,106 @@ describe('Dealer', () => {
 		}
 	});
 
+	test('signal stops launching new workers when aborted', async () => {
+		const items = createItems(5);
+		const processed: number[] = [];
+		const controller = new AbortController();
+		const dealer = new Dealer(items, { limit: 1, signal: controller.signal });
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(async () => {
+				processed.push(index);
+				if (index === 0) {
+					controller.abort();
+				}
+				await new Promise((r) => setTimeout(r, 5));
+			});
+		});
+
+		await runDealer(dealer);
+		expect(processed.length).toBeLessThan(5);
+		expect(processed).toContain(0);
+	});
+
+	test('signal waits for running workers to complete before finishing', async () => {
+		const items = createItems(3);
+		const completed: number[] = [];
+		const controller = new AbortController();
+		const dealer = new Dealer(items, { limit: 3, signal: controller.signal });
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(async () => {
+				if (index === 0) {
+					controller.abort();
+				}
+				await new Promise((r) => setTimeout(r, 20));
+				completed.push(index);
+			});
+		});
+
+		await runDealer(dealer);
+		// All 3 workers were launched before abort, so all 3 should complete
+		expect(completed).toHaveLength(3);
+	});
+
+	test('push() is ignored after signal is aborted', async () => {
+		const items = createItems(1);
+		const processed: number[] = [];
+		const controller = new AbortController();
+		const dealer = new Dealer(items, { limit: 10, signal: controller.signal });
+		const pushed = createItems(2);
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(async () => {
+				processed.push(index);
+				controller.abort();
+				await dealer.push(...pushed);
+			});
+		});
+
+		await runDealer(dealer);
+		expect(processed).toHaveLength(1);
+	});
+
+	test('abort during push initialization does not cause deadlock', async () => {
+		const items = createItems(1);
+		const processed: number[] = [];
+		const controller = new AbortController();
+		const dealer = new Dealer(items, { limit: 1, signal: controller.signal });
+		const pushed = createItems(2);
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(async () => {
+				processed.push(index);
+				controller.abort();
+				// push triggers #initializeAndDispatch which awaits initializer
+				// abort should prevent pushed items from being added to #items
+				await dealer.push(...pushed);
+			});
+		});
+
+		// This must resolve (not deadlock) even though push was called after abort
+		await runDealer(dealer);
+		expect(processed).toHaveLength(1);
+	});
+
+	test('pre-aborted signal finishes immediately without processing', async () => {
+		const items = createItems(3);
+		const processed: number[] = [];
+		const controller = new AbortController();
+		controller.abort();
+		const dealer = new Dealer(items, { limit: 10, signal: controller.signal });
+
+		await dealer.setup((_item, index) => {
+			return Promise.resolve(() => {
+				processed.push(index);
+			});
+		});
+
+		await runDealer(dealer);
+		expect(processed).toHaveLength(0);
+	});
+
 	test('finish is called with empty items', async () => {
 		const items: object[] = [];
 		const dealer = new Dealer(items, { limit: 10 });
@@ -269,124 +369,5 @@ describe('Dealer', () => {
 		});
 
 		await runDealer(dealer);
-	});
-
-	test('collects errors from failed workers without deadlocking', async () => {
-		const items = createItems(3);
-		const processed: number[] = [];
-		const dealer = new Dealer(items, { limit: 10 });
-
-		await dealer.setup((_item, index) => {
-			return Promise.resolve(() => {
-				if (index === 1) {
-					throw new Error('worker failed');
-				}
-				processed.push(index);
-			});
-		});
-
-		await runDealer(dealer);
-		expect(processed).toHaveLength(2);
-		expect(processed).toContain(0);
-		expect(processed).toContain(2);
-		expect(dealer.errors).toHaveLength(1);
-		expect(dealer.errors[0]!.item).toBe(items[1]);
-		expect(dealer.errors[0]!.error).toBeInstanceOf(Error);
-		expect((dealer.errors[0]!.error as Error).message).toBe('worker failed');
-	});
-
-	test('completes all remaining workers after one fails', async () => {
-		const items = createItems(5);
-		const processed: number[] = [];
-		const dealer = new Dealer(items, { limit: 2 });
-
-		await dealer.setup((_item, index) => {
-			return Promise.resolve(async () => {
-				await new Promise((r) => setTimeout(r, 5));
-				if (index === 0) {
-					throw new Error('first worker failed');
-				}
-				processed.push(index);
-			});
-		});
-
-		await runDealer(dealer);
-		expect(processed).toHaveLength(4);
-		expect(dealer.errors).toHaveLength(1);
-	});
-
-	test('collects multiple errors from multiple failed workers', async () => {
-		const items = createItems(4);
-		const dealer = new Dealer(items, { limit: 10 });
-
-		await dealer.setup((_item, index) => {
-			return Promise.resolve(() => {
-				if (index % 2 === 0) {
-					throw new Error(`worker ${index} failed`);
-				}
-			});
-		});
-
-		await runDealer(dealer);
-		expect(dealer.errors).toHaveLength(2);
-	});
-
-	test('progress reports completion even when workers fail', async () => {
-		const items = createItems(3);
-		const progressCalls: Array<{ progress: number; done: number; total: number }> = [];
-		const dealer = new Dealer(items, { limit: 10 });
-
-		dealer.progress((progress, done, total) => {
-			progressCalls.push({ progress, done, total });
-		});
-
-		await dealer.setup((_item, index) => {
-			return Promise.resolve(() => {
-				if (index === 1) {
-					throw new Error('fail');
-				}
-			});
-		});
-
-		await runDealer(dealer);
-		const lastCall = progressCalls.at(-1)!;
-		expect(lastCall.progress).toBe(1);
-		expect(lastCall.done).toBe(3);
-		expect(lastCall.total).toBe(3);
-	});
-
-	test('pushed items that throw are collected in errors', async () => {
-		const items = createItems(1);
-		const dealer = new Dealer(items, { limit: 10 });
-		const pushed = createItems(1);
-
-		await dealer.setup((_item, index) => {
-			return Promise.resolve(async () => {
-				if (index === 0) {
-					await dealer.push(...pushed);
-				}
-				if (index === 1) {
-					throw new Error('pushed item failed');
-				}
-			});
-		});
-
-		await runDealer(dealer);
-		expect(dealer.errors).toHaveLength(1);
-		expect((dealer.errors[0]!.error as Error).message).toBe('pushed item failed');
-	});
-
-	test('finish is called even when all workers fail', async () => {
-		const items = createItems(3);
-		const dealer = new Dealer(items, { limit: 10 });
-
-		await dealer.setup(() => {
-			return Promise.resolve(() => {
-				throw new Error('all fail');
-			});
-		});
-
-		await runDealer(dealer);
-		expect(dealer.errors).toHaveLength(3);
 	});
 });

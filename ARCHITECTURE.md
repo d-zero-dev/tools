@@ -641,6 +641,8 @@ await deal(
 );
 ```
 
+`AbortSignal`を渡すことで処理を途中でキャンセルできます。実行中のワーカーは完了まで待機し、新しいワーカーの起動のみが停止されます。詳細は[@d-zero/dealer README](./packages/%40d-zero/dealer/README.md#キャンセル)を参照。
+
 ### Error Handling
 
 From [CLAUDE.md](./CLAUDE.md):
