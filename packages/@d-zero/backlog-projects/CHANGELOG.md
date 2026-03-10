@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/backlog-projects@0.5.6...@d-zero/backlog-projects@0.6.0) (2026-03-10)
+
+### Bug Fixes
+
+- **backlog-projects:** add API rate limit handling with retry and project key cache ([f7a7f12](https://github.com/d-zero-dev/tools/commit/f7a7f12812cb0da83bbb601fee623a198082b9cc))
+- **backlog-projects:** fix pagination infinite loop and use streaming pipeline ([29d70a6](https://github.com/d-zero-dev/tools/commit/29d70a6c3cec625b65dd6d2ced135762dec64262))
+
+### Features
+
+- **backlog-projects:** add delete attachments feature with progress display ([7c34083](https://github.com/d-zero-dev/tools/commit/7c34083d3747ebd1c791f720197ab48ed99d8a90))
+
 ## [0.5.6](https://github.com/d-zero-dev/tools/compare/@d-zero/backlog-projects@0.5.5...@d-zero/backlog-projects@0.5.6) (2026-02-26)
 
 **Note:** Version bump only for package @d-zero/backlog-projects

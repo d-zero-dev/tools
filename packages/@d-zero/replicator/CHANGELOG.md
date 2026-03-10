@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.8.7...@d-zero/replicator@0.9.0) (2026-03-10)
+
+### Features
+
+- **replicator:** add Basic authentication support ([0ffc71e](https://github.com/d-zero-dev/tools/commit/0ffc71eb997a2c66cc8eedbd8fae8db68d79fb96))
+
 ## [0.8.7](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.8.6...@d-zero/replicator@0.8.7) (2026-02-26)
 
 **Note:** Version bump only for package @d-zero/replicator

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.5](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.6.4...@d-zero/dealer@1.6.5) (2026-03-10)
+
+### Bug Fixes
+
+- **dealer:** ワーカーエラー時の未処理Promise rejectionとデッドロックを修正 ([81cd091](https://github.com/d-zero-dev/tools/commit/81cd0914b2ea40418cd6905504b8d36aa356ee62))
+
 ## [1.6.4](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.6.3...@d-zero/dealer@1.6.4) (2026-02-26)
 
 **Note:** Version bump only for package @d-zero/dealer

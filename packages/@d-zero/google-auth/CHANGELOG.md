@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.6.0...@d-zero/google-auth@0.7.0) (2026-03-10)
+
+### Features
+
+- **google-auth:** add ADC fallback and service account authentication ([ff97387](https://github.com/d-zero-dev/tools/commit/ff973872e7a374822ebebd7cf4a4c8e0389d00bb))
+
 # [0.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.5.6...@d-zero/google-auth@0.6.0) (2026-02-26)
 
 ### Features

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.8.0...@d-zero/a11y-check@0.9.0) (2026-03-10)
+
+### Bug Fixes
+
+- **a11y-check:** 達成基準カテゴリ列のヘッダーを「原則」に変更 ([a27dedb](https://github.com/d-zero-dev/tools/commit/a27dedb5a0c85fce37ab68162ba0a6597a7bc80b))
+
+### Features
+
+- **a11y-check:** スプレッドシートに達成基準カテゴリ列を追加 ([b84be12](https://github.com/d-zero-dev/tools/commit/b84be12d6ad69790ea10c848cce347360be0a958))
+
 # [0.8.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.7.6...@d-zero/a11y-check@0.8.0) (2026-02-26)
 
 ### Features
