@@ -118,7 +118,7 @@ type DealOptions<T = unknown> = DealerOptions<T> &
 - `animations?: Animations`: アニメーション定義
 - `fps?: FPS`: フレームレート(12, 24, 30, 60)
 - `indent?: string`: ログのインデント文字列
-- `sort?: (a: [number, string], b: [number, string]) => number`: ログのソート関数
+- `sort?: (a: readonly [number, string], b: readonly [number, string]) => number`: ログのソート関数
 - `verbose?: boolean`: 詳細ログモード
 
 ### DealHeader型
@@ -137,7 +137,7 @@ type DealHeader = (
 #### パラメータ
 
 - `progress`: 進捗率(0〜1)
-- `done`: 完了したアイテム数
+- `done`: 処理済みアイテム数（エラーで失敗したアイテムを含む）
 - `total`: 総アイテム数
 - `limit`: 同時実行数制限
 
