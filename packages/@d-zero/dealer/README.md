@@ -80,6 +80,23 @@ async function deal<T extends WeakKey>(
      - これはアイテム開始**後**、最初の出力の**前**に発生
    - 実際の処理が始まる(ユーザーコードからの最初の `update()` 呼び出し)
 
+#### エラーハンドリング
+
+ワーカー（`start()`関数）がエラーを投げた場合、残りのワーカーの処理は継続されます。すべてのワーカーが完了（成功または失敗）した後、1つ以上のエラーがあれば`AggregateError`でrejectされます。
+
+```ts
+try {
+	await deal(items, setup, options);
+} catch (error) {
+	if (error instanceof AggregateError) {
+		console.error(`${error.errors.length} workers failed:`);
+		for (const e of error.errors) {
+			console.error(e);
+		}
+	}
+}
+```
+
 ### DealOptions型
 
 ```ts
@@ -101,7 +118,7 @@ type DealOptions<T = unknown> = DealerOptions<T> &
 - `animations?: Animations`: アニメーション定義
 - `fps?: FPS`: フレームレート(12, 24, 30, 60)
 - `indent?: string`: ログのインデント文字列
-- `sort?: (a: [number, string], b: [number, string]) => number`: ログのソート関数
+- `sort?: (a: readonly [number, string], b: readonly [number, string]) => number`: ログのソート関数
 - `verbose?: boolean`: 詳細ログモード
 
 ### DealHeader型
@@ -120,7 +137,7 @@ type DealHeader = (
 #### パラメータ
 
 - `progress`: 進捗率(0〜1)
-- `done`: 完了したアイテム数
+- `done`: 処理済みアイテム数（エラーで失敗したアイテムを含む）
 - `total`: 総アイテム数
 - `limit`: 同時実行数制限
 
@@ -141,6 +158,19 @@ constructor(items: readonly T[], options?: DealerOptions<T>)
 - `items`: 処理対象のアイテム
 - `options.limit`: 同時実行数の制限(デフォルト: 10)
 - `options.onPush`: `push()`時のフィルタ関数
+
+#### プロパティ
+
+##### get errors(): ReadonlyArray<{ item: T; error: unknown }>
+
+ワーカーの実行中に発生したエラーの一覧を返します。各エントリにはエラーを起こしたアイテムとエラーオブジェクトが含まれます。
+
+```ts
+await runDealer(dealer);
+for (const { item, error } of dealer.errors) {
+	console.error('Failed item:', item, error);
+}
+```
 
 #### メソッド
 

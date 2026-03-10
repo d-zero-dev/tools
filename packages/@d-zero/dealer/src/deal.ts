@@ -7,13 +7,30 @@ import { delay } from '@d-zero/shared/delay';
 import { Dealer } from './dealer.js';
 import { Lanes } from './lanes.js';
 
+/**
+ * Configuration options for the {@link deal} function.
+ * Combines {@link DealerOptions} (concurrency), {@link LanesOptions} (display),
+ * and deal-specific options (header, debug, interval).
+ * @template T - The type of items being processed
+ */
 export type DealOptions<T = unknown> = DealerOptions<T> &
 	LanesOptions & {
+		/** Function to generate the progress header string */
 		readonly header?: DealHeader;
+		/** Whether to display debug log output */
 		readonly debug?: boolean;
+		/** Delay between each worker start, in milliseconds or as a DelayOptions object */
 		readonly interval?: number | DelayOptions;
 	};
 
+/**
+ * Function type that converts progress information into a header string for display.
+ * @param progress - Progress ratio from 0 to 1
+ * @param done - Number of processed items (including errors)
+ * @param total - Total number of items
+ * @param limit - Concurrency limit
+ * @returns Header string to display. May include animation variables like `%earth%`, `%dots%`.
+ */
 export type DealHeader = (
 	progress: number,
 	done: number,
@@ -52,10 +69,17 @@ const DEBUG_ID = Number.MIN_SAFE_INTEGER;
  * - All wait logs (including interval delay) are output via `delay()` callback
  * - This ensures the determined interval (even for random delays) is used for countdown
  * - The `%countdown()` function displays remaining time based on the actual delay duration
+ * @template T - The type of items to process, must extend WeakKey
  * @param items - Collection of items to process
- * @param setup - Function that initializes each item and returns a start function
- * @param options - Configuration options including interval delay
- * @returns Promise that resolves when all items are processed
+ * @param setup - Function that initializes each item and returns a start function.
+ *   Receives the item, an update callback for logging, the item index,
+ *   a setLineHeader callback for log prefixes, and a push callback to add items dynamically.
+ *   Must return a start function that performs the actual work.
+ * @param options - Configuration options including concurrency limit, interval delay, and display settings
+ * @returns Promise that resolves when all items are processed successfully
+ * @throws {AggregateError} When one or more workers throw errors. All workers run to
+ *   completion regardless of individual failures. The AggregateError.errors array
+ *   contains the original errors from each failed worker.
  */
 export async function deal<T extends WeakKey>(
 	items: readonly T[],
@@ -91,8 +115,11 @@ export async function deal<T extends WeakKey>(
 					`Waiting interval: %countdown(${determinedInterval},${index}_interval)%ms`,
 				);
 			});
-			await start();
-			lanes.delete(index);
+			try {
+				await start();
+			} finally {
+				lanes.delete(index);
+			}
 		};
 	});
 
@@ -102,10 +129,19 @@ export async function deal<T extends WeakKey>(
 		});
 	}
 
-	return new Promise<void>((resolve) => {
+	return new Promise<void>((resolve, reject) => {
 		dealer.finish(() => {
 			lanes.close();
-			resolve();
+			if (dealer.errors.length > 0) {
+				reject(
+					new AggregateError(
+						dealer.errors.map((e) => e.error),
+						`${dealer.errors.length} worker(s) failed`,
+					),
+				);
+			} else {
+				resolve();
+			}
 		});
 
 		dealer.play();
