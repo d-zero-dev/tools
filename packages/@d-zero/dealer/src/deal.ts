@@ -8,28 +8,26 @@ import { Dealer } from './dealer.js';
 import { Lanes } from './lanes.js';
 
 /**
- * Configuration options for the {@link deal} function.
- * Combines {@link DealerOptions} (concurrency), {@link LanesOptions} (display),
- * and deal-specific options (header, debug, interval).
- * @template T - The type of items being processed
+ * {@link deal} 関数のオプション。
+ * {@link DealerOptions} と {@link LanesOptions} を合成し、
+ * ヘッダー・デバッグ・インターバルの設定を追加したもの。
+ * @template T - 処理対象アイテムの型
  */
 export type DealOptions<T = unknown> = DealerOptions<T> &
 	LanesOptions & {
-		/** Function to generate the progress header string */
 		readonly header?: DealHeader;
-		/** Whether to display debug log output */
 		readonly debug?: boolean;
-		/** Delay between each worker start, in milliseconds or as a DelayOptions object */
 		readonly interval?: number | DelayOptions;
 	};
 
 /**
- * Function type that converts progress information into a header string for display.
- * @param progress - Progress ratio from 0 to 1
- * @param done - Number of processed items (including errors)
- * @param total - Total number of items
- * @param limit - Concurrency limit
- * @returns Header string to display. May include animation variables like `%earth%`, `%dots%`.
+ * 進捗情報をヘッダー文字列に変換するコールバック型。
+ * 返却文字列にはアニメーション変数（`%earth%`, `%dots%` など）を含めることができる。
+ * @param progress - 進捗率（0〜1）
+ * @param done - 完了したアイテム数
+ * @param total - 総アイテム数
+ * @param limit - 同時実行数制限
+ * @returns ヘッダーとして表示する文字列
  */
 export type DealHeader = (
 	progress: number,
@@ -69,17 +67,21 @@ const DEBUG_ID = Number.MIN_SAFE_INTEGER;
  * - All wait logs (including interval delay) are output via `delay()` callback
  * - This ensures the determined interval (even for random delays) is used for countdown
  * - The `%countdown()` function displays remaining time based on the actual delay duration
- * @template T - The type of items to process, must extend WeakKey
- * @param items - Collection of items to process
- * @param setup - Function that initializes each item and returns a start function.
- *   Receives the item, an update callback for logging, the item index,
- *   a setLineHeader callback for log prefixes, and a push callback to add items dynamically.
- *   Must return a start function that performs the actual work.
- * @param options - Configuration options including concurrency limit, interval delay, and display settings
- * @returns Promise that resolves when all items are processed successfully
- * @throws {AggregateError} When one or more workers throw errors. All workers run to
- *   completion regardless of individual failures. The AggregateError.errors array
- *   contains the original errors from each failed worker.
+ *
+ * ### Cancellation via AbortSignal
+ * - Pass `signal` option with an `AbortSignal` to enable cancellation
+ * - When the signal is aborted:
+ *   1. No new workers will be launched
+ *   2. Currently running workers will continue until they complete
+ *   3. `push()` calls after abort are silently ignored
+ *   4. The returned Promise resolves after all running workers finish
+ * - If the signal is already aborted before `play()`, the Promise resolves immediately
+ *   without processing any items
+ * @template T - 処理対象アイテムの型（WeakKey 制約）
+ * @param items - 処理対象のアイテムのコレクション
+ * @param setup - 各アイテムを初期化し、開始関数を返すコールバック
+ * @param options - 並列処理・ログ出力・インターバルの設定オプション
+ * @returns 全アイテムの処理完了またはキャンセル完了時に解決する Promise
  */
 export async function deal<T extends WeakKey>(
 	items: readonly T[],
@@ -115,11 +117,8 @@ export async function deal<T extends WeakKey>(
 					`Waiting interval: %countdown(${determinedInterval},${index}_interval)%ms`,
 				);
 			});
-			try {
-				await start();
-			} finally {
-				lanes.delete(index);
-			}
+			await start();
+			lanes.delete(index);
 		};
 	});
 
@@ -129,19 +128,10 @@ export async function deal<T extends WeakKey>(
 		});
 	}
 
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<void>((resolve) => {
 		dealer.finish(() => {
 			lanes.close();
-			if (dealer.errors.length > 0) {
-				reject(
-					new AggregateError(
-						dealer.errors.map((e) => e.error),
-						`${dealer.errors.length} worker(s) failed`,
-					),
-				);
-			} else {
-				resolve();
-			}
+			resolve();
 		});
 
 		dealer.play();

@@ -7,23 +7,20 @@ const RESET = '\u001B[0m';
 type Log = readonly [id: number, message: string];
 type SortFunc = (a: Log, b: Log) => number;
 
-/** Configuration options for the {@link Lanes} display manager. */
+/**
+ * {@link Lanes} のコンストラクタオプション。
+ */
 export type LanesOptions = {
-	/** Custom animation definitions to override or extend built-in presets */
 	readonly animations?: Animations;
-	/** Frame rate for display rendering */
 	readonly fps?: FPS;
-	/** Indent string prepended to each log line */
 	readonly indent?: string;
-	/** Sort function for ordering log entries by their ID */
 	readonly sort?: SortFunc;
-	/** When true, logs are appended line-by-line to stdout instead of being redrawn in-place */
 	readonly verbose?: boolean;
 };
 
 /**
- * Manages multiple concurrent log lines with ordered display output.
- * Each log line is identified by a numeric ID and can be independently updated or deleted.
+ * 複数のログラインを管理し、順序付きでターミナルに表示するクラス。
+ * verbose モードでは上書き表示ではなく追記出力を行う。
  */
 export class Lanes {
 	#display: Display;
@@ -33,9 +30,6 @@ export class Lanes {
 	#sort: SortFunc = ([a], [b]) => a - b;
 	#verbose: boolean;
 
-	/**
-	 * @param options - Display configuration options
-	 */
 	constructor(options?: LanesOptions) {
 		this.#display = new Display({
 			animations: options?.animations,
@@ -48,8 +42,8 @@ export class Lanes {
 	}
 
 	/**
-	 * Clears all log entries. No-op in verbose mode.
-	 * @param options - Pass `{ header: true }` to also clear the header
+	 * すべてのログをクリアする。verbose モードでは何もしない。
+	 * @param options - クリアオプション
 	 * @param options.header
 	 */
 	clear(options?: { header?: boolean }) {
@@ -66,15 +60,15 @@ export class Lanes {
 		this.write();
 	}
 	/**
-	 * Closes the underlying display and releases resources.
+	 * ディスプレイを閉じ、リソースを解放する。
 	 */
 	close() {
 		this.#display.close();
 	}
 
 	/**
-	 * Removes the log entry with the given ID. No-op in verbose mode.
-	 * @param id - The log entry ID to remove
+	 * 指定した ID のログを削除する。verbose モードでは何もしない。
+	 * @param id - 削除するログの ID
 	 */
 	delete(id: number) {
 		if (this.#verbose) {
@@ -86,8 +80,8 @@ export class Lanes {
 	}
 
 	/**
-	 * Sets the header text displayed above all log lines.
-	 * @param text - Header text to display
+	 * ヘッダーテキストを設定する。
+	 * @param text - ヘッダーとして表示する文字列
 	 */
 	header(text: string) {
 		this.#header = text;
@@ -100,9 +94,10 @@ export class Lanes {
 	}
 
 	/**
-	 * Updates the log entry for the given ID. In verbose mode, immediately writes the header and log to stdout.
-	 * @param id - The log entry ID
-	 * @param log - The log message
+	 * 指定した ID のログを更新する。
+	 * verbose モードではヘッダーとログを連結して即時出力する。
+	 * @param id - 更新するログの ID
+	 * @param log - ログメッセージ
 	 */
 	update(id: number, log: string) {
 		if (this.#verbose) {
@@ -115,8 +110,8 @@ export class Lanes {
 	}
 
 	/**
-	 * Renders all current log entries to the display. No-op in verbose mode.
-	 * Entries are sorted by the configured sort function before rendering.
+	 * 現在のログをソートしてターミナルに表示する。
+	 * verbose モードでは何もしない。
 	 */
 	write() {
 		if (this.#verbose) {
