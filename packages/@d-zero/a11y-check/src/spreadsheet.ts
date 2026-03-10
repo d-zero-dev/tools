@@ -6,8 +6,12 @@ import { SheetTable } from '@d-zero/google-sheets';
 import { parseUrl } from '@d-zero/shared/parse-url';
 import dotenv from 'dotenv';
 
+type SpreadsheetViolation = Violation & {
+	readonly scCategory: string | null;
+};
+
 export class SpreadsheetReporter {
-	#table: SheetTable<Violation> | null = null;
+	#table: SheetTable<SpreadsheetViolation> | null = null;
 
 	// eslint-disable-next-line no-restricted-syntax
 	private constructor() {}
@@ -45,6 +49,10 @@ export class SpreadsheetReporter {
 					scNumber: { value: result.scNumber },
 					level: { value: result.level },
 					severity: { value: result.severity },
+					scCategory: {
+						value:
+							'=SWITCH(LEFT(INDIRECT("L"&ROW()),1),"1","知覚","2","操作","3","理解","4","堅牢","その他")',
+					},
 					screenshot: { value: result.screenshot },
 				};
 			}),
@@ -52,7 +60,7 @@ export class SpreadsheetReporter {
 	}
 
 	async #create(sheetUrl: string, sheetName: string, auth: Auth) {
-		this.#table = await SheetTable.create<Violation>(
+		this.#table = await SheetTable.create<SpreadsheetViolation>(
 			sheetUrl,
 			sheetName,
 			auth,
@@ -113,6 +121,7 @@ export class SpreadsheetReporter {
 					scNumber: '達成基準番号',
 					level: '適合レベル',
 					severity: '深刻度',
+					scCategory: 'ガイドライン',
 					screenshot: 'スクリーンショット',
 				},
 			},
