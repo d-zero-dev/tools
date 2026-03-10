@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.6.5...@d-zero/dealer@1.7.0) (2026-03-10)
+
+### Features
+
+- **dealer:** add AbortSignal cancellation, JSDoc, and documentation ([eb9b6d5](https://github.com/d-zero-dev/tools/commit/eb9b6d592ad607a3ff39cdd46acbbe83df3693b3))
+
 ## [1.6.5](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.6.4...@d-zero/dealer@1.6.5) (2026-03-10)
 
 ### Bug Fixes
