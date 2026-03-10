@@ -121,7 +121,7 @@ export class SpreadsheetReporter {
 					scNumber: '達成基準番号',
 					level: '適合レベル',
 					severity: '深刻度',
-					scCategory: 'ガイドライン',
+					scCategory: '原則',
 					screenshot: 'スクリーンショット',
 				},
 			},
