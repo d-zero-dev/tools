@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.21.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.20.1...@d-zero/shared@0.21.0) (2026-03-11)
+
+### Features
+
+- **shared:** add comparator option to pathListToTree ([65f8155](https://github.com/d-zero-dev/tools/commit/65f81556771b9f48f7eb83547ea90afbb47760e2))
+
 ## [0.20.1](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.20.0...@d-zero/shared@0.20.1) (2026-02-26)
 
 **Note:** Version bump only for package @d-zero/shared
