@@ -23,6 +23,14 @@ export type PathListToTreeOptions<MetaData = Record<string, unknown>> = {
 	/** When true, create virtual parent nodes for missing ancestors; when false, throw. */
 	createVirtualParent?: boolean;
 
+	/**
+	 * Sort comparator for the path list.
+	 * - `'path'` (default): use pathComparator
+	 * - function: custom comparator `(a, b) => number`
+	 * - `null`: no sorting (preserve original order)
+	 */
+	comparator?: 'path' | ((a: string, b: string) => number) | null;
+
 	/** Predicate to include or exclude each node; excluded nodes and their descendants are removed. */
 	filter?: (node: Node<MetaData>) => boolean;
 
@@ -54,12 +62,12 @@ export type Node<MetaData = Record<string, unknown>> = {
 };
 
 /**
- * Builds a tree from a sorted list of file paths.
- * Paths are filtered by extensions and ignoreGlobs, then organized into a tree.
+ * Builds a tree from a list of file paths.
+ * Paths are sorted (configurable via comparator option), filtered by extensions and ignoreGlobs, then organized into a tree.
  * Optional filter and addMetaData are applied in that order.
  * @template MetaData - Type of meta data when addMetaData option is used.
  * @param pathList - Array of file paths (e.g. from a file system or URL list).
- * @param options - Options for filtering, current path, and meta data.
+ * @param options - Options for sorting, filtering, current path, and meta data.
  * @returns Root node of the tree (stem '/').
  * @throws {Error} When pathList is empty or missing root, or when a parent is missing and createVirtualParent is false.
  */
@@ -67,7 +75,13 @@ export function pathListToTree<MetaData = Record<string, unknown>>(
 	pathList: string[],
 	options?: PathListToTreeOptions<MetaData>,
 ) {
-	const sortedList = pathList.toSorted(pathComparator);
+	const comparator = options?.comparator === undefined ? 'path' : options.comparator;
+	const sortedList =
+		comparator === null
+			? pathList
+			: comparator === 'path'
+				? pathList.toSorted(pathComparator)
+				: pathList.toSorted(comparator);
 
 	const currentPath = options?.currentPath;
 	const baseUrl = options?.baseUrl ?? 'https://example.com';

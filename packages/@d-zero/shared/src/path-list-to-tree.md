@@ -51,6 +51,18 @@ const tree4 = pathListToTree(['/', '/a/', '/a/b.txt', '/a/c.html'], {
 	filter: (node) => node.children.length > 0 || node.url.endsWith('.html'),
 });
 
+// ソート順をカスタマイズ（comparator で指定）
+const tree4a = pathListToTree(['/', '/c/', '/a/', '/b/'], {
+	comparator: (a, b) => b.localeCompare(a), // 降順
+});
+// tree4a.children の順序: /c/, /b/, /a/
+
+// ソートなし（入力順を維持）
+const tree4b = pathListToTree(['/', '/z/', '/a/', '/m/'], {
+	comparator: null,
+});
+// tree4b.children の順序: /z/, /a/, /m/
+
 // メタデータを付与（addMetaData は filter の後に適用される）
 type MyMeta = { label: string; isLeaf: boolean };
 const tree5 = pathListToTree<MyMeta>(['/', '/a/', '/a/b'], {
@@ -68,15 +80,16 @@ const tree5 = pathListToTree<MyMeta>(['/', '/a/', '/a/b'], {
 
 ツリー構築時のオプション。ジェネリック `MetaData` は `addMetaData` で付与するメタの型（指定しない場合は `Record<string, unknown>`）。
 
-| プロパティ             | 型                                   | 説明                                                                                                                                                          |
-| ---------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `currentPath?`         | `string`                             | 現在のパス。一致するノードの `current: true`、その祖先の `isAncestor: true` を設定する。                                                                      |
-| `baseUrl?`             | `string`                             | パスを stem/depth に変換するときのベース URL（未指定時は `'https://example.com'`）。`parseUrl` の `indexAsParent: true` で index を親ディレクトリとして扱う。 |
-| `extensions?`          | `string[]`                           | 含める拡張子。常に `.html` と `.htm` は含まれ、未指定時はこの2つのみ。指定した場合はこれらに加えて追加される。小文字に正規化して比較する。                    |
-| `ignoreGlobs?`         | `string[]`                           | 無視するパスの glob パターン。`path.matchesGlob` で一致したパスは除外される。                                                                                 |
-| `createVirtualParent?` | `boolean`                            | 親が存在しないときに仮想親ノードを作るか。`true`（既定）なら作成、`false` なら `Error` をスロー。                                                             |
-| `filter?`              | `(node: Node<MetaData>) => boolean`  | 各ノードを残すかどうか。`false` を返すとそのノードと子孫が削除される。適用順は filter → addMetaData。                                                         |
-| `addMetaData?`         | `(node: Node<MetaData>) => MetaData` | 各ノードに付与するメタデータを返す関数。filter 適用後に全ノード（ルート含む）に対して呼ばれる。                                                               |
+| プロパティ             | 型                                                     | 説明                                                                                                                                                          |
+| ---------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `currentPath?`         | `string`                                               | 現在のパス。一致するノードの `current: true`、その祖先の `isAncestor: true` を設定する。                                                                      |
+| `baseUrl?`             | `string`                                               | パスを stem/depth に変換するときのベース URL（未指定時は `'https://example.com'`）。`parseUrl` の `indexAsParent: true` で index を親ディレクトリとして扱う。 |
+| `extensions?`          | `string[]`                                             | 含める拡張子。常に `.html` と `.htm` は含まれ、未指定時はこの2つのみ。指定した場合はこれらに加えて追加される。小文字に正規化して比較する。                    |
+| `ignoreGlobs?`         | `string[]`                                             | 無視するパスの glob パターン。`path.matchesGlob` で一致したパスは除外される。                                                                                 |
+| `createVirtualParent?` | `boolean`                                              | 親が存在しないときに仮想親ノードを作るか。`true`（既定）なら作成、`false` なら `Error` をスロー。                                                             |
+| `comparator?`          | `'path' \| ((a: string, b: string) => number) \| null` | ソート方法。`'path'`（既定）は `pathComparator` を使用。関数を渡すとカスタムソート。`null` はソートなし（入力順を維持）。                                     |
+| `filter?`              | `(node: Node<MetaData>) => boolean`                    | 各ノードを残すかどうか。`false` を返すとそのノードと子孫が削除される。適用順は filter → addMetaData。                                                         |
+| `addMetaData?`         | `(node: Node<MetaData>) => MetaData`                   | 各ノードに付与するメタデータを返す関数。filter 適用後に全ノード（ルート含む）に対して呼ばれる。                                                               |
 
 ### `Node<MetaData>`
 
@@ -97,7 +110,7 @@ const tree5 = pathListToTree<MyMeta>(['/', '/a/', '/a/b'], {
 
 ### パスの扱いと stem
 
-- パスは内部で `pathComparator` によりソートされたあと、`parseUrl(path, { baseUrl, indexAsParent: true })` で stem と depth に変換される。
+- パスは内部で `comparator` オプションに従ってソートされたあと（既定は `pathComparator`、`null` 指定時はソートなし）、`parseUrl(path, { baseUrl, indexAsParent: true })` で stem と depth に変換される。
 - `indexAsParent: true` のため、`index` や `index.html` のようなファイルは「親ディレクトリ」を表す stem（例: `'/a/'`）にまとめられ、depth は親と同じになる。
 - ディレクトリ相当の stem は末尾が `'/'`（例: `'/a/'`）、ファイル相当は `'/'` なし（例: `'/a/b'`）。
 
@@ -109,7 +122,7 @@ const tree5 = pathListToTree<MyMeta>(['/', '/a/', '/a/b'], {
 
 ### 処理順序
 
-1. `pathList` を `pathComparator` でソート。
+1. `pathList` を `comparator` オプションに従ってソート（既定: `pathComparator`、関数: カスタムソート、`null`: ソートなし）。
 2. 各パスについて `ignoreGlobs` に一致すればスキップ。
 3. 拡張子が `extensions` に含まれない場合はスキップ（拡張子なしは含める）。
 4. 残ったパスでノードの flat リストを作成し、`createTree` で親子を連結（必要なら仮想親を作成）。

@@ -439,3 +439,51 @@ test('Options: without addMetaData, nodes have no meta property', () => {
 	expect(result).not.toHaveProperty('meta');
 	expect(result.children[0]).not.toHaveProperty('meta');
 });
+
+test('Options: comparator null preserves original order', () => {
+	const input = ['/', '/z/', '/a/', '/m/'];
+	const inputCopy = [...input];
+	const result = pathListToTree(input, {
+		comparator: null,
+	});
+
+	expect(result.children.map((c) => c.stem)).toStrictEqual(['/z/', '/a/', '/m/']);
+	expect(input).toStrictEqual(inputCopy);
+});
+
+test('Options: comparator null with currentPath', () => {
+	const result = pathListToTree(['/', '/z/', '/a/', '/m/'], {
+		comparator: null,
+		currentPath: '/a/',
+	});
+
+	expect(result.children.map((c) => c.stem)).toStrictEqual(['/z/', '/a/', '/m/']);
+	expect(result.isAncestor).toBe(true);
+	expect(result.children[1]?.current).toBe(true);
+});
+
+test('Options: comparator with custom function', () => {
+	const result = pathListToTree(['/', '/a/', '/c/', '/b/'], {
+		comparator: (a, b) => b.localeCompare(a),
+	});
+
+	expect(result.children.map((c) => c.stem)).toStrictEqual(['/c/', '/b/', '/a/']);
+});
+
+test('Options: comparator with custom function sorts before tree construction', () => {
+	const result = pathListToTree(['/', '/b/', '/a/', '/b/x', '/a/y'], {
+		comparator: (a, b) => b.localeCompare(a),
+	});
+
+	expect(result.children.map((c) => c.stem)).toStrictEqual(['/b/', '/a/']);
+	expect(result.children[0]?.children.map((c) => c.stem)).toStrictEqual(['/b/x']);
+	expect(result.children[1]?.children.map((c) => c.stem)).toStrictEqual(['/a/y']);
+});
+
+test('Options: comparator "path" behaves same as default', () => {
+	const input = ['/', '/c/', '/a/', '/b/'];
+	const defaultResult = pathListToTree(input);
+	const explicitResult = pathListToTree(input, { comparator: 'path' });
+
+	expect(explicitResult).toStrictEqual(defaultResult);
+});
