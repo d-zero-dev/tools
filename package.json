@@ -15,7 +15,7 @@
 		"release": "lerna publish --exact --conventional-commits --conventional-graduate",
 		"release:next": "lerna publish --dist-tag next --exact --force-publish --conventional-commits --conventional-prerelease --preid alpha",
 		"prerelease": "yarn build; yarn test",
-		"prepare": "husky",
+		"postinstall": "husky",
 		"commit": "npx cz",
 		"co": "npx cz",
 		"update": "yarn upgrade-interactive"
