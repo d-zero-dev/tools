@@ -151,6 +151,7 @@ describe('parseCli', () => {
 	it('preserves positional args when short boolean flag precedes them', () => {
 		setArgv(['crawl', '-v', 'https://example.com']);
 		const result = parseCli(testSettings);
+		expect(result.command).toBe('crawl');
 		expect(result.args).toContain('https://example.com');
 		if (result.command === 'crawl') {
 			expect(result.flags.verbose).toBe(true);
@@ -167,10 +168,28 @@ describe('parseCli', () => {
 			'https://test.com',
 		]);
 		const result = parseCli(testSettings);
+		expect(result.command).toBe('crawl');
 		expect(result.args).toEqual(['https://example.com', 'https://test.com']);
 		if (result.command === 'crawl') {
 			expect(result.flags.verbose).toBe(true);
 			expect(result.flags.depth).toBe(5);
+		}
+	});
+
+	it('returns positional args for command without flags', () => {
+		setArgv(['analyze', 'file1.html', 'file2.html']);
+		const result = parseCli(testSettings);
+		expect(result.command).toBe('analyze');
+		expect(result.args).toEqual(['file1.html', 'file2.html']);
+	});
+
+	it('treats args after -- as positional', () => {
+		setArgv(['crawl', '--verbose', '--', '--not-a-flag']);
+		const result = parseCli(testSettings);
+		expect(result.command).toBe('crawl');
+		expect(result.args).toContain('--not-a-flag');
+		if (result.command === 'crawl') {
+			expect(result.flags.verbose).toBe(true);
 		}
 	});
 });

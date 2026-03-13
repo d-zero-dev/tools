@@ -364,7 +364,7 @@ export function parseCli<const Commands extends Record<string, CommandDef>>(
 
 	const { flags, args } = commandDef.flags
 		? parseFlags(commandArgv, commandDef.flags)
-		: { flags: {}, args: commandArgv };
+		: { flags: {}, args: yargsParser(commandArgv)._.map(String) };
 
 	return {
 		command,
