@@ -52,19 +52,18 @@ if (result.command === 'crawl') {
 フラグと位置引数（positional args）は任意の順序で混在できます。boolean フラグの直後に位置引数を置いても正しくパースされます。
 
 ```bash
-# すべて同じ結果になる
+# フラグと位置引数の順序は自由
 my-tool crawl https://example.com --verbose
 my-tool crawl --verbose https://example.com
+# => result.args: ['https://example.com'], result.flags.verbose: true
+
+# 複数のフラグ・位置引数も混在可能
 my-tool crawl --verbose --depth 5 https://example.com https://test.com
-```
+# => result.args: ['https://example.com', 'https://test.com']
 
-```typescript
-// result.args => ['https://example.com']
-// result.flags.verbose => true
-
-// `--` 以降はすべて位置引数として扱われる
-// my-tool crawl --verbose -- --not-a-flag
-// result.args => ['--not-a-flag']
+# `--` 以降はすべて位置引数として扱われる
+my-tool crawl --verbose -- --not-a-flag
+# => result.args: ['--not-a-flag']
 ```
 
 ### エラーハンドリング
@@ -95,11 +94,11 @@ const result = parseCli({
 
 `settings` オブジェクト:
 
-| プロパティ | 型                           | 必須 | 説明                                                    |
-| ---------- | ---------------------------- | ---- | ------------------------------------------------------- |
-| `name`     | `string`                     | ✓    | CLI プログラム名（ヘルプテキストに表示）                |
-| `commands` | `Record<string, CommandDef>` | ✓    | サブコマンド定義のマップ                                |
-| `onError`  | `(error: Error) => boolean`  | -    | コマンド未指定時のエラーハンドラ（`true` でヘルプ表示） |
+| プロパティ | 型                           | 必須 | 説明                                                          |
+| ---------- | ---------------------------- | ---- | ------------------------------------------------------------- |
+| `name`     | `string`                     | ✓    | CLI プログラム名（ヘルプテキストに表示）                      |
+| `commands` | `Record<string, CommandDef>` | ✓    | サブコマンド定義のマップ                                      |
+| `onError`  | `(error: Error) => boolean`  | -    | コマンド未指定・不明時のエラーハンドラ（`true` でヘルプ表示） |
 
 #### 戻り値
 

@@ -95,7 +95,7 @@ type InferFlagValue<F extends FlagDef> = F extends { type: 'string'; isMultiple:
 
 /**
  * Maps a flags definition record to its runtime value types.
- * Used as the return type of {@link parseFlags} and in {@link RoarResult}.
+ * Used in {@link RoarResult} to type the `flags` property of each command.
  */
 export type InferFlags<F extends AnyFlags> = {
 	-readonly [K in keyof F]: InferFlagValue<F[K]>;
@@ -232,7 +232,7 @@ function generateCommandHelp<F extends AnyFlags>(
  * these common CLI parsing concerns.
  * @param argv - Raw argument strings (after removing the command name)
  * @param flags - Flag definitions that drive parsing configuration
- * @returns Typed flag values matching the definitions
+ * @returns Object containing typed flag values and positional arguments
  */
 function parseFlags<F extends AnyFlags>(
 	argv: string[],
