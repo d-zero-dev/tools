@@ -47,6 +47,26 @@ if (result.command === 'crawl') {
 }
 ```
 
+### 位置引数とフラグの併用
+
+フラグと位置引数（positional args）は任意の順序で混在できます。boolean フラグの直後に位置引数を置いても正しくパースされます。
+
+```bash
+# すべて同じ結果になる
+my-tool crawl https://example.com --verbose
+my-tool crawl --verbose https://example.com
+my-tool crawl --verbose --depth 5 https://example.com https://test.com
+```
+
+```typescript
+// result.args => ['https://example.com']
+// result.flags.verbose => true
+
+// `--` 以降はすべて位置引数として扱われる
+// my-tool crawl --verbose -- --not-a-flag
+// result.args => ['--not-a-flag']
+```
+
 ### エラーハンドリング
 
 `onError` コールバックでコマンド未指定や不明なコマンドのエラーを処理できます。`true` を返すとヘルプテキストを stderr に表示してから `process.exit(1)` します。
