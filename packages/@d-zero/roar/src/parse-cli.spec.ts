@@ -137,4 +137,40 @@ describe('parseCli', () => {
 		expect(() => parseCli(testSettings)).toThrow('process.exit called');
 		expect(exitSpy).toHaveBeenCalledWith(0);
 	});
+
+	it('preserves positional args when boolean flag precedes them', () => {
+		setArgv(['crawl', '--verbose', 'https://example.com']);
+		const result = parseCli(testSettings);
+		expect(result.command).toBe('crawl');
+		expect(result.args).toContain('https://example.com');
+		if (result.command === 'crawl') {
+			expect(result.flags.verbose).toBe(true);
+		}
+	});
+
+	it('preserves positional args when short boolean flag precedes them', () => {
+		setArgv(['crawl', '-v', 'https://example.com']);
+		const result = parseCli(testSettings);
+		expect(result.args).toContain('https://example.com');
+		if (result.command === 'crawl') {
+			expect(result.flags.verbose).toBe(true);
+		}
+	});
+
+	it('preserves positional args with multiple flags mixed', () => {
+		setArgv([
+			'crawl',
+			'--verbose',
+			'--depth',
+			'5',
+			'https://example.com',
+			'https://test.com',
+		]);
+		const result = parseCli(testSettings);
+		expect(result.args).toEqual(['https://example.com', 'https://test.com']);
+		if (result.command === 'crawl') {
+			expect(result.flags.verbose).toBe(true);
+			expect(result.flags.depth).toBe(5);
+		}
+	});
 });
