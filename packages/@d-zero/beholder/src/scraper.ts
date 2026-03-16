@@ -13,7 +13,7 @@ import type {
 	SkippedPageData,
 } from './types.js';
 import type { PageScanPhase } from '@d-zero/puppeteer-page-scan';
-import type { Page } from 'puppeteer';
+import type { Dialog, HTTPRequest, HTTPResponse, Page } from 'puppeteer';
 
 import { beforePageScan, devicePresets } from '@d-zero/puppeteer-page-scan';
 import { detectCDN } from '@d-zero/shared/detect-cdn';
@@ -25,6 +25,7 @@ import { resourceLog, scraperLog } from './debug.js';
 import { getAnchorList, getImageList, getMeta } from './dom-evaluation.js';
 import { isError } from './is-error.js';
 import { keywordCheck } from './keyword-check.js';
+import { findDisconnectionFailures } from './network-disconnection.js';
 import { parseUrl } from './parse-url.js';
 
 const pid = `${process.pid}`;
@@ -51,6 +52,8 @@ const rLog = resourceLog.extend(pid);
 export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	/** Number of retries for `@retryable`-decorated methods. Set per-scrape from options. */
 	retries?: number;
+	/** Cleanup function to remove page listeners registered by `#fetchData`. */
+	#pageListenerCleanup: (() => void) | null = null;
 
 	/**
 	 * Begins the scraping process for a given URL on the provided Puppeteer page.
@@ -81,6 +84,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		const metadataOnly = options?.metadataOnly ?? false;
 		const imageLoadTimeout = options?.imageLoadTimeout ?? 5000;
 		const resources: ResourceEntry[] = [];
+		const failedRequests: Array<{ url: string; errorText: string }> = [];
 
 		void this.emit('changePhase', {
 			pid: process.pid,
@@ -169,6 +173,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				captureImages,
 				imageLoadTimeout,
 				resources,
+				failedRequests,
 				options,
 			).catch((error) => {
 				if (error instanceof Error) {
@@ -179,10 +184,11 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 
 			if (fetchResult instanceof Error) {
 				log('Error(FETCH_DATA): %s', url.href);
-				page.removeAllListeners();
+				this.#cleanupPageListeners();
 				return {
 					type: 'error',
 					resources,
+					failedRequests: failedRequests.length > 0 ? failedRequests : undefined,
 					error: {
 						name: fetchResult.name,
 						message: fetchResult.message,
@@ -192,7 +198,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				};
 			}
 
-			page.removeAllListeners();
+			this.#cleanupPageListeners();
 			headResult = fetchResult;
 
 			if (!headResult.isSkipped) {
@@ -250,7 +256,18 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			message: '',
 		});
 
-		return { type: 'success', pageData: headResult, resources };
+		return {
+			type: 'success',
+			pageData: headResult,
+			resources,
+			failedRequests: failedRequests.length > 0 ? failedRequests : undefined,
+		};
+	}
+	#cleanupPageListeners() {
+		if (this.#pageListenerCleanup) {
+			this.#pageListenerCleanup();
+			this.#pageListenerCleanup = null;
+		}
 	}
 
 	/**
@@ -292,17 +309,19 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * emitting `retryWait` / `retryExhausted` phase events for progress monitoring.
 	 *
 	 * Flow:
-	 * 1. Register request/response listeners to capture sub-resources (internal pages only)
+	 * 1. Register request/response/requestfailed listeners to capture sub-resources (internal pages only)
 	 * 2. Navigate to URL via `page.goto()` and track redirect chain
 	 * 3. Wait for DOM content and network idle
-	 * 4. Extract anchors, meta, and optionally images
-	 * 5. Check for keyword exclusion in HTML content
+	 * 4. Check for network disconnection errors and throw to trigger retry
+	 * 5. Extract anchors, meta, and optionally images
+	 * 6. Check for keyword exclusion in HTML content
 	 * @param page - Puppeteer page instance
 	 * @param url - Target URL to navigate to
 	 * @param isExternal - Whether the URL is external to the crawl scope
 	 * @param captureImages - Whether to run the image extraction pipeline
 	 * @param imageLoadTimeout - Timeout (ms) for waiting lazy-loaded images to complete
 	 * @param resources - Mutable array to collect captured sub-resources into
+	 * @param failedRequests - Mutable array to collect failed sub-resource requests into
 	 * @param options - Additional scraper options (e.g. `disableQueries`, `navigationTimeout`)
 	 * @returns Full page data or skipped page data if an exclusion rule matched
 	 */
@@ -334,6 +353,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		captureImages: boolean,
 		imageLoadTimeout: number,
 		resources: ResourceEntry[],
+		failedRequests: Array<{ url: string; errorText: string }>,
 		options?: Partial<ScraperOptions>,
 	): Promise<PageData | SkippedPageData> {
 		const parseOpts: ParseURLOptions | undefined =
@@ -342,7 +362,14 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				: { disableQueries: options.disableQueries };
 		const networkLogs: Record<string, NetworkLog> = {};
 
-		page.on('dialog', async (dialog) => {
+		// Clear stale state from previous retries (@retryable may re-invoke this method
+		// with the same page and mutable arrays, so we must reset to avoid accumulation)
+		this.#cleanupPageListeners();
+		failedRequests.length = 0;
+		resources.length = 0;
+
+		// Define named listeners so they can be individually removed on retry/cleanup
+		const onDialog = async (dialog: Dialog) => {
 			log(`Appear ${dialog.type()} dialog: ${dialog.message()}`);
 			try {
 				await dialog.accept();
@@ -350,10 +377,15 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				log(`Error: ${error}`);
 			}
 			log(`Accept ${dialog.type()} dialog`);
-		});
+		};
+		page.on('dialog', onDialog);
+
+		let onRequest: ((req: HTTPRequest) => void) | null = null;
+		let onResponse: ((res: HTTPResponse) => void) | null = null;
+		let onRequestFailed: ((req: HTTPRequest) => void) | null = null;
 
 		if (!isExternal) {
-			page.on('request', (request) => {
+			onRequest = (request: HTTPRequest) => {
 				const url = parseUrl(request.url(), parseOpts)!;
 				networkLogs[request.url()] = {
 					url,
@@ -367,10 +399,10 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 						method: request.method(),
 					},
 				};
-			});
+			};
 
 			const uniqueRes = new Set<string>();
-			page.on('response', (response) => {
+			onResponse = (response: HTTPResponse) => {
 				const resURL = parseUrl(response.url(), parseOpts)!;
 
 				if (uniqueRes.has(resURL.withoutHash)) {
@@ -428,8 +460,26 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					log,
 					resource: referredLink,
 				});
-			});
+			};
+
+			onRequestFailed = (request: HTTPRequest) => {
+				const errorText = request.failure()?.errorText ?? 'Unknown error';
+				rLog('Request failed: %s (%s)', request.url(), errorText);
+				failedRequests.push({ url: request.url(), errorText });
+			};
+
+			page.on('request', onRequest);
+			page.on('response', onResponse);
+			page.on('requestfailed', onRequestFailed);
 		}
+
+		// Store cleanup function for retry/post-fetch removal
+		this.#pageListenerCleanup = () => {
+			page.off('dialog', onDialog);
+			if (onRequest) page.off('request', onRequest);
+			if (onResponse) page.off('response', onResponse);
+			if (onRequestFailed) page.off('requestfailed', onRequestFailed);
+		};
 
 		const navigationTimeout = options?.navigationTimeout ?? 60_000;
 
@@ -559,6 +609,15 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		await page
 			.waitForNavigation({ waitUntil: 'networkidle0', timeout: 5000 })
 			.catch(() => {});
+
+		// Check for network disconnection errors in failed requests
+		const disconnectionFailures = findDisconnectionFailures(failedRequests);
+		if (disconnectionFailures.length > 0) {
+			const errorSummary = disconnectionFailures
+				.map((r) => `${r.url} (${r.errorText})`)
+				.join(', ');
+			throw new Error(`Network disconnection detected during page load: ${errorSummary}`);
+		}
 
 		void this.emit('changePhase', {
 			pid: process.pid,

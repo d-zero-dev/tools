@@ -296,6 +296,8 @@ export type ScrapeResult = {
 	ignored?: { url: ExURL; matchedText: string; excludeKeywords: string[] };
 	/** Error details, present when `type` is `"error"`. */
 	error?: { name: string; message: string; stack?: string; shutdown: boolean };
+	/** Sub-resource requests that failed during page loading (e.g., due to network disconnection). */
+	failedRequests?: ReadonlyArray<{ url: string; errorText: string }>;
 };
 
 /**
@@ -313,9 +315,9 @@ export type ResourceEntry = {
 
 /**
  * Event payload describing a phase transition in the scraping lifecycle.
- * Phases proceed roughly in order: scrapeStart -> headRequest -> openPage ->
+ * Phases proceed roughly in order: scrapeStart -> openPage ->
  * loadDOMContent -> waitNetworkIdle -> getHTML -> getAnchors -> getMeta ->
- * getImages -> scrapeEnd.
+ * extractImages -> getImages -> scrapeEnd.
  */
 export type ChangePhaseEvent = {
 	/** The process ID of the scraper worker. */

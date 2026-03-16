@@ -48,6 +48,7 @@ Puppeteer ページ上でスクレイピングを実行します。
 - `type: "success"` — `pageData` にスクレイピング結果を格納
 - `type: "skipped"` — `ignored` にスキップ理由を格納
 - `type: "error"` — `error` にエラー詳細を格納
+- `failedRequests` — ネットワーク切断等で失敗したサブリソースリクエストの一覧（存在する場合のみ）
 
 **使用例:**
 
@@ -137,6 +138,7 @@ type ScrapeResult = {
 	resources: ResourceEntry[];
 	ignored?: { url: ExURL; matchedText: string; excludeKeywords: string[] };
 	error?: { name: string; message: string; stack?: string; shutdown: boolean };
+	failedRequests?: ReadonlyArray<{ url: string; errorText: string }>;
 };
 ```
 
@@ -277,6 +279,8 @@ type Resource = {
 スクレイピングライフサイクルのフェーズ遷移イベントです。
 
 主なフェーズ: `scrapeStart` → `openPage` → `loadDOMContent` → `waitNetworkIdle` → `getHTML` → `getAnchors` → `getMeta` → `extractImages` → `getImages` → `scrapeEnd`
+
+その他のフェーズ: `launchBrowser`, `headRequest`, `headRequestTimeout`, `newPage`, `setViewport`, `scrollToBottom`, `waitImageLoad`, `pageSkipped`, `retryWait`, `retryExhausted`, `beforeCleanup`, `cleanedUp`
 
 #### `SkippedPageData`
 
