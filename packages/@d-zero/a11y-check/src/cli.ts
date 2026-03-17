@@ -34,6 +34,7 @@ const { options, args, hasConfigFile } = createCLI<A11yCheckCLIOptions>({
 	},
 	usage: [
 		'Usage:',
+		'\ta11y-check <url>... [-o <out>] [--limit <limit>] [--cache <true|false>] [--debug] [--verbose]',
 		'\ta11y-check -f <listfile> [-o <out>] [--limit <limit>] [--cache <true|false>] [--debug] [--verbose]',
 		'',
 		'Options:',
