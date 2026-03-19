@@ -6,8 +6,9 @@ type AnalyzedUrlList = {
 };
 
 /**
- *
- * @param list
+ * URLリストを解析し、Basic認証やHTTP（非SSL）の使用有無を判定する
+ * @param list - 解析対象のURLペアまたはURL文字列のリスト
+ * @returns 認証情報の有無とSSL未使用の有無
  */
 export function analyzeUrlList(list: readonly (URLPair | string)[]): AnalyzedUrlList {
 	const result: AnalyzedUrlList = {

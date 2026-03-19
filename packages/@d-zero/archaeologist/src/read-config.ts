@@ -3,8 +3,9 @@ import { toList } from '@d-zero/readtext/list';
 import { readConfigFile } from '@d-zero/shared/config-reader';
 
 /**
- *
- * @param filePath
+ * Frontmatter形式の設定ファイルを読み込み、URLペアリストとページフックを返す
+ * @param filePath - 設定ファイルのパス
+ * @returns URLペアのリストとページフック関数の配列
  */
 export async function readConfig(filePath: string) {
 	const { content, baseDir } = await readConfigFile<{

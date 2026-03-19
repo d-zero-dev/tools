@@ -34,11 +34,12 @@ function frequencyMap(tokens: string[]) {
 }
 
 /**
- *
- * @param urlA
- * @param urlB
- * @param phraseA
- * @param phraseB
+ * 2つのテキストを形態素解析し、フレーズ単位とトークン頻度の両方で差分を比較する
+ * @param urlA - 比較元のURL（diffヘッダーに使用）
+ * @param urlB - 比較先のURL（diffヘッダーに使用）
+ * @param phraseA - 比較元のテキスト
+ * @param phraseB - 比較先のテキスト
+ * @returns フレーズ差分とトークン頻度差分の両方を含むオブジェクト
  */
 export function diffText(urlA: string, urlB: string, phraseA: string, phraseB: string) {
 	const tokensA = tokenList(phraseA);

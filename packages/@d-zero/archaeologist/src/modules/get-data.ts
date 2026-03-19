@@ -15,11 +15,12 @@ export interface GetDataOptions {
 }
 
 /**
- *
- * @param page
- * @param url
- * @param options
- * @param update
+ * Puppeteerでページを開き、各デバイスサイズのスクリーンショットとDOMツリーを取得する
+ * @param page - PuppeteerのPageインスタンス
+ * @param url - 取得対象のURL
+ * @param options - スクリーンショット取得のオプション
+ * @param update - 進捗ログを受け取るコールバック
+ * @returns 各デバイスサイズのスクリーンショットとDOMツリーを含むページデータ
  */
 export async function getData(
 	page: Page,

@@ -8,6 +8,7 @@
 - 複数のデバイスサイズでスクリーンショットを撮影可能（7種類のプリセット + カスタム設定）
 - スクリーンショットは画像差分（ビジュアルリグレッション）を検出・出力します
 - HTMLの差分も検出します
+- 生HTMLソースの差分も検出します（ブラウザ不要）
 - レスポンシブデザインの差分検証に最適
 
 ## CLI
@@ -22,7 +23,7 @@ URLリストを持つファイルを指定して実行します。
 
 - `-v, --version`: バージョンを表示
 - `-f, --listfile <filepath>`: URLリストを持つファイルのパス（必須）
-- `-t, --type <types>`: 比較タイプの指定（`image,dom,text`、カンマ区切り）
+- `-t, --type <types>`: 比較タイプの指定（`image,dom,text,code`、カンマ区切り）
 - `-s, --selector <selector>`: 比較対象を限定するCSSセレクター
 - `-i, --ignore <selector>`: 無視するCSSセレクター
 - `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
@@ -44,6 +45,19 @@ URLリストを持つファイルを指定して実行します。
 - `mobile-large`: 414px幅（3倍解像度）
 - `mobile-small`: 320px幅（2倍解像度）
 
+### 比較タイプ
+
+`-t` オプションで指定する比較タイプの詳細:
+
+| タイプ  | 説明                                                                                   | ブラウザ |
+| ------- | -------------------------------------------------------------------------------------- | -------- |
+| `image` | スクリーンショットのピクセル単位のビジュアル差分                                       | 必要     |
+| `dom`   | ブラウザでレンダリングされた後のDOMツリーの差分（JavaScript実行後の状態）              | 必要     |
+| `text`  | ページのテキストコンテンツの差分（形態素解析による比較）                               | 必要     |
+| `code`  | HTTPで取得した生HTMLソースの差分（JavaScript実行前の状態、デバイスサイズに依存しない） | 不要     |
+
+デフォルトではすべてのタイプが有効です。`code` のみを指定した場合はブラウザを起動せずに実行されます。
+
 ### 使用例
 
 ```sh
@@ -55,6 +69,12 @@ npx @d-zero/archaeologist -f urls.txt --devices desktop,tablet,mobile
 
 # 合成画像を出力（2つの環境のスクリーンショットを左右に並べて表示）
 npx @d-zero/archaeologist -f urls.txt --combined
+
+# 生HTMLソースの差分のみ比較（ブラウザ不要）
+npx @d-zero/archaeologist -f urls.txt -t code
+
+# 画像差分と生HTMLソース差分を併用
+npx @d-zero/archaeologist -f urls.txt -t image,code
 
 # フリーズモード（参照用スクリーンショット作成）
 npx @d-zero/archaeologist --freeze urls.txt

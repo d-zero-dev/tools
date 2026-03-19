@@ -13,9 +13,10 @@ import c from 'ansi-colors';
 import { analyzeUrlList } from './modules/analize-url.js';
 
 /**
- *
- * @param list
- * @param options
+ * URLリストのスクリーンショットとDOMを参照用として保存し、ZIPアーカイブを生成する
+ * @param list - フリーズ対象のURLリスト
+ * @param options - フリーズオプション（並列実行数など）
+ * @returns 生成されたZIPファイルの絶対パス
  */
 export async function freeze(
 	list: readonly string[],

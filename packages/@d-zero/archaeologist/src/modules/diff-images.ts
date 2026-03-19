@@ -16,10 +16,11 @@ type DiffImagesListener = (
 ) => void;
 
 /**
- *
- * @param dataA
- * @param dataB
- * @param listener
+ * 2つのスクリーンショットのピクセル単位の差分を生成する
+ * @param dataA - 比較元のスクリーンショットデータ
+ * @param dataB - 比較先のスクリーンショットデータ
+ * @param listener - 処理フェーズの進捗を受け取るリスナー
+ * @returns 一致率と差分画像バッファ。バイナリが存在しない場合はnull
  */
 export async function diffImages(
 	dataA: Screenshot,
