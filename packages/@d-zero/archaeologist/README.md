@@ -158,3 +158,5 @@ export default async function (page, { name, width, resolution, log }) {
 Basic認証が必要なページの場合はURLにユーザー名とパスワードを含めます。
 
 例: `https://user:pass@example.com`
+
+`image`/`dom`/`text` タイプではPuppeteerが認証を処理します。`code` タイプではHTTPリクエストに`Authorization`ヘッダーとして認証情報を付与します。サーバーがリダイレクトを返す場合でも認証ヘッダーは維持されます。
