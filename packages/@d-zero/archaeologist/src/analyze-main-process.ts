@@ -13,9 +13,9 @@ import { analyzeUrlList } from './modules/analize-url.js';
 import { score } from './utils.js';
 
 /**
- *
- * @param list
- * @param options
+ * URLペアのリストを比較分析し、結果を`.archaeologist`ディレクトリに出力する
+ * @param list - 比較対象のURLペアのリスト
+ * @param options - 分析オプション（比較タイプ、デバイス、並列実行数など）
  */
 export async function analyze(
 	list: readonly URLPair[],
@@ -81,6 +81,11 @@ export async function analyze(
 					`  ${c.bgGreenBright(' TEXT ')}: ${score(text.matches, 0.995)} ${text.file}`,
 				);
 			}
+		}
+		if (result.code) {
+			output.push(
+				`  ${c.bgCyan(' CODE ')}: ${score(result.code.matches, 0.995)} ${result.code.file}`,
+			);
 		}
 	}
 

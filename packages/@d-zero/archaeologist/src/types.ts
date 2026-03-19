@@ -12,6 +12,7 @@ export type URLPair = readonly [urlA: string, urlB: string];
 export type Result = {
 	target: [urlA: string, urlB: string];
 	screenshots: Record<string, MediaResult>;
+	code: CodeResult | null;
 };
 
 export type MediaResult = {
@@ -32,6 +33,12 @@ export type DOMResult = {
 };
 
 export type TextResult = {
+	matches: number;
+	diff: string | null;
+	file: string;
+};
+
+export type CodeResult = {
 	matches: number;
 	diff: string | null;
 	file: string;
