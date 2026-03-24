@@ -175,6 +175,7 @@ export class Sheet {
 	 * - `hiddenByFilter`: The row is hidden by a filter view or filter condition
 	 * @see https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#DimensionProperties
 	 * @param startRow - The 1-based row number to start fetching metadata from
+	 * @returns Array of row visibility objects, one per row from `startRow` onward
 	 */
 	async getRowMetadata(startRow: number) {
 		const res = await this.#parent.getWithGridData(

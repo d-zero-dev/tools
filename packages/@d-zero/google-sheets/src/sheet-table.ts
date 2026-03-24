@@ -9,11 +9,17 @@ import { Sheets } from './sheets/sheets.js';
 // Google Sheets epoch (December 30, 1899)
 const SHEETS_EPOCH = new Date(1899, 11, 30).getTime();
 
+/**
+ * Configuration for a single header column in a sheet table.
+ */
 export type HeaderCell = {
 	readonly label: string;
 	readonly conditionalFormatRules?: sheets_v4.Schema$ConditionalFormatRule[];
 };
 
+/**
+ * Options for creating a {@link SheetTable}.
+ */
 export type SheetTableOptions = {
 	readonly bodyStartRow?: number;
 	readonly frozen?: {
@@ -22,16 +28,30 @@ export type SheetTableOptions = {
 	};
 };
 
+/**
+ * Header configuration that searches for existing header labels in the sheet.
+ * @template T - Record type whose keys correspond to header labels in the sheet
+ */
 export type SearchTableHeaders<T> = {
 	readonly headerRowNumber?: number;
 	readonly search: readonly (keyof T)[];
 };
 
+/**
+ * Header configuration that explicitly defines column headers and their labels.
+ * @template T - Record type whose keys are used as header identifiers
+ */
 export type DefineHeader<T> = {
 	readonly headerRowNumber?: number;
 	readonly define: Record<keyof T, string | HeaderCell>;
 };
 
+/**
+ * Typed table interface for reading from and writing to a Google Sheets worksheet.
+ *
+ * Use the static {@link SheetTable.create} factory method to instantiate.
+ * @template T - Record type representing a single row of data
+ */
 export class SheetTable<T> {
 	readonly #auth: OAuth2Client;
 	readonly #bodyStartRow: number;
@@ -67,6 +87,10 @@ export class SheetTable<T> {
 		this.#bodyStartRow = options?.bodyStartRow ?? 2;
 	}
 
+	/**
+	 * Appends rows to the sheet.
+	 * @param records - Array of row data keyed by header identifiers
+	 */
 	async addRecords(records: ReadonlyArray<Record<keyof T, string | CellData>>) {
 		if (!this.#sheet) {
 			throw new Error('Sheet is not created');
@@ -193,6 +217,16 @@ export class SheetTable<T> {
 		}
 	}
 
+	/**
+	 * Creates and initializes a new {@link SheetTable} instance.
+	 * @template T - Record type representing a single row of data
+	 * @param sheetUrl - Full URL of the Google Spreadsheet
+	 * @param sheetName - Name of the worksheet tab to operate on
+	 * @param auth - Authenticated OAuth2 client for Google Sheets API access
+	 * @param header - Header configuration (define columns explicitly or search existing ones)
+	 * @param options - Additional table options such as frozen panes and body start row
+	 * @returns Initialized SheetTable instance ready for read/write operations
+	 */
 	static async create<T>(
 		sheetUrl: string,
 		sheetName: string,
@@ -213,10 +247,11 @@ interface Header<T> {
 }
 
 /**
- *
- * @param sheet
- * @param headerRowNumber
- * @param keys
+ * Resolves header keys to their column positions by reading the header row from the sheet.
+ * @param sheet - Sheet instance to read headers from
+ * @param headerRowNumber - 1-based row number where headers are located
+ * @param keys - Header keys to search for in the header row
+ * @returns Resolved headers sorted by column index, excluding keys not found
  */
 async function getHeaders<T>(
 	sheet: Sheet,
@@ -241,9 +276,9 @@ async function getHeaders<T>(
 }
 
 /**
- * Convert column number to alphabet column name.
- * Example: 5 => "E", 100 => "CV"
- * @param col
+ * Converts a 1-based column number to an alphabetic column name (e.g. 5 → "E", 100 → "CV").
+ * @param col - 1-based column number
+ * @returns Alphabetic column name
  */
 function getClmName(col: number): string {
 	const COUNT_OF_ALPHABET = 26;
