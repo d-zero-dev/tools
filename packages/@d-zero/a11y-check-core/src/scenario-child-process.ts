@@ -1,5 +1,6 @@
 import type { Result, NeedAnalysis, Passed, Scenario } from './types.js';
 
+import { importScenarios, type Violation } from '@d-zero/a11y-check-core';
 import { createChildProcess } from '@d-zero/puppeteer-dealer';
 import {
 	beforePageScan,
@@ -8,8 +9,6 @@ import {
 } from '@d-zero/puppeteer-page-scan';
 import { Cache } from '@d-zero/shared/cache';
 import c from 'ansi-colors';
-
-import { importScenarios, type Violation } from '@d-zero/a11y-check-core';
 
 export type ChildProcessParams = {
 	readonly scenarios: readonly Scenario[];
