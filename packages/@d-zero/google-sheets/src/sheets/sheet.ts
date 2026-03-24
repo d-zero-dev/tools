@@ -168,6 +168,14 @@ export class Sheet {
 		return index;
 	}
 
+	/**
+	 * Retrieves row visibility metadata starting from the specified row.
+	 *
+	 * - `hiddenByUser`: The row is manually hidden by a user (right-click → "Hide row")
+	 * - `hiddenByFilter`: The row is hidden by a filter view or filter condition
+	 * @see https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#DimensionProperties
+	 * @param startRow - The 1-based row number to start fetching metadata from
+	 */
 	async getRowMetadata(startRow: number) {
 		const res = await this.#parent.getWithGridData(
 			`'${this.props.title}'!A${startRow}:A`,

@@ -84,6 +84,14 @@ export class SheetTable<T> {
 		);
 	}
 
+	/**
+	 * Retrieves all data rows with header-mapped values and row visibility state.
+	 *
+	 * Each returned record includes:
+	 * - `hiddenByUser` (`boolean`): `true` if the row is manually hidden by a user
+	 * - `hiddenByFilter` (`boolean`): `true` if the row is hidden by a filter view
+	 * @returns Array of records typed as `T & { hiddenByUser: boolean; hiddenByFilter: boolean }`
+	 */
 	async getData() {
 		if (!this.#sheet) {
 			throw new Error('Sheet is not created');
