@@ -385,6 +385,74 @@ test('Options: currentPath', () => {
 	});
 });
 
+test('Options: currentPath does not false-positive isAncestor on sibling prefix', () => {
+	const result = pathListToTree(
+		['/', '/foo/index.html', '/foo/bar.html', '/foo/bar_baz.html'],
+		{
+			currentPath: '/foo/bar_baz.html',
+		},
+	);
+
+	const foo = result.children[0]!;
+	expect(foo.stem).toBe('/foo/');
+	expect(foo.isAncestor).toBe(true);
+
+	const bar = foo.children.find((c) => c.stem === '/foo/bar')!;
+	expect(bar.isAncestor).toBe(false);
+
+	const barBaz = foo.children.find((c) => c.stem === '/foo/bar_baz')!;
+	expect(barBaz.current).toBe(true);
+});
+
+test('Options: currentPath file is not treated as child of same-prefix directory', () => {
+	const result = pathListToTree(['/', '/foo/', '/foo/bar/', '/foo/bar.html'], {
+		currentPath: '/foo/bar.html',
+	});
+
+	const foo = result.children[0]!;
+	expect(foo.stem).toBe('/foo/');
+	expect(foo.isAncestor).toBe(true);
+
+	const fooBarDir = foo.children.find((c) => c.stem === '/foo/bar/')!;
+	expect(fooBarDir.isAncestor).toBe(false);
+
+	const fooBarFile = foo.children.find((c) => c.stem === '/foo/bar')!;
+	expect(fooBarFile.current).toBe(true);
+});
+
+test('Options: currentPath as root marks root current and no ancestors', () => {
+	const result = pathListToTree(['/', '/a/', '/b.html'], {
+		currentPath: '/',
+	});
+
+	expect(result.current).toBe(true);
+	expect(result.isAncestor).toBe(false);
+	expect(result.children[0]!.isAncestor).toBe(false);
+	expect(result.children[1]!.isAncestor).toBe(false);
+});
+
+test('Options: currentPath deep nesting marks all ancestor directories', () => {
+	const result = pathListToTree(['/', '/a/', '/a/b/', '/a/b/c.html'], {
+		currentPath: '/a/b/c.html',
+	});
+
+	expect(result.isAncestor).toBe(true);
+	expect(result.current).toBe(false);
+
+	const a = result.children[0]!;
+	expect(a.stem).toBe('/a/');
+	expect(a.isAncestor).toBe(true);
+
+	const ab = a.children[0]!;
+	expect(ab.stem).toBe('/a/b/');
+	expect(ab.isAncestor).toBe(true);
+
+	const abc = ab.children[0]!;
+	expect(abc.stem).toBe('/a/b/c');
+	expect(abc.current).toBe(true);
+	expect(abc.isAncestor).toBe(false);
+});
+
 test('Options: addMetaData adds meta to every node', () => {
 	const result = pathListToTree(['/', '/a/', '/a/b', '/a/c/'], {
 		addMetaData: (node) => ({

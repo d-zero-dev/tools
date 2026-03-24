@@ -11,12 +11,11 @@ import type { DealOptions } from '@d-zero/dealer';
 
 import path from 'node:path';
 
+import { importScenarios, type Violation } from '@d-zero/a11y-check-core';
 import { createProcess, deal } from '@d-zero/puppeteer-dealer';
 import c from 'ansi-colors';
 
 import { cleanResults } from './clean-results.js';
-
-import { importScenarios, type Violation } from '@d-zero/a11y-check-core';
 
 /**
  *
