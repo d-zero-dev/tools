@@ -385,6 +385,25 @@ test('Options: currentPath', () => {
 	});
 });
 
+test('Options: currentPath does not false-positive isAncestor on sibling prefix', () => {
+	const result = pathListToTree(
+		['/', '/foo/index.html', '/foo/bar.html', '/foo/bar_baz.html'],
+		{
+			currentPath: '/foo/bar_baz.html',
+		},
+	);
+
+	const foo = result.children[0]!;
+	expect(foo.stem).toBe('/foo/');
+	expect(foo.isAncestor).toBe(true);
+
+	const bar = foo.children.find((c) => c.stem === '/foo/bar')!;
+	expect(bar.isAncestor).toBe(false);
+
+	const barBaz = foo.children.find((c) => c.stem === '/foo/bar_baz')!;
+	expect(barBaz.current).toBe(true);
+});
+
 test('Options: addMetaData adds meta to every node', () => {
 	const result = pathListToTree(['/', '/a/', '/a/b', '/a/c/'], {
 		addMetaData: (node) => ({

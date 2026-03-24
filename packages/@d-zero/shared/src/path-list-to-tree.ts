@@ -118,7 +118,10 @@ export function pathListToTree<MetaData = Record<string, unknown>>(
 			stem: url.stem,
 			depth: url.depth,
 			current,
-			isAncestor: !current && currentPath ? currentPath.startsWith(url.stem) : false,
+			isAncestor:
+				!current && currentPath
+					? url.stem.endsWith('/') && currentPath.startsWith(url.stem)
+					: false,
 			children: [],
 		});
 	}
