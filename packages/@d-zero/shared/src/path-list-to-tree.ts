@@ -51,7 +51,7 @@ export type Node<MetaData = Record<string, unknown>> = {
 	depth: number;
 	/** True if this node is the current path. */
 	current: boolean;
-	/** True if the current path is under this node. */
+	/** True if this node is a directory ancestor of the current path. Only directory nodes (stem ending with '/') can be ancestors. */
 	isAncestor: boolean;
 	/** Present when the node was created as a virtual parent (no real file). */
 	virtual?: true;
