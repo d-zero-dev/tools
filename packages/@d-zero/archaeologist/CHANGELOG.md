@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.5.10...@d-zero/archaeologist@3.6.0) (2026-03-24)
+
+### Bug Fixes
+
+- **archaeologist:** preserve auth header across redirects in fetchHtml ([9f04aaf](https://github.com/d-zero-dev/tools/commit/9f04aaf4ec8cee8cff7f519ab04715bbc45eda6e))
+- **archaeologist:** support Basic auth in fetchHtml ([cdf66e2](https://github.com/d-zero-dev/tools/commit/cdf66e26378e0ac1625b136b5fb2eb6ff348bd6f))
+
+### Features
+
+- **archaeologist:** add code type for raw HTML source diff comparison ([ea4f189](https://github.com/d-zero-dev/tools/commit/ea4f18991468d574dc34e4f41c42f20ab0c3e04d))
+
 ## [3.5.10](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.5.9...@d-zero/archaeologist@3.5.10) (2026-03-11)
 
 **Note:** Version bump only for package @d-zero/archaeologist

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.6.3...@d-zero/google-sheets@0.7.0) (2026-03-24)
+
+### Features
+
+- **google-sheets:** add hidden row state to SheetTable.getData() result ([de44178](https://github.com/d-zero-dev/tools/commit/de44178d849f3e6b5824bfc2da4918bf89696bd6)), closes [#865](https://github.com/d-zero-dev/tools/issues/865)
+
 ## [0.6.3](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.6.2...@d-zero/google-sheets@0.6.3) (2026-03-11)
 
 **Note:** Version bump only for package @d-zero/google-sheets

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.21.1](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.21.0...@d-zero/shared@0.21.1) (2026-03-24)
+
+### Bug Fixes
+
+- isAncestor判定でパス境界を考慮するようendsWith('/')チェックを追加 ([3a92c8a](https://github.com/d-zero-dev/tools/commit/3a92c8a9f06a772ce3530fdb6e06ebdf0aa0b49d)), closes [#866](https://github.com/d-zero-dev/tools/issues/866)
+
 # [0.21.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.20.1...@d-zero/shared@0.21.0) (2026-03-11)
 
 ### Features

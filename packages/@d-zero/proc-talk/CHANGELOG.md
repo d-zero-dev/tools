@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.20](https://github.com/d-zero-dev/tools/compare/@d-zero/proc-talk@0.4.19...@d-zero/proc-talk@0.4.20) (2026-03-24)
+
+**Note:** Version bump only for package @d-zero/proc-talk
+
 ## [0.4.19](https://github.com/d-zero-dev/tools/compare/@d-zero/proc-talk@0.4.18...@d-zero/proc-talk@0.4.19) (2026-03-11)
 
 **Note:** Version bump only for package @d-zero/proc-talk
