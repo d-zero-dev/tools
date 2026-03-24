@@ -128,8 +128,8 @@ export class SheetTable<T> {
 		const list = data.map((_d, rowIndex) => {
 			const meta = rowMetadata[rowIndex];
 			const _data: Record<string, unknown> = {
-				_hiddenByUser: meta?.hiddenByUser ?? false,
-				_hiddenByFilter: meta?.hiddenByFilter ?? false,
+				hiddenByUser: meta?.hiddenByUser ?? false,
+				hiddenByFilter: meta?.hiddenByFilter ?? false,
 			};
 
 			for (const header of headers) {
@@ -140,7 +140,7 @@ export class SheetTable<T> {
 				_data[header.key as string] = convertValue(rawValue, cellType);
 			}
 
-			return _data as T & { _hiddenByUser: boolean; _hiddenByFilter: boolean };
+			return _data as T & { hiddenByUser: boolean; hiddenByFilter: boolean };
 		});
 
 		return list;
