@@ -76,7 +76,7 @@ const deviceNames = options.devices ? parseList(options.devices) : undefined;
 const devices = parseDevicesOption(deviceNames);
 
 if (hasConfigFile) {
-	const { urlList, hooks } = await readConfig(options.listfile!);
+	const { urlList, hooks } = await readConfig(options.listfile);
 	await print(urlList, {
 		type,
 		limit: options.limit,

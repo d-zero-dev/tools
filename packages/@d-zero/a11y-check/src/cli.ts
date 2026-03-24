@@ -79,7 +79,7 @@ let a11yOptions: A11yCheckOptions = {
 };
 
 if (hasConfigFile) {
-	const { urlList, hooks } = await readConfig(options.listfile!);
+	const { urlList, hooks } = await readConfig(options.listfile);
 	list.push(...urlList);
 	a11yOptions = {
 		...a11yOptions,
