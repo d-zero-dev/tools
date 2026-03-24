@@ -127,20 +127,21 @@ export class SheetTable<T> {
 
 		const list = data.map((_d, rowIndex) => {
 			const meta = rowMetadata[rowIndex];
-			const _data: Record<string, unknown> = {
-				hiddenByUser: meta?.hiddenByUser ?? false,
-				hiddenByFilter: meta?.hiddenByFilter ?? false,
-			};
+			const _data: Partial<T> = {};
 
 			for (const header of headers) {
 				const relativeIndex = header.index - firstColIndex;
 				const rawValue = _d[relativeIndex];
 				const cellType = typeMap.get(header.index) ?? 'string';
 
-				_data[header.key as string] = convertValue(rawValue, cellType);
+				_data[header.key] = convertValue(rawValue, cellType) as T[keyof T];
 			}
 
-			return _data as T & { hiddenByUser: boolean; hiddenByFilter: boolean };
+			return {
+				..._data,
+				hiddenByUser: meta?.hiddenByUser ?? false,
+				hiddenByFilter: meta?.hiddenByFilter ?? false,
+			} as T & { hiddenByUser: boolean; hiddenByFilter: boolean };
 		});
 
 		return list;
