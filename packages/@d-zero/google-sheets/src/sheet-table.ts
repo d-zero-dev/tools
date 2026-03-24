@@ -112,28 +112,35 @@ export class SheetTable<T> {
 			typeMap.set(firstColIndex + cellType.index, cellType.type);
 		}
 
-		// Get all data
-		const data = await this.#sheet.getValues(
-			`${headers.at(0)?.row ?? 'A'}${this.#bodyStartRow}`,
-			headers.at(-1)?.row ?? 'A',
-		);
+		// Get all data and row metadata in parallel
+		const [data, rowMetadata] = await Promise.all([
+			this.#sheet.getValues(
+				`${headers.at(0)?.row ?? 'A'}${this.#bodyStartRow}`,
+				headers.at(-1)?.row ?? 'A',
+			),
+			this.#sheet.getRowMetadata(this.#bodyStartRow),
+		]);
 
 		if (data == null) {
 			return [];
 		}
 
-		const list = data.map((_d) => {
-			const _data: Partial<T> = {};
+		const list = data.map((_d, rowIndex) => {
+			const meta = rowMetadata[rowIndex];
+			const _data: Record<string, unknown> = {
+				_hiddenByUser: meta?.hiddenByUser ?? false,
+				_hiddenByFilter: meta?.hiddenByFilter ?? false,
+			};
 
 			for (const header of headers) {
 				const relativeIndex = header.index - firstColIndex;
 				const rawValue = _d[relativeIndex];
 				const cellType = typeMap.get(header.index) ?? 'string';
 
-				_data[header.key] = convertValue(rawValue, cellType) as T[keyof T];
+				_data[header.key as string] = convertValue(rawValue, cellType);
 			}
 
-			return _data as T;
+			return _data as T & { _hiddenByUser: boolean; _hiddenByFilter: boolean };
 		});
 
 		return list;

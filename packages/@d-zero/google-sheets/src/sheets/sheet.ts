@@ -168,6 +168,18 @@ export class Sheet {
 		return index;
 	}
 
+	async getRowMetadata(startRow: number) {
+		const res = await this.#parent.getWithGridData(
+			`'${this.props.title}'!A${startRow}:A`,
+		);
+		const sheet = res.data.sheets?.[0];
+		const rowMetadataList = sheet?.data?.[0]?.rowMetadata ?? [];
+		return rowMetadataList.map((metadata) => ({
+			hiddenByUser: metadata.hiddenByUser === true,
+			hiddenByFilter: metadata.hiddenByFilter === true,
+		}));
+	}
+
 	async getValues(row: string, col: string) {
 		const res = await this.#parent.get({
 			range: `'${this.props.title}'!${row}:${col}`,
