@@ -679,6 +679,11 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * due to responsive `<picture>` / `srcset`. Capturing both `desktop-compact`
 	 * and `mobile-small` viewports reveals responsive image issues.
 	 *
+	 * WHY per-device try-catch: Some pages (e.g. those using fullpage.js or
+	 * scroll-jacking libraries) destroy the execution context when the viewport
+	 * changes and triggers a reload. Isolating each device preset allows partial
+	 * results — if one viewport fails, the other can still succeed.
+	 *
 	 * WHY retryable with 5-min timeout and `fallback: []`: Image extraction is
 	 * best-effort. If all retries fail, an empty array is returned rather than
 	 * failing the entire page scrape.
@@ -686,7 +691,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * @param url - The page URL string (without hash and auth)
 	 * @param isExternal - Whether the page is external
 	 * @param imageLoadTimeout - Timeout (ms) for waiting images to complete loading
-	 * @returns Array of image elements from all device presets
+	 * @returns Array of image elements from all device presets (may be partial if some viewports failed)
 	 */
 	@retryable({
 		timeout: 5 * 60 * 1000,
@@ -724,45 +729,57 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		const imageList: ImageElement[] = [];
 
 		for (const { key, preset } of devices) {
-			void this.emit('changePhase', {
-				pid: process.pid,
-				name: 'setViewport',
-				url: null,
-				isExternal,
-				message: `📷 ${key} ↔️ ${preset.width}px`,
-			});
+			try {
+				void this.emit('changePhase', {
+					pid: process.pid,
+					name: 'setViewport',
+					url: null,
+					isExternal,
+					message: `📷 ${key} ↔️ ${preset.width}px`,
+				});
 
-			await beforePageScan(page, url, {
-				name: key,
-				width: preset.width,
-				resolution: preset.resolution,
-				listener,
-				timeout: 5000,
-			});
+				await beforePageScan(page, url, {
+					name: key,
+					width: preset.width,
+					resolution: preset.resolution,
+					listener,
+					timeout: 5000,
+				});
 
-			void this.emit('changePhase', {
-				pid: process.pid,
-				name: 'waitImageLoad',
-				url: null,
-				isExternal,
-				message: `📷 ${key}: Waiting for images%dots%`,
-			});
+				void this.emit('changePhase', {
+					pid: process.pid,
+					name: 'waitImageLoad',
+					url: null,
+					isExternal,
+					message: `📷 ${key}: Waiting for images%dots%`,
+				});
 
-			await page
-				.waitForFunction(() => [...document.images].every((img) => img.complete), {
-					timeout: imageLoadTimeout,
-				})
-				.catch(() => {});
+				await page
+					.waitForFunction(() => [...document.images].every((img) => img.complete), {
+						timeout: imageLoadTimeout,
+					})
+					.catch(() => {});
 
-			void this.emit('changePhase', {
-				pid: process.pid,
-				name: 'getImages',
-				url: null,
-				isExternal,
-				message: `📸 ${key}: Extracting images%dots%`,
-			});
-			const images = await getImageList(page, preset.width);
-			imageList.push(...images);
+				void this.emit('changePhase', {
+					pid: process.pid,
+					name: 'getImages',
+					url: null,
+					isExternal,
+					message: `📸 ${key}: Extracting images%dots%`,
+				});
+				const images = await getImageList(page, preset.width);
+				imageList.push(...images);
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error);
+				log('Error(FETCH_IMAGES/%s): %s', key, errorMessage);
+				void this.emit('changePhase', {
+					pid: process.pid,
+					name: 'retryExhausted',
+					url: null,
+					isExternal: false,
+					message: `📷 ${key}: skipped — ${errorMessage}`,
+				});
+			}
 		}
 
 		return imageList;
