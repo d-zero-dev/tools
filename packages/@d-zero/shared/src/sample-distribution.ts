@@ -91,36 +91,36 @@ function sampleBimodal(
 /**
  * Sample from right-skewed distribution (linear weight: w(t) = t).
  * Uses analytical inverse CDF: t = sqrt(u) where u is uniform [0,1].
- * @param min - Minimum value
- * @param max - Maximum value
- * @returns A sample from right-skewed distribution
+ * @param min - Minimum value (inclusive)
+ * @param max - Maximum value (exclusive)
+ * @returns A random integer within [min, max)
  */
 function sampleRightSkewed(min: number, max: number): number {
 	const u = Math.random();
 	// CDF(t) = t^2, inverse: t = sqrt(u)
 	const t = Math.min(1, Math.max(0, Math.sqrt(u)));
-	return Math.floor(min + t * (max - min));
+	return Math.min(max - 1, Math.floor(min + t * (max - min)));
 }
 
 /**
  * Sample from left-skewed distribution (linear weight: w(t) = 1-t).
  * Uses analytical inverse CDF: t = 1 - sqrt(1-u) where u is uniform [0,1].
- * @param min - Minimum value
- * @param max - Maximum value
- * @returns A sample from left-skewed distribution
+ * @param min - Minimum value (inclusive)
+ * @param max - Maximum value (exclusive)
+ * @returns A random integer within [min, max)
  */
 function sampleLeftSkewed(min: number, max: number): number {
 	const u = Math.random();
 	// CDF(t) = 2t - t^2, inverse: t = 1 - sqrt(1-u)
 	const t = Math.min(1, Math.max(0, 1 - Math.sqrt(1 - u)));
-	return Math.floor(min + t * (max - min));
+	return Math.min(max - 1, Math.floor(min + t * (max - min)));
 }
 
 /**
- * Calculate the integral of weight function using numerical integration.
- * @param weightFn - Weight function
- * @param samples - Number of samples for integration
- * @returns Integral value
+ * Calculate the integral of weight function using numerical integration (midpoint rule).
+ * @param weightFn - Weight function mapping [0,1] to a non-negative value
+ * @param samples - Number of subdivision points for numerical integration
+ * @returns Approximate integral of the weight function over [0,1]
  */
 function integrateWeight(
 	weightFn: (t: number) => number,
@@ -138,10 +138,10 @@ function integrateWeight(
 /**
  * Sample from a distribution using inverse transform sampling with custom weight function.
  * This uses numerical integration for arbitrary weight functions.
- * @param min - Minimum value
- * @param max - Maximum value
+ * @param min - Minimum value (inclusive)
+ * @param max - Maximum value (exclusive)
  * @param weightFn - Weight function mapping [0,1] to [0,∞)
- * @returns A sample from the distribution
+ * @returns A random integer within [min, max)
  */
 function sampleCustomWeight(
 	min: number,
@@ -174,7 +174,7 @@ function sampleCustomWeight(
 		cdfValue /= integral;
 
 		if (Math.abs(cdfValue - u) < tolerance) {
-			return Math.floor(min + mid * (max - min));
+			return Math.min(max - 1, Math.floor(min + mid * (max - min)));
 		}
 
 		if (cdfValue < u) {
@@ -186,14 +186,15 @@ function sampleCustomWeight(
 
 	// Fallback: use midpoint if convergence fails
 	const t = (low + high) / 2;
-	return Math.floor(min + t * (max - min));
+	return Math.min(max - 1, Math.floor(min + t * (max - min)));
 }
 
 /**
  * Samples a random integer from the specified distribution within the given range.
+ * When min >= max, returns min regardless of the distribution type.
  * @param range - Random range specification
  * @param distribution - Distribution type or custom configuration
- * @returns A random integer within the specified range following the distribution
+ * @returns A random integer within [min, max) following the distribution, or min when min >= max
  */
 export function sampleDistribution(
 	range: RandomIntRange,
@@ -201,6 +202,11 @@ export function sampleDistribution(
 ): number {
 	const min = typeof range === 'number' ? 0 : range.min;
 	const max = typeof range === 'number' ? range : range.max;
+
+	// Ensure consistent behavior across all distribution types when range is empty
+	if (min >= max) {
+		return min;
+	}
 
 	// Default to uniform distribution
 	if (!distribution || distribution === 'uniform') {
@@ -217,7 +223,7 @@ export function sampleDistribution(
 	}
 
 	if (distribution === 'triangular') {
-		return Math.floor(sampleTriangular(min, max));
+		return Math.min(max - 1, Math.floor(sampleTriangular(min, max)));
 	}
 
 	if (distribution === 'right-skewed') {
