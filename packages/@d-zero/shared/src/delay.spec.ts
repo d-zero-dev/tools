@@ -108,6 +108,39 @@ describe('delay', () => {
 		});
 	});
 
+	describe('with zero-length range', () => {
+		it('should resolve immediately when random range is 0', async () => {
+			const start = Date.now();
+			await delay({ random: 0 });
+			const elapsed = Date.now() - start;
+
+			expect(elapsed).toBeLessThan(50);
+		});
+
+		it('should resolve immediately when min equals max', async () => {
+			let receivedMs = 0;
+
+			await delay({ random: { min: 0, max: 0 } }, (determinedInterval) => {
+				receivedMs = determinedInterval;
+			});
+
+			expect(receivedMs).toBe(0);
+		});
+
+		it('should use min as delay when min equals max with distribution', async () => {
+			let receivedMs = 0;
+
+			await delay(
+				{ random: { min: 5, max: 5, distribution: 'normal' } },
+				(determinedInterval) => {
+					receivedMs = determinedInterval;
+				},
+			);
+
+			expect(receivedMs).toBe(5);
+		});
+	});
+
 	describe('with distribution options', () => {
 		it('should use distribution options correctly', async () => {
 			const min = 10;

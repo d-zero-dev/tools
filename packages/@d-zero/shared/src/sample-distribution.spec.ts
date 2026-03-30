@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { type MockInstance, afterEach, describe, expect, it, vi } from 'vitest';
 
 import { sampleDistribution } from './sample-distribution.js';
 
@@ -362,5 +362,143 @@ describe('sampleDistribution', () => {
 			expect(value).toBeGreaterThanOrEqual(min);
 			expect(value).toBeLessThan(max);
 		}, 5000);
+	});
+
+	describe('boundary values with mocked Math.random', () => {
+		let randomSpy: MockInstance;
+
+		afterEach(() => {
+			randomSpy.mockRestore();
+		});
+
+		it('should not return max when Math.random returns near 1 (right-skewed)', () => {
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			const value = sampleDistribution({ min: 100, max: 1000 }, 'right-skewed');
+			expect(value).toBeGreaterThanOrEqual(100);
+			expect(value).toBeLessThan(1000);
+		});
+
+		it('should not return max when Math.random returns near 1 (left-skewed)', () => {
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			const value = sampleDistribution({ min: 100, max: 1000 }, 'left-skewed');
+			expect(value).toBeGreaterThanOrEqual(100);
+			expect(value).toBeLessThan(1000);
+		});
+
+		it('should not return max when Math.random returns near 1 (triangular)', () => {
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			const value = sampleDistribution({ min: 100, max: 1000 }, 'triangular');
+			expect(value).toBeGreaterThanOrEqual(100);
+			expect(value).toBeLessThan(1000);
+		});
+
+		it('should not return max when Math.random returns near 1 (normal)', () => {
+			// Box-Muller needs two random calls
+			let callCount = 0;
+			randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => {
+				callCount++;
+				return callCount === 1 ? 0.999_999_999_9 : 0.999_999_999_9;
+			});
+			const value = sampleDistribution({ min: 100, max: 1000 }, 'normal');
+			expect(value).toBeGreaterThanOrEqual(100);
+			expect(value).toBeLessThan(1000);
+		});
+
+		it('should not return max when Math.random returns near 1 (custom)', () => {
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			const value = sampleDistribution(
+				{ min: 100, max: 1000 },
+				{ type: 'custom', weight: (t: number) => t },
+			);
+			expect(value).toBeGreaterThanOrEqual(100);
+			expect(value).toBeLessThan(1000);
+		});
+
+		it('should not return max when Math.random returns near 1 (bimodal)', () => {
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			const value = sampleDistribution({ min: 100, max: 1000 }, { type: 'bimodal' });
+			expect(value).toBeGreaterThanOrEqual(100);
+			expect(value).toBeLessThan(1000);
+		});
+
+		it('should return min when Math.random returns 0 (right-skewed)', () => {
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+			const value = sampleDistribution({ min: 100, max: 1000 }, 'right-skewed');
+			expect(value).toBe(100);
+		});
+
+		it('should return min when Math.random returns 0 (left-skewed)', () => {
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+			const value = sampleDistribution({ min: 100, max: 1000 }, 'left-skewed');
+			expect(value).toBe(100);
+		});
+	});
+
+	describe('range of 1 (min + 1 === max)', () => {
+		it('should always return min for uniform', () => {
+			const value = sampleDistribution({ min: 5, max: 6 });
+			expect(value).toBe(5);
+		});
+
+		it('should always return min for normal', () => {
+			const value = sampleDistribution({ min: 5, max: 6 }, 'normal');
+			expect(value).toBe(5);
+		});
+
+		it('should always return min for triangular', () => {
+			const value = sampleDistribution({ min: 5, max: 6 }, 'triangular');
+			expect(value).toBe(5);
+		});
+
+		it('should always return min for right-skewed', () => {
+			const value = sampleDistribution({ min: 5, max: 6 }, 'right-skewed');
+			expect(value).toBe(5);
+		});
+
+		it('should always return min for left-skewed', () => {
+			const value = sampleDistribution({ min: 5, max: 6 }, 'left-skewed');
+			expect(value).toBe(5);
+		});
+
+		it('should always return min for bimodal', () => {
+			const value = sampleDistribution({ min: 5, max: 6 }, { type: 'bimodal' });
+			expect(value).toBe(5);
+		});
+
+		it('should always return min for custom', () => {
+			const value = sampleDistribution(
+				{ min: 5, max: 6 },
+				{ type: 'custom', weight: (t: number) => t },
+			);
+			expect(value).toBe(5);
+		});
+	});
+
+	describe('number type range with non-uniform distribution', () => {
+		it('should work with number range and normal distribution', () => {
+			const value = sampleDistribution(10, 'normal');
+			expect(value).toBeGreaterThanOrEqual(0);
+			expect(value).toBeLessThan(10);
+		});
+
+		it('should work with number range and right-skewed distribution', () => {
+			const value = sampleDistribution(10, 'right-skewed');
+			expect(value).toBeGreaterThanOrEqual(0);
+			expect(value).toBeLessThan(10);
+		});
+
+		it('should return 0 for number range 0 with any distribution', () => {
+			expect(sampleDistribution(0, 'normal')).toBe(0);
+			expect(sampleDistribution(0, 'triangular')).toBe(0);
+			expect(sampleDistribution(0, 'right-skewed')).toBe(0);
+			expect(sampleDistribution(0, 'left-skewed')).toBe(0);
+		});
+
+		it('should return 0 for number range 1 with any distribution', () => {
+			expect(sampleDistribution(1, 'normal')).toBe(0);
+			expect(sampleDistribution(1, 'triangular')).toBe(0);
+			expect(sampleDistribution(1, 'right-skewed')).toBe(0);
+			expect(sampleDistribution(1, 'left-skewed')).toBe(0);
+		});
 	});
 });

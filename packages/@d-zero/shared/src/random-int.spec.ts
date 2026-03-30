@@ -35,6 +35,14 @@ describe('randomInt', () => {
 			// With 1000 iterations and range of 100, we should see many different values
 			expect(results.size).toBeGreaterThan(50);
 		});
+
+		it('should return 0 when range is 0', () => {
+			expect(randomInt(0)).toBe(0);
+		});
+
+		it('should return 0 when range is negative', () => {
+			expect(randomInt(-5)).toBe(0);
+		});
 	});
 
 	describe('with {min, max} argument', () => {
@@ -83,6 +91,14 @@ describe('randomInt', () => {
 				expect(result).toBeLessThan(max);
 				expect(Number.isInteger(result)).toBe(true);
 			}
+		});
+
+		it('should return min when min equals max', () => {
+			expect(randomInt({ min: 5, max: 5 })).toBe(5);
+		});
+
+		it('should return min when min is greater than max', () => {
+			expect(randomInt({ min: 10, max: 5 })).toBe(10);
 		});
 
 		it('should handle ranges crossing zero', () => {
