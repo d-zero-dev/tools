@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.16](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.1.15...@d-zero/puppeteer-scroll@3.1.16) (2026-03-30)
+
+### Bug Fixes
+
+- **puppeteer-scroll:** detect stuck scrolling and bail out ([4c0c3a6](https://github.com/d-zero-dev/tools/commit/4c0c3a60a7721a89a624fd371d71a27fab246efe))
+
 ## [3.1.15](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.1.14...@d-zero/puppeteer-scroll@3.1.15) (2026-03-24)
 
 **Note:** Version bump only for package @d-zero/puppeteer-scroll

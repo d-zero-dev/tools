@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/a11y-check-axe-scenario",
-	"version": "0.5.17",
+	"version": "0.5.18",
 	"description": "Accessibility Checker Axe Scenario",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -24,7 +24,7 @@
 	},
 	"dependencies": {
 		"@axe-core/puppeteer": "4.11.0",
-		"@d-zero/a11y-check-core": "0.6.17",
+		"@d-zero/a11y-check-core": "0.6.18",
 		"@d-zero/db-wcag": "1.0.0-alpha.1",
 		"@d-zero/shared": "0.21.1"
 	},

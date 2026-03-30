@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/puppeteer-scroll",
-	"version": "3.1.15",
+	"version": "3.1.16",
 	"description": "Scroll function for puppeteer",
 	"author": "D-ZERO",
 	"license": "MIT",
