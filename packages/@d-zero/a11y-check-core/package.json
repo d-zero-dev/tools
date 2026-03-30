@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/a11y-check-core",
-	"version": "0.6.16",
+	"version": "0.6.17",
 	"description": "Accessibility Checker (Core Module)",
 	"author": "D-ZERO",
 	"license": "MIT",

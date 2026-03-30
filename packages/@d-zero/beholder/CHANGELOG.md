@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.1](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@2.1.0...@d-zero/beholder@2.1.1) (2026-03-30)
+
+### Bug Fixes
+
+- **beholder:** isolate per-device image extraction to prevent total failure ([f9e4dbc](https://github.com/d-zero-dev/tools/commit/f9e4dbc613ea92d85e178131a67ecb5c8af96e30))
+
 # [2.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@2.0.1...@d-zero/beholder@2.1.0) (2026-03-24)
 
 ### Features
