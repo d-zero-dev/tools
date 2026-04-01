@@ -849,12 +849,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@d-zero/a11y-check-axe-scenario@npm:0.5.19, @d-zero/a11y-check-axe-scenario@workspace:packages/@d-zero/a11y-check-axe-scenario":
+"@d-zero/a11y-check-axe-scenario@npm:0.5.20, @d-zero/a11y-check-axe-scenario@workspace:packages/@d-zero/a11y-check-axe-scenario":
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check-axe-scenario@workspace:packages/@d-zero/a11y-check-axe-scenario"
   dependencies:
     "@axe-core/puppeteer": "npm:4.11.0"
-    "@d-zero/a11y-check-core": "npm:0.6.19"
+    "@d-zero/a11y-check-core": "npm:0.6.20"
     "@d-zero/db-wcag": "npm:1.0.0-alpha.1"
     "@d-zero/shared": "npm:0.21.2"
     axe-core: "npm:4.11.1"
@@ -865,7 +865,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/a11y-check-core@npm:0.6.19, @d-zero/a11y-check-core@workspace:packages/@d-zero/a11y-check-core":
+"@d-zero/a11y-check-core@npm:0.6.20, @d-zero/a11y-check-core@workspace:packages/@d-zero/a11y-check-core":
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check-core@workspace:packages/@d-zero/a11y-check-core"
   dependencies:
@@ -879,11 +879,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/a11y-check-scenarios@npm:0.4.33, @d-zero/a11y-check-scenarios@workspace:packages/@d-zero/a11y-check-scenarios":
+"@d-zero/a11y-check-scenarios@npm:0.4.34, @d-zero/a11y-check-scenarios@workspace:packages/@d-zero/a11y-check-scenarios":
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check-scenarios@workspace:packages/@d-zero/a11y-check-scenarios"
   dependencies:
-    "@d-zero/a11y-check-core": "npm:0.6.19"
+    "@d-zero/a11y-check-core": "npm:0.6.20"
     "@d-zero/shared": "npm:0.21.2"
     ansi-colors: "npm:4.1.3"
     puppeteer: "npm:24.37.5"
@@ -896,9 +896,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check@workspace:packages/@d-zero/a11y-check"
   dependencies:
-    "@d-zero/a11y-check-axe-scenario": "npm:0.5.19"
-    "@d-zero/a11y-check-core": "npm:0.6.19"
-    "@d-zero/a11y-check-scenarios": "npm:0.4.33"
+    "@d-zero/a11y-check-axe-scenario": "npm:0.5.20"
+    "@d-zero/a11y-check-core": "npm:0.6.20"
+    "@d-zero/a11y-check-scenarios": "npm:0.4.34"
     "@d-zero/cli-core": "npm:1.3.7"
     "@d-zero/google-auth": "npm:0.7.0"
     "@d-zero/google-sheets": "npm:0.7.1"

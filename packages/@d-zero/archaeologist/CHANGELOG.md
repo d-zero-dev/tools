@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.6.2...@d-zero/archaeologist@3.7.0) (2026-04-01)
+
+### Features
+
+- **archaeologist:** support direct URL pair arguments without listfile ([7e9c7d1](https://github.com/d-zero-dev/tools/commit/7e9c7d1055c5d9e65cc3fff53247cbf486a6435f))
+
 ## [3.6.2](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.6.1...@d-zero/archaeologist@3.6.2) (2026-04-01)
 
 **Note:** Version bump only for package @d-zero/archaeologist
