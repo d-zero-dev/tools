@@ -79,20 +79,21 @@ const { options, args, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 	},
 });
 
+const analyzeOptions = {
+	types: options.type ? parseList(options.type) : undefined,
+	selector: options.selector,
+	ignore: options.ignore,
+	devices: options.devices ? parseList(options.devices) : undefined,
+	combined: options.combined,
+	limit: options.limit,
+	debug: options.debug,
+	verbose: options.verbose,
+	interval: options.interval,
+};
+
 if (hasConfigFile) {
 	const { pairList, hooks } = await readConfig(options.listfile!);
-	await analyze(pairList, {
-		hooks,
-		types: options.type ? parseList(options.type) : undefined,
-		selector: options.selector,
-		ignore: options.ignore,
-		devices: options.devices ? parseList(options.devices) : undefined,
-		combined: options.combined,
-		limit: options.limit,
-		debug: options.debug,
-		verbose: options.verbose,
-		interval: options.interval,
-	});
+	await analyze(pairList, { ...analyzeOptions, hooks });
 	process.exit(0);
 }
 
@@ -110,17 +111,6 @@ if (options.freeze) {
 
 if (args.length === 2) {
 	const pairList: [string, string][] = [[args[0]!, args[1]!]];
-	await analyze(pairList, {
-		hooks: [],
-		types: options.type ? parseList(options.type) : undefined,
-		selector: options.selector,
-		ignore: options.ignore,
-		devices: options.devices ? parseList(options.devices) : undefined,
-		combined: options.combined,
-		limit: options.limit,
-		debug: options.debug,
-		verbose: options.verbose,
-		interval: options.interval,
-	});
+	await analyze(pairList, { ...analyzeOptions, hooks: [] });
 	process.exit(0);
 }
