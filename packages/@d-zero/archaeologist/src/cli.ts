@@ -21,7 +21,7 @@ interface ArchaeologistCLIOptions extends BaseCLIOptions {
 	combined?: boolean;
 }
 
-const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
+const { options, args, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 	name: pkg.name,
 	version: pkg.version,
 	aliases: {
@@ -32,7 +32,8 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 		d: 'devices',
 	},
 	usage: [
-		'Usage: archaeologist -f <listfile> [options]',
+		'Usage: archaeologist <urlA> <urlB> [options]',
+		'       archaeologist -f <listfile> [options]',
 		'',
 		'Options:',
 		'\t-f, --listfile <file>     File containing URL pairs to analyze',
@@ -54,6 +55,7 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 		'\tdesktop, tablet, mobile, desktop-hd, desktop-compact, mobile-large, mobile-small',
 		'',
 		'Examples:',
+		'\tarchaeologist http://localhost:3000 https://example.com',
 		'\tarchaeologist -f urls.txt',
 		'\tarchaeologist -f urls.txt --devices desktop,mobile',
 		'\tarchaeologist -f urls.txt --combined',
@@ -72,8 +74,8 @@ const { options, hasConfigFile } = createCLI<ArchaeologistCLIOptions>({
 			cli.device,
 		combined: cli.combined,
 	}),
-	validateArgs: (options) => {
-		return !!(options.listfile?.length || options.freeze?.length);
+	validateArgs: (options, cli) => {
+		return !!(options.listfile?.length || options.freeze?.length || cli._.length === 2);
 	},
 });
 
@@ -101,6 +103,23 @@ if (options.freeze) {
 		hooks,
 		limit: options.limit,
 		debug: options.debug,
+		interval: options.interval,
+	});
+	process.exit(0);
+}
+
+if (args.length === 2) {
+	const pairList: [string, string][] = [[args[0]!, args[1]!]];
+	await analyze(pairList, {
+		hooks: [],
+		types: options.type ? parseList(options.type) : undefined,
+		selector: options.selector,
+		ignore: options.ignore,
+		devices: options.devices ? parseList(options.devices) : undefined,
+		combined: options.combined,
+		limit: options.limit,
+		debug: options.debug,
+		verbose: options.verbose,
 		interval: options.interval,
 	});
 	process.exit(0);
