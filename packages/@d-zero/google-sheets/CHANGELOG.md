@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.1](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.7.0...@d-zero/google-sheets@0.7.1) (2026-04-01)
+
+### Bug Fixes
+
+- **google-sheets:** add 5xx server error retry, fix status code detection, and refactor ErrorHandler ([0fc004e](https://github.com/d-zero-dev/tools/commit/0fc004eb43c0e793333b6c1103bf64b501d7eb73))
+
 # [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.6.3...@d-zero/google-sheets@0.7.0) (2026-03-24)
 
 ### Features

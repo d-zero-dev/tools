@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.7](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.6.6...@d-zero/remote-inspector@0.6.7) (2026-04-01)
+
+**Note:** Version bump only for package @d-zero/remote-inspector
+
 ## [0.6.6](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.6.5...@d-zero/remote-inspector@0.6.6) (2026-03-24)
 
 **Note:** Version bump only for package @d-zero/remote-inspector

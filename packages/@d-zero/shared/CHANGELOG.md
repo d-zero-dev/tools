@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.21.2](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.21.1...@d-zero/shared@0.21.2) (2026-04-01)
+
+### Bug Fixes
+
+- **shared:** clamp distribution sampling to exclusive upper bound ([3026f83](https://github.com/d-zero-dev/tools/commit/3026f839b861dd1134cad9cf3381e002032babef))
+
 ## [0.21.1](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.21.0...@d-zero/shared@0.21.1) (2026-03-24)
 
 ### Bug Fixes
