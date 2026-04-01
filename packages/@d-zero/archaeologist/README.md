@@ -14,15 +14,16 @@
 ## CLI
 
 ```sh
+npx @d-zero/archaeologist <urlA> <urlB> [options]
 npx @d-zero/archaeologist -f <listfile> [options]
 ```
 
-URLリストを持つファイルを指定して実行します。
+2つのURLを直接指定するか、URLリストを持つファイルを指定して実行します。
 
 ### オプション
 
 - `-v, --version`: バージョンを表示
-- `-f, --listfile <filepath>`: URLリストを持つファイルのパス（必須）
+- `-f, --listfile <filepath>`: URLリストを持つファイルのパス
 - `-t, --type <types>`: 比較タイプの指定（`image,dom,text,code`、カンマ区切り）
 - `-s, --selector <selector>`: 比較対象を限定するCSSセレクター
 - `-i, --ignore <selector>`: 無視するCSSセレクター
@@ -61,6 +62,9 @@ URLリストを持つファイルを指定して実行します。
 ### 使用例
 
 ```sh
+# 2つのURLを直接比較
+npx @d-zero/archaeologist http://localhost:3000/page https://example.com/page
+
 # デフォルトデバイス（desktop-compact, mobile）
 npx @d-zero/archaeologist -f urls.txt
 
