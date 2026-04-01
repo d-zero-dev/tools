@@ -40,7 +40,7 @@ export class Sheets {
 	 *
 	 * 理由:
 	 * - Google Sheets batchUpdate API は非アトミック（部分成功あり）
-	 * - ErrorHandler のリトライ（429/403/ECONNRESET）時に、成功済みの操作が重複実行される
+	 * - ErrorHandler のリトライ（429/403/5xx/ECONNRESET）時に、成功済みの操作が重複実行される
 	 * - appendDimension 等の非冪等操作では行・列の二重追加が発生する
 	 * - addRowData の適応的チャンキング（RangeError 時にサイズ半減）が1リクエスト単位で機能
 	 * @param request
