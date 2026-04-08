@@ -60,6 +60,9 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
+# Yarn
+.yarn
+
 # dotenv environment variables file
 .env
 
@@ -83,3 +86,6 @@ ___*
 
 # Cache
 .cache
+
+# Claude Code local settings
+.claude/settings.local.json

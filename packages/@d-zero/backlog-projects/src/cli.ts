@@ -2,6 +2,8 @@
 import type { Role } from './types.js';
 import type { User } from 'backlog-js/dist/types/entity.js';
 
+import { createRequire } from 'node:module';
+
 import dotenv from 'dotenv';
 import Enquirer from 'enquirer';
 import minimist from 'minimist';
@@ -9,15 +11,28 @@ import minimist from 'minimist';
 import { assign } from './assign.js';
 import { createBacklogClient } from './create-backlog-client.js';
 import { roles } from './define.js';
+import { deleteAttachments } from './delete-attachments.js';
 import { getBacklogProjectIdFromUrl } from './get-backlog-project-id-from-url.js';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json') as { name: string; version: string };
 
 dotenv.config();
 
 const cli = minimist(process.argv.slice(2), {
 	alias: {
 		a: 'assign',
+		d: 'delete',
+		v: 'version',
+		V: 'verbose',
 	},
 });
+
+// Handle -v / --version option
+if (cli.version === true) {
+	process.stdout.write(`${pkg.name} v${pkg.version}\n`);
+	process.exit(0);
+}
 
 const backlog = createBacklogClient();
 
@@ -78,5 +93,29 @@ if (cli.assign) {
 		log(message) {
 			process.stdout.write(message + '\n');
 		},
+	});
+} else if (cli.delete) {
+	process.stdout.write(
+		'この日以前（この日を含む）に最終更新された課題の添付ファイルが削除対象になります。\n',
+	);
+
+	const { updatedUntil } = await Enquirer.prompt<{ updatedUntil: string }>({
+		name: 'updatedUntil',
+		message: '基準日（例: 2024-01-01）',
+		type: 'input',
+		required: true,
+	});
+
+	const { outDir } = await Enquirer.prompt<{ outDir: string }>({
+		name: 'outDir',
+		message: '保存先ディレクトリ',
+		type: 'input',
+		required: true,
+	});
+
+	await deleteAttachments(backlog, {
+		updatedUntil,
+		outDir,
+		verbose: !!cli.verbose,
 	});
 }

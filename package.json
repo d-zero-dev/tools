@@ -6,18 +6,22 @@
 		"watch": "lerna run watch --parallel",
 		"clean": "lerna run clean",
 		"test": "vitest run",
-		"lint": "run-s lint:eslint lint:prettier lint:textlint lint:cspell",
-		"lint:cspell": "cspell --no-progress --show-suggestions \"{*,packages/@d-zero/*/{*,src/**/*}}/\"",
-		"lint:eslint": "eslint --fix \"{*,packages/@d-zero/*/{*,src/**/*}}.{js,cjs,mjs,jsx,ts,cts,mts,tsx}\"",
-		"lint:prettier": "prettier --write \"{*,packages/@d-zero/*/{*,src/**/*}}.{md,json,js,cjs,mjs,jsx,ts,cts,mts,tsx}\"",
-		"lint:textlint": "textlint --fix \"./{*,packages/@d-zero/*/{*,src/**/*}}.{md}\"",
-		"release": "lerna publish --exact --conventional-commits --conventional-graduate",
-		"release:next": "lerna publish --dist-tag next --exact --force-publish --conventional-commits --conventional-prerelease --preid alpha",
+		"lint": "run-s lint:eslint lint:prettier lint:textlint:fix lint:textlint:check lint:cspell",
+		"lint:cspell": "npx cspell --no-progress --show-suggestions \"{*,packages/@d-zero/*/{*,src/**/*}}/\"",
+		"lint:eslint": "npx eslint --fix \"{*,packages/@d-zero/*/{*,src/**/*}}.{js,cjs,mjs,jsx,ts,cts,mts,tsx}\"",
+		"lint:prettier": "npx prettier --write \"{*,packages/@d-zero/*/{*,src/**/*}}.{md,json,js,cjs,mjs,jsx,ts,cts,mts,tsx}\"",
+		"lint:textlint:fix": "npx textlint --fix \"./{*,packages/@d-zero/*/{*,src/**/*}}.md\"",
+		"lint:textlint:check": "npx textlint \"./{*,packages/@d-zero/*/{*,src/**/*}}.md\"",
+		"release": "lerna version --exact --conventional-commits --conventional-graduate --no-push && yarn release:trigger",
+		"release:alpha": "lerna version --exact --force-publish --conventional-commits --conventional-prerelease --preid alpha --no-push && yarn release:trigger",
+		"release:beta": "lerna version --exact --force-publish --conventional-commits --conventional-prerelease --preid beta --no-push && yarn release:trigger",
+		"release:rc": "lerna version --exact --force-publish --conventional-commits --conventional-prerelease --preid rc --no-push && yarn release:trigger",
+		"release:trigger": "git push origin main --follow-tags && git tag -f v-release && git push origin v-release -f",
 		"prerelease": "yarn build; yarn test",
-		"prepare": "husky",
-		"commit": "cz",
-		"co": "cz",
-		"up": "yarn upgrade-interactive --latest"
+		"postinstall": "husky",
+		"commit": "npx cz",
+		"co": "npx cz",
+		"update": "yarn upgrade-interactive"
 	},
 	"workspaces": [
 		"packages/@d-zero/*"
@@ -31,21 +35,22 @@
 		}
 	},
 	"devDependencies": {
-		"@d-zero/commitlint-config": "5.0.0-alpha.48",
-		"@d-zero/cspell-config": "5.0.0-alpha.48",
-		"@d-zero/eslint-config": "5.0.0-alpha.48",
-		"@d-zero/lint-staged-config": "5.0.0-alpha.48",
-		"@d-zero/prettier-config": "5.0.0-alpha.48",
-		"@d-zero/textlint-config": "5.0.0-alpha.48",
-		"@d-zero/tsconfig": "0.3.3",
-		"husky": "9.1.6",
-		"lerna": "8.1.8",
-		"npm-run-all2": "7.0.1",
-		"typescript": "5.6.3",
-		"vitest": "2.1.4"
+		"@d-zero/commitlint-config": "5.0.0",
+		"@d-zero/cspell-config": "5.0.0",
+		"@d-zero/eslint-config": "5.0.0",
+		"@d-zero/lint-staged-config": "5.0.0",
+		"@d-zero/prettier-config": "5.0.0",
+		"@d-zero/textlint-config": "5.0.0",
+		"@d-zero/tsconfig": "1.0.0",
+		"husky": "9.1.7",
+		"lerna": "9.0.4",
+		"npm-run-all2": "8.0.4",
+		"typescript": "5.9.3",
+		"vitest": "4.0.18"
 	},
+	"packageManager": "yarn@4.12.0",
 	"volta": {
-		"node": "22.11.0",
-		"yarn": "1.22.22"
+		"node": "24.14.0",
+		"yarn": "4.12.0"
 	}
 }

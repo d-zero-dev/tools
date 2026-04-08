@@ -10,7 +10,7 @@
 			"path": "../dealer"
 		},
 		{
-			"path": "../puppeteer-page"
+			"path": "../puppeteer-dealer"
 		},
 		{
 			"path": "../puppeteer-page-scan"

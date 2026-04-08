@@ -3,7 +3,7 @@ import type { Backlog } from 'backlog-js';
 import type { Project, User } from 'backlog-js/dist/types/entity.js';
 
 import { NotionDB } from '@d-zero/notion';
-import { skipHolydayPeriod } from '@d-zero/shared/skip-holyday-period';
+import { skipHolidayPeriod } from '@d-zero/shared/skip-holiday-period';
 import dayjs from 'dayjs';
 
 import { PROJECT_COMMON_TASK_LIST_NOTION_URL } from './define.js';
@@ -15,6 +15,11 @@ type Params = {
 	log?: (message: string) => void;
 };
 
+/**
+ *
+ * @param backlog
+ * @param params
+ */
 export async function assign(backlog: Backlog, params: Params) {
 	if (!process.env.NOTION_TOKEN) {
 		throw new Error('NOTION_TOKEN is not defined. Please set it in .env file');
@@ -60,7 +65,7 @@ export async function assign(backlog: Backlog, params: Params) {
 	for (const value of data['課題名']) {
 		const days = +(data['工数（人日）']?.[i] || 1) - 1;
 
-		const { startDate, dueDate } = skipHolydayPeriod(
+		const { startDate, dueDate } = skipHolidayPeriod(
 			currentDate,
 			currentDate.add(days, 'day'),
 		);

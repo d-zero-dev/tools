@@ -1,15 +1,28 @@
 {
 	"name": "@d-zero/shared",
-	"version": "0.6.0",
+	"version": "0.21.3-alpha.2",
 	"description": "Shared utilities for D-ZERO tools",
 	"author": "D-ZERO",
 	"license": "MIT",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
 	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"exports": {
+		"./remove-matches": {
+			"import": "./dist/remove-matches.js",
+			"types": "./dist/remove-matches.d.ts"
+		},
+		"./sort/alphabetical": {
+			"import": "./dist/sort/alphabetical.js",
+			"types": "./dist/sort/alphabetical.d.ts"
+		},
+		"./sort/numerical": {
+			"import": "./dist/sort/numerical.js",
+			"types": "./dist/sort/numerical.d.ts"
+		},
 		"./sort/dir": {
 			"import": "./dist/sort/dir.js",
 			"types": "./dist/sort/dir.d.ts"
@@ -38,6 +51,18 @@
 			"import": "./dist/delay.js",
 			"types": "./dist/delay.d.ts"
 		},
+		"./encode-resource-path": {
+			"import": "./dist/encode-resource-path.js",
+			"types": "./dist/encode-resource-path.d.ts"
+		},
+		"./random-int": {
+			"import": "./dist/random-int.js",
+			"types": "./dist/random-int.d.ts"
+		},
+		"./parse-interval": {
+			"import": "./dist/parse-interval.js",
+			"types": "./dist/parse-interval.d.ts"
+		},
 		"./hash": {
 			"import": "./dist/hash.js",
 			"types": "./dist/hash.d.ts"
@@ -45,6 +70,34 @@
 		"./filesize": {
 			"import": "./dist/filesize.js",
 			"types": "./dist/filesize.d.ts"
+		},
+		"./mime-to-extension": {
+			"import": "./dist/mime-to-extension.js",
+			"types": "./dist/mime-to-extension.d.ts"
+		},
+		"./parse-url": {
+			"import": "./dist/parse-url.js",
+			"types": "./dist/parse-url.d.ts"
+		},
+		"./url-to-local-path": {
+			"import": "./dist/url-to-local-path.js",
+			"types": "./dist/url-to-local-path.d.ts"
+		},
+		"./url-matches": {
+			"import": "./dist/url-matches.js",
+			"types": "./dist/url-matches.d.ts"
+		},
+		"./normalize-url": {
+			"import": "./dist/normalize-url.js",
+			"types": "./dist/normalize-url.d.ts"
+		},
+		"./validate-same-host": {
+			"import": "./dist/validate-same-host.js",
+			"types": "./dist/validate-same-host.d.ts"
+		},
+		"./path-list-to-tree": {
+			"import": "./dist/path-list-to-tree.js",
+			"types": "./dist/path-list-to-tree.d.ts"
 		},
 		"./race-with-timeout": {
 			"import": "./dist/race-with-timeout.js",
@@ -54,13 +107,13 @@
 			"import": "./dist/retry.js",
 			"types": "./dist/retry.d.ts"
 		},
-		"./skip-holyday-period": {
-			"import": "./dist/skip-holyday-period.js",
-			"types": "./dist/skip-holyday-period.d.ts"
+		"./skip-holiday-period": {
+			"import": "./dist/skip-holiday-period.js",
+			"types": "./dist/skip-holiday-period.d.ts"
 		},
-		"./skip-holydays": {
-			"import": "./dist/skip-holydays.js",
-			"types": "./dist/skip-holydays.d.ts"
+		"./skip-holidays": {
+			"import": "./dist/skip-holidays.js",
+			"types": "./dist/skip-holidays.d.ts"
 		},
 		"./split-array": {
 			"import": "./dist/split-array.js",
@@ -69,6 +122,10 @@
 		"./str-to-regex": {
 			"import": "./dist/str-to-regex.js",
 			"types": "./dist/str-to-regex.d.ts"
+		},
+		"./timestamp": {
+			"import": "./dist/timestamp.js",
+			"types": "./dist/timestamp.d.ts"
 		},
 		"./typed-await-event-emitter": {
 			"import": "./dist/typed-await-event-emitter.js",
@@ -80,6 +137,42 @@
 		"./url-to-file-name": {
 			"import": "./dist/url-to-file-name.js",
 			"types": "./dist/url-to-file-name.d.ts"
+		},
+		"./ratio-value": {
+			"import": "./dist/ratio-value.js",
+			"types": "./dist/ratio-value.d.ts"
+		},
+		"./config-reader": {
+			"import": "./dist/config-reader.js",
+			"types": "./dist/config-reader.d.ts"
+		},
+		"./detect-compress": {
+			"import": "./dist/detect-compress.js",
+			"types": "./dist/detect-compress.d.ts"
+		},
+		"./detect-cdn": {
+			"import": "./dist/detect-cdn.js",
+			"types": "./dist/detect-cdn.d.ts"
+		},
+		"./is-lower-layer": {
+			"import": "./dist/is-lower-layer.js",
+			"types": "./dist/is-lower-layer.d.ts"
+		},
+		"./path-match": {
+			"import": "./dist/path-match.js",
+			"types": "./dist/path-match.d.ts"
+		},
+		"./url-partial-match": {
+			"import": "./dist/url-partial-match.js",
+			"types": "./dist/url-partial-match.d.ts"
+		},
+		"./sort-url": {
+			"import": "./dist/sort-url.js",
+			"types": "./dist/sort-url.d.ts"
+		},
+		"./safe-filepath": {
+			"import": "./dist/safe-filepath.js",
+			"types": "./dist/safe-filepath.d.ts"
 		}
 	},
 	"files": [
@@ -91,9 +184,20 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@holiday-jp/holiday_jp": "2.4.0",
+		"@holiday-jp/holiday_jp": "2.5.1",
 		"await-event-emitter": "2.0.2",
-		"dayjs": "1.11.13",
-		"escape-string-regexp": "5.0.0"
+		"dayjs": "1.11.19",
+		"escape-string-regexp": "5.0.0",
+		"front-matter": "4.0.2",
+		"micromatch": "4.0.8",
+		"sanitize-filename": "1.6.3"
+	},
+	"devDependencies": {
+		"@types/micromatch": "4.0.10"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/shared"
 	}
 }

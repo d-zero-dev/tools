@@ -1,5 +1,5 @@
 import type { Sheets } from './sheets.js';
-import type { Row } from './types.js';
+import type { Row, CellTypeInfo } from './types.js';
 import type { sheets_v4 } from 'googleapis';
 
 import { splitArray } from '@d-zero/shared/split-array';
@@ -50,7 +50,7 @@ export class Sheet {
 			this.#currentRowIndex = 0;
 		}
 		let numOfReq = NUMBER_OF_PAGE_INFO_PER_ONE_REQUEST;
-		// eslint-disable-next-line no-constant-condition
+
 		while (true) {
 			const success = await this.#addRowQueue(data, numOfReq).catch((error) => {
 				if (error instanceof RangeError) {
@@ -78,6 +78,7 @@ export class Sheet {
 		targetCols = targetCols.filter((c) => 0 <= c);
 		if (targetCols.length === 0) {
 			sendLog('Add conditional format rule, target is empty');
+			return;
 		}
 		const ranges = targetCols.map((c) => ({
 			sheetId: this.id,
@@ -124,6 +125,40 @@ export class Sheet {
 		sendLog('Frozen succeeded');
 	}
 
+	async getCellTypes(range: string) {
+		const res = await this.#parent.getWithGridData(`'${this.props.title}'!${range}`);
+		const sheet = res.data.sheets?.[0];
+		const rowData = sheet?.data?.[0]?.rowData?.[0];
+		const cells = rowData?.values ?? [];
+
+		const cellTypes: CellTypeInfo[] = cells.map((cell, index) => {
+			const effectiveValue = cell.effectiveValue;
+			const effectiveFormat = cell.effectiveFormat;
+
+			if (!effectiveValue) {
+				return { index, type: 'string' };
+			}
+
+			if (effectiveValue.numberValue !== undefined) {
+				const numberFormatType = effectiveFormat?.numberFormat?.type;
+				if (numberFormatType === 'DATE' || numberFormatType === 'DATE_TIME') {
+					return { index, type: 'date' };
+				}
+				return { index, type: 'number' };
+			} else if (effectiveValue.boolValue !== undefined) {
+				return { index, type: 'boolean' };
+			} else if (effectiveValue.formulaValue !== undefined) {
+				return { index, type: 'formula' };
+			} else if (effectiveValue.errorValue !== undefined) {
+				return { index, type: 'error' };
+			}
+
+			return { index, type: 'string' };
+		});
+
+		return cellTypes;
+	}
+
 	getColNumByHeaderName(name: string) {
 		if (!this.#headers) {
 			return -1;
@@ -131,6 +166,35 @@ export class Sheet {
 		const index = this.#headers.indexOf(name);
 		sheetLog('Find header: "%s" -> %d', name, index);
 		return index;
+	}
+
+	/**
+	 * Retrieves row visibility metadata starting from the specified row.
+	 *
+	 * - `hiddenByUser`: The row is manually hidden by a user (right-click → "Hide row")
+	 * - `hiddenByFilter`: The row is hidden by a filter view or filter condition
+	 * @see https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#DimensionProperties
+	 * @param startRow - The 1-based row number to start fetching metadata from
+	 * @returns Array of row visibility objects, one per row from `startRow` onward
+	 */
+	async getRowMetadata(startRow: number) {
+		const res = await this.#parent.getWithGridData(
+			`'${this.props.title}'!A${startRow}:A`,
+		);
+		const sheet = res.data.sheets?.[0];
+		const rowMetadataList = sheet?.data?.[0]?.rowMetadata ?? [];
+		return rowMetadataList.map((metadata) => ({
+			hiddenByUser: metadata.hiddenByUser === true,
+			hiddenByFilter: metadata.hiddenByFilter === true,
+		}));
+	}
+
+	async getValues(row: string, col: string) {
+		const res = await this.#parent.get({
+			range: `'${this.props.title}'!${row}:${col}`,
+			valueRenderOption: 'UNFORMATTED_VALUE',
+		});
+		return res.data.values;
 	}
 
 	async hideCol(colNum: number) {
@@ -147,6 +211,43 @@ export class Sheet {
 					hiddenByUser: true,
 				},
 				fields: 'hiddenByUser',
+			},
+		});
+	}
+
+	async overwriteHeaderFormat() {
+		sendLog('Headers becomes normal format if NOT_BLANK');
+		await this.#parent.batchUpdate({
+			addConditionalFormatRule: {
+				rule: {
+					ranges: [
+						{
+							sheetId: this.id,
+							startRowIndex: 0,
+							endRowIndex: 1,
+						},
+					],
+					booleanRule: {
+						condition: {
+							type: 'NOT_BLANK',
+						},
+						format: {
+							backgroundColor: {
+								red: 1,
+								green: 1,
+								blue: 1,
+								alpha: 0,
+							},
+							textFormat: {
+								foregroundColor: {
+									red: 0,
+									green: 0,
+									blue: 0,
+								},
+							},
+						},
+					},
+				},
 			},
 		});
 	}

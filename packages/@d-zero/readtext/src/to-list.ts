@@ -1,3 +1,7 @@
+/**
+ *
+ * @param text
+ */
 export function toList(text: string) {
 	const lines = text.split('\n');
 

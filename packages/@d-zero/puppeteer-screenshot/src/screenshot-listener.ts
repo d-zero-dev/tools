@@ -8,12 +8,12 @@ import { pageScanLoggers } from '@d-zero/puppeteer-page-scan';
 export const screenshotListener = createListener<ScreenshotPhase>((log) => {
 	return {
 		...pageScanLoggers(log),
-		screenshotStart() {
-			log(`📸 Take a screenshot`);
+		screenshotStart({ selector }) {
+			log(`📸 Take a screenshot` + (selector ? ` for ${selector}` : ''));
 		},
-		screenshotSaving({ path: filePath }) {
+		screenshotSaving({ path: filePath, selector }) {
 			const name = path.basename(filePath);
-			log(`🖼  Save a file ${name}`);
+			log(`🖼  Save a file ${name}` + (selector ? ` for ${selector}` : ''));
 		},
 		screenshotError({ error }) {
 			log(`❌️ ${error.message}`);

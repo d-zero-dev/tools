@@ -5,7 +5,6 @@ import redirects from 'follow-redirects';
 
 /**
  * Downloads a file from the specified URL and saves it to the destination path.
- *
  * @param url The URL of the file to download.
  * @param dest The destination path where the downloaded file will be saved.
  * @returns A promise that resolves when the file is successfully downloaded and saved, or rejects with an error if any occurred.

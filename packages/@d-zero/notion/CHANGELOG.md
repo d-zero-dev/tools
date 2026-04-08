@@ -3,6 +3,128 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.18-alpha.2](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.18-alpha.1...@d-zero/notion@2.0.18-alpha.2) (2026-04-08)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.18-alpha.1](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.18-alpha.0...@d-zero/notion@2.0.18-alpha.1) (2026-04-08)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.18-alpha.0](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.17...@d-zero/notion@2.0.18-alpha.0) (2026-04-08)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.17](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.16...@d-zero/notion@2.0.17) (2026-04-01)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.16](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.15...@d-zero/notion@2.0.16) (2026-03-24)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.15](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.14...@d-zero/notion@2.0.15) (2026-03-11)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.14](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.13...@d-zero/notion@2.0.14) (2026-03-10)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.13](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.12...@d-zero/notion@2.0.13) (2026-02-26)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.12](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.11...@d-zero/notion@2.0.12) (2026-02-24)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.11](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.10...@d-zero/notion@2.0.11) (2026-02-14)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.10](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.9...@d-zero/notion@2.0.10) (2026-02-06)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.9](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.8...@d-zero/notion@2.0.9) (2026-01-23)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.8](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.7...@d-zero/notion@2.0.8) (2026-01-07)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.7](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.6...@d-zero/notion@2.0.7) (2025-12-12)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.6](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.5...@d-zero/notion@2.0.6) (2025-11-25)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.5](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.4...@d-zero/notion@2.0.5) (2025-11-20)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.4](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.3...@d-zero/notion@2.0.4) (2025-10-31)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.3](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.2...@d-zero/notion@2.0.3) (2025-10-30)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.2](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.1...@d-zero/notion@2.0.2) (2025-10-30)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [2.0.1](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@2.0.0...@d-zero/notion@2.0.1) (2025-10-29)
+
+**Note:** Version bump only for package @d-zero/notion
+
+# [2.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@1.0.11...@d-zero/notion@2.0.0) (2025-10-28)
+
+- feat(notion)!: upgrade @notionhq/client to v5.3.0 and migrate to dataSources API ([0b338d7](https://github.com/d-zero-dev/tools/commit/0b338d73d80f16db415ef8f9217e70377c8637e9))
+
+### BREAKING CHANGES
+
+- databases.query is replaced with dataSources.query
+
+* Migrate from databases.query to dataSources.query
+
+* Update parameter from database_id to data_source_id
+
+* Update type definitions to infer from client methods
+
+## [1.0.11](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@1.0.10...@d-zero/notion@1.0.11) (2025-10-15)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [1.0.10](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@1.0.9...@d-zero/notion@1.0.10) (2025-10-15)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [1.0.9](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@1.0.8...@d-zero/notion@1.0.9) (2025-09-01)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [1.0.8](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@1.0.7...@d-zero/notion@1.0.8) (2025-06-25)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [1.0.7](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@1.0.6...@d-zero/notion@1.0.7) (2025-06-18)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [1.0.6](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@1.0.5...@d-zero/notion@1.0.6) (2025-05-20)
+
+**Note:** Version bump only for package @d-zero/notion
+
+## [1.0.5](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@1.0.3...@d-zero/notion@1.0.5) (2025-03-05)
+
+**Note:** Version bump only for package @d-zero/notion
+
 ## [1.0.4](https://github.com/d-zero-dev/tools/compare/@d-zero/notion@1.0.3...@d-zero/notion@1.0.4) (2024-10-30)
 
 **Note:** Version bump only for package @d-zero/notion

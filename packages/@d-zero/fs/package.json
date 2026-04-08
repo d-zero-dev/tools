@@ -1,0 +1,38 @@
+{
+	"name": "@d-zero/fs",
+	"version": "0.2.3-alpha.2",
+	"description": "File system utilities",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		"./zip": {
+			"import": "./dist/zip.js",
+			"types": "./dist/zip.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"archiver": "7.0.1",
+		"unzipper": "0.12.3"
+	},
+	"devDependencies": {
+		"@types/archiver": "7.0.0",
+		"@types/unzipper": "0.10.11"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/fs"
+	}
+}

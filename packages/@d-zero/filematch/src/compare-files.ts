@@ -7,7 +7,6 @@ import { compareStreams } from './compare-streams.js';
 
 /**
  * Compares two files to check if their contents are identical.
- *
  * @param filePath1 - The path to the first file.
  * @param filePath2 - The path to the second file.
  * @param onProgress - An optional callback function to track the comparison progress.

@@ -7,6 +7,12 @@ import dayjs from 'dayjs';
 
 import { SpreadsheetReporter } from './spreadsheet.js';
 
+/**
+ *
+ * @param urlList
+ * @param out
+ * @param options
+ */
 export async function a11yCheck(
 	urlList: readonly (
 		| string
@@ -20,22 +26,35 @@ export async function a11yCheck(
 ) {
 	let sheet: SpreadsheetReporter | null = null;
 	if (out) {
-		const sheetName = dayjs().format('YYYY-MM-DD');
-		sheet = await SpreadsheetReporter.setup(out, sheetName);
+		let sheetName = dayjs().format('YYYY-MM-DD');
+
+		if (options?.debug) {
+			sheetName += `-debug-${Date.now()}`;
+		}
+
+		sheet = await SpreadsheetReporter.setup(out, sheetName, options?.credentials);
 	}
 
-	const result = await scenarioRunner(
-		urlList,
-		[
-			//
-			scenarioAxe(options),
-			scenario01(options),
-			scenario02(options),
-		],
-		{
-			...options,
-		},
-	);
+	const scenarioList = options?.scenarios ?? ['axe'];
+
+	const scenarios = scenarioList.map((s) => {
+		switch (s) {
+			case 'axe': {
+				return scenarioAxe(options);
+			}
+			case '01': {
+				return scenario01(options);
+			}
+			case '02': {
+				return scenario02(options);
+			}
+			default: {
+				throw new Error(`Unknown scenario: ${s}`);
+			}
+		}
+	});
+
+	const result = await scenarioRunner(urlList, scenarios, options);
 
 	if (out && sheet) {
 		process.stdout.write(`Report to ${out}\n`);

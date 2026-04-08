@@ -15,11 +15,18 @@ export type ProcTalkConfig<T, O = void> =
 	  }
 	| {
 			type: 'child';
-			process: (this: ProcTalk<T, O>, options?: O) => void | Promise<void>;
+			title?: string;
+			process: (
+				this: ProcTalk<T, O>,
+				options?: O,
+			) => ChildProcCleanup | Promise<ChildProcCleanup> | void;
 	  };
+
+export type ChildProcCleanup = () => void | Promise<void>;
 
 export class ProcTalk<T, O = void> {
 	readonly #callLog: typeof log;
+	#cleanup: ChildProcCleanup | null = null;
 	readonly #id: number;
 	readonly #initialized = new Deferred<void>();
 	readonly #initLog: typeof log;
@@ -38,16 +45,10 @@ export class ProcTalk<T, O = void> {
 		this.#type = config.type;
 
 		if (config.type === 'main') {
-			this.#process = fork(
-				//
-				config.subModulePath,
-				[JSON.stringify(config.options ?? {})],
-				{
-					detached: true,
-				},
-			);
+			this.#process = fork(config.subModulePath, [JSON.stringify(config.options ?? {})]);
 		} else {
 			this.#process = process;
+			this.#process.title = `${config.title ?? '@d-zero/proc-talk'}:child-process`;
 		}
 
 		this.#id = this.#process.pid ?? -1;
@@ -102,18 +103,16 @@ export class ProcTalk<T, O = void> {
 
 	close() {
 		if (this.#type === 'main' && this.#process instanceof ChildProcess) {
-			try {
-				this.#process.kill();
-				return true;
-			} catch (error) {
-				if (error instanceof Error && 'code' in error && error.code === 'ESRCH') {
-					return false;
-				}
-				throw error;
-			}
+			return new Promise<void>((resolve) => {
+				this.#process.once('exit', () => {
+					resolve();
+				});
+				this.#process.send?.({
+					type: ':kill',
+				});
+			});
 		}
-
-		throw new Error('Cannot close main process');
+		return Promise.resolve();
 	}
 
 	async initialized(): Promise<void> {
@@ -126,29 +125,47 @@ export class ProcTalk<T, O = void> {
 		this.#log(...args);
 	}
 
+	#error(error: unknown) {
+		let message = 'unknown error';
+		let stack = '';
+		if (error instanceof Error) {
+			message = error.message;
+			stack = error.stack ?? '';
+		}
+
+		this.#log('❌ error: %o', error);
+		this.#process.send?.({
+			type: ':error',
+			payload: [message, stack],
+		});
+	}
+
+	#exit() {
+		if (this.#type !== 'main') {
+			this.#log('Cleaning with exiting');
+			this.#process.removeAllListeners();
+			this.#listeners.clear();
+			this.#returnListeners.clear();
+			this.#log(
+				'listenerCount(%o): %d',
+				'message',
+				this.#process.listenerCount('message'),
+			);
+		}
+	}
+
 	async #init(config: ProcTalkConfig<T, O>) {
 		this.#process.on('message', this.#onMessage.bind(this));
-
-		process.on('exit', () => {
-			if (this.#type !== 'main') {
-				this.#log('Cleaning with exiting');
-				this.#process.removeAllListeners();
-				this.#listeners.clear();
-				this.#returnListeners.clear();
-				this.#log(
-					'listenerCount(%o): %d',
-					'message',
-					this.#process.listenerCount('message'),
-				);
-			}
-		});
 
 		if (config.type === 'main') {
 			return;
 		}
 
+		process.on('exit', this.#exit.bind(this));
+
 		const options = JSON.parse(process.argv[2] ?? '{}') as O;
-		await config.process.call(this, options);
+		this.#cleanup = (await config.process.call(this, options)) ?? null;
+
 		this.#process.send?.({
 			type: 'initialized',
 		});
@@ -166,6 +183,38 @@ export class ProcTalk<T, O = void> {
 			return;
 		}
 
+		if (
+			this.#type === 'child' &&
+			!(this.#process instanceof ChildProcess) &&
+			receivedType === ':kill'
+		) {
+			if (this.#cleanup) {
+				await this.#cleanup();
+			}
+			this.#process.exit(0);
+			return;
+		}
+
+		if (
+			this.#type === 'main' &&
+			this.#process instanceof ChildProcess &&
+			receivedType === ':error'
+		) {
+			this.#log('Unexpected error in process: %O', message?.payload);
+			if (this.#type === 'main' && this.#process instanceof ChildProcess) {
+				this.#process.kill();
+				const errorMessage = message?.payload?.[0]
+					? `${message?.payload?.[0]}`
+					: 'Unexpected error in process';
+				const errorStack = message?.payload?.[1] ? `${message?.payload?.[1]}` : '';
+				const error = new Error(errorMessage);
+				if (errorStack) {
+					error.stack = errorStack;
+				}
+				throw error;
+			}
+		}
+
 		const payload = message?.payload;
 		const returns = message?.returns;
 		const listener = receivedType ? this.#listeners.get(receivedType) : null;
@@ -181,14 +230,18 @@ export class ProcTalk<T, O = void> {
 
 		if (payload && typeof listener === 'function') {
 			const args = deserialize(payload, this.#log);
-			const res = await listener(...args);
-			this.#log('▶️ await listener(%o, %o) => %O', receivedType, args, res);
-			const returns = serialize([res], this.#log);
-			this.#log('▶️ send(%o, %O)', receivedType, returns);
-			this.#process.send?.({
-				type: receivedType,
-				returns,
-			});
+			try {
+				const res = await listener(...args);
+				this.#log('▶️ await listener(%o, %o) => %O', receivedType, args, res);
+				const returns = serialize([res], this.#log);
+				this.#log('▶️ send(%o, %O)', receivedType, returns);
+				this.#process.send?.({
+					type: receivedType,
+					returns,
+				});
+			} catch (error: unknown) {
+				this.#error(error);
+			}
 		}
 
 		if (returns && typeof returnListener === 'function') {

@@ -2,7 +2,6 @@ import AwaitEventEmitter from 'await-event-emitter';
 
 /**
  * An event emitter that supports typed events and asynchronous event handling.
- *
  * @template E - The type of events and their corresponding arguments.
  */
 export class TypedAwaitEventEmitter<E> {
@@ -10,7 +9,6 @@ export class TypedAwaitEventEmitter<E> {
 
 	/**
 	 * Asynchronously emits an event with the specified arguments.
-	 *
 	 * @param event - The event to emit.
 	 * @param arg - The argument associated with the event.
 	 * @returns A promise that resolves to a boolean indicating whether any listeners were called.
@@ -22,7 +20,6 @@ export class TypedAwaitEventEmitter<E> {
 
 	/**
 	 * Synchronously emits an event with the specified arguments.
-	 *
 	 * @param event - The event to emit.
 	 * @param arg - The argument associated with the event.
 	 * @returns A boolean indicating whether any listeners were called.
@@ -34,7 +31,6 @@ export class TypedAwaitEventEmitter<E> {
 
 	/**
 	 * Adds a listener for the specified event.
-	 *
 	 * @param event - The event to listen for.
 	 * @param listener - The listener function to be called when the event is emitted.
 	 * @returns The instance of the `TypedAwaitEventEmitter` class.

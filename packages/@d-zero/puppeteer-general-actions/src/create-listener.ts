@@ -2,6 +2,10 @@ import type { Listener, Loggers } from './types.js';
 
 import c from 'ansi-colors';
 
+/**
+ *
+ * @param listener
+ */
 export function createListener<P extends Record<string, { name: string }>>(
 	listener: Loggers<P>,
 ) {

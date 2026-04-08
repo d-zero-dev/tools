@@ -1,10 +1,9 @@
 {
 	"name": "@d-zero/readtext",
-	"version": "1.1.1",
+	"version": "1.1.21-alpha.2",
 	"description": "A simple tool to read text files.",
 	"author": "D-ZERO",
 	"license": "MIT",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
@@ -28,6 +27,11 @@
 		"clean": "tsc --build --clean"
 	},
 	"devDependencies": {
-		"@types/node": "22.8.4"
+		"@types/node": "24.11.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/readtext"
 	}
 }

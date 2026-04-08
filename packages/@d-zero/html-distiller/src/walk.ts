@@ -7,6 +7,10 @@ import type {
 	commentNode,
 } from './types.js';
 
+/**
+ *
+ * @param node
+ */
 export function walk(node: ChildNode) {
 	switch (node.nodeName) {
 		case '#documentType': {
@@ -23,6 +27,14 @@ export function walk(node: ChildNode) {
 
 	const element = node as Element;
 
+	if (
+		['title', 'link', 'script', 'style', 'iframe'].includes(
+			element.nodeName.toLowerCase(),
+		)
+	) {
+		return tagString(element);
+	}
+
 	const resultNode: ResultNode = {
 		name: element.tagName,
 	};
@@ -35,6 +47,10 @@ export function walk(node: ChildNode) {
 	}
 
 	let childNodes: ChildNode[] = element.childNodes;
+
+	if (element.nodeName.toLowerCase() === 'head') {
+		childNodes = childNodes.toSorted((a, b) => a.nodeName.localeCompare(b.nodeName));
+	}
 
 	if (element.tagName === 'template') {
 		const template = element as Template;
@@ -52,4 +68,22 @@ export function walk(node: ChildNode) {
 	}
 
 	return resultNode;
+}
+
+/**
+ *
+ * @param element
+ */
+function tagString(element: Element) {
+	let tag = `<${element.tagName}`;
+	const attrs = element.attrs.toSorted((a, b) => a.name.localeCompare(b.name));
+	for (const attr of attrs) {
+		tag += ` ${attr.name}="${attr.value}"`;
+	}
+	tag += '>';
+	if (element.childNodes.length > 0) {
+		tag += element.childNodes.map((child) => walk(child)).join('');
+	}
+	tag += `</${element.tagName}>`;
+	return tag;
 }

@@ -7,7 +7,6 @@ import { downloadFile } from './download-file.js';
 /**
  * Downloads a file from a URL and returns the path to the downloaded file.
  * If the input is not a URL, it returns the input as is.
- *
  * @param urlOrFilePath - The URL or file path to download.
  * @returns The path to the downloaded file.
  */
@@ -24,6 +23,10 @@ export async function urlToFileWhileDownload(urlOrFilePath: string) {
 	return tempFile;
 }
 
+/**
+ *
+ * @param urlOrFilePath
+ */
 function isURL(urlOrFilePath: string) {
 	return urlOrFilePath.startsWith('http://') || urlOrFilePath.startsWith('https://');
 }

@@ -2,6 +2,9 @@ import { Backlog } from 'backlog-js';
 
 let singleton: Backlog | null = null;
 
+/**
+ *
+ */
 export function createBacklogClient(): Backlog {
 	if (singleton) {
 		return singleton;

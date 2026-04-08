@@ -2,6 +2,11 @@ import type { KeyValue, Separator } from './types.js';
 
 import { toList } from './to-list.js';
 
+/**
+ *
+ * @param text
+ * @param separator
+ */
 export function toKvList(text: string, separator: Separator = /\s+/) {
 	if (separator instanceof RegExp && separator.global) {
 		throw new Error('The separator must not be global');

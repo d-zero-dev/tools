@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/check-param-names */
+
 import type { KeyValue, Separator } from './types.js';
 
 import fs from 'node:fs/promises';
@@ -7,11 +9,9 @@ import { toList } from './to-list.js';
 
 /**
  * Reads a list from a file and optionally parses it into key-value pairs.
- *
  * @param filePath - The path to the file to read.
  * @param keyValueSep - An optional separator to split each line into key-value pairs.
  * @returns A promise that resolves to an array of unknown items or key-value pairs.
- *
  * @example
  * ```typescript
  * const list = await readList('/path/to/file.txt');

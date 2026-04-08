@@ -2,6 +2,11 @@ import type { PageHook } from './types.js';
 
 import path from 'node:path';
 
+/**
+ *
+ * @param hooks
+ * @param baseDir
+ */
 export async function readPageHooks(
 	hooks: readonly string[],
 	baseDir: string,

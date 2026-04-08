@@ -82,6 +82,10 @@ export class Cell<T extends CellRawData = CellRawData> {
 	}
 }
 
+/**
+ *
+ * @param str
+ */
 function limit(str: string) {
 	return str.slice(0, 50_000 - 1);
 }

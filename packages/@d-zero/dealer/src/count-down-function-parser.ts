@@ -1,3 +1,7 @@
+/**
+ *
+ * @param text
+ */
 export function countDownFunctionParser(text: string) {
 	const matched =
 		/%countdown\((?<time>\d+)\s*,\s*(?<id>[^\s),]+)(?:\s*,\s*(?<unit>m?s))?\)%/i.exec(

@@ -1,6 +1,6 @@
 import type { DealOptions } from '@d-zero/dealer';
-import type { Page } from '@d-zero/puppeteer-page';
 import type { PageHook } from '@d-zero/puppeteer-page-scan';
+import type { Page } from 'puppeteer';
 
 export type CoreOptions = {
 	readonly screenshot?: boolean;
@@ -16,12 +16,11 @@ export type ScenarioRunnerOptions = DealOptions & {
 export type ScenarioCreator<O> = (options?: O) => Scenario;
 
 export type Scenario = {
-	id: string;
-	config?: {
-		// Add option if needed
-	};
-	exec: ScenarioExecutor;
-	analyze?: ScenarioAnalyzer;
+	readonly modulePath: string;
+	readonly moduleParams: string;
+	readonly id: string;
+	readonly exec: ScenarioExecutor;
+	readonly analyze?: ScenarioAnalyzer;
 };
 
 export type ScenarioExecutor = (
@@ -66,6 +65,7 @@ export type Violation = ResultData & {
 	readonly wcagVersion: string | null;
 	readonly scNumber: string | null;
 	readonly level: 'A' | 'AA' | 'AAA' | null;
+	readonly severity: 'high' | 'medium' | 'low' | null;
 	readonly screenshot: string | null;
 };
 

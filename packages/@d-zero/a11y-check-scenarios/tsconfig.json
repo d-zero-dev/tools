@@ -10,9 +10,6 @@
 			"path": "../a11y-check-core"
 		},
 		{
-			"path": "../puppeteer-page"
-		},
-		{
 			"path": "../shared"
 		}
 	],

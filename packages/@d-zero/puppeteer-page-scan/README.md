@@ -1,6 +1,6 @@
 # `@d-zero/puppeteer-page-scan`
 
-PuppeteerでスクリーンショットやDOMスキャンする際に必要なヘルパー関数を提供します。
+PuppeteerでスクリーンショットやDOMスキャンする際に必要なヘルパー関数とデバイス設定を提供します。
 
 ## インストール
 
@@ -10,12 +10,55 @@ yarn install @d-zero/puppeteer-page-scan
 
 ## 使い方
 
+### デバイスプリセット
+
+複数のデバイスサイズ用のプリセットが利用可能です：
+
+```ts
+import {
+	devicePresets,
+	createSizesFromDevices,
+	parseDevicesOption,
+} from '@d-zero/puppeteer-page-scan';
+
+// 利用可能なデバイスプリセット
+console.log(devicePresets);
+// {
+//   desktop: { width: 1400 },
+//   tablet: { width: 768 },
+//   mobile: { width: 375, resolution: 2 },
+//   'desktop-hd': { width: 1920 },
+//   'desktop-compact': { width: 1280 },
+//   'mobile-large': { width: 414, resolution: 3 },
+//   'mobile-small': { width: 320, resolution: 2 }
+// }
+
+// プリセット名からSizesオブジェクトを生成
+const sizes = createSizesFromDevices(['desktop', 'mobile']);
+
+// CLI用のパーサー（コンマ区切りの文字列から）
+const parsedSizes = parseDevicesOption(['desktop', 'tablet']);
+
+// デフォルトサイズ定数（desktop、tablet、mobileの3種類）
+console.log(defaultSizes);
+// {
+//   desktop: { width: 1400 },
+//   tablet: { width: 768 },
+//   mobile: { width: 375, resolution: 2 }
+// }
+```
+
 ### `beforePageScan`
 
 - ビューポートの設定
 - ページのリロード
 - 任意のフック処理
   - ログインなどの事前処理
+- disclosure要素の展開（オプション）
+  - すべての`<details>`要素を開き、すべての`button[aria-expanded="false"]`要素をクリック
+  - 新しい要素が見つからなくなるまで繰り返し処理（最大1000回）
+  - 各イテレーション後に500ms待機
+  - 最大イテレーション数に達した場合はErrorを投げる
 - ページ全体をスクロール
 
 などを行い、スキャンに必要な状態を整えるためのヘルパー関数です。
@@ -43,5 +86,129 @@ await beforePageScan(page, 'https://example.com', {
 			await page.click('button[type="submit"]');
 		},
 	],
+	openDisclosures: true, // オプション: disclosure要素を展開（<details>とbutton[aria-expanded="false"]）
 });
+```
+
+### `readPageHooks`
+
+ファイルパスの配列からPageHookモジュールを読み込むヘルパー関数です。各パスはESモジュールとしてインポートされ、デフォルトエクスポートを`PageHook`関数として返します。
+
+```ts
+import { readPageHooks } from '@d-zero/puppeteer-page-scan';
+
+// hookファイルのパスからPageHook関数の配列を取得
+const hooks = await readPageHooks(
+	['./hooks/login.js', '/absolute/path/to/hook.js'],
+	process.cwd(), // 相対パスの基準ディレクトリ
+);
+
+// beforePageScanで使用
+await beforePageScan(page, 'https://example.com', {
+	name: 'desktop',
+	width: 1200,
+	hooks,
+});
+```
+
+**パラメータ:**
+
+- `hooks`: 読み込むhookファイルのパスの配列（絶対パスまたは相対パス）
+- `baseDir`: 相対パスを解決するための基準ディレクトリ
+
+**戻り値:**
+
+- `Promise<PageHook[]>`: PageHook関数の配列
+
+**エラー:**
+
+- モジュールが見つからない場合は`Error`を投げます
+- デフォルトエクスポートが関数でない場合は`TypeError`を投げます
+
+### `pageScanListener` と `pageScanLoggers`
+
+ページスキャン処理中の各フェーズ（ビューポート設定、ページ読み込み、フック実行、スクロール）のログを出力するためのリスナー関数とロガー設定です。
+
+```ts
+import { pageScanListener, pageScanLoggers } from '@d-zero/puppeteer-page-scan';
+
+// リスナーを使用（@d-zero/puppeteer-general-actionsのcreateListenerで作成済み）
+const listeners = pageScanListener((message) => {
+	console.log(message);
+});
+
+await beforePageScan(page, 'https://example.com', {
+	name: 'desktop',
+	width: 1200,
+	listeners,
+});
+
+// カスタムロガーを作成する場合
+import { createListener } from '@d-zero/puppeteer-general-actions';
+
+const customListeners = createListener((log) => {
+	const loggers = pageScanLoggers(log);
+	return {
+		...loggers,
+		// 特定のフェーズをカスタマイズ
+		setViewport({ width }) {
+			log(`カスタム: ビューポート幅を${width}pxに変更`);
+		},
+	};
+});
+```
+
+**ログ出力内容:**
+
+- `setViewport`: ビューポートサイズ変更のログ
+- `load`: ページ読み込み（初回/リロード）とタイムアウト情報
+- `hook`: フック実行時のメッセージ
+- `scroll`: スクロール位置と進捗状況（パーセンテージ）
+
+## 型のエクスポート
+
+### `Sizes`
+
+デバイスサイズのマップ型です。キーはデバイス名、値は`Size`オブジェクトです。
+
+```typescript
+type Sizes = Record<string, Size>;
+```
+
+### `Size`
+
+単一デバイスのサイズ設定です。
+
+```typescript
+type Size = {
+	width: number; // ビューポート幅（ピクセル）
+	resolution?: number; // デバイスピクセル比（省略時は1）
+};
+```
+
+### `PageHook`
+
+ページスキャン前に実行されるフック関数の型です。
+
+```typescript
+type PageHook = (
+	page: Page,
+	size: Size & {
+		name: string; // デバイス名
+		log: (message: string) => void; // ログ出力関数
+	},
+) => Promise<void>;
+```
+
+### `PageScanPhase`
+
+ページスキャン処理の各フェーズを表す型です。リスナーのコールバックで使用されます。
+
+```typescript
+type PageScanPhase = {
+	setViewport: { name: string; width: number; resolution?: number };
+	hook: { name: string; message: string };
+	load: { name: string; type: 'open' | 'reload'; timeout: number; id: string };
+	scroll: { name: string; scrollY: number; scrollHeight: number; message: string };
+};
 ```

@@ -3,6 +3,165 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.3.10-alpha.2](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.10-alpha.1...@d-zero/puppeteer-screenshot@3.3.10-alpha.2) (2026-04-08)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.10-alpha.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.10-alpha.0...@d-zero/puppeteer-screenshot@3.3.10-alpha.1) (2026-04-08)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.10-alpha.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.9...@d-zero/puppeteer-screenshot@3.3.10-alpha.0) (2026-04-08)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.9](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.8...@d-zero/puppeteer-screenshot@3.3.9) (2026-04-01)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.8](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.7...@d-zero/puppeteer-screenshot@3.3.8) (2026-03-30)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.7](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.6...@d-zero/puppeteer-screenshot@3.3.7) (2026-03-24)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.6](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.5...@d-zero/puppeteer-screenshot@3.3.6) (2026-03-11)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.5](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.4...@d-zero/puppeteer-screenshot@3.3.5) (2026-02-26)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.4](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.3...@d-zero/puppeteer-screenshot@3.3.4) (2026-02-24)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.3](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.2...@d-zero/puppeteer-screenshot@3.3.3) (2026-02-14)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.2](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.1...@d-zero/puppeteer-screenshot@3.3.2) (2026-02-12)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.3.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.0...@d-zero/puppeteer-screenshot@3.3.1) (2026-02-06)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+# [3.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.14...@d-zero/puppeteer-screenshot@3.3.0) (2026-01-23)
+
+### Features
+
+- **puppeteer-screenshot:** add openDisclosures option support ([e9f7c7c](https://github.com/d-zero-dev/tools/commit/e9f7c7c017e7a12b99e592e60fcc87bcfa4434b4))
+
+## [3.2.14](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.13...@d-zero/puppeteer-screenshot@3.2.14) (2026-01-08)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.13](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.12...@d-zero/puppeteer-screenshot@3.2.13) (2026-01-07)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.12](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.11...@d-zero/puppeteer-screenshot@3.2.12) (2025-12-12)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.11](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.10...@d-zero/puppeteer-screenshot@3.2.11) (2025-11-25)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.10](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.9...@d-zero/puppeteer-screenshot@3.2.10) (2025-11-21)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.9](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.8...@d-zero/puppeteer-screenshot@3.2.9) (2025-11-20)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.8](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.7...@d-zero/puppeteer-screenshot@3.2.8) (2025-10-31)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.7](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.6...@d-zero/puppeteer-screenshot@3.2.7) (2025-10-30)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.6](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.5...@d-zero/puppeteer-screenshot@3.2.6) (2025-10-30)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.5](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.4...@d-zero/puppeteer-screenshot@3.2.5) (2025-10-29)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.4](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.3...@d-zero/puppeteer-screenshot@3.2.4) (2025-10-28)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.3](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.2...@d-zero/puppeteer-screenshot@3.2.3) (2025-10-15)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.2](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.1...@d-zero/puppeteer-screenshot@3.2.2) (2025-10-15)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.2.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.2.0...@d-zero/puppeteer-screenshot@3.2.1) (2025-10-03)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+# [3.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.1.4...@d-zero/puppeteer-screenshot@3.2.0) (2025-09-02)
+
+### Features
+
+- **puppeteer-screenshot:** add timeout option support ([db8196f](https://github.com/d-zero-dev/tools/commit/db8196f17c7ea1860946f847070b9d5359df4a0d))
+
+## [3.1.4](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.1.3...@d-zero/puppeteer-screenshot@3.1.4) (2025-09-02)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.1.3](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.1.2...@d-zero/puppeteer-screenshot@3.1.3) (2025-09-01)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.1.2](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.1.1...@d-zero/puppeteer-screenshot@3.1.2) (2025-07-08)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+## [3.1.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.1.0...@d-zero/puppeteer-screenshot@3.1.1) (2025-06-25)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+# [3.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.0.1...@d-zero/puppeteer-screenshot@3.1.0) (2025-06-18)
+
+### Bug Fixes
+
+- **puppeteer-screenshot:** pass scope parameter to getBinary function correctly ([656f084](https://github.com/d-zero-dev/tools/commit/656f084a76d86f066d7a64abe33a5ee5271d40b5))
+
+### Features
+
+- **archaeologist:** add text diff analysis with morphological analysis ([00ed8b2](https://github.com/d-zero-dev/tools/commit/00ed8b2343b5d382cf325292dc756a2e9027c980))
+- **puppeteer-screenshot:** add ignore option to hide elements during screenshot ([d0ae053](https://github.com/d-zero-dev/tools/commit/d0ae053198bfb5d08a1d0a263b480f9b32663b96))
+- **puppeteer-screenshot:** add selector option for targeted screenshots ([13b71b5](https://github.com/d-zero-dev/tools/commit/13b71b5459c0bc925e8bbc8dd6ffb110f5f92966))
+- **puppeteer-screenshot:** normalize text content by adding line breaks for diff accuracy ([19fa0c2](https://github.com/d-zero-dev/tools/commit/19fa0c2c657c1d558a018298b0ac884aa46a6fe1))
+
+## [3.0.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.0.0...@d-zero/puppeteer-screenshot@3.0.1) (2025-05-20)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
+# [3.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@1.2.0...@d-zero/puppeteer-screenshot@3.0.0) (2025-03-05)
+
+### Features
+
+- **puppeteer-screenshot:** use `@d-zero/puppeteer-page` ([c924882](https://github.com/d-zero-dev/tools/commit/c924882a08cf87e8ef043de8bedcdc1e014f4c79))
+
+### BREAKING CHANGES
+
+- **puppeteer-screenshot:** use `@d-zero/puppeteer-page` instead of `puppeteer`
+
 # [2.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@1.2.0...@d-zero/puppeteer-screenshot@2.0.0) (2024-10-30)
 
 ### Features

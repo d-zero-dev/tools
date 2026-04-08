@@ -1,11 +1,16 @@
 import type { log } from 'debug';
 
+/**
+ *
+ * @param data
+ * @param logger
+ */
 export function serialize(data: unknown[], logger: typeof log): unknown[] {
 	// Remove empty items from the end
 	if (data.length > 0) {
 		const reversedArgs = data.toReversed();
 		const filteredArgs: unknown[] = [];
-		// eslint-disable-next-line no-constant-condition
+
 		while (reversedArgs.length > 0) {
 			const item = reversedArgs.shift();
 			if (item !== undefined) {

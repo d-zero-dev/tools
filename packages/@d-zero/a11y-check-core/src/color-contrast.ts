@@ -14,6 +14,10 @@ export enum ColorContrastError {
 	BACKGROUND_COLOR_HAS_ALPHA,
 }
 
+/**
+ *
+ * @param style
+ */
 export function colorContrastCheck(style: Style): ColorContrastError | ColorContrast {
 	const foreground = colorFnToHex(style.color);
 

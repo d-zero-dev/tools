@@ -1,3 +1,7 @@
+/**
+ *
+ * @param path
+ */
 export function pathToURL(path: string): URL {
 	try {
 		return new URL(path);

@@ -1,11 +1,18 @@
 import type { Style } from '@d-zero/a11y-check-core';
-import type { Page } from '@d-zero/puppeteer-page';
 import type { NodeResult } from 'axe-core';
+import type { Page } from 'puppeteer';
 
 import path from 'node:path';
 
 import { hash } from '@d-zero/shared/hash';
 
+/**
+ *
+ * @param page
+ * @param node
+ * @param screenshot
+ * @param log
+ */
 export async function convertResultsFromNode(
 	page: Page,
 	node: NodeResult,
@@ -25,10 +32,11 @@ export async function convertResultsFromNode(
 
 	if (screenshot && target) {
 		log(`Screenshot: ${target}`);
-		const url = await page.url();
+		const url = page.url();
 		const ssName = hash(url + target) + '.png';
-		const elementScreenshot = await page.elementScreenshot(target, {
-			path: path.resolve(process.cwd(), '.cache', ssName),
+		const el = await page.waitForSelector(target);
+		const elementScreenshot = await el?.screenshot({
+			path: path.resolve(process.cwd(), '.cache', ssName) as `${string}.png`,
 		});
 		if (elementScreenshot) {
 			screenshotName = ssName;

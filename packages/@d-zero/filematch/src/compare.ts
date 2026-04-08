@@ -5,7 +5,6 @@ import { urlToFileWhileDownload } from './url-to-file-while-download.js';
 
 /**
  * Compares two files located at the given file paths or URLs.
- *
  * @param filePathOrUrl1 - The file path or URL of the first file to compare.
  * @param filePathOrUrl2 - The file path or URL of the second file to compare.
  * @param onProgress - An optional callback function to track the progress of the comparison.

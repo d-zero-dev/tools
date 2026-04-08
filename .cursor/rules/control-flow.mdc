@@ -1,0 +1,88 @@
+---
+description: Enforce early returns and consistent async/await usage to improve readability
+globs: **/*.js,**/*.mjs,**/*.ts
+---
+
+# Control Flow Guidelines
+
+## Early Returns (Mandatory)
+
+Always use early returns when conditions allow to improve code readability and reduce nesting.
+
+### Guidelines
+
+- Check error conditions first and return/throw early
+- Avoid nested if-else structures when early returns are possible
+- Reduce indentation depth by returning early from guard clauses
+
+### Good Example
+
+```typescript
+function processUser(user: User | null): string | null {
+	if (!user) {
+		return null;
+	}
+	if (!user.isActive) {
+		return null;
+	}
+	return user.name;
+}
+```
+
+### Bad Example
+
+```typescript
+function processUser(user: User | null): string | null {
+	if (user) {
+		if (user.isActive) {
+			return user.name;
+		}
+	}
+	return null;
+}
+```
+
+## Async/Await Usage (Mandatory)
+
+Never mix `await` with `.then()` or `.catch()` chains. Choose one pattern and stick to it consistently.
+
+### Guidelines
+
+- If using `await`, do NOT chain `.then()` or `.catch()` on the same expression
+- Use `await` with `.catch()` for error handling (as per error-handling rule)
+- Avoid redundant Promise chains when already using `await`
+
+### Good Example
+
+```typescript
+// Using await with .catch() for error handling
+const data = await fetchData(url).catch((error) => {
+	logger.error('Failed to fetch', error);
+	throw error;
+});
+
+// Or store the promise first, then await
+const promise = fetchData(url);
+const data = await promise;
+```
+
+### Bad Example
+
+```typescript
+// NEVER do this - mixing await with .then()
+const data = await fetchData(url).then((result) => {
+	return result.data;
+});
+
+// This is redundant and confusing
+await someAsyncFunction().then((value) => {
+	processValue(value);
+});
+```
+
+### Why This is Bad
+
+- Mixing `await` and `.then()` is redundant and confusing
+- It defeats the purpose of async/await syntax which is to make async code look synchronous
+- Makes code harder to read and maintain
+- Can lead to unexpected behavior with error handling

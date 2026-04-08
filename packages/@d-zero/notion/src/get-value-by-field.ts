@@ -6,6 +6,10 @@ import type {
 export type Field = PageObjectResponse['properties'][0];
 export type FieldValue = string | number | null;
 
+/**
+ *
+ * @param field
+ */
 export function getValueByField(field: Field): FieldValue {
 	switch (field.type) {
 		case 'rich_text': {
@@ -27,6 +31,10 @@ export function getValueByField(field: Field): FieldValue {
 	return null;
 }
 
+/**
+ *
+ * @param richText
+ */
 function richTextToPlainText(richText: RichTextItemResponse[]) {
 	return richText.map((textBlock) => textBlock.plain_text).join('');
 }

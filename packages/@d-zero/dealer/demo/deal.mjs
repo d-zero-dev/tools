@@ -1,3 +1,4 @@
+import { delay } from '@d-zero/shared/delay';
 import c from 'ansi-colors';
 
 import { deal } from '../dist/index.js';
@@ -11,20 +12,21 @@ import { deal } from '../dist/index.js';
  */
 class Steps {
 	/**
-	 * @param {number[]} steps
+	 * @type {StepListener | null}
 	 */
-	constructor(steps) {
-		this.#steps = steps;
-	}
+	#listener = null;
+
 	/**
 	 * @type {number[]}
 	 */
 	#steps;
 
 	/**
-	 * @type {StepListener}
+	 * @param {number[]} steps
 	 */
-	#listener;
+	constructor(steps) {
+		this.#steps = steps;
+	}
 
 	/**
 	 *
@@ -38,20 +40,13 @@ class Steps {
 		const steps = [...this.#steps];
 		let i = 0;
 		for (const step of steps) {
-			await this.#listener('step', i, step);
-			await delay(step);
+			await delay(step, (determinedInterval) => {
+				this.#listener?.('step', i, determinedInterval);
+			});
 			i++;
 		}
-		await this.#listener('end', i, 0);
+		await this.#listener?.('end', i, 0);
 	}
-}
-
-/**
- * @param {number} ms
- * @return {Promise<void>}
- */
-function delay(ms) {
-	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const stepsCollection = [
@@ -101,7 +96,8 @@ const stepsCollection = [
 
 await deal(
 	stepsCollection,
-	(steps, update, index) => {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	(steps, update, index, _setLineHeader) => {
 		steps.addListener((type, stepCount, delay) => {
 			update(
 				`[${index}] ${stepCount}: ${type} %countdown(${delay},${index}_${stepCount})%ms`,

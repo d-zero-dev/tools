@@ -1,10 +1,11 @@
 import type { DBOption, TableData } from './types.js';
 import type { Client } from '@notionhq/client';
-import type { QueryDatabaseResponse } from '@notionhq/client/build/src/api-endpoints.js';
 
 import { createClient } from './client.js';
 import { getNotionIdByURL } from './get-notion-id-by-url.js';
 import { getValueByField } from './get-value-by-field.js';
+
+type QueryDatabaseResponse = Awaited<ReturnType<Client['dataSources']['query']>>;
 
 export class NotionDB {
 	#client: Client;
@@ -22,8 +23,8 @@ export class NotionDB {
 		if (this.#db) {
 			return this.#db;
 		}
-		const db = await this.#client.databases.query({
-			database_id: this.#dbId,
+		const db = await this.#client.dataSources.query({
+			data_source_id: this.#dbId,
 			sorts: options?.sorts,
 		});
 		this.#db = db;

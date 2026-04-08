@@ -15,6 +15,25 @@
 		"PHPSESSID",
 
 		//
-		"whatwg"
+		"whatwg",
+		"WCAG",
+
+		// Accessibility
+		"Deque",
+		"dequelabs",
+		"imgs",
+
+		//
+		"Kuromoji",
+		"kuromojin",
+
+		// Compression types
+		"sdch",
+		"vcdiff",
+		"xdelta",
+
+		// Test data
+		"mypassword",
+		"mypassphrase"
 	]
 }

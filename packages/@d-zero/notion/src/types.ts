@@ -9,5 +9,5 @@ export type DBOption = {
 };
 
 type SortOption = ArrayElement<
-	NonNullable<Parameters<Client['databases']['query']>[0]['sorts']>
+	NonNullable<Parameters<Client['dataSources']['query']>[0]['sorts']>
 >;

@@ -2,16 +2,15 @@
  * Extracts the project ID from a Backlog URL.
  *
  * Ex:
- *  - https://xxx.backlog.jp/projects/API_TEST
- *  - https://xxx.backlog.jp/add/API_TEST
- *  - https://xxx.backlog.jp/find/API_TEST?projectId=123
- *  - https://xxx.backlog.jp/board/API_TEST
- *  - https://xxx.backlog.jp/gantt/API_TEST
- *  - https://xxx.backlog.jp/wiki/API_TEST/Home
- *  - https://xxx.backlog.jp/file/API_TEST
- *  - https://xxx.backlog.jp/git/API_TEST
- *  - https://xxx.backlog.jp/EditProject.action?project.id=123
- *
+ * - https://xxx.backlog.jp/projects/API_TEST
+ * - https://xxx.backlog.jp/add/API_TEST
+ * - https://xxx.backlog.jp/find/API_TEST?projectId=123
+ * - https://xxx.backlog.jp/board/API_TEST
+ * - https://xxx.backlog.jp/gantt/API_TEST
+ * - https://xxx.backlog.jp/wiki/API_TEST/Home
+ * - https://xxx.backlog.jp/file/API_TEST
+ * - https://xxx.backlog.jp/git/API_TEST
+ * - https://xxx.backlog.jp/EditProject.action?project.id=123
  * @param url
  * @returns
  */

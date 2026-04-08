@@ -2,7 +2,6 @@ import esr from 'escape-string-regexp';
 
 /**
  * Converts a string pattern to a regular expression.
- *
  * @param pattern - The string pattern to convert.
  * @returns A regular expression object.
  */

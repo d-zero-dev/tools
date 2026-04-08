@@ -1,139 +1,56 @@
-import type { PuppeteerDealerOptions, PuppeteerDealHandler, URLInfo } from './types.js';
-import type { DealHeader } from '@d-zero/dealer';
-import type { Page } from '@d-zero/puppeteer-page';
-import type { PuppeteerLaunchOptions } from 'puppeteer';
+import type { ChildProcessManager } from './create-main-process.js';
+import type { URLInfo } from './types.js';
+import type { DealHeader, DealOptions } from '@d-zero/dealer';
 
 import { deal as coreDeal } from '@d-zero/dealer';
-import { createPage } from '@d-zero/puppeteer-page';
-import { delay } from '@d-zero/shared/delay';
 import c from 'ansi-colors';
 
-import { log } from './debug.js';
-
-export async function deal(
+/**
+ *
+ * @param list
+ * @param header
+ * @param createProcess
+ * @param options
+ */
+export function deal<T, R = void>(
 	list: readonly URLInfo[],
 	header: DealHeader,
-	handler: PuppeteerDealHandler,
-	options?: PuppeteerDealerOptions & PuppeteerLaunchOptions,
+	createProcess: () => (needAuth: boolean) => ChildProcessManager<T, R>,
+	options?: Omit<DealOptions, 'header'> & {
+		each?: (
+			result: R,
+			push: (...items: URLInfo[]) => Promise<void>,
+		) => void | Promise<void>;
+	},
 ) {
-	const config = {
-		locale: 'ja-JP',
-		...options,
-	};
+	const needAuth = list.some(({ url }) => {
+		const urlObj = new URL(url);
+		return !!(urlObj.username && urlObj.password);
+	});
 
-	const childPrecessIds = new Set<number>();
-
-	const cleanUp = () => {
-		log('child process IDs: %o', childPrecessIds);
-		for (const pid of childPrecessIds) {
-			try {
-				process.kill(pid);
-				log('killed %d', pid);
-			} catch (error) {
-				log('Already dead: %d', pid);
-				if (error instanceof Error && 'code' in error && error.code === 'ESRCH') {
-					// ignore
-					continue;
-				}
-				throw error;
-			}
-		}
-
-		if (log.enabled) {
-			log('process.getActiveResourcesInfo(): %o', process.getActiveResourcesInfo());
-		}
-	};
-
-	process.on('exit', cleanUp);
-
-	await coreDeal(
+	return coreDeal(
 		list,
-		({ id, url }, update, index) => {
+		({ id, url }, update, index, setLineHeader, push) => {
 			const fileId = id || index.toString().padStart(3, '0');
 			const lineHeader = `%braille% ${c.bgWhite(` ${fileId} `)} ${c.gray(url.toString())}: `;
+			setLineHeader(lineHeader);
 
 			return async () => {
-				const continued = await handler.beforeOpenPage?.(
-					fileId,
-					url.toString(),
-					(log) => update(`${lineHeader}${log}`),
-					index,
-				);
-
-				if (continued === false) {
-					return;
+				update(`Using ${needAuth ? 'auth' : 'no auth'}`);
+				const processManager = createProcess()(needAuth);
+				update(`Booting ChildProcess%dots%`);
+				await processManager.ready();
+				processManager.log((log) => update(log));
+				const result = await processManager.each(fileId, url.toString(), index);
+				if (options?.each) {
+					await options.each(result, push);
 				}
-
-				const page = await createPage({
-					headless: true,
-					args: [
-						//
-						`--lang=${config.locale}`,
-						'--no-zygote',
-						'--ignore-certificate-errors',
-					],
-					...config,
-				});
-
-				if (page.pid !== null) {
-					childPrecessIds.add(page.pid);
-				}
-
-				await page.setDefaultNavigationTimeout(0);
-
-				if (config.locale) {
-					await page.setExtraHTTPHeaders({
-						'Accept-Language': config.locale,
-					});
-				}
-
-				await handler
-					.deal(
-						page,
-						fileId,
-						url.toString(),
-						(log) => update(`${lineHeader}${log}`),
-						index,
-					)
-					.catch(evaluationError(page, url.toString(), fileId, index));
-
-				update(`${lineHeader} ${c.blue('✓')} Closing page%dots%`);
-				await page.close();
-				update(`${lineHeader} ${c.greenBright('✓')} Page process completed!`);
-				await delay(600);
+				await processManager.close();
 			};
 		},
 		{
-			...config,
+			...options,
 			header,
 		},
 	);
-
-	log('PuppeteerDealer.deal() completed');
-}
-
-function evaluationError(page: Page, url: string, fileId: string, index: number) {
-	return (error: unknown) => {
-		if (
-			error instanceof Error &&
-			error.message.includes('Execution context was destroyed')
-		) {
-			error.message +=
-				'\n' +
-				c.red(
-					[
-						`PuppeteerDealer.deal() failed:`,
-						`    URL: ${url}`,
-						`    ID: ${fileId}`,
-						`    Index: ${index}`,
-						'    Page:',
-						`        url: ${page.url()}`,
-						`        isClosed: ${page.isClosed()}`,
-					].join('\n'),
-				);
-			throw error;
-		}
-
-		throw error;
-	};
 }

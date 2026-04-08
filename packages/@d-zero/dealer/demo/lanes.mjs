@@ -8,7 +8,6 @@ const lanes = new Lanes({
 
 lanes.header(`${c.red.bold('Header')} %earth% %dots%`);
 
-// eslint-disable-next-line no-constant-condition
 while (true) {
 	await delay(300);
 	const time = new Date().getSeconds();
@@ -34,6 +33,10 @@ while (true) {
 	}
 }
 
+/**
+ *
+ * @param {number} ms
+ */
 function delay(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }

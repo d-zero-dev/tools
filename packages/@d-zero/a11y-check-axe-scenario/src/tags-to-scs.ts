@@ -5,10 +5,18 @@ const scVersions = new Set<keyof (typeof wcag.successCriterions)['wcag_2.2']['en
 	Object.keys(wcag.successCriterions['wcag_2.2'].en),
 );
 
+/**
+ *
+ * @param tags
+ */
 export function tagsToSCs(tags: string[]) {
 	return tags.map(tagToSC).filter(Boolean).join('\n');
 }
 
+/**
+ *
+ * @param tag
+ */
 export function tagToSC(tag: string) {
 	if (!tag.startsWith('wcag') || tag.endsWith('a')) {
 		return null;

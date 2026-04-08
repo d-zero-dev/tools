@@ -1,3 +1,8 @@
+/**
+ *
+ * @param a
+ * @param b
+ */
 export function scNumberComparator(a: string | null, b: string | null) {
 	if (a === b) {
 		return 0;

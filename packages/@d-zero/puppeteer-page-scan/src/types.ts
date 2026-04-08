@@ -1,4 +1,4 @@
-import type { Page } from '@d-zero/puppeteer-page';
+import type { Page } from 'puppeteer';
 
 export type Sizes = Record<string, Size>;
 
@@ -15,6 +15,6 @@ export type PageHook = (
 export type PageScanPhase = {
 	setViewport: { name: string; width: number; resolution?: number };
 	hook: { name: string; message: string };
-	load: { name: string; type: 'open' | 'reaload' };
+	load: { name: string; type: 'open' | 'reload'; timeout: number; id: string };
 	scroll: { name: string; scrollY: number; scrollHeight: number; message: string };
 };

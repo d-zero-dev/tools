@@ -1,5 +1,10 @@
 import type { log } from 'debug';
 
+/**
+ *
+ * @param data
+ * @param logger
+ */
 export function deserialize(data: unknown[], logger: typeof log): unknown[] {
 	return data.map((item) => {
 		// Deserialize functions

@@ -1,14 +1,21 @@
 {
 	"name": "@d-zero/filematch",
-	"version": "1.0.5",
+	"version": "1.2.6-alpha.2",
 	"description": "A simple file matching library",
 	"author": "D-ZERO",
 	"license": "MIT",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
 	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
 	"bin": "./dist/cli.js",
 	"files": [
 		"dist"
@@ -19,12 +26,17 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/readtext": "1.1.1",
-		"follow-redirects": "1.15.9",
+		"@d-zero/readtext": "1.1.21-alpha.2",
+		"follow-redirects": "1.15.11",
 		"minimist": "1.2.8"
 	},
 	"devDependencies": {
 		"@types/follow-redirects": "1.14.4",
-		"@types/node": "22.8.4"
+		"@types/node": "24.11.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/filematch"
 	}
 }

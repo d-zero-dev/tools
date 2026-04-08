@@ -1,6 +1,5 @@
 /**
  * Returns an array of weekend days between two given dates.
- *
  * @param dateA - The starting date.
  * @param dateB - The ending date.
  * @returns An array of weekend days between the two given dates.

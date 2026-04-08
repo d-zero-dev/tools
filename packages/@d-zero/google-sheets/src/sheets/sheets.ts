@@ -1,3 +1,4 @@
+import type { ErrorHandlerMessage } from './error-handler.js';
 import type { OAuth2Client } from 'google-auth-library';
 import type { sheets_v4 } from 'googleapis';
 
@@ -12,6 +13,7 @@ import { Sheet } from './sheet.js';
 const sheetsLog = log.extend('Sheets');
 
 export class Sheets {
+	onLog?: (message: ErrorHandlerMessage) => void;
 	readonly #sheetList = new Map<string, Sheet>();
 	readonly #sheets: sheets_v4.Sheets;
 	readonly #spreadsheetId: string;
@@ -31,7 +33,23 @@ export class Sheets {
 		this.#sheets = google.sheets({ version: 'v4', auth });
 	}
 
-	@ErrorHandler()
+	/**
+	 * 1つの API リクエストを Google Sheets batchUpdate API に送信する。
+	 *
+	 * **設計上の注意: 複数リクエストのバッチ送信は意図的に行わない。**
+	 *
+	 * 理由:
+	 * - Google Sheets batchUpdate API は非アトミック（部分成功あり）
+	 * - ErrorHandler のリトライ（429/403/5xx/ECONNRESET）時に、成功済みの操作が重複実行される
+	 * - appendDimension 等の非冪等操作では行・列の二重追加が発生する
+	 * - addRowData の適応的チャンキング（RangeError 時にサイズ半減）が1リクエスト単位で機能
+	 * @param request
+	 */
+	@ErrorHandler<Sheets>({
+		log(message) {
+			this.onLog?.(message);
+		},
+	})
 	async batchUpdate(request: sheets_v4.Schema$Request) {
 		const requestNames = Object.keys(request) as (keyof sheets_v4.Schema$Request)[];
 		const requestName = requestNames[0];
@@ -98,12 +116,45 @@ export class Sheets {
 		return sheet;
 	}
 
-	@ErrorHandler()
+	@ErrorHandler<Sheets>({
+		log(message) {
+			this.onLog?.(message);
+		},
+	})
+	async get(
+		request: Omit<sheets_v4.Params$Resource$Spreadsheets$Values$Get, 'spreadsheetId'>,
+	) {
+		const res = await this.#sheets.spreadsheets.values.get({
+			...request,
+			spreadsheetId: this.#spreadsheetId,
+		});
+		return res;
+	}
+
+	@ErrorHandler<Sheets>({
+		log(message) {
+			this.onLog?.(message);
+		},
+	})
 	async getRawSheetList() {
 		const list = await this.#sheets.spreadsheets.get({
 			spreadsheetId: this.#spreadsheetId,
 		});
 
 		return list.data.sheets ?? [];
+	}
+
+	@ErrorHandler<Sheets>({
+		log(message) {
+			this.onLog?.(message);
+		},
+	})
+	async getWithGridData(range: string) {
+		const res = await this.#sheets.spreadsheets.get({
+			spreadsheetId: this.#spreadsheetId,
+			ranges: [range],
+			includeGridData: true,
+		});
+		return res;
 	}
 }

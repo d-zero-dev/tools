@@ -14,22 +14,27 @@ jobs:
     strategy:
       matrix:
         os: [macOS-latest, windows-latest]
-        node: [22]
+        node: [24]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Enable Corepack and setup Yarn v4
+        run: |
+          corepack enable
+          yarn --version
+
       - name: Cache dependencies
         id: cache-depends
-        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
         with:
           path: '**/node_modules'
           key: os-${{ matrix.os }}-node${{ matrix.node }}-${{ hashFiles('yarn.lock') }}
@@ -40,10 +45,13 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache-depends.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile --check-files
+        run: yarn install --immutable
 
       - name: Build
         run: yarn build
+
+      - name: Lint
+        run: yarn lint
 
       - name: Test
         run: yarn test

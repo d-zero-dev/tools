@@ -11,9 +11,13 @@
 
 ## 使い方
 
-### ファイル比較
+### オプション
 
-#### オプション
+- `-v, --version`: バージョンを表示
+- `-f, --filelist <list_file_path>`: リストファイルからの比較
+- `--verbose`: 詳細ログモード
+
+### ファイル比較
 
 ```sh
 npx @d-zero/filematch <file_path_or_url_1> <file_path_or_url_2>
@@ -53,6 +57,41 @@ https://example.com/test1.js https://example.com/test2.js
 
 ```sh
 npx @d-zero/filematch -f list.txt
+```
+
+## API
+
+このパッケージはAPIとしても使用できます。
+
+### 基本的な使い方
+
+```typescript
+import { compare } from '@d-zero/filematch';
+
+// 2つのファイルパスまたはURLを比較
+const result = await compare('./test1.pdf', './test2.pdf');
+console.log(result); // true または false
+```
+
+### 進捗の監視
+
+```typescript
+import { compare } from '@d-zero/filematch';
+
+const result = await compare('./test1.pdf', './test2.pdf', (progress) => {
+	// progress は 0.0 から 1.0 の間の値
+	console.log(`進捗: ${(progress * 100).toFixed(2)}%`);
+});
+```
+
+### 型定義
+
+```typescript
+import type { OnProgress } from '@d-zero/filematch';
+
+const onProgress: OnProgress = (progress) => {
+	console.log(`進捗: ${progress}`);
+};
 ```
 
 ## 動作環境

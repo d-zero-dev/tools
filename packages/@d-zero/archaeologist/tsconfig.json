@@ -7,13 +7,16 @@
 	},
 	"references": [
 		{
+			"path": "../cli-core"
+		},
+		{
+			"path": "../fs"
+		},
+		{
 			"path": "../html-distiller"
 		},
 		{
 			"path": "../puppeteer-dealer"
-		},
-		{
-			"path": "../puppeteer-page"
 		},
 		{
 			"path": "../puppeteer-page-scan"
@@ -23,6 +26,9 @@
 		},
 		{
 			"path": "../readtext"
+		},
+		{
+			"path": "../shared"
 		}
 	],
 	"include": ["./src/**/*"],

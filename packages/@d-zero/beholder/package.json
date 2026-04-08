@@ -1,18 +1,17 @@
 {
 	"name": "@d-zero/beholder",
-	"version": "0.1.4",
-	"description": "The tool for scraping and recording web pages",
+	"version": "2.1.4-alpha.2",
+	"description": "Page-level scraper for web crawling and auditing",
 	"author": "D-ZERO",
 	"license": "MIT",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
 	"type": "module",
 	"exports": {
 		".": {
-			"import": "./lib/index.js",
-			"types": "./lib/index.d.ts"
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
 		}
 	},
 	"scripts": {
@@ -21,14 +20,17 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/shared": "0.6.0",
-		"debug": "4.3.7",
-		"follow-redirects": "1.15.9",
-		"puppeteer": "23.6.1",
-		"typescript-fsa": "3.0.0"
+		"@d-zero/puppeteer-page-scan": "4.4.10-alpha.2",
+		"@d-zero/shared": "0.21.3-alpha.2",
+		"debug": "4.4.3",
+		"puppeteer": "24.37.5"
 	},
 	"devDependencies": {
-		"@types/debug": "4.1.12",
-		"@types/follow-redirects": "1.14.4"
+		"@types/debug": "4.1.12"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/beholder"
 	}
 }

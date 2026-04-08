@@ -3,7 +3,6 @@ import type { ReadStream } from 'node:fs';
 
 /**
  * Compares two ReadStreams and checks if their contents are equal.
- *
  * @param stream1 The first ReadStream to compare.
  * @param stream2 The second ReadStream to compare.
  * @param onProgress An optional callback function that will be called with the total number of bytes read from the streams.
@@ -20,6 +19,9 @@ export async function compareStreams(
 	let buffer2 = Buffer.alloc(0);
 
 	return new Promise<boolean>((resolve, reject) => {
+		/**
+		 *
+		 */
 		function tryCompareAndExitIfDifferent() {
 			const compareLength = Math.min(buffer1.length, buffer2.length);
 			if (compareLength > 0) {
@@ -40,6 +42,9 @@ export async function compareStreams(
 			}
 		}
 
+		/**
+		 *
+		 */
 		function readFromStreams() {
 			let chunk;
 			while (null !== (chunk = stream1.read())) {
@@ -55,6 +60,9 @@ export async function compareStreams(
 		stream2.on('readable', readFromStreams);
 
 		let endCount = 0;
+		/**
+		 *
+		 */
 		function handleEnd() {
 			endCount++;
 			if (endCount !== 2) {

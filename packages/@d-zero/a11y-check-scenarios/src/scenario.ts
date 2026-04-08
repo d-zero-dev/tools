@@ -1,6 +1,6 @@
 import type { ScenarioOptions } from './types.js';
 import type { NeedAnalysis } from '@d-zero/a11y-check-core';
-import type { Page } from '@d-zero/puppeteer-page';
+import type { Page } from 'puppeteer';
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -161,6 +161,8 @@ export default createScenario((options?: ScenarioOptions) => {
 	];
 
 	return {
+		modulePath: import.meta.url,
+		moduleParams: JSON.stringify(options ?? {}),
 		id: scenarioId,
 		async exec(page, sizeName, logger) {
 			// Wait Scroll End
@@ -189,7 +191,7 @@ export default createScenario((options?: ScenarioOptions) => {
 				logger(`${test.name}: Screenshot`);
 				let bin: Uint8Array;
 				let retry = 0;
-				// eslint-disable-next-line no-constant-condition
+
 				while (true) {
 					bin = await page.screenshot({
 						type: 'png',
@@ -211,10 +213,11 @@ export default createScenario((options?: ScenarioOptions) => {
 						);
 					}
 					const retryTime = retry * 1000;
-					logger(
-						`${test.name}: Retry (${retry}times) to take a screenshot%dots% %countdown(${retryTime},${hash(key)}_${retryTime})%ms`,
-					);
-					await delay(retryTime);
+					await delay(retryTime, (determinedInterval) => {
+						logger(
+							`${test.name}: Retry (${retry}times) to take a screenshot%dots% %countdown(${determinedInterval},${hash(key)}_${determinedInterval})%ms`,
+						);
+					});
 					retry++;
 				}
 				const cachedFileName = await cache.store(key, bin);
@@ -226,7 +229,7 @@ export default createScenario((options?: ScenarioOptions) => {
 					scenarioId,
 					subKey: test.name,
 					id: '',
-					url: await page.url(),
+					url: page.url(),
 					tool: `a11y-check-scenario01: ${test.name}`,
 					timestamp: new Date(),
 					component: null,

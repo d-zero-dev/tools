@@ -1,20 +1,17 @@
-import type { FrontMatterResult } from 'front-matter';
-
-import fs from 'node:fs/promises';
-import path from 'node:path';
-
 import { readPageHooks } from '@d-zero/puppeteer-page-scan';
 import { toList } from '@d-zero/readtext/list';
-import fm from 'front-matter';
+import { readConfigFile } from '@d-zero/shared/config-reader';
 
+/**
+ * Frontmatter形式の設定ファイルを読み込み、URLペアリストとページフックを返す
+ * @param filePath - 設定ファイルのパス
+ * @returns URLペアのリストとページフック関数の配列
+ */
 export async function readConfig(filePath: string) {
-	const fileContent = await fs.readFile(filePath, 'utf8');
-	const content: FrontMatterResult<{
+	const { content, baseDir } = await readConfigFile<{
 		comparisonHost: string;
 		hooks?: readonly string[];
-	}> =
-		// @ts-ignore
-		fm(fileContent);
+	}>(filePath);
 
 	const urlList = toList(content.body);
 
@@ -26,7 +23,6 @@ export async function readConfig(filePath: string) {
 		];
 	});
 
-	const baseDir = path.dirname(filePath);
 	const hooks = await readPageHooks(content.attributes?.hooks ?? [], baseDir);
 
 	return {
