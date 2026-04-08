@@ -36,5 +36,10 @@
 	},
 	"devDependencies": {
 		"@types/minimist": "1.2.5"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/replicator"
 	}
 }

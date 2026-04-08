@@ -194,5 +194,10 @@
 	},
 	"devDependencies": {
 		"@types/micromatch": "4.0.10"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/shared"
 	}
 }

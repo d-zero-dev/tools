@@ -35,5 +35,10 @@
 	"peerDependencies": {
 		"axe-core": "4.11.1",
 		"puppeteer": "24.37.5"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/a11y-check-axe-scenario"
 	}
 }

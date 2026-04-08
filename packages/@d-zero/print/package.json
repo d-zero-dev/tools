@@ -36,5 +36,10 @@
 		"front-matter": "4.0.2",
 		"minimist": "1.2.8",
 		"puppeteer": "24.37.5"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/print"
 	}
 }

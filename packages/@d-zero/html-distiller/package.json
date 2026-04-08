@@ -29,5 +29,10 @@
 	},
 	"devDependencies": {
 		"@types/html-minifier-terser": "7.0.2"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/html-distiller"
 	}
 }

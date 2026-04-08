@@ -32,5 +32,10 @@
 	"devDependencies": {
 		"@d-zero/dealer": "1.7.3",
 		"@d-zero/puppeteer-page-scan": "4.4.9"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/a11y-check-core"
 	}
 }

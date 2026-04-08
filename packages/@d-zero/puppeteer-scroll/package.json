@@ -30,5 +30,10 @@
 	},
 	"peerDependencies": {
 		"puppeteer": "24.37.5"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/puppeteer-scroll"
 	}
 }

@@ -48,5 +48,10 @@
 		"@types/diff": "8.0.0",
 		"@types/pixelmatch": "5.2.6",
 		"@types/pngjs": "6.0.5"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/archaeologist"
 	}
 }
