@@ -3,7 +3,7 @@ name: Publish
 on:
   push:
     tags:
-      - "@d-zero/**"
+      - "**"
 
 concurrency:
   group: publish
@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   publish:
+    if: startsWith(github.ref_name, '@d-zero/')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
