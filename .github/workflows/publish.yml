@@ -3,7 +3,7 @@ name: Publish
 on:
   push:
     tags:
-      - "**"
+      - "v-release"
 
 concurrency:
   group: publish
@@ -15,7 +15,6 @@ permissions:
 
 jobs:
   publish:
-    if: startsWith(github.ref_name, '@d-zero/')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -34,4 +33,4 @@ jobs:
       - name: Build
         run: yarn build
       - name: Publish
-        run: npx lerna publish from-git --yes
+        run: npx lerna publish from-package --yes
