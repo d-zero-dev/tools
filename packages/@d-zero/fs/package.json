@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/fs",
-	"version": "0.2.3-alpha.2",
+	"version": "0.2.3",
 	"description": "File system utilities",
 	"author": "D-ZERO",
 	"license": "MIT",
