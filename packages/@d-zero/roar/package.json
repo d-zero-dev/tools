@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/roar",
-	"version": "2.0.1",
+	"version": "2.0.2-alpha.0",
 	"description": "A CLI helper library with per-subcommand flag support",
 	"author": "D-ZERO",
 	"license": "MIT",

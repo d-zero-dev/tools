@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.6-alpha.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.9.5...@d-zero/replicator@0.9.6-alpha.0) (2026-04-08)
+
+**Note:** Version bump only for package @d-zero/replicator
+
 ## [0.9.5](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.9.4...@d-zero/replicator@0.9.5) (2026-04-01)
 
 **Note:** Version bump only for package @d-zero/replicator
