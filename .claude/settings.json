@@ -1,0 +1,18 @@
+{
+	"permissions": {
+		"deny": [
+			"Read(**/.env)",
+			"Read(**/.env.*)",
+			"Edit(**/.env)",
+			"Edit(**/.env.*)",
+			"Write(**/.env)",
+			"Write(**/.env.*)",
+			"Read(**/credentials.json)",
+			"Read(**/token.json)",
+			"Edit(**/credentials.json)",
+			"Edit(**/token.json)",
+			"Write(**/credentials.json)",
+			"Write(**/token.json)"
+		]
+	}
+}
