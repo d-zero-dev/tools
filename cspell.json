@@ -34,6 +34,9 @@
 
 		// Test data
 		"mypassword",
-		"mypassphrase"
+		"mypassphrase",
+
+		// Shell keywords
+		"elif"
 	]
 }
