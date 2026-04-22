@@ -1,6 +1,6 @@
 {
 	"import": ["@d-zero/cspell-config"],
-	"ignorePaths": [".vscode/*"],
+	"ignorePaths": [".vscode/*", "**/CODEOWNERS"],
 	"words": [
 		//
 		"gaxios",
@@ -34,6 +34,9 @@
 
 		// Test data
 		"mypassword",
-		"mypassphrase"
+		"mypassphrase",
+
+		// Shell keywords
+		"elif"
 	]
 }
