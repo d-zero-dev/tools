@@ -17,7 +17,7 @@ description: Git 操作ルール
      - `git status` で差分を確認
      - 以下のコミット粒度に基づいてファイルを順次ステージングしてからコミット:
        - パッケージ単位でコミットを分割
-       - 依存元を先にコミット（依存順序が不明な場合は `npx lerna list --graph` で確認）
+       - 依存元を先にコミット（依存順序が不明な場合は `yarn lerna list --graph` で確認）
 - **各コミット後:**
   - **重要: 自動的に次のコミットに進まない**
   - **重要: 次に何をすべきか推測しない**
@@ -39,7 +39,7 @@ description: Git 操作ルール
 - Conventional Commits を使用すること
   - 使用するタイプ: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
   - 使用するスコープ:
-    - 各パッケージ名（ネームスペースなし）
+    - 各パッケージ名（ネームスペースなし）: `a11y-check`, `a11y-check-core`, `a11y-check-axe-scenario`, `a11y-check-scenarios`, `archaeologist`, `backlog-projects`, `beholder`, `cli-core`, `dealer`, `filematch`, `fs`, `google-auth`, `google-sheets`, `html-distiller`, `notion`, `print`, `proc-talk`, `puppeteer-dealer`, `puppeteer-general-actions`, `puppeteer-page-scan`, `puppeteer-screenshot`, `puppeteer-scroll`, `readtext`, `remote-inspector`, `replicator`, `roar`, `shared`
     - `repo`, `deps`, `github`
 - メッセージ本文の各行は100文字以下
 - 件名は sentence-case, start-case, pascal-case, upper-case にしない

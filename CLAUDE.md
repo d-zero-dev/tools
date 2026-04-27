@@ -1,92 +1,78 @@
-# Claude Code Rules for @d-zero-dev/tools
+# CLAUDE.md
 
-## Repository Structure
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-- This is a **monorepo** managed by Lerna
-- **Always work from the repository root** (not individual package directories)
-- Volta manages Node.js and Yarn versions automatically via `package.json` volta section
+## 概要
 
-## Development Workflow
+D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero-dev/tools`）。Lerna + Yarn Workspaces のモノレポ構成で、`@d-zero/` スコープ配下に多数のライブラリ／CLI を提供する（**independent バージョンモード**）。
 
-### Build and Test Commands
+## プロジェクト構成
 
-- Use `yarn build` to build all packages via Lerna
-- Use `yarn test` to run all tests via Vitest
-- Use `yarn lint` to check for ESLint errors
-- Use `yarn` (not `npm`) for all package management
+作業前に以下のファイルを確認し、プロジェクトの状態を把握すること:
 
-### Quality Assurance Before Commit
+- `package.json` — scripts、devDependencies、Volta（Node 24 / Yarn 4）
+- `lerna.json` — **independent バージョンモード**、`packages/@d-zero/*`
+- `ARCHITECTURE.md` — パッケージ一覧、レイヤ構成、設計方針、主要な技術スタック
+- `README.md` — リポジトリ概要
+- `tsconfig.json` — TypeScript 設定
+- 各パッケージの構成は `packages/@d-zero/*/package.json` を参照
 
-- **Always run lint before commit**: Use `yarn lint` to check for ESLint errors and fix them before committing
-- **Resolve ALL lint errors AND warnings immediately**: Warnings are not acceptable — treat them as errors and fix them before committing. Never leave any lint warning unresolved, even if it seems harmless
-- **Ask user permission before disabling ESLint rules**: Always ask the user before using eslint-disable-next-line or eslint-disable
-- **Prefer code fixes over disabling**: Change code structure rather than disabling rules when possible
-- **Justify disable usage**: When user approves disabling, explain why it's necessary and what alternatives were considered
-- Test build and test commands after making changes
-- Verify import paths are correct for the package export strategy
-- Never commit without successful build and test results
+## コマンド
 
-### Commit Guidelines
+- `yarn build` — 全パッケージビルド（`lerna run build`）
+- `yarn watch` — `lerna run watch --parallel`
+- `yarn test` — Vitest によるテスト実行
+- `yarn lint` — eslint / prettier / textlint / cspell を直列実行
+- `yarn release` / `yarn release:alpha` 等 — `lerna version`（independent モード）→ `release:trigger` で `git push origin main --follow-tags` と `v-release` タグ強制更新を行う。リリース手順は `/release` コマンド参照
 
-- **Separate commit scope**: Don't mix implementation changes with documentation/rule updates in same commit
-- Complete all related changes in a feature (don't leave tasks incomplete)
+### コマンド制約
 
-## Code Architecture
+- **yarn のみ使用**: npm / pnpm / bun / deno によるコマンド実行は禁止
+- **パッケージディレクトリに cd しない**: 常にリポジトリルートから実行
+- **ビルドは `yarn build` のみ**: `npx tsc`、`lerna run build --scope` 等の個別指定は禁止
+- **コマンドの連続実行禁止**: `&&`、`;`、改行によるコマンド連結をしない。1回の Bash 呼び出しで1コマンドのみ実行する。連結されたコマンドは settings.json の permissions allow/deny でパターンマッチできず、毎回ユーザーの手動承認が必要になり効率が大幅に低下する
 
-### Package Rules
+## アーキテクチャ
 
-- **@d-zero/shared**: Uses individual export paths (e.g., `@d-zero/shared/config-reader`)
-- **Never modify shared exports strategy** without explicit permission
-- Respect existing export patterns in package.json
+詳細は [`ARCHITECTURE.md`](../ARCHITECTURE.md) を参照。各パッケージのカテゴリ・依存関係・設計方針はそちらに集約されている。
 
-### Import/Export Guidelines
+ドキュメントと実装に矛盾がある場合は、**実装が正**とし、ドキュメントを修正すること。
 
-- Use specific import paths for `@d-zero/shared` (e.g., `/config-reader`)
-- Check existing usage patterns before adding new dependencies
-- Maintain backward compatibility with existing exports
+## independent モードの注意
 
-### CLI Patterns
+- 各パッケージは個別のバージョンを持つ。`lerna version` は変更のあったパッケージのみ昇格させる
+- リリース時は `v-release` タグの強制更新を伴う（`publish.yml` のトリガー）
+- 単一パッケージの破壊的変更でもリポジトリ全体の major bump にはならない
 
-- Use `@d-zero/cli-core` for common CLI functionality
-- Follow established patterns for argument parsing and validation
-- Maintain consistency across CLI tools
+## コーディング規約
 
-## Code Development
+- **`@d-zero/shared` はサブパスエクスポート**: `@d-zero/shared/parse-url` のような形式で import すること（ルート import は不可）
+- **exports フィールドを壊さない**: package.json の `exports` を変更する場合は差分のみを追記し、既存パスを削除しない
+- 1関数1ファイルを基本とし、`index.ts` の作成は避ける
 
-### General Principles
+## セキュリティ
 
-- **Always read files first** before making any edits
-- **Never make assumptions** about code structure or dependencies
-- **Ask for permission** before making architectural changes
+### 機密情報の取り扱い
 
-### Error Handling Guidelines
+- `.env`、`.env.*` 等の機密ファイルを読み取り・編集・コミットしない（機密ファイルの判断は `.gitignore` を参考にすること）
+- `credentials.json`、`token.json` 等の Google API 認証情報も同様に扱う
+- コミット前に `git diff --staged` で機密情報（API キー、トークン、パスワード、企業名、顧客情報）が含まれていないか確認する
+- 環境変数やシークレットをコード内にハードコードしない
 
-- **Never suppress errors**: Don't use empty catch blocks or generic error swallowing
-- **Specific error handling**: Handle specific error types with appropriate recovery strategies
-- **Preserve error context**: Always maintain original error information when re-throwing
-- **Log before throwing**: Use proper logging for debugging while preserving error propagation
-- **Fail fast**: Let unhandled errors bubble up rather than attempting to continue in invalid state
-- **Prefer .catch() for single awaits**: Use `.catch()` method instead of try-catch for single await expressions
-- **Don't catch just to rethrow**: If you're only going to throw again, let the original error bubble up naturally
-- **Avoid massive try blocks**: Break down large try blocks into smaller, more focused error handling
+### サプライチェーン保護
 
-### Testing Guidelines
+- **yarn dlx は完全禁止**: ローカルパッケージを使わずリモートから直接実行するため、サプライチェーン攻撃に脆弱
+- **npx は原則使わない**: package.json の scripts で定義されたコマンドを `yarn <script>` で実行すること
+- 新しい依存パッケージの追加は慎重に。既存の依存で解決できないか先に確認する
+- `yarn add` する前にパッケージの信頼性（ダウンロード数、メンテナンス状況、既知の脆弱性）を確認する
+- `yarn add` する場合はバージョンを固定する（例: `yarn add foo@1.2.3`）
+- lockfile（yarn.lock）の手動編集は禁止
 
-- **Test file naming**: Use `.spec.ts` extension and place next to source files (e.g., `foo.ts` → `foo.spec.ts`)
-- **Test file location**: Always place test files adjacent to the source files they test
-- **Test structure**: Follow AAA pattern (Arrange, Act, Assert)
-- **Test principles**:
-  - No conditionals (if/else/switch) in test code
-  - No calculations or logic processing (except file paths)
-  - No try/catch blocks in test code
-  - Test one behavior per test case
-- **Pure function testing**: Test without mocks when possible
-- **Color output testing**: Verify ANSI escape sequences for terminal colors
-- **Mock usage**: Use mocks for external dependencies, side effects, and uncontrollable inputs
+## スキル
 
-## Package Version Management
+タスクに応じて `.claude/skills/` 配下のスキルを参照すること。
 
-- **Check latest version**: Use `npm view <package-name> version` (fastest and most accurate)
-- **View version history**: Use `npm view <package-name> versions --json`
-- **Check outdated packages**: Use `npm outdated` for project-wide check
-- **Avoid web searches** for version checking - use npm commands directly
+| スキル          | パス                                      | 用途                                                    |
+| --------------- | ----------------------------------------- | ------------------------------------------------------- |
+| Product Manager | `.claude/skills/product-manager/SKILL.md` | リポジトリ分析、ドキュメント生成・レビュー、PR レビュー |
+| QA Engineer     | `.claude/skills/qa-engineer/SKILL.md`     | コードレビュー、テスト品質チェック、カバレッジ改善      |
