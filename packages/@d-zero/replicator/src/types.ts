@@ -7,6 +7,7 @@ export interface ReplicateOptions {
 	timeout?: number;
 	devices?: Record<string, { width: number; resolution?: number }>;
 	limit?: number;
+	downloadLimit?: number;
 	only?: 'page' | 'resource';
 	interval?: number | DelayOptions;
 	username?: string;

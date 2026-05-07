@@ -33,6 +33,7 @@ interface ResourceTask {
  * @param interval
  * @param username
  * @param password
+ * @param limit
  */
 export async function downloadResources(
 	encodedPaths: string[],
@@ -44,6 +45,7 @@ export async function downloadResources(
 	interval?: number | DelayOptions,
 	username?: string,
 	password?: string,
+	limit = 10,
 ): Promise<void> {
 	const uniqueResources = new Map<string, ResourceTask>();
 
@@ -154,7 +156,7 @@ export async function downloadResources(
 			};
 		},
 		{
-			limit: 10,
+			limit,
 			verbose,
 			interval,
 			header: (progress, done, total, limit) => {

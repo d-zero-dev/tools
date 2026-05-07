@@ -17,6 +17,7 @@ interface ReplicatorCLIOptions extends BaseCLIOptions {
 	timeout?: number;
 	devices?: string;
 	limit?: number;
+	downloadLimit?: number;
 	only?: string;
 	auth?: string;
 }
@@ -39,7 +40,8 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		'  -o, --output <dir>        Output directory (required)',
 		'  -t, --timeout <ms>        Request timeout in milliseconds (default: 30000)',
 		'  -d, --devices <devices>   Device presets (comma-separated, default: desktop-compact,mobile)',
-		'  -l, --limit <number>      Parallel execution limit (default: 3)',
+		'  -l, --limit <number>      Parallel execution limit for page scan (default: 3)',
+		'  --download-limit <number> Parallel execution limit for resource download (default: 10)',
 		'  --interval <ms>           Interval between parallel executions (default: none)',
 		'                             Format: number or "min-max" for random range',
 		'  --only <type>             Download only specified type: page or resource',
@@ -63,6 +65,7 @@ const { options, args } = createCLI<ReplicatorCLIOptions>({
 		timeout: cli.timeout ? Number(cli.timeout) : undefined,
 		devices: cli.devices,
 		limit: cli.limit ? Number(cli.limit) : undefined,
+		downloadLimit: cli['download-limit'] ? Number(cli['download-limit']) : undefined,
 		only: cli.only,
 		auth: cli.auth,
 	}),
@@ -98,6 +101,7 @@ try {
 		timeout: options.timeout,
 		devices,
 		limit: options.limit,
+		downloadLimit: options.downloadLimit,
 		only: options.only as 'page' | 'resource' | undefined,
 		interval: options.interval,
 		username,
