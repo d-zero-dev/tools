@@ -151,6 +151,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 		timeout = 30_000,
 		devices,
 		limit = 3,
+		downloadLimit = 10,
 		only,
 		interval,
 		username,
@@ -187,6 +188,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 	progress(c.bold.cyan(`🌐 Replicating ${urls.length} URL(s)`));
 	progress(c.gray(`   Output: ${outputDir}`));
 	progress(c.gray(`   Parallel limit: ${limit}`));
+	progress(c.gray(`   Download limit: ${downloadLimit}`));
 	progress('');
 
 	// Phase 1: Collect resource metadata from all URLs
@@ -237,6 +239,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 		interval,
 		username,
 		password,
+		downloadLimit,
 	);
 
 	progress('');
