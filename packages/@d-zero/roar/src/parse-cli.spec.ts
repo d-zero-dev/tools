@@ -192,4 +192,76 @@ describe('parseCli', () => {
 			expect(result.flags.verbose).toBe(true);
 		}
 	});
+
+	describe('version flag', () => {
+		let logSpy: ReturnType<typeof vi.spyOn>;
+
+		beforeEach(() => {
+			logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			logSpy.mockRestore();
+		});
+
+		it('prints version and exits 0 for --version when version is set', () => {
+			setArgv(['--version']);
+			expect(() => parseCli({ ...testSettings, version: '1.2.3' })).toThrow(
+				'process.exit called',
+			);
+			expect(logSpy).toHaveBeenCalledWith('1.2.3');
+			expect(exitSpy).toHaveBeenCalledWith(0);
+		});
+
+		it('prints version and exits 0 for -v when version is set', () => {
+			setArgv(['-v']);
+			expect(() => parseCli({ ...testSettings, version: '1.2.3' })).toThrow(
+				'process.exit called',
+			);
+			expect(logSpy).toHaveBeenCalledWith('1.2.3');
+			expect(exitSpy).toHaveBeenCalledWith(0);
+		});
+
+		it('does not treat -v as version when version is unset', () => {
+			setArgv(['-v']);
+			expect(() => parseCli(testSettings)).toThrow('process.exit called');
+			expect(logSpy).not.toHaveBeenCalled();
+			expect(exitSpy).toHaveBeenCalledWith(1);
+		});
+
+		it('does not intercept -v used as a per-command short flag', () => {
+			setArgv(['crawl', '-v']);
+			const result = parseCli({ ...testSettings, version: '1.2.3' });
+			expect(result.command).toBe('crawl');
+			expect(logSpy).not.toHaveBeenCalled();
+			if (result.command === 'crawl') {
+				expect(result.flags.verbose).toBe(true);
+			}
+		});
+
+		it('does not intercept --version after a command', () => {
+			setArgv(['crawl', '--version']);
+			const result = parseCli({ ...testSettings, version: '1.2.3' });
+			expect(result.command).toBe('crawl');
+			expect(logSpy).not.toHaveBeenCalled();
+		});
+
+		it('prints version when --version is followed by extra positional args', () => {
+			setArgv(['--version', 'extra']);
+			expect(() => parseCli({ ...testSettings, version: '1.2.3' })).toThrow(
+				'process.exit called',
+			);
+			expect(logSpy).toHaveBeenCalledWith('1.2.3');
+			expect(exitSpy).toHaveBeenCalledWith(0);
+		});
+
+		it('treats empty-string version as a valid version (prints empty line)', () => {
+			setArgv(['-v']);
+			expect(() => parseCli({ ...testSettings, version: '' })).toThrow(
+				'process.exit called',
+			);
+			expect(logSpy).toHaveBeenCalledWith('');
+			expect(exitSpy).toHaveBeenCalledWith(0);
+		});
+	});
 });

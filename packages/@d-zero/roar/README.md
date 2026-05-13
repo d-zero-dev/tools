@@ -13,6 +13,7 @@ yarn add @d-zero/roar
 - **サブコマンドディスパッチ** — コマンドごとに独立したフラグ定義と型推論
 - **型安全なフラグ** — TypeScript の条件型でフラグ値を正確に推論
 - **自動ヘルプ生成** — `--help` / `-h` でコマンドごとのヘルプテキストを表示
+- **自動バージョン表示** — `version` 設定時、トップレベルの `--version` / `-v` でバージョンを出力
 - **camelCase → kebab-case 変換** — フラグ名を CLI 表記に自動変換
 
 ## 使い方
@@ -66,6 +67,37 @@ my-tool crawl --verbose -- --not-a-flag
 # => result.args: ['--not-a-flag']
 ```
 
+### バージョン表示
+
+`version` を設定すると、トップレベルで `--version` または `-v` が渡されたときに自動的にバージョンを `console.log` で出力し、`process.exit(0)` します。
+
+```typescript
+import pkg from '../package.json' with { type: 'json' };
+
+const result = parseCli({
+	name: 'my-tool',
+	version: pkg.version,
+	commands: {
+		build: { desc: 'Build the project' },
+	},
+	onError: () => true,
+});
+```
+
+```bash
+my-tool --version
+# => 1.2.3
+
+my-tool -v
+# => 1.2.3
+```
+
+**仕様の詳細:**
+
+- 判定は **`argv[0]`（コマンド名の位置）のみ** で行います。`my-tool build -v` のようにサブコマンドの後ろに付けた場合は、そのコマンドが定義した `shortFlag: 'v'` のフラグとして解釈され、バージョン表示は発火しません。
+- `version` を設定しなかった場合、`-v` / `--version` は通常の不明コマンドとして扱われ、`onError` が呼ばれて `process.exit(1)` します。
+- `version` に空文字列 `''` を設定した場合も「version が指定された」と扱い、空行を出力して `exit(0)` します（`undefined` のみが「version 未指定」を意味します）。
+
 ### エラーハンドリング
 
 `onError` コールバックでコマンド未指定や不明なコマンドのエラーを処理できます。`true` を返すとヘルプテキストを stderr に表示してから `process.exit(1)` します。
@@ -94,11 +126,12 @@ const result = parseCli({
 
 `settings` オブジェクト:
 
-| プロパティ | 型                           | 必須 | 説明                                                          |
-| ---------- | ---------------------------- | ---- | ------------------------------------------------------------- |
-| `name`     | `string`                     | ✓    | CLI プログラム名（ヘルプテキストに表示）                      |
-| `commands` | `Record<string, CommandDef>` | ✓    | サブコマンド定義のマップ                                      |
-| `onError`  | `(error: Error) => boolean`  | -    | コマンド未指定・不明時のエラーハンドラ（`true` でヘルプ表示） |
+| プロパティ | 型                           | 必須 | 説明                                                                          |
+| ---------- | ---------------------------- | ---- | ----------------------------------------------------------------------------- |
+| `name`     | `string`                     | ✓    | CLI プログラム名（ヘルプテキストに表示）                                      |
+| `version`  | `string`                     | -    | プログラムのバージョン文字列。指定すると `--version` / `-v` で自動表示&exit 0 |
+| `commands` | `Record<string, CommandDef>` | ✓    | サブコマンド定義のマップ                                                      |
+| `onError`  | `(error: Error) => boolean`  | -    | コマンド未指定・不明時のエラーハンドラ（`true` でヘルプ表示）                 |
 
 #### 戻り値
 

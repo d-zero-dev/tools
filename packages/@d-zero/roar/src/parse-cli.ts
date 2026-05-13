@@ -133,6 +133,12 @@ export interface CommandDef<F extends AnyFlags = AnyFlags> {
 interface RoarSettings<Commands extends Record<string, CommandDef>> {
 	/** CLI program name shown in help text (e.g. `"my-cli"`). */
 	name: string;
+	/**
+	 * Program version string (e.g. `"1.2.3"`).
+	 * When provided, the CLI prints this value and exits with code `0`
+	 * if the first argument is `-v` or `--version`.
+	 */
+	version?: string;
 	/** Map of sub-command names to their definitions. */
 	commands: Commands;
 	/**
@@ -306,6 +312,7 @@ function parseFlags<F extends AnyFlags>(
  * A minimal CLI framework built on yargs-parser. It provides:
  * - Sub-command dispatch with typed flag inference
  * - Automatic `--help` / `-h` handling per command
+ * - Automatic `--version` / `-v` handling at the top level when `version` is set
  * - camelCase flag names converted to kebab-case in help text
  * @template Commands - Record of command name to {@link CommandDef}
  * @param settings - CLI program configuration
@@ -338,6 +345,12 @@ export function parseCli<const Commands extends Record<string, CommandDef>>(
 ): RoarResult<Commands> {
 	const argv = process.argv.slice(2);
 	const command = argv[0];
+
+	if (settings.version !== undefined && (command === '-v' || command === '--version')) {
+		// eslint-disable-next-line no-console
+		console.log(settings.version);
+		process.exit(0);
+	}
 
 	if (!command || !(command in settings.commands)) {
 		if (settings.onError) {
