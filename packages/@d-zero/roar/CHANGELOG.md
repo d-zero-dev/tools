@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/roar@2.0.2...@d-zero/roar@2.1.0) (2026-05-13)
+
+### Features
+
+- **roar:** add version setting for auto -v / --version handling ([20390e2](https://github.com/d-zero-dev/tools/commit/20390e2f4046091bbb2a2ad86f93b40aff50ab16))
+
 ## [2.0.2](https://github.com/d-zero-dev/tools/compare/@d-zero/roar@2.0.2-alpha.2...@d-zero/roar@2.0.2) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/roar
