@@ -1,5 +1,6 @@
 import { describe, test, expect, vi } from 'vitest';
 
+import { Cell } from './cell.js';
 import { Sheet } from './sheet.js';
 
 /**
@@ -103,5 +104,58 @@ describe('getRowMetadata', () => {
 		await sheet.getRowMetadata(3);
 
 		expect(parent.getWithGridData).toHaveBeenCalledWith("'TestSheet'!A3:A");
+	});
+});
+
+describe('addRowData memory guards', () => {
+	const mockSheet = {
+		properties: { title: 'TestSheet', sheetId: 0 },
+	};
+
+	test('does not JSON.stringify the cell payload when the debug log is disabled', async () => {
+		// The sendLog.enabled guard at sheet.ts:#addRowData prevents an
+		// expensive `JSON.stringify(sendData)` for byte-length reporting
+		// when DEBUG is off. Without that guard, a 30k-row send would
+		// allocate a multi-MB string per chunk on every call — the OOM
+		// path observed in nitpicker's report-google-sheets pipeline.
+		const parent = {
+			batchUpdate: vi.fn().mockResolvedValue({}),
+		};
+		const sheet = new Sheet(mockSheet as never, parent as never);
+		const rows = [
+			[new Cell({ value: 'a' }), new Cell({ value: 'b' })],
+			[new Cell({ value: 'c' }), new Cell({ value: 'd' })],
+		];
+
+		// Spy on JSON.stringify and confirm it is not called with our
+		// sendData payload (an array of `{values: [...]}` objects).
+		const stringifySpy = vi.spyOn(JSON, 'stringify');
+		await sheet.addRowData(rows, false);
+
+		const calledOnSendData = stringifySpy.mock.calls.some(([arg]) => {
+			if (!Array.isArray(arg) || arg.length === 0) return false;
+			const first = arg[0] as Record<string, unknown>;
+			return typeof first === 'object' && first !== null && 'values' in first;
+		});
+		expect(calledOnSendData).toBe(false);
+
+		stringifySpy.mockRestore();
+	});
+
+	test('still sends the cell payload to batchUpdate via updateCells', async () => {
+		// Guard regression check: removing the JSON.stringify call must not
+		// also remove the actual batchUpdate(updateCells) request.
+		const parent = {
+			batchUpdate: vi.fn().mockResolvedValue({}),
+		};
+		const sheet = new Sheet(mockSheet as never, parent as never);
+		const rows = [[new Cell({ value: 'hello' })]];
+
+		await sheet.addRowData(rows, false);
+
+		const updateCellsCalls = parent.batchUpdate.mock.calls.filter(
+			([req]: [Record<string, unknown>]) => 'updateCells' in req,
+		);
+		expect(updateCellsCalls).toHaveLength(1);
 	});
 });

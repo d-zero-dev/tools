@@ -276,17 +276,18 @@ export class Sheet {
 			values: row.map((cell) => cell.provide()),
 		}));
 
-		const bData = JSON.stringify(sendData);
-		const bDataBuffer = Buffer.from(bData);
 		const rows = sendData.length;
 		const cols = sendData[0]?.values?.length || 0;
-		sendLog(
-			'Update cells: %d rows, %d cols, %d bytes, to grid: %O',
-			rows,
-			cols,
-			bDataBuffer.byteLength,
-			startGrid,
-		);
+		if (sendLog.enabled) {
+			const byteLength = Buffer.byteLength(JSON.stringify(sendData));
+			sendLog(
+				'Update cells: %d rows, %d cols, %d bytes, to grid: %O',
+				rows,
+				cols,
+				byteLength,
+				startGrid,
+			);
+		}
 		await this.#expandGrid(rows, cols);
 		const res = await this.#parent.batchUpdate({
 			updateCells: {
