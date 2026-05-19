@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.7.2...@d-zero/google-sheets@0.8.0) (2026-05-19)
+
+### Bug Fixes
+
+- **google-sheets:** skip JSON.stringify of cell payload when send debug log is disabled ([d947822](https://github.com/d-zero-dev/tools/commit/d947822f3525b399499cdcc29bcb3b3ee8e65755))
+
+### Features
+
+- **google-sheets:** add streaming row send via appendRow and flush ([ceaf64a](https://github.com/d-zero-dev/tools/commit/ceaf64a598a8e520fb05675c650bfc27bb36d593))
+
 ## [0.7.2](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.7.2-alpha.2...@d-zero/google-sheets@0.7.2) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/google-sheets

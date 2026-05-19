@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.9.6...@d-zero/replicator@0.10.0) (2026-05-19)
+
+### Features
+
+- **replicator:** add downloadLimit option to control Phase 2 parallelism ([db8a2b4](https://github.com/d-zero-dev/tools/commit/db8a2b49d6531011b2f4359dfb113ff851ae104d))
+
 ## [0.9.6](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.9.6-alpha.2...@d-zero/replicator@0.9.6) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/replicator

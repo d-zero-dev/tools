@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/replicator",
-	"version": "0.9.6",
+	"version": "0.10.0",
 	"description": "Replicate web pages with all their resources to local directories",
 	"author": "D-ZERO",
 	"license": "MIT",
