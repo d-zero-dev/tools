@@ -11,15 +11,50 @@ import { Cell } from './cell.js';
 
 const NUMBER_OF_PAGE_INFO_PER_ONE_REQUEST = 100_000;
 
+/**
+ * `appendRow()` / `flush()` がバッファをドレインする最大行数。
+ *
+ * Google Sheets API は 1 リクエストの本文を gzip 圧縮して送る。チャンクが
+ * 大きすぎると圧縮中の中間文字列でヒープを圧迫し、呼び出し元が OOM に
+ * 陥るケースがある（30k 行クラスのレポートで観測）。`addRowData()` が
+ * 持つ `NUMBER_OF_PAGE_INFO_PER_ONE_REQUEST`（10 万）はあくまで API の
+ * 単一リクエスト上限であり、メモリ安全性の指標ではない。`appendRow()`
+ * は控えめな 2500 行で逐次 flush することで、呼び出し元の `Cell[][]`
+ * 滞留量を抑える。
+ */
+const SEND_CHUNK_SIZE = 2500;
+
 const sheetLog = log.extend('Sheet');
 const sendLog = sheetLog.extend('Send');
 
 export class Sheet {
 	#currentColIndex = 1;
 	#currentRowIndex = 0;
+	/**
+	 * バッファ内に遅延セル（{@link Cell.prototype.provide} を上書きしたセル、
+	 * 典型的には `createCellData(() => ...)` の thunk）を含む行が一度でも
+	 * 入ったかを記録する。`true` の間は自動 flush を停止し、`flush()` が
+	 * 明示的に呼ばれるまで送信を保留する。
+	 *
+	 * これは遅延セルが共有可変状態を参照することへの保険。呼び出し元が
+	 * すべての state mutation を済ませた `flush()` 時点で初めて thunk を
+	 * 評価することで、中間状態でのセル値破壊を防ぐ。FIFO 順を保つため、
+	 * 一度 lazy が入ると後続の eager 行も同じバッファに留めおかれる。
+	 */
+	#hasLazyRow = false;
 	#headers: readonly string[] | null = null;
 	readonly #parent: Sheets;
 
+	/**
+	 * `appendRow()` で受け取った未送信行のバッファ。{@link SEND_CHUNK_SIZE}
+	 * に達するか、`flush()` が呼ばれるとドレインされる。
+	 */
+	#pendingRows: Row[] = [];
+	/**
+	 * これまでに送信した累計行数。`appendRow()` / `flush()` の進捗を
+	 * 呼び出し元（典型的には Lanes 表示）へ公開する用途。
+	 */
+	#sentCount = 0;
 	readonly #sheet: sheets_v4.Schema$Sheet;
 
 	get id() {
@@ -38,6 +73,13 @@ export class Sheet {
 		return props;
 	}
 
+	/**
+	 * `appendRow()` / `flush()` を通じてこれまでに送信した累計行数。
+	 * 進捗表示用途。`setHeaders()` の送信分は含まない。
+	 */
+	get sentCount() {
+		return this.#sentCount;
+	}
 	constructor(sheet: sheets_v4.Schema$Sheet, parent: Sheets) {
 		this.#sheet = sheet;
 		this.#parent = parent;
@@ -71,6 +113,55 @@ export class Sheet {
 		}
 	}
 
+	/**
+	 * 行を 1 件以上バッファへ追加し、必要に応じて自動 flush するストリーミング送信 API。
+	 *
+	 * ## 自動 flush 条件
+	 *
+	 * バッファ内の行が {@link SEND_CHUNK_SIZE} に達した時点で、先頭から
+	 * 1 チャンク分（最大 {@link SEND_CHUNK_SIZE} 行）を `addRowData()` へ
+	 * 流し込む。受け取った行に遅延セル（{@link Cell.prototype.provide}
+	 * を上書きしたセル）が含まれる場合は自動 flush を停止し、明示的な
+	 * {@link Sheet.flush} 呼び出しまで全行をバッファに保持する。
+	 *
+	 * FIFO 順を保つため、一度でも遅延行を受けたあとは後続の eager 行も
+	 * 同じく保留される（順序の入れ替えを起こさない）。
+	 *
+	 * ## 利用パターン
+	 *
+	 * ```ts
+	 * for (const page of pages) {
+	 *   const rows = generateRows(page);
+	 *   await sheet.appendRow(...rows);
+	 * }
+	 * await sheet.flush();
+	 * ```
+	 *
+	 * 大量の行を生成 → 即送信したい場面では、呼び出し元で `for` ループを
+	 * 書かずに済むよう可変長引数で受け取る。配列はスプレッド構文で渡せる。
+	 *
+	 * ## 同時実行の制約
+	 *
+	 * 同一 `Sheet` インスタンスへの `appendRow()` / `flush()` 呼び出しは
+	 * **逐次**（前の `await` を待ってから次を呼ぶ）を前提に設計されている。
+	 * 同じインスタンスに対して `Promise.all` 等で並行に呼ぶと、内部バッファの
+	 * `splice` / `push` がインターリーブし、行順や送信件数が壊れる可能性が
+	 * ある。並列処理が必要なら **シートインスタンスを分離** すること
+	 * （例: `sheets.create('A')` と `sheets.create('B')` を別々に並列処理）。
+	 * @param rows 追加する行（0 件以上、可変長）。
+	 */
+	async appendRow(...rows: Row[]) {
+		for (const row of rows) {
+			if (containsLazyCell(row)) {
+				this.#hasLazyRow = true;
+			}
+			this.#pendingRows.push(row);
+		}
+		while (!this.#hasLazyRow && this.#pendingRows.length >= SEND_CHUNK_SIZE) {
+			await this.#flushChunk();
+		}
+	}
+
 	async conditionalFormat(
 		targetCols: number[],
 		rule: sheets_v4.Schema$ConditionalFormatRule,
@@ -94,6 +185,24 @@ export class Sheet {
 				},
 			},
 		});
+	}
+	/**
+	 * 未送信のバッファ行を全て送り切る。
+	 *
+	 * 遅延セルを含むバッチを送る場合、呼び出し元が「すべての共有状態
+	 * mutation を済ませた」タイミングでこの API を叩く想定。`flush()`
+	 * 完了後はバッファが空になり、`#hasLazyRow` フラグもリセットされる
+	 * ため、同じシートを次のラウンドで再びストリーミング送信できる。
+	 *
+	 * バッファが空のときは何もしない（no-op）。連続呼び出しも安全（冪等）。
+	 *
+	 * 並行呼び出しの制約は {@link Sheet.appendRow} の JSDoc を参照。
+	 */
+	async flush() {
+		while (this.#pendingRows.length > 0) {
+			await this.#flushChunk();
+		}
+		this.#hasLazyRow = false;
 	}
 
 	async frozen(col: number, row: number) {
@@ -124,7 +233,6 @@ export class Sheet {
 
 		sendLog('Frozen succeeded');
 	}
-
 	async getCellTypes(range: string) {
 		const res = await this.#parent.getWithGridData(`'${this.props.title}'!${range}`);
 		const sheet = res.data.sheets?.[0];
@@ -158,7 +266,6 @@ export class Sheet {
 
 		return cellTypes;
 	}
-
 	getColNumByHeaderName(name: string) {
 		if (!this.#headers) {
 			return -1;
@@ -167,7 +274,6 @@ export class Sheet {
 		sheetLog('Find header: "%s" -> %d', name, index);
 		return index;
 	}
-
 	/**
 	 * Retrieves row visibility metadata starting from the specified row.
 	 *
@@ -188,7 +294,6 @@ export class Sheet {
 			hiddenByFilter: metadata.hiddenByFilter === true,
 		}));
 	}
-
 	async getValues(row: string, col: string) {
 		const res = await this.#parent.get({
 			range: `'${this.props.title}'!${row}:${col}`,
@@ -196,7 +301,6 @@ export class Sheet {
 		});
 		return res.data.values;
 	}
-
 	async hideCol(colNum: number) {
 		sendLog('Hide col %d', colNum);
 		await this.#parent.batchUpdate({
@@ -214,7 +318,6 @@ export class Sheet {
 			},
 		});
 	}
-
 	async overwriteHeaderFormat() {
 		sendLog('Headers becomes normal format if NOT_BLANK');
 		await this.#parent.batchUpdate({
@@ -251,7 +354,6 @@ export class Sheet {
 			},
 		});
 	}
-
 	async setHeaders(headers: string[]) {
 		this.#headers = headers;
 
@@ -261,7 +363,6 @@ export class Sheet {
 		);
 		await this.addRowData([headerCells], false);
 	}
-
 	async #addRowData(data: Row[]) {
 		if (data.length === 0) {
 			return;
@@ -303,7 +404,6 @@ export class Sheet {
 
 		return res;
 	}
-
 	async #addRowQueue(data: Row[], numOfReq: number) {
 		const total = data.length;
 		if (data.length < numOfReq) {
@@ -326,7 +426,6 @@ export class Sheet {
 		}
 		return true;
 	}
-
 	async #expandGrid(addRows: number, maxCols: number) {
 		const rows = this.#currentRowIndex;
 		const cols = this.#currentColIndex;
@@ -359,4 +458,36 @@ export class Sheet {
 			this.#currentColIndex = maxCols;
 		}
 	}
+	/**
+	 * バッファ先頭から最大 {@link SEND_CHUNK_SIZE} 行を取り出し送信する。
+	 * 内部用ヘルパー。
+	 */
+	async #flushChunk() {
+		const chunk = this.#pendingRows.splice(0, SEND_CHUNK_SIZE);
+		if (chunk.length === 0) {
+			return;
+		}
+		await this.addRowData(chunk, true);
+		this.#sentCount += chunk.length;
+	}
+}
+
+/**
+ * 行に遅延セル（`Cell.prototype.provide` を上書きしたセル、典型的には
+ * `createCellData(() => ...)` で生成された thunk セル）が 1 つでも
+ * 含まれていれば `true`。
+ *
+ * 遅延セルは `provide()` 評価時の共有状態を参照するため、ストリーミングで
+ * 早期送信すると thunk がまだ確定していない時点で実行されてしまい、
+ * 出力が破損する。`appendRow()` はこの検出結果を元に自動 flush を
+ * 抑制する。
+ * @param row 検査対象の行。
+ */
+function containsLazyCell(row: Row): boolean {
+	for (const cell of row) {
+		if (cell.provide !== Cell.prototype.provide) {
+			return true;
+		}
+	}
+	return false;
 }

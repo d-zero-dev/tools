@@ -239,6 +239,35 @@ const sheet = await sheets.create('SheetName');
 
 詳細は [ソースコード](./src) を参照してください。
 
+### 大量行のストリーミング送信 (`appendRow` / `flush`)
+
+数万行クラスのデータを `addRowData(rows[])` で一括渡しすると、API リクエスト本文の gzip 圧縮中に呼び出し元のヒープを圧迫する場合があります。`Sheet` は行を逐次積む API を提供しており、内部で控えめなチャンク（既定 2500 行）に区切って自動送信します。
+
+```typescript
+const sheet = await sheets.create('Large Data');
+await sheet.setHeaders(['URL', 'Title']);
+
+for (const page of pages) {
+	const rows = generateRows(page);
+	await sheet.appendRow(...rows); // 可変長。配列はスプレッドで渡す
+}
+await sheet.flush(); // 末尾の未送信分を排出
+```
+
+#### 動作仕様
+
+- `appendRow(...rows)` は内部バッファに行を積み、2500 行に達した時点で先頭から `addRowData()` 経由で送信する
+- `flush()` は未送信分を全て送り切る。空バッファでの呼び出しは no-op、連続呼び出しも冪等
+- `sheet.sentCount` getter で累計送信行数を取得できる（進捗表示用途）
+
+#### 遅延セルの自動検出
+
+`createCellData(() => ({...}))` で生成された thunk セルが行に 1 つでも含まれると、`appendRow` はその時点で自動 flush を停止し、明示的な `flush()` 呼び出しまで全行をバッファに保持します。これは thunk が呼び出し元の共有状態を `provide()` 評価時に参照するためで、ストリーミングで早期送信すると thunk がまだ確定していない時点で実行され、結果が壊れるのを防ぎます。FIFO 順を保つため、遅延行が一度入ったあとは後続の eager 行も同じくバッファに留まります。
+
+#### 同時実行の制約
+
+`appendRow` / `flush` は同一 `Sheet` インスタンスに対して **逐次** に呼ぶ前提です（`await` で完了を待ってから次を呼ぶ）。`Promise.all` 等で並行に呼ぶと内部バッファの mutation がインターリーブし、行順や送信件数が壊れる可能性があります。シート単位で並列処理したい場合はインスタンスを分離してください。
+
 ## ライセンス
 
 MIT
