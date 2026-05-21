@@ -380,3 +380,115 @@ describe('appendRow / flush', () => {
 		expect(sheet.sentCount).toBe(100);
 	});
 });
+
+describe('Sheet.onProgress', () => {
+	const mockSheet = {
+		properties: { title: 'TestSheet', sheetId: 0 },
+	};
+
+	/**
+	 *
+	 */
+	function createSilentParent() {
+		return {
+			batchUpdate: vi.fn(() => Promise.resolve({})),
+		};
+	}
+
+	/**
+	 *
+	 * @param n
+	 */
+	function eagerRow(n = 1): Cell[] {
+		return Array.from({ length: n }, (_, i) => new Cell({ value: `c${i}` }));
+	}
+
+	test('fires once per internal chunk flush with cumulative sent count and remaining buffer size', async () => {
+		const parent = createSilentParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+		const calls: Array<{ sent: number; remaining: number }> = [];
+		sheet.onProgress = (sent, remaining) => {
+			calls.push({ sent, remaining });
+		};
+
+		// 6000 rows in one call → two auto-flushes during appendRow
+		// (after 2500 and after 5000) and one more after the explicit
+		// flush() drains the remaining 1000.
+		await sheet.appendRow(...Array.from({ length: 6000 }, () => eagerRow()));
+		expect(calls).toEqual([
+			{ sent: 2500, remaining: 3500 },
+			{ sent: 5000, remaining: 1000 },
+		]);
+
+		await sheet.flush();
+		expect(calls).toEqual([
+			{ sent: 2500, remaining: 3500 },
+			{ sent: 5000, remaining: 1000 },
+			{ sent: 6000, remaining: 0 },
+		]);
+	});
+
+	test('is never invoked when left undefined', async () => {
+		const parent = createSilentParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+		// sheet.onProgress is left undefined.
+		await expect(
+			sheet.appendRow(...Array.from({ length: 5000 }, () => eagerRow())),
+		).resolves.not.toThrow();
+		await expect(sheet.flush()).resolves.not.toThrow();
+	});
+
+	test('continues flushing when the callback throws synchronously', async () => {
+		const parent = createSilentParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+		const fires: number[] = [];
+		sheet.onProgress = (sent) => {
+			fires.push(sent);
+			throw new Error('reporter exploded');
+		};
+
+		// 5000 rows → 2 internal chunks. Even though the callback
+		// throws every time, both chunks must still hit the API.
+		await expect(
+			sheet.appendRow(...Array.from({ length: 5000 }, () => eagerRow())),
+		).resolves.not.toThrow();
+		expect(fires).toEqual([2500, 5000]);
+		expect(sheet.sentCount).toBe(5000);
+	});
+
+	test('continues flushing when the callback returns a rejected promise', async () => {
+		const parent = createSilentParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+		const fires: number[] = [];
+		sheet.onProgress = (sent) => {
+			fires.push(sent);
+			return Promise.reject(new Error('async reporter exploded'));
+		};
+
+		await expect(
+			sheet.appendRow(...Array.from({ length: 5000 }, () => eagerRow())),
+		).resolves.not.toThrow();
+		expect(fires).toEqual([2500, 5000]);
+		expect(sheet.sentCount).toBe(5000);
+	});
+
+	test('awaits async callbacks so the next chunk waits for the previous report', async () => {
+		const parent = createSilentParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sequence: string[] = [];
+		sheet.onProgress = async (sent) => {
+			sequence.push(`begin-cb-${sent}`);
+			await Promise.resolve();
+			sequence.push(`end-cb-${sent}`);
+		};
+
+		await sheet.appendRow(...Array.from({ length: 5000 }, () => eagerRow()));
+		// The second callback must not begin before the first one ends.
+		expect(sequence).toEqual([
+			'begin-cb-2500',
+			'end-cb-2500',
+			'begin-cb-5000',
+			'end-cb-5000',
+		]);
+	});
+});

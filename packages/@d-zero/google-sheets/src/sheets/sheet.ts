@@ -33,18 +33,28 @@ export class Sheet {
 	 * `flush()` の内側で逐次 `#flushChunk()` が走り、各 chunk の
 	 * `batchUpdate` 完了直後に呼び出される。
 	 *
-	 * 呼び出し元は累積送信行数 (`sent`) と未送信バッファ残量
-	 * (`pending`) を受け取る。表示用途を想定しているため、コール
-	 * バック自体が長時間ブロックすると次の chunk 送信が遅れる点に
-	 *注意。{@link Sheets.onLog} と同じく Sheet インスタンスへ直接
-	 * 代入する。
+	 * 呼び出し元は累積送信行数 (`sent`) とバッファに残っている未送信
+	 * 行数 (`remaining`) を受け取る。`Promise` を返してもよく、その
+	 * 場合は `#flushChunk()` が await してから次の chunk を送る。
+	 * {@link Sheets.onLog} と同じく Sheet インスタンスへ直接代入する。
 	 *
 	 * 大量行を一括 `appendRow(...rows)` で渡すケース（典型例:
 	 * Resources シートの dedupe 集約 63K 行）で「sending 中の進捗が
 	 * 見えない」問題を解消するために用意した。普段は未設定で
 	 * かまわない。
+	 *
+	 * **再入禁止:** コールバック内で同じ `Sheet` インスタンスへの
+	 * `appendRow()` / `flush()` を呼ばないこと。flush 中の内部
+	 * バッファを再操作すると `splice`/`push` の境界条件が壊れる。
+	 * 表示・ログ・別シートへの記録など、対象 sheet を変更しない
+	 * 用途に限定する。
+	 *
+	 * **例外耐性:** コールバックが throw / reject した場合、
+	 * 送信処理は中断されず、内部 debug log に記録した上で残りの
+	 * chunk を送り続ける。進捗表示のバグでデータ書き込みが
+	 * 巻き添えになるのを防ぐ。
 	 */
-	onProgress?: (sent: number, pending: number) => void;
+	onProgress?: (sent: number, remaining: number) => void | Promise<void>;
 	#currentColIndex = 1;
 	#currentRowIndex = 0;
 	/**
@@ -487,7 +497,23 @@ export class Sheet {
 		}
 		await this.addRowData(chunk, true);
 		this.#sentCount += chunk.length;
-		this.onProgress?.(this.#sentCount, this.#pendingRows.length);
+		// Progress callbacks are a display concern; never let a buggy
+		// reporter abort the flush of already-sent data. We capture
+		// throws and rejected promises both, log to the debug-only
+		// `sendLog`, and continue. See the JSDoc on `onProgress` for
+		// the exception-safety contract.
+		if (this.onProgress) {
+			try {
+				const result = this.onProgress(this.#sentCount, this.#pendingRows.length);
+				if (result instanceof Promise) {
+					await result.catch((error: unknown) => {
+						sendLog('onProgress callback rejected, continuing flush: %O', error);
+					});
+				}
+			} catch (error) {
+				sendLog('onProgress callback threw, continuing flush: %O', error);
+			}
+		}
 	}
 }
 

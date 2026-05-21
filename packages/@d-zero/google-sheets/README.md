@@ -259,6 +259,34 @@ await sheet.flush(); // 末尾の未送信分を排出
 - `appendRow(...rows)` は内部バッファに行を積み、2500 行に達した時点で先頭から `addRowData()` 経由で送信する
 - `flush()` は未送信分を全て送り切る。空バッファでの呼び出しは no-op、連続呼び出しも冪等
 - `sheet.sentCount` getter で累計送信行数を取得できる（進捗表示用途）
+- `sheet.onProgress` コールバックを設定すると、内部 chunk flush ごとに `(sent, remaining)` を受け取って能動的に進捗表示を駆動できる（後述）
+
+#### 進捗コールバック (`onProgress`)
+
+`appendRow(...rows)` の呼び出し内側で複数の chunk が逐次送信される間、外側からは `await` がブロックして見えるため「進捗が止まったように見える」問題が起きます。`sheet.onProgress` を設定すると各 chunk 送信直後に通知を受け取れます。
+
+```typescript
+const sheet = await sheets.create('Large Data');
+await sheet.setHeaders(['URL', 'Title']);
+
+const total = rows.length;
+sheet.onProgress = (sent, _remaining) => {
+	process.stdout.write(`\rSending ${sent}/${total} rows...`);
+};
+try {
+	await sheet.appendRow(...rows); // 63K 行を一括で渡しても、内部 chunk ごとに onProgress が走る
+} finally {
+	sheet.onProgress = undefined;
+}
+```
+
+##### 仕様
+
+- 引数は `(sent, remaining)`。`sent` は累計送信行数、`remaining` はバッファに残る未送信行数
+- 戻り値は `void | Promise<void>`。`Promise` を返すと次の chunk 送信は await してから走る
+- **例外耐性**: コールバックが throw / reject しても送信処理は中断されず、内部 debug log に記録して残りの chunk を送り続ける。表示バグでデータが落ちない設計
+- **再入禁止**: コールバック内で同じ `Sheet` インスタンスへの `appendRow` / `flush` を呼ばないこと。flush 中の内部バッファを再操作すると `splice`/`push` の境界条件が壊れる。表示・ログ・別シートへの記録など、対象 sheet を変更しない用途に限定する
+- 未設定（既定）の場合は呼ばれない。後方互換
 
 #### 遅延セルの自動検出
 
