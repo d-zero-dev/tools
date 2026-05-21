@@ -28,6 +28,23 @@ const sheetLog = log.extend('Sheet');
 const sendLog = sheetLog.extend('Send');
 
 export class Sheet {
+	/**
+	 * 内部 chunk flush ごとに呼ばれる進捗コールバック。`appendRow()` /
+	 * `flush()` の内側で逐次 `#flushChunk()` が走り、各 chunk の
+	 * `batchUpdate` 完了直後に呼び出される。
+	 *
+	 * 呼び出し元は累積送信行数 (`sent`) と未送信バッファ残量
+	 * (`pending`) を受け取る。表示用途を想定しているため、コール
+	 * バック自体が長時間ブロックすると次の chunk 送信が遅れる点に
+	 *注意。{@link Sheets.onLog} と同じく Sheet インスタンスへ直接
+	 * 代入する。
+	 *
+	 * 大量行を一括 `appendRow(...rows)` で渡すケース（典型例:
+	 * Resources シートの dedupe 集約 63K 行）で「sending 中の進捗が
+	 * 見えない」問題を解消するために用意した。普段は未設定で
+	 * かまわない。
+	 */
+	onProgress?: (sent: number, pending: number) => void;
 	#currentColIndex = 1;
 	#currentRowIndex = 0;
 	/**
@@ -80,6 +97,7 @@ export class Sheet {
 	get sentCount() {
 		return this.#sentCount;
 	}
+
 	constructor(sheet: sheets_v4.Schema$Sheet, parent: Sheets) {
 		this.#sheet = sheet;
 		this.#parent = parent;
@@ -469,6 +487,7 @@ export class Sheet {
 		}
 		await this.addRowData(chunk, true);
 		this.#sentCount += chunk.length;
+		this.onProgress?.(this.#sentCount, this.#pendingRows.length);
 	}
 }
 
