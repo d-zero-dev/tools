@@ -1,6 +1,7 @@
 import type { Screenshot, ScreenshotPhase } from './types.js';
 import type { Listener } from '@d-zero/puppeteer-general-actions';
 import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
+import type { DelayOptions } from '@d-zero/shared/delay';
 import type { Page } from 'puppeteer';
 
 import { beforePageScan, defaultSizes } from '@d-zero/puppeteer-page-scan';
@@ -19,6 +20,8 @@ type Options = {
 	ignore?: string;
 	timeout?: number;
 	openDisclosures?: boolean;
+	scrollInterval?: number | DelayOptions;
+	scrollDistance?: number | DelayOptions;
 };
 
 /**

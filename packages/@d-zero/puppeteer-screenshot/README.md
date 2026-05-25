@@ -47,18 +47,20 @@ const result = await screenshot(page, 'https://example.com', {
 
 ## オプション
 
-| オプション        | 型                          | 説明                                                                                                                                                  |
-| ----------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`              | `string`                    | スクリーンショットのカスタム識別子。省略時はURLからファイル名が生成されます                                                                           |
-| `path`            | `string`                    | スクリーンショットの保存先パス。指定するとファイルに保存されます（例: `path/to/save.png`はサイズ別に`save@desktop.png`、`save@mobile.png`などに保存） |
-| `sizes`           | `Sizes`                     | スクリーンショットを撮るサイズと解像度の設定。省略時はデフォルトサイズ（desktop、tablet、mobile）が使用されます                                       |
-| `hooks`           | `PageHook[]`                | ページスキャン時に実行するフック関数の配列                                                                                                            |
-| `listener`        | `Listener<ScreenshotPhase>` | スクリーンショット処理の各フェーズをリスンする関数。`screenshotListener`を使うと標準のログ出力が得られます                                            |
-| `domOnly`         | `boolean`                   | `true`の場合、スクリーンショットの撮影をスキップしてDOMのみを取得します（デフォルト: `false`）                                                        |
-| `selector`        | `string`                    | 特定の要素のみをスクリーンショット撮影するためのCSSセレクター                                                                                         |
-| `ignore`          | `string`                    | スクリーンショットから除外する（非表示にする）要素のCSSセレクター                                                                                     |
-| `timeout`         | `number`                    | カスタムタイムアウト値（ミリ秒）                                                                                                                      |
-| `openDisclosures` | `boolean`                   | `true`の場合、disclosure要素（`<details>`と`button[aria-expanded="false"]`）を展開します（最大1000回まで繰り返す）                                    |
+| オプション        | 型                          | 説明                                                                                                                                                                                |
+| ----------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`              | `string`                    | スクリーンショットのカスタム識別子。省略時はURLからファイル名が生成されます                                                                                                         |
+| `path`            | `string`                    | スクリーンショットの保存先パス。指定するとファイルに保存されます（例: `path/to/save.png`はサイズ別に`save@desktop.png`、`save@mobile.png`などに保存）                               |
+| `sizes`           | `Sizes`                     | スクリーンショットを撮るサイズと解像度の設定。省略時はデフォルトサイズ（desktop、tablet、mobile）が使用されます                                                                     |
+| `hooks`           | `PageHook[]`                | ページスキャン時に実行するフック関数の配列                                                                                                                                          |
+| `listener`        | `Listener<ScreenshotPhase>` | スクリーンショット処理の各フェーズをリスンする関数。`screenshotListener`を使うと標準のログ出力が得られます                                                                          |
+| `domOnly`         | `boolean`                   | `true`の場合、スクリーンショットの撮影をスキップしてDOMのみを取得します（デフォルト: `false`）                                                                                      |
+| `selector`        | `string`                    | 特定の要素のみをスクリーンショット撮影するためのCSSセレクター                                                                                                                       |
+| `ignore`          | `string`                    | スクリーンショットから除外する（非表示にする）要素のCSSセレクター                                                                                                                   |
+| `timeout`         | `number`                    | カスタムタイムアウト値（ミリ秒）                                                                                                                                                    |
+| `openDisclosures` | `boolean`                   | `true`の場合、disclosure要素（`<details>`と`button[aria-expanded="false"]`）を展開します（最大1000回まで繰り返す）                                                                  |
+| `scrollInterval`  | `number \| DelayOptions`    | スクロール間隔（ミリ秒）。固定値またはランダム範囲（`{ random: ... }`）を指定可能。未指定時は[`@d-zero/puppeteer-scroll`](../puppeteer-scroll/README.md#デフォルト挙動)のデフォルト |
+| `scrollDistance`  | `number \| DelayOptions`    | 1スクロールステップで進むピクセル数。固定値またはランダム範囲を指定可能。未指定時は同上                                                                                             |
 
 ## エクスポート
 
