@@ -1,20 +1,27 @@
 import type { DelayOptions } from './delay.js';
 
 /**
- * Parses an interval string from CLI arguments into a number or DelayOptions.
- * @param intervalString - The interval string to parse
- * @returns Parsed interval as number (fixed) or DelayOptions (random range)
+ * Parses an interval-style string from CLI arguments into a number or DelayOptions.
+ * @param intervalString - The string to parse
+ * @param fieldLabel - Optional label embedded in error messages so the same
+ *   parser can serve multiple CLI flags (e.g. "interval", "scroll-distance")
+ *   while surfacing a context-aware error to the user. Defaults to "interval".
+ * @returns Parsed value as number (fixed) or DelayOptions (random range)
  * @throws {Error} if the string format is invalid
  * @example
  * parseInterval("1000") // Returns 1000
  * parseInterval("500-1000") // Returns { random: { min: 500, max: 1000 } }
+ * parseInterval("abc", "scroll-distance") // throws "Invalid scroll-distance format: ..."
  */
 export function parseInterval(
 	intervalString: string | undefined,
+	fieldLabel: string = 'interval',
 ): number | DelayOptions | undefined {
 	if (intervalString === undefined || intervalString === '') {
 		return undefined;
 	}
+
+	const capitalized = fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1);
 
 	// Check if it contains a hyphen (range format)
 	// Only treat as range if it matches the pattern "number-number" (not starting with negative sign)
@@ -22,7 +29,7 @@ export function parseInterval(
 		const parts = intervalString.split('-');
 		if (parts.length !== 2) {
 			throw new Error(
-				`Invalid interval format: "${intervalString}". Expected format: "number" or "min-max"`,
+				`Invalid ${fieldLabel} format: "${intervalString}". Expected format: "number" or "min-max"`,
 			);
 		}
 
@@ -31,13 +38,13 @@ export function parseInterval(
 
 		if (Number.isNaN(min) || Number.isNaN(max)) {
 			throw new TypeError(
-				`Invalid interval format: "${intervalString}". Both min and max must be numbers.`,
+				`Invalid ${fieldLabel} format: "${intervalString}". Both min and max must be numbers.`,
 			);
 		}
 
 		if (min >= max) {
 			throw new Error(
-				`Invalid interval range: "${intervalString}". min must be less than max.`,
+				`Invalid ${fieldLabel} range: "${intervalString}". min must be less than max.`,
 			);
 		}
 
@@ -49,7 +56,7 @@ export function parseInterval(
 	const numValue = Number(intervalString);
 	if (Number.isNaN(numValue) || !Number.isFinite(numValue)) {
 		throw new TypeError(
-			`Invalid interval format: "${intervalString}". Expected a number or "min-max" format.`,
+			`Invalid ${fieldLabel} format: "${intervalString}". Expected a number or "min-max" format.`,
 		);
 	}
 
@@ -57,13 +64,13 @@ export function parseInterval(
 	const value = Number.parseInt(intervalString, 10);
 	if (Number.isNaN(value)) {
 		throw new TypeError(
-			`Invalid interval format: "${intervalString}". Expected a number or "min-max" format.`,
+			`Invalid ${fieldLabel} format: "${intervalString}". Expected a number or "min-max" format.`,
 		);
 	}
 
 	if (value < 0) {
 		throw new Error(
-			`Invalid interval value: "${intervalString}". Interval must be non-negative.`,
+			`Invalid ${fieldLabel} value: "${intervalString}". ${capitalized} must be non-negative.`,
 		);
 	}
 

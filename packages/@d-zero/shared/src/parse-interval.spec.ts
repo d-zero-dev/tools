@@ -77,4 +77,37 @@ describe('parseInterval', () => {
 			expect(result).toEqual({ random: { min: 500, max: 1000 } });
 		});
 	});
+
+	describe('with fieldLabel option', () => {
+		it('uses the provided field label in invalid format errors', () => {
+			expect(() => parseInterval('abc', 'scroll-distance')).toThrow(
+				'Invalid scroll-distance format',
+			);
+		});
+
+		it('uses the provided field label in range errors', () => {
+			expect(() => parseInterval('100-100', 'scroll-distance')).toThrow(
+				'Invalid scroll-distance range',
+			);
+		});
+
+		it('uses the capitalized field label in non-negative errors', () => {
+			expect(() => parseInterval('-100', 'scroll-distance')).toThrow(
+				'Scroll-distance must be non-negative',
+			);
+		});
+
+		it('uses the provided field label when both min and max are NaN', () => {
+			expect(() => parseInterval('abc-def', 'scroll-distance')).toThrow(
+				'Invalid scroll-distance format',
+			);
+		});
+
+		it('still parses valid input with a custom label', () => {
+			expect(parseInterval('500-1000', 'scroll-distance')).toEqual({
+				random: { min: 500, max: 1000 },
+			});
+			expect(parseInterval('250', 'scroll-distance')).toBe(250);
+		});
+	});
 });
