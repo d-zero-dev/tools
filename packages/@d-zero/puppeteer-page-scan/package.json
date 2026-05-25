@@ -24,7 +24,8 @@
 	},
 	"dependencies": {
 		"@d-zero/puppeteer-general-actions": "1.2.3",
-		"@d-zero/puppeteer-scroll": "3.1.18"
+		"@d-zero/puppeteer-scroll": "3.1.18",
+		"@d-zero/shared": "0.21.3"
 	},
 	"devDependencies": {
 		"puppeteer": "24.37.5"

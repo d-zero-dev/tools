@@ -1,5 +1,6 @@
 import type { PageHook, PageScanPhase, Size } from './types.js';
 import type { Listener } from '@d-zero/puppeteer-general-actions';
+import type { DelayOptions } from '@d-zero/shared/delay';
 import type { Page } from 'puppeteer';
 
 import { scrollAllOver } from '@d-zero/puppeteer-scroll';
@@ -10,6 +11,8 @@ type Options = {
 	listener?: Listener<PageScanPhase>;
 	timeout?: number;
 	openDisclosures?: boolean;
+	scrollInterval?: number | DelayOptions;
+	scrollDistance?: number | DelayOptions;
 } & Size;
 
 /**
@@ -135,6 +138,8 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 		message: 'Start scrolling',
 	});
 	await scrollAllOver(page, {
+		interval: options?.scrollInterval,
+		distance: options?.scrollDistance,
 		logger: (scrollY, scrollHeight, message) =>
 			listener?.('scroll', { name, scrollY, scrollHeight, message }),
 	});

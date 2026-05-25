@@ -87,8 +87,19 @@ await beforePageScan(page, 'https://example.com', {
 		},
 	],
 	openDisclosures: true, // オプション: disclosure要素を展開（<details>とbutton[aria-expanded="false"]）
+	scrollInterval: { random: { min: 200, max: 500 } }, // オプション: スクロール間隔（ms）
+	scrollDistance: { random: { min: 300, max: 900 } }, // オプション: 1ステップで進む距離（px）
 });
 ```
+
+#### スクロールオプション
+
+| オプション       | 型                       | 説明                                                                                                                                                |
+| ---------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scrollInterval` | `number \| DelayOptions` | `scrollAllOver`の`interval`にそのまま渡されます。未指定時は[`@d-zero/puppeteer-scroll`](../puppeteer-scroll/README.md#デフォルト挙動)のデフォルト。 |
+| `scrollDistance` | `number \| DelayOptions` | `scrollAllOver`の`distance`にそのまま渡されます。未指定時は同上。                                                                                   |
+
+詳細は[`@d-zero/puppeteer-scroll`](../puppeteer-scroll/README.md#api)を参照。
 
 ### `readPageHooks`
 

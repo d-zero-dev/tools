@@ -1205,6 +1205,7 @@ __metadata:
   dependencies:
     "@d-zero/puppeteer-general-actions": "npm:1.2.3"
     "@d-zero/puppeteer-scroll": "npm:3.1.18"
+    "@d-zero/shared": "npm:0.21.3"
     puppeteer: "npm:24.37.5"
   peerDependencies:
     puppeteer: 24.37.5
