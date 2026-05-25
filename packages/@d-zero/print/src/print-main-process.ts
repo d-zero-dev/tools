@@ -20,6 +20,18 @@ export interface PrintOptions {
 	readonly timeout?: number;
 	readonly interval?: number | DelayOptions;
 	readonly openDisclosures?: boolean;
+	/**
+	 * ページ内スクロールのステップ間隔（ms）。
+	 * 固定値またはランダム範囲（`{ random: ... }`）を指定可能。
+	 * 省略時は `@d-zero/puppeteer-scroll` のデフォルト（ランダム 200-500ms）。
+	 */
+	readonly scrollInterval?: number | DelayOptions;
+	/**
+	 * 1スクロールステップで進むピクセル数。
+	 * 固定値またはランダム範囲を指定可能。
+	 * 省略時は `@d-zero/puppeteer-scroll` のデフォルト（ビューポート高さの 50-100% のランダム）。
+	 */
+	readonly scrollDistance?: number | DelayOptions;
 }
 
 /**
@@ -62,6 +74,8 @@ export async function print(
 					devices: options?.devices,
 					timeout: options?.timeout,
 					openDisclosures: options?.openDisclosures,
+					scrollInterval: options?.scrollInterval,
+					scrollDistance: options?.scrollDistance,
 				},
 				{
 					...options,

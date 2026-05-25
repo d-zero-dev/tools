@@ -1,5 +1,6 @@
 import type { PrintType } from './types.js';
 import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
+import type { DelayOptions } from '@d-zero/shared/delay';
 
 import path from 'node:path';
 
@@ -16,10 +17,21 @@ export type ChildProcessParams = {
 	devices?: Sizes;
 	timeout?: number;
 	openDisclosures?: boolean;
+	scrollInterval?: number | DelayOptions;
+	scrollDistance?: number | DelayOptions;
 };
 
 createChildProcess<ChildProcessParams>((param) => {
-	const { dir, type, hooks, devices, timeout, openDisclosures } = param;
+	const {
+		dir,
+		type,
+		hooks,
+		devices,
+		timeout,
+		openDisclosures,
+		scrollInterval,
+		scrollDistance,
+	} = param;
 
 	return {
 		async eachPage({ page, id, url }, logger) {
@@ -37,6 +49,8 @@ createChildProcess<ChildProcessParams>((param) => {
 					devices,
 					timeout,
 					openDisclosures,
+					scrollInterval,
+					scrollDistance,
 				);
 				logger('🔚 Closing');
 				return;
@@ -52,6 +66,8 @@ createChildProcess<ChildProcessParams>((param) => {
 				devices,
 				timeout,
 				openDisclosures,
+				scrollInterval,
+				scrollDistance,
 			);
 
 			if (type === 'png') {

@@ -1,4 +1,5 @@
 import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
+import type { DelayOptions } from '@d-zero/shared/delay';
 import type { Page } from 'puppeteer';
 
 import {
@@ -8,7 +9,7 @@ import {
 } from '@d-zero/puppeteer-page-scan';
 
 /**
- *
+ * ページをPDFファイルとして保存します。
  * @param page
  * @param url
  * @param filePath
@@ -17,6 +18,8 @@ import {
  * @param devices
  * @param timeout
  * @param openDisclosures
+ * @param scrollInterval - ページ内スクロールのステップ間隔（ms）。`@d-zero/puppeteer-scroll`の`interval`にそのまま渡されます。省略時はランダム 200-500ms。
+ * @param scrollDistance - 1ステップで進むスクロール距離（px）。省略時はビューポート高さの 50-100% のランダム。
  */
 export async function printPdf(
 	page: Page,
@@ -27,6 +30,8 @@ export async function printPdf(
 	devices?: Sizes,
 	timeout?: number,
 	openDisclosures?: boolean,
+	scrollInterval?: number | DelayOptions,
+	scrollDistance?: number | DelayOptions,
 ) {
 	// Use the first desktop device or fallback to desktop preset
 	const defaultWidth = devicePresets.desktop.width;
@@ -52,6 +57,8 @@ export async function printPdf(
 		hooks,
 		timeout,
 		openDisclosures,
+		scrollInterval,
+		scrollDistance,
 	});
 
 	update('📄 Save as PDF');

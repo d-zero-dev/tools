@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 import type { PrintType } from './types.js';
 import type { BaseCLIOptions } from '@d-zero/cli-core';
+import type { DelayOptions } from '@d-zero/shared/delay';
 
 import { createRequire } from 'node:module';
 
 import { createCLI, parseCommonOptions, parseList } from '@d-zero/cli-core';
 import { parseDevicesOption } from '@d-zero/puppeteer-page-scan';
+import { parseInterval } from '@d-zero/shared/parse-interval';
 
 import { print } from './print-main-process.js';
 import { readConfig } from './read-config.js';
@@ -18,6 +20,8 @@ interface PrintCLIOptions extends BaseCLIOptions {
 	devices?: string;
 	timeout?: number;
 	openDisclosures?: boolean;
+	scrollInterval?: number | DelayOptions;
+	scrollDistance?: number | DelayOptions;
 }
 
 const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
@@ -44,6 +48,10 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 		'\t--limit <number>          Limit concurrent processes',
 		'\t--interval <ms>           Interval between parallel executions (default: none)',
 		'\t                           Format: number or "min-max" for random range',
+		'\t--scroll-interval <ms>    Interval between scroll steps in milliseconds (default: random 200-500)',
+		'\t                           Format: number or "min-max" for random range',
+		'\t--scroll-distance <px>    Distance scrolled per step in pixels (default: random 50-100% of viewport height)',
+		'\t                           Format: number or "min-max" for random range',
 		'\t--debug                   Enable debug mode',
 		'\t--verbose                 Enable verbose logging',
 		'',
@@ -63,6 +71,12 @@ const { options, args, hasConfigFile } = createCLI<PrintCLIOptions>({
 		timeout: cli.timeout ? Number(cli.timeout) : undefined,
 		openDisclosures:
 			cli['open-disclosures'] === true || cli.o === true ? true : undefined,
+		scrollInterval: cli['scroll-interval']
+			? parseInterval(String(cli['scroll-interval']), 'scroll-interval')
+			: undefined,
+		scrollDistance: cli['scroll-distance']
+			? parseInterval(String(cli['scroll-distance']), 'scroll-distance')
+			: undefined,
 	}),
 	validateArgs: (options, cli) => {
 		return !!(options.listfile?.length || cli._.length > 0);
@@ -87,6 +101,8 @@ if (hasConfigFile) {
 		timeout: options.timeout,
 		interval: options.interval,
 		openDisclosures: options.openDisclosures,
+		scrollInterval: options.scrollInterval,
+		scrollDistance: options.scrollDistance,
 	});
 	process.exit(0);
 }
@@ -101,6 +117,8 @@ if (args.length > 0) {
 		timeout: options.timeout,
 		interval: options.interval,
 		openDisclosures: options.openDisclosures,
+		scrollInterval: options.scrollInterval,
+		scrollDistance: options.scrollDistance,
 	});
 	process.exit(0);
 }

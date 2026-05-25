@@ -36,6 +36,10 @@ npx @d-zero/print <url>... [options]
 - `--limit <number>`: 並列実行数の上限（デフォルト: 10）
 - `--interval <ms>`: 並列実行間の間隔（デフォルト: なし）
   - 数値または"min-max"形式でランダム範囲を指定可能
+- `--scroll-interval <ms>`: ページ内スクロールのステップ間隔（デフォルト: ランダム 200-500ms）
+  - 数値または"min-max"形式でランダム範囲を指定可能
+- `--scroll-distance <px>`: 1ステップで進むスクロール距離（デフォルト: ビューポート高さの 50-100% のランダム）
+  - 数値または"min-max"形式でランダム範囲を指定可能
 - `--debug`: デバッグモード（デフォルト: false）
 - `--verbose`: 詳細ログモード（デフォルト: false）
 
@@ -151,10 +155,16 @@ await print(['https://example.com', 'https://example.com/about'], {
 		mobile: { width: 375, resolution: 2 },
 	},
 	timeout: 30000,
-	interval: 1000, // または { min: 500, max: 1500 } でランダム間隔
+	interval: 1000, // または { random: { min: 500, max: 1500 } } でランダム間隔
 	openDisclosures: true,
+	scrollInterval: { random: { min: 200, max: 500 } }, // スクロールステップ間隔（省略時はランダム 200-500ms）
+	scrollDistance: { random: { min: 300, max: 900 } }, // 1ステップで進むピクセル数（省略時はビューポート高さの 50-100% のランダム）
 });
 ```
+
+#### スクロール挙動について
+
+`scrollInterval`と`scrollDistance`を省略すると、人間のスクロールに近い揺らぎを付けるために自動でランダム化されます。決定論的な再現性（VRT、レコーディング、比較など）が必要な場合は固定値を渡してください。詳細は[`@d-zero/puppeteer-scroll`](../puppeteer-scroll/README.md#デフォルト挙動)を参照。
 
 ### エクスポートされる型
 
