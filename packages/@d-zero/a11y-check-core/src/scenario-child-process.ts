@@ -1,10 +1,12 @@
 import type { Result, NeedAnalysis, Passed, Scenario } from './types.js';
+import type { PageHookSource } from '@d-zero/puppeteer-page-scan';
 
 import { createChildProcess } from '@d-zero/puppeteer-dealer';
 import {
 	beforePageScan,
 	defaultSizes,
 	pageScanListener,
+	readPageHooks,
 } from '@d-zero/puppeteer-page-scan';
 import { Cache } from '@d-zero/shared/cache';
 import c from 'ansi-colors';
@@ -14,10 +16,11 @@ import { importScenarios, type Violation } from '@d-zero/a11y-check-core';
 export type ChildProcessParams = {
 	readonly scenarios: readonly Scenario[];
 	readonly cacheDir: string;
+	readonly hooks?: PageHookSource;
 };
 
 createChildProcess<ChildProcessParams, Result>(async (param) => {
-	const { cacheDir } = param;
+	const { cacheDir, hooks: hookSource } = param;
 
 	const cache = new Cache<Result>('a11y-check/run-puppeteer', cacheDir);
 
@@ -27,6 +30,11 @@ createChildProcess<ChildProcessParams, Result>(async (param) => {
 	} as const;
 
 	const scenarios = await importScenarios(param.scenarios);
+
+	const hooks =
+		hookSource && hookSource.paths.length > 0
+			? await readPageHooks(hookSource.paths, hookSource.baseDir)
+			: undefined;
 
 	return {
 		// async beforeOpenPage(_, url, logger) {
@@ -66,6 +74,7 @@ createChildProcess<ChildProcessParams, Result>(async (param) => {
 					await beforePageScan(page, url, {
 						name,
 						...size,
+						hooks,
 						listener: pageScanListener(logger),
 					});
 

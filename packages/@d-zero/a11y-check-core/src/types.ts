@@ -1,5 +1,5 @@
 import type { DealOptions } from '@d-zero/dealer';
-import type { PageHook } from '@d-zero/puppeteer-page-scan';
+import type { PageHookSource } from '@d-zero/puppeteer-page-scan';
 import type { Page } from 'puppeteer';
 
 export type CoreOptions = {
@@ -10,7 +10,7 @@ export type CoreOptions = {
 
 export type ScenarioRunnerOptions = DealOptions & {
 	readonly locale?: string;
-	readonly hooks?: readonly PageHook[];
+	readonly hooks?: PageHookSource;
 };
 
 export type ScenarioCreator<O> = (options?: O) => Scenario;

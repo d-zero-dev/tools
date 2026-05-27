@@ -55,6 +55,7 @@ export async function scenarioRunner<O>(
 				{
 					scenarios,
 					cacheDir: options?.cacheDir ?? '.a11y-check-core',
+					hooks: options?.hooks,
 				},
 				options,
 			);
