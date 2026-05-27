@@ -1,13 +1,17 @@
-import { readPageHooks } from '@d-zero/puppeteer-page-scan';
+import type { PageHookSource } from '@d-zero/puppeteer-page-scan';
+
 import { toList } from '@d-zero/readtext/list';
 import { readConfigFile } from '@d-zero/shared/config-reader';
 
 /**
- * Frontmatter形式の設定ファイルを読み込み、URLペアリストとページフックを返す
+ * Frontmatter形式の設定ファイルを読み込み、URLペアリストとページフックの参照を返す
  * @param filePath - 設定ファイルのパス
- * @returns URLペアのリストとページフック関数の配列
+ * @returns URLペアのリストとページフックのロード元情報
  */
-export async function readConfig(filePath: string) {
+export async function readConfig(filePath: string): Promise<{
+	pairList: [string, string][];
+	hooks: PageHookSource;
+}> {
 	const { content, baseDir } = await readConfigFile<{
 		comparisonHost: string;
 		hooks?: readonly string[];
@@ -23,10 +27,11 @@ export async function readConfig(filePath: string) {
 		];
 	});
 
-	const hooks = await readPageHooks(content.attributes?.hooks ?? [], baseDir);
-
 	return {
 		pairList,
-		hooks,
+		hooks: {
+			paths: content.attributes?.hooks ?? [],
+			baseDir,
+		},
 	};
 }

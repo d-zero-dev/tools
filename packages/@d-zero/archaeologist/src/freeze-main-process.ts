@@ -39,6 +39,7 @@ export async function freeze(
 				path.resolve(import.meta.dirname, 'freeze-child-process.js'),
 				{
 					dir,
+					hooks: options?.hooks,
 				},
 				{
 					...options,

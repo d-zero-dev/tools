@@ -1,6 +1,5 @@
-export type { PageHook } from '@d-zero/puppeteer-screenshot';
-
-import type { PageHook, Screenshot } from '@d-zero/puppeteer-screenshot';
+import type { PageHookSource } from '@d-zero/puppeteer-page-scan';
+import type { Screenshot } from '@d-zero/puppeteer-screenshot';
 
 /**
  * ページごとのスクリーンショットとDOMツリーのデータ
@@ -108,7 +107,7 @@ export interface AnalyzeOptions extends GeneralOptions {
 export interface FreezeOptions extends GeneralOptions {}
 
 interface GeneralOptions {
-	readonly hooks: readonly PageHook[];
+	readonly hooks?: PageHookSource;
 	readonly limit?: number;
 	readonly debug?: boolean;
 }

@@ -45,7 +45,7 @@ export async function analyze(
 					selector: options?.selector,
 					ignore: options?.ignore,
 					devices: options?.devices,
-					hooks: options?.hooks ?? [],
+					hooks: options?.hooks,
 					combined: options?.combined,
 				},
 				{

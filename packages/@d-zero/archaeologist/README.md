@@ -155,6 +155,8 @@ export default async function (page, { name, width, resolution, log }) {
 
 例のように、ページにログインする処理をフックスクリプトに記述することで、ユーザー認証が必要なページのスクリーンショットを撮影することができます。
 
+> **挙動変更のお知らせ:** これまでのバージョンでは、内部のプロセス間通信の制約により設定ファイルの `hooks` が `analyze` / `--freeze` の両モードで無視されていました。本リリース（次回 minor）から正しく実行されます。詳細は [MIGRATION-page-hooks.md](../../../MIGRATION-page-hooks.md) を参照してください。
+
 ## 認証
 
 ### Basic認証

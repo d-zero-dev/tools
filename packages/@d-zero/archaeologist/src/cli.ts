@@ -111,6 +111,6 @@ if (options.freeze) {
 
 if (args.length === 2) {
 	const pairList: [string, string][] = [[args[0]!, args[1]!]];
-	await analyze(pairList, { ...analyzeOptions, hooks: [] });
+	await analyze(pairList, analyzeOptions);
 	process.exit(0);
 }
