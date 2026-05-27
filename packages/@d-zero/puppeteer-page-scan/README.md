@@ -136,6 +136,22 @@ await beforePageScan(page, 'https://example.com', {
 - モジュールが見つからない場合は`Error`を投げます
 - デフォルトエクスポートが関数でない場合は`TypeError`を投げます
 
+#### 子プロセスを経由する場合の使い分け
+
+Node の IPC（`process.send`）は関数を JSON 化できず `null` に変換するため、`PageHook[]`（関数配列）を親プロセスから子プロセスへ直接渡すことはできません。`@d-zero/print` / `@d-zero/archaeologist` / `@d-zero/a11y-check` のように `@d-zero/puppeteer-dealer` を経由して子プロセスでフックを実行する場合は、**パスの記述（[`PageHookSource`](#pagehooksource)）を子プロセスに渡し、子プロセス内で `readPageHooks` を呼ぶ**設計にしてください。
+
+```ts
+// 親プロセス: PageHookSource を組み立てて IPC で渡す
+const hookSource = {
+	paths: ['./hooks/login.mjs'],
+	baseDir: process.cwd(),
+};
+
+// 子プロセス: 受け取ったパスから関数化して beforePageScan に渡す
+const hooks = await readPageHooks(hookSource.paths, hookSource.baseDir);
+await beforePageScan(page, url, { name, width, hooks });
+```
+
 ### `pageScanListener` と `pageScanLoggers`
 
 ページスキャン処理中の各フェーズ（ビューポート設定、ページ読み込み、フック実行、スクロール）のログを出力するためのリスナー関数とロガー設定です。
@@ -210,6 +226,19 @@ type PageHook = (
 	},
 ) => Promise<void>;
 ```
+
+### `PageHookSource`
+
+子プロセスにフックをIPCで渡すための「ロード元の記述」を表す型です。Node IPC は関数を `null` 化するため、`PageHook[]`（関数配列）を親→子で直接渡せません。`@d-zero/puppeteer-dealer` を経由するツールはこの形で受け渡しを行い、子プロセス内で `readPageHooks` を呼んで関数化します。
+
+```typescript
+type PageHookSource = {
+	readonly paths: readonly string[]; // フックファイルのパス（絶対 or 相対）
+	readonly baseDir: string; // 相対パスを解決する基準ディレクトリ
+};
+```
+
+使い方は [子プロセスを経由する場合の使い分け](#子プロセスを経由する場合の使い分け) を参照してください。
 
 ### `PageScanPhase`
 

@@ -77,3 +77,97 @@ describe('beforePageScan → scrollAllOver の引数伝搬', () => {
 		);
 	});
 });
+
+describe('beforePageScan → hooks の呼び出し', () => {
+	beforeEach(() => {
+		vi.mocked(scrollAllOver).mockClear();
+	});
+
+	it('hooks の各関数が page と {name, width, resolution, log} で配列順に呼ばれる', async () => {
+		const page = createMockPage();
+		const calls: string[] = [];
+		const hook1 = vi.fn(() => {
+			calls.push('1');
+			return Promise.resolve();
+		});
+		const hook2 = vi.fn(() => {
+			calls.push('2');
+			return Promise.resolve();
+		});
+
+		await beforePageScan(page, 'https://example.com', {
+			name: 'desktop',
+			width: 1024,
+			resolution: 2,
+			hooks: [hook1, hook2],
+		});
+
+		expect(calls).toEqual(['1', '2']);
+		expect(hook1).toHaveBeenCalledWith(
+			page,
+			expect.objectContaining({
+				name: 'desktop',
+				width: 1024,
+				resolution: 2,
+				log: expect.any(Function),
+			}),
+		);
+		expect(hook2).toHaveBeenCalledWith(
+			page,
+			expect.objectContaining({
+				name: 'desktop',
+				width: 1024,
+				resolution: 2,
+			}),
+		);
+	});
+
+	it('hooks 未指定でも例外なく完了する', async () => {
+		const page = createMockPage();
+
+		await expect(
+			beforePageScan(page, 'https://example.com', {
+				name: 'test',
+				width: 1024,
+			}),
+		).resolves.toBeUndefined();
+	});
+
+	it('hooks の途中で throw した場合、後続の hook は呼ばれず例外が伝搬する', async () => {
+		const page = createMockPage();
+		const hook1 = vi.fn(() => Promise.reject(new Error('hook1 failed')));
+		const hook2 = vi.fn(() => Promise.resolve());
+
+		await expect(
+			beforePageScan(page, 'https://example.com', {
+				name: 'test',
+				width: 1024,
+				hooks: [hook1, hook2],
+			}),
+		).rejects.toThrow('hook1 failed');
+
+		expect(hook1).toHaveBeenCalledTimes(1);
+		expect(hook2).not.toHaveBeenCalled();
+	});
+
+	it('hooks の log を呼ぶと listener("hook", ...) に転送される', async () => {
+		const page = createMockPage();
+		const listener = vi.fn();
+		const hook = vi.fn((_page, ctx) => {
+			ctx.log('hello from hook');
+			return Promise.resolve();
+		});
+
+		await beforePageScan(page, 'https://example.com', {
+			name: 'desktop',
+			width: 1024,
+			hooks: [hook],
+			listener,
+		});
+
+		expect(listener).toHaveBeenCalledWith('hook', {
+			name: 'desktop',
+			message: 'hello from hook',
+		});
+	});
+});
