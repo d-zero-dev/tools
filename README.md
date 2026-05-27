@@ -49,6 +49,12 @@
 - [`@d-zero/roar`](./packages/%40d-zero/roar/README.md) - サブコマンド対応CLIヘルパーライブラリ（yargs-parserベース）
 - [`@d-zero/shared`](./packages/%40d-zero/shared/README.md) - 共通ユーティリティ関数
 
+## マイグレーションガイド
+
+破壊的変更を伴うリリースには移行手順を用意しています。
+
+- [MIGRATION-page-hooks.md](./MIGRATION-page-hooks.md) - ページフック API の整合化（`@d-zero/print` / `@d-zero/archaeologist` / `@d-zero/a11y-check` / `@d-zero/a11y-check-core` / `@d-zero/puppeteer-page-scan`）
+
 ## メンテナンス環境
 
 - [Volta](https://volta.sh/)によって管理しています。

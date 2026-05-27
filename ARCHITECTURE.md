@@ -600,6 +600,32 @@ export type PageHook = (
 ) => Promise<void>;
 ```
 
+#### Crossing IPC boundaries: `PageHookSource`
+
+CLI tools that delegate Puppeteer work to a child process via `@d-zero/puppeteer-dealer` cannot pass `PageHook[]` (function arrays) directly to the child. Node's `process.send` serializes payloads with JSON, which converts functions to `null`. The `serialize` step in `@d-zero/proc-talk` only walks the top level of its argument array, so any function nested inside an object (e.g. `{ hooks: [fn] }`) is silently lost on the wire.
+
+To avoid this, packages exchange hooks as a path description and resolve the path on the child side:
+
+```typescript
+// @d-zero/puppeteer-page-scan
+export type PageHookSource = {
+	readonly paths: readonly string[];
+	readonly baseDir: string;
+};
+```
+
+Pattern used by `@d-zero/print`, `@d-zero/archaeologist`, and `@d-zero/a11y-check-core`:
+
+1. The CLI / library API accepts `hooks?: PageHookSource` (not `PageHook[]`).
+2. `readConfig` / callers build the `PageHookSource` from frontmatter or arguments.
+3. The main process forwards the `PageHookSource` to the child process via `proc-talk` — JSON-safe.
+4. The child process calls `readPageHooks(paths, baseDir)` to import the modules and obtain `PageHook[]`.
+5. `beforePageScan` / `screenshot` receive `PageHook[]` as before.
+
+The internal types (`beforePageScan({ hooks: PageHook[] })`, `screenshot({ hooks: PageHook[] })`) are unchanged — only the **public, IPC-crossing boundary** uses `PageHookSource`.
+
+See [`packages/@d-zero/proc-talk/src/serialize.spec.ts`](./packages/@d-zero/proc-talk/src/serialize.spec.ts) for a regression test that pins this behavior, and [MIGRATION-page-hooks.md](./MIGRATION-page-hooks.md) for the breaking-change migration guide.
+
 ### Config Reader Pattern
 
 Using `@d-zero/shared/config-reader` for frontmatter:
