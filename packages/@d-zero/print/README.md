@@ -159,8 +159,29 @@ await print(['https://example.com', 'https://example.com/about'], {
 	openDisclosures: true,
 	scrollInterval: { random: { min: 200, max: 500 } }, // スクロールステップ間隔（省略時はランダム 200-500ms）
 	scrollDistance: { random: { min: 300, max: 900 } }, // 1ステップで進むピクセル数（省略時はビューポート高さの 50-100% のランダム）
+	hooks: {
+		paths: ['./hooks/login.mjs'],
+		baseDir: process.cwd(),
+	},
 });
 ```
+
+#### `hooks` の指定方法（破壊的変更）
+
+`print` はフックを子プロセス（Puppeteer 実行側）で動かす都合上、`hooks` には **フックファイルのパス（`PageHookSource`）**を渡します。`PageHook` 関数配列は IPC を越境できないため受け付けません。
+
+```ts
+// ❌ 旧 API（〜 2.6.x）。Node IPC で関数が失われ TypeError になっていました
+hooks: [async (page, ctx) => { /* ... */ }];
+
+// ✅ 新 API（2.7.0 以降）
+hooks: {
+	paths: ['./hooks/login.mjs'],
+	baseDir: process.cwd(),
+};
+```
+
+詳細は [MIGRATION-page-hooks.md](../../../MIGRATION-page-hooks.md) を参照してください。
 
 #### スクロール挙動について
 
@@ -171,3 +192,5 @@ await print(['https://example.com', 'https://example.com/about'], {
 - `PrintOptions`: `print`関数のオプション型
 - `PrintType`: 出力形式（`'png' | 'pdf' | 'note'`）
 - `PageHook`: ページフック関数の型（`@d-zero/puppeteer-page-scan`から再エクスポート）
+  - フックファイル内で `@type` JSDoc 注釈に使用します
+  - `print()` の `hooks` プロパティでは使用しません（[`PageHookSource`](../puppeteer-page-scan/README.md#pagehooksource)を使用）

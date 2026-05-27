@@ -1,10 +1,11 @@
 import type { PrintType } from './types.js';
-import type { PageHook, Sizes } from '@d-zero/puppeteer-page-scan';
+import type { PageHookSource, Sizes } from '@d-zero/puppeteer-page-scan';
 import type { DelayOptions } from '@d-zero/shared/delay';
 
 import path from 'node:path';
 
 import { createChildProcess } from '@d-zero/puppeteer-dealer';
+import { readPageHooks } from '@d-zero/puppeteer-page-scan';
 
 import { pngToPdf } from './modules/png-to-pdf.js';
 import { printPdf } from './modules/print-pdf.js';
@@ -13,7 +14,7 @@ import { printPng } from './modules/print-png.js';
 export type ChildProcessParams = {
 	dir: string;
 	type: PrintType;
-	hooks?: readonly PageHook[];
+	hooks?: PageHookSource;
 	devices?: Sizes;
 	timeout?: number;
 	openDisclosures?: boolean;
@@ -21,17 +22,22 @@ export type ChildProcessParams = {
 	scrollDistance?: number | DelayOptions;
 };
 
-createChildProcess<ChildProcessParams>((param) => {
+createChildProcess<ChildProcessParams>(async (param) => {
 	const {
 		dir,
 		type,
-		hooks,
+		hooks: hookSource,
 		devices,
 		timeout,
 		openDisclosures,
 		scrollInterval,
 		scrollDistance,
 	} = param;
+
+	const hooks =
+		hookSource && hookSource.paths.length > 0
+			? await readPageHooks(hookSource.paths, hookSource.baseDir)
+			: undefined;
 
 	return {
 		async eachPage({ page, id, url }, logger) {
