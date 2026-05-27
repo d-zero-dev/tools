@@ -117,6 +117,8 @@ export default async function (page, { name, width, resolution, log }) {
 }
 ```
 
+> **挙動変更のお知らせ:** これまでのバージョンでは、内部のプロセス間通信の制約により設定ファイルの `hooks` が無視されていました。本リリース（次回 minor）から正しく実行されます。詳細は [MIGRATION-page-hooks.md](../../../MIGRATION-page-hooks.md) を参照してください。
+
 ## Googleスプレッドシート出力
 
 `-o`オプションでGoogleスプレッドシートのURLを指定すると、詳細なレポートが出力されます。

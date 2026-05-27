@@ -1,4 +1,5 @@
-import { readPageHooks } from '@d-zero/puppeteer-page-scan';
+import type { PageHookSource } from '@d-zero/puppeteer-page-scan';
+
 import { toKvList } from '@d-zero/readtext/list';
 import { readConfigFile } from '@d-zero/shared/config-reader';
 
@@ -6,7 +7,10 @@ import { readConfigFile } from '@d-zero/shared/config-reader';
  *
  * @param filePath
  */
-export async function readConfig(filePath: string) {
+export async function readConfig(filePath: string): Promise<{
+	urlList: { id: string | null; url: string }[];
+	hooks: PageHookSource;
+}> {
 	const { content, baseDir } = await readConfigFile<{
 		hooks?: readonly string[];
 	}>(filePath);
@@ -16,10 +20,11 @@ export async function readConfig(filePath: string) {
 		url: kv.value || kv.key,
 	}));
 
-	const hooks = await readPageHooks(content.attributes?.hooks ?? [], baseDir);
-
 	return {
 		urlList,
-		hooks,
+		hooks: {
+			paths: content.attributes?.hooks ?? [],
+			baseDir,
+		},
 	};
 }
