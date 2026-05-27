@@ -163,12 +163,19 @@ export class ProcTalk<T, O = void> {
 
 		process.on('exit', this.#exit.bind(this));
 
-		const options = JSON.parse(process.argv[2] ?? '{}') as O;
-		this.#cleanup = (await config.process.call(this, options)) ?? null;
+		try {
+			const options = JSON.parse(process.argv[2] ?? '{}') as O;
+			this.#cleanup = (await config.process.call(this, options)) ?? null;
 
-		this.#process.send?.({
-			type: 'initialized',
-		});
+			this.#process.send?.({
+				type: 'initialized',
+			});
+		} catch (error: unknown) {
+			// Without this, a throw inside the child's `process` callback (e.g. readPageHooks
+			// failing because a hook path is missing) becomes an unhandled promise rejection
+			// and the child silently exits, leaving the parent waiting forever on initialized().
+			this.#error(error);
+		}
 	}
 
 	async #onMessage(message?: {
