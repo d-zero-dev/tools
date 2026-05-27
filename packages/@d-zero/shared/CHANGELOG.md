@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.22.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.21.3...@d-zero/shared@0.22.0) (2026-05-27)
+
+### Features
+
+- **shared:** expose sample-distribution and accept fieldLabel in parseInterval ([68170fb](https://github.com/d-zero-dev/tools/commit/68170fbb2cee993e8b0a7891e94df04ffc17ed54))
+
 ## [0.21.3](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.21.3-alpha.2...@d-zero/shared@0.21.3) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/shared

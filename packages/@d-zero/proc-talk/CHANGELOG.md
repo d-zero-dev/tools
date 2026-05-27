@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.23](https://github.com/d-zero-dev/tools/compare/@d-zero/proc-talk@0.4.22...@d-zero/proc-talk@0.4.23) (2026-05-27)
+
+### Bug Fixes
+
+- **proc-talk:** forward child init errors to parent instead of silently exiting ([f18db0f](https://github.com/d-zero-dev/tools/commit/f18db0f51afa60cee63186e3eadf7b77bcae75d7))
+
 ## [0.4.22](https://github.com/d-zero-dev/tools/compare/@d-zero/proc-talk@0.4.22-alpha.2...@d-zero/proc-talk@0.4.22) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/proc-talk

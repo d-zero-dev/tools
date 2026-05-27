@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.9.9...@d-zero/a11y-check@0.10.0) (2026-05-27)
+
+### Features
+
+- **a11y-check:** return PageHookSource from readConfig ([2f20273](https://github.com/d-zero-dev/tools/commit/2f20273cbdd07f8c98f01d0fc80e5cda15eea639))
+
 ## [0.9.9](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.9.8...@d-zero/a11y-check@0.9.9) (2026-05-19)
 
 **Note:** Version bump only for package @d-zero/a11y-check

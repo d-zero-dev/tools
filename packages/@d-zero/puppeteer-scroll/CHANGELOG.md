@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.1.18...@d-zero/puppeteer-scroll@4.0.0) (2026-05-27)
+
+- feat(puppeteer-scroll)!: randomize default scroll interval and distance ([3907d15](https://github.com/d-zero-dev/tools/commit/3907d1547da584d930ec3b2d436c98538ad6fbd0))
+
+### BREAKING CHANGES
+
+- scrollAllOver defaults change so each step looks less mechanical.
+
+* interval default changes from a fixed 300 ms to a random 200-500 ms range
+* distance default changes from a fixed clientHeight to clientHeight x random(0.5, 1.0)
+  sampled per iteration inside the browser context
+* distance option type widens from `number` to `number | DelayOptions`
+* explicit 0 or negative distance values are clamped to 1 px to avoid
+  accidental stuck-detection bail outs
+
+Callers that need deterministic scrolling must pass explicit values, e.g.
+`scrollAllOver(page, { interval: 300, distance: 800 })`.
+
+Also factors the random-value resolver into its own `resolve-value.ts`
+with dedicated tests, and extends the scroll-all-over test mock so that
+`evaluate` arguments and `delay` invocations are now verifiable.
+
 ## [3.1.18](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.1.18-alpha.2...@d-zero/puppeteer-scroll@3.1.18) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/puppeteer-scroll

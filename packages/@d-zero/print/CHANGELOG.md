@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.6.13...@d-zero/print@3.0.0) (2026-05-27)
+
+- feat(print)!: accept hooks as PageHookSource so they survive IPC to the child ([01c9a56](https://github.com/d-zero-dev/tools/commit/01c9a5676e7cfbb09dec3f59b3a85b190f3c2638))
+
+### Features
+
+- **print:** add scroll interval and distance options ([c69a8d8](https://github.com/d-zero-dev/tools/commit/c69a8d84b11a9d157f819e8424ce57d24992242d))
+
+### BREAKING CHANGES
+
+- PrintOptions.hooks is now PageHookSource (an object with
+  paths and baseDir) instead of readonly PageHook[]. Library callers must
+  move their hook functions into files and pass the file paths. CLI users
+  (frontmatter `hooks:` in url-list.txt) are unaffected.
+
 ## [2.6.13](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.6.13-alpha.2...@d-zero/print@2.6.13) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/print

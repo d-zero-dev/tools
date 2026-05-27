@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.36](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-scenarios@0.4.35...@d-zero/a11y-check-scenarios@0.4.36) (2026-05-27)
+
+**Note:** Version bump only for package @d-zero/a11y-check-scenarios
+
 ## [0.4.35](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-scenarios@0.4.35-alpha.2...@d-zero/a11y-check-scenarios@0.4.35) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/a11y-check-scenarios

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.10...@d-zero/puppeteer-screenshot@3.4.0) (2026-05-27)
+
+### Features
+
+- **puppeteer-screenshot:** forward scrollInterval and scrollDistance to beforePageScan ([70a4844](https://github.com/d-zero-dev/tools/commit/70a48448218a0dc295afb4b723ead537571ebc96))
+
 ## [3.3.10](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-screenshot@3.3.10-alpha.2...@d-zero/puppeteer-screenshot@3.3.10) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/puppeteer-screenshot

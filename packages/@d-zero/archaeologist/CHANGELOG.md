@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.7.1...@d-zero/archaeologist@4.0.0) (2026-05-27)
+
+- feat(archaeologist)!: pass hooks through IPC and run them in analyze and freeze ([2096b8f](https://github.com/d-zero-dev/tools/commit/2096b8f2e6af5d4f78d78d1e73f9168db2dee5a6))
+
+### BREAKING CHANGES
+
+- AnalyzeOptions.hooks and FreezeOptions.hooks are now an
+  optional PageHookSource instead of a required readonly PageHook[]. Library
+  callers must pass { paths, baseDir } instead of a function array. The
+  PageHook re-export from @d-zero/archaeologist is removed; import it from
+  @d-zero/puppeteer-page-scan if needed inside hook files. CLI users get a
+  behavior change: `hooks:` in the URL-list frontmatter now actually runs in
+  both analyze and freeze modes (previously a no-op). See
+  MIGRATION-page-hooks.md.
+
 ## [3.7.1](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.7.1-alpha.2...@d-zero/archaeologist@3.7.1) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/archaeologist

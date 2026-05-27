@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.4.10...@d-zero/puppeteer-page-scan@4.5.0) (2026-05-27)
+
+### Features
+
+- **puppeteer-page-scan:** add PageHookSource type for IPC-safe hook passing ([924fb16](https://github.com/d-zero-dev/tools/commit/924fb168a075b80b5927bc96bcc05622275006f6))
+- **puppeteer-page-scan:** forward scrollInterval and scrollDistance to scrollAllOver ([b29192f](https://github.com/d-zero-dev/tools/commit/b29192f6ac6ab6e8eed5d844fe137e17072231ac))
+
 ## [4.4.10](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.4.10-alpha.2...@d-zero/puppeteer-page-scan@4.4.10) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/puppeteer-page-scan

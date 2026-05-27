@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.6.21...@d-zero/a11y-check-core@0.7.0) (2026-05-27)
+
+- feat(a11y-check-core)!: forward hooks through IPC and run them in beforePageScan ([8ac8872](https://github.com/d-zero-dev/tools/commit/8ac8872a40ea794997e71d2302f3af7923c22f93))
+
+### BREAKING CHANGES
+
+- ScenarioRunnerOptions.hooks is now PageHookSource instead
+  of readonly PageHook[]. Library callers must pass { paths, baseDir }
+  instead of a function array. CLI users of @d-zero/a11y-check get a behavior
+  change: `hooks:` in the URL-list frontmatter now actually runs (previously
+  a no-op). See MIGRATION-page-hooks.md.
+
 ## [0.6.21](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.6.21-alpha.2...@d-zero/a11y-check-core@0.6.21) (2026-04-08)
 
 **Note:** Version bump only for package @d-zero/a11y-check-core

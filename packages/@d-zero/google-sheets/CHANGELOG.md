@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.8.0...@d-zero/google-sheets@0.9.0) (2026-05-27)
+
+### Features
+
+- **google-sheets:** expose per-chunk onProgress callback on Sheet ([83abd7e](https://github.com/d-zero-dev/tools/commit/83abd7ea79553b6ac9b101359b1287333b8e3431))
+
 # [0.8.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.7.2...@d-zero/google-sheets@0.8.0) (2026-05-19)
 
 ### Bug Fixes
