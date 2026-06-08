@@ -285,11 +285,24 @@ lanes.clear({ header: true }); // ヘッダーもクリア
 
 ##### close()
 
-ディスプレイを閉じます。
+ディスプレイを閉じ、すべてのリソース（フレームタイマー、`process.stdout` の `resize`
+イベント、`SIGINT` シグナル）のリスナーを解放します。
 
 ```ts
 lanes.close();
 ```
+
+**契約:**
+
+- **冪等**: 複数回呼んでも安全。2回目以降は no-op。
+- **close 後の操作は no-op**: 以後の `write()` / `update()` / `clear()` / `delete()` /
+  `header()` はターミナルに書き込まず、フレームタイマーも再起動しません。`Lanes`
+  インスタンスは「閉じた」ライフサイクルとして扱われ、再利用はできません。再開したい
+  場合は新しい `Lanes` を作成してください。
+- **verbose モードでも有効**: 旧バージョン（`1.7.5` 以前）では verbose モードの
+  `close()` がリスナーを解放しなかったため、`Lanes` を繰り返し生成すると `resize`
+  リスナーが累積し `MaxListenersExceededWarning` を引き起こしました。次回リリース
+  （CHANGELOG.md 参照）以降は verbose モードでも必ず解放されます。
 
 ##### delete(id: number)
 
