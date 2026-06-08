@@ -28,7 +28,8 @@ export interface DealerOptions<T = unknown> {
  * アイテムを並列処理するワーカープールマネージャー。
  *
  * 典型的な使用順序: {@link setup} → {@link finish} / {@link progress} → {@link play}。
- * 処理中に {@link push} で動的にアイテムを追加できる。
+ * 処理中に {@link push}（末尾へ追加）または {@link unshift}（先頭へ優先追加）で
+ * 動的にアイテムを追加できる。
  * @template T - 処理対象アイテムの型（WeakKey 制約）
  */
 export class Dealer<T extends WeakKey> {
@@ -98,16 +99,7 @@ export class Dealer<T extends WeakKey> {
 	 * @param items - 追加するアイテム
 	 */
 	async push(...items: T[]) {
-		if (this.#finished || this.#signal?.aborted) {
-			return;
-		}
-		for (const item of items) {
-			if (this.#onPush && !this.#onPush(item)) {
-				continue;
-			}
-			this.#pendingInitCount++;
-			await this.#initializeAndDispatch(item);
-		}
+		await this.#enqueue(items, false);
 	}
 
 	/**
@@ -128,6 +120,19 @@ export class Dealer<T extends WeakKey> {
 			total,
 			this.#limit,
 		);
+	}
+
+	/**
+	 * 実行中にアイテムをキューの先頭へ追加する。
+	 * {@link push} と異なり、まだ処理されていない既存アイテムよりも先に処理される。
+	 * 引数の順序はそのまま保たれ（`unshift(a, b, c)` は a→b→c の順でディスパッチされ、
+	 * index も同じ順序で採番される）、既存の未処理アイテムより前に挿入される。
+	 * 追加されたアイテムには {@link setup} で設定した初期化関数が自動適用される。
+	 * 処理完了後または signal が abort 済みの場合、呼び出しは無視される。
+	 * @param items - 追加するアイテム
+	 */
+	async unshift(...items: T[]) {
+		await this.#enqueue(items, true);
 	}
 
 	#deal() {
@@ -189,18 +194,46 @@ export class Dealer<T extends WeakKey> {
 		}
 		return null;
 	}
-	async #initializeAndDispatch(item: T) {
-		if (!this.#initializer) {
-			throw new Error('setup() must be called before push()');
-		}
-		const start = await this.#initializer(item, this.#nextIndex++);
-		this.#pendingInitCount--;
-		if (this.#signal?.aborted) {
-			this.#deal();
+	/**
+	 * {@link push} / {@link unshift} 共通の追加処理。
+	 * 各アイテムを引数順に初期化（index も引数順に採番）し、
+	 * 受理されたアイテムをまとめてキューへ挿入してから一度だけディスパッチする。
+	 * バッチを一括挿入することで、`prepend` 時に追加分が先頭へ連続して並ぶことを保証する。
+	 * @param items - 追加するアイテム
+	 * @param prepend - `true` ならキュー先頭へ、`false` なら末尾へ追加する
+	 */
+	async #enqueue(items: readonly T[], prepend: boolean) {
+		if (this.#finished || this.#signal?.aborted) {
 			return;
 		}
-		this.#starts.set(item, async () => await start());
-		this.#items.push(item);
+		if (!this.#initializer) {
+			throw new Error('setup() must be called before push()/unshift()');
+		}
+
+		const accepted: T[] = [];
+		for (const item of items) {
+			if (this.#onPush && !this.#onPush(item)) {
+				continue;
+			}
+			this.#pendingInitCount++;
+			const start = await this.#initializer(item, this.#nextIndex++);
+			this.#pendingInitCount--;
+			if (this.#signal?.aborted) {
+				break;
+			}
+			this.#starts.set(item, async () => await start());
+			accepted.push(item);
+		}
+
+		if (accepted.length === 0) {
+			return;
+		}
+
+		if (prepend) {
+			this.#items.unshift(...accepted);
+		} else {
+			this.#items.push(...accepted);
+		}
 		this.#deal();
 	}
 }
