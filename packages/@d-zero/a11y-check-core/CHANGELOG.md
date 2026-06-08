@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.1](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.7.0...@d-zero/a11y-check-core@0.7.1) (2026-06-08)
+
+**Note:** Version bump only for package @d-zero/a11y-check-core
+
 # [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-core@0.6.21...@d-zero/a11y-check-core@0.7.0) (2026-05-27)
 
 - feat(a11y-check-core)!: forward hooks through IPC and run them in beforePageScan ([8ac8872](https://github.com/d-zero-dev/tools/commit/8ac8872a40ea794997e71d2302f3af7923c22f93))

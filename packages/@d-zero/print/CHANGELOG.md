@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.1](https://github.com/d-zero-dev/tools/compare/@d-zero/print@3.0.0...@d-zero/print@3.0.1) (2026-06-08)
+
+**Note:** Version bump only for package @d-zero/print
+
 # [3.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/print@2.6.13...@d-zero/print@3.0.0) (2026-05-27)
 
 - feat(print)!: accept hooks as PageHookSource so they survive IPC to the child ([01c9a56](https://github.com/d-zero-dev/tools/commit/01c9a5676e7cfbb09dec3f59b3a85b190f3c2638))

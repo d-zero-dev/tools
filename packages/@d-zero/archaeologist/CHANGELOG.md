@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.1](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@4.0.0...@d-zero/archaeologist@4.0.1) (2026-06-08)
+
+**Note:** Version bump only for package @d-zero/archaeologist
+
 # [4.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@3.7.1...@d-zero/archaeologist@4.0.0) (2026-05-27)
 
 - feat(archaeologist)!: pass hooks through IPC and run them in analyze and freeze ([2096b8f](https://github.com/d-zero-dev/tools/commit/2096b8f2e6af5d4f78d78d1e73f9168db2dee5a6))

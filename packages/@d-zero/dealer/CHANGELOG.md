@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.7.5...@d-zero/dealer@1.8.0) (2026-06-08)
+
+### Bug Fixes
+
+- **dealer:** guard write() against use-after-close to prevent timer leak ([257bb0d](https://github.com/d-zero-dev/tools/commit/257bb0d6da2168c525f13a4753fea48359d33685))
+- **dealer:** release process listeners on close() even in verbose mode ([045989d](https://github.com/d-zero-dev/tools/commit/045989da9f8809319322ecf2e248687e3d6a1d18))
+
+### Features
+
+- **dealer:** add unshift API for front-of-queue priority enqueue ([0b1476d](https://github.com/d-zero-dev/tools/commit/0b1476d9f3ad4417592eeb93b6805622cc9f91cb))
+
 ## [1.7.5](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.7.4...@d-zero/dealer@1.7.5) (2026-05-27)
 
 **Note:** Version bump only for package @d-zero/dealer
