@@ -96,6 +96,13 @@ export class Display {
 	}
 
 	write(...logs: string[]) {
+		// After close() the lifecycle is finished: timers and signal listeners
+		// have been released, so a late write() must not re-arm setTimeout (the
+		// very leak close() exists to stop) or print past a "finalized" frame
+		if (this.#closed) {
+			return;
+		}
+
 		if (this.#verbose) {
 			for (const log of logs) {
 				process.stdout.write(this.#text(log, false) + '\n');
