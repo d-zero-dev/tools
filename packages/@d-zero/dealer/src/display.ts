@@ -60,7 +60,7 @@ export class Display {
 	}
 
 	close() {
-		if (this.#verbose || this.#closed) {
+		if (this.#closed) {
 			return;
 		}
 		this.#closed = true;
@@ -70,7 +70,12 @@ export class Display {
 			this.#timer = null;
 		}
 
-		this.#write();
+		// Verbose mode has no interactive frame to finalize, but the process
+		// listeners registered in the constructor must still be released —
+		// otherwise repeated Display lifecycles leak resize/SIGINT listeners
+		if (!this.#verbose) {
+			this.#write();
+		}
 
 		if (this.#resizeHandler) {
 			process.stdout.off('resize', this.#resizeHandler);
