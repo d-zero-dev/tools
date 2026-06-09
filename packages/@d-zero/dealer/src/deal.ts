@@ -73,7 +73,7 @@ const DEBUG_ID = Number.MIN_SAFE_INTEGER;
  * - When the signal is aborted:
  *   1. No new workers will be launched
  *   2. Currently running workers will continue until they complete
- *   3. `push()` calls after abort are silently ignored
+ *   3. `push()` / `unshift()` calls after abort are silently ignored
  *   4. The returned Promise resolves after all running workers finish
  * - If the signal is already aborted before `play()`, the Promise resolves immediately
  *   without processing any items
@@ -91,6 +91,7 @@ export async function deal<T extends WeakKey>(
 		index: number,
 		setLineHeader: (lineHeader: string) => void,
 		push: (...items: T[]) => Promise<void>,
+		unshift: (...items: T[]) => Promise<void>,
 	) => Promise<() => void | Promise<void>> | (() => void | Promise<void>),
 	options?: DealOptions<T>,
 ) {
@@ -110,7 +111,8 @@ export async function deal<T extends WeakKey>(
 		};
 		const update = (log: string) => lanes.update(index, lineHeader + log);
 		const push = (...newItems: T[]) => dealer.push(...newItems);
-		const start = await setup(process, update, index, setLineHeader, push);
+		const unshift = (...newItems: T[]) => dealer.unshift(...newItems);
+		const start = await setup(process, update, index, setLineHeader, push, unshift);
 		return async () => {
 			await delay(options?.interval ?? 0, (determinedInterval) => {
 				update(

@@ -78,6 +78,7 @@ async function deal<T extends WeakKey>(
 		index: number,
 		setLineHeader: (lineHeader: string) => void,
 		push: (...items: T[]) => Promise<void>,
+		unshift: (...items: T[]) => Promise<void>,
 	) => Promise<() => void | Promise<void>> | (() => void | Promise<void>),
 	options?: DealOptions<T>,
 ): Promise<void>;
@@ -91,7 +92,8 @@ async function deal<T extends WeakKey>(
   - `update`: ログを更新する関数
   - `index`: アイテムのインデックス
   - `setLineHeader`: ログの各行にプレフィックスを設定する関数
-  - `push`: 実行中にアイテムをキューに追加する関数
+  - `push`: 実行中にアイテムをキューの末尾に追加する関数
+  - `unshift`: 実行中にアイテムをキューの先頭へ優先追加する関数
   - 戻り値: アイテムを開始する関数
 - `options`: 設定オプション
 
@@ -250,7 +252,18 @@ await dealer.unshift(urgentItem1, urgentItem2);
 - 引数の順序はそのまま保たれます。`unshift(a, b, c)`は`a → b → c`の順でディスパッチされ、`index`も同じ順序で採番されます。複数アイテムは先頭に連続して並び、間に既存の未処理アイテムが割り込むことはありません。
 
 > [!NOTE]
-> `unshift()`は`Dealer`クラスの直接APIです。高レベルの`deal()`関数の`setup`コールバックが受け取るのは`push`のみで、`unshift`は公開されていません。
+> 高レベルの`deal()`関数を使う場合は、`setup`コールバックの第6引数として`unshift`を受け取れます（`push`の直後）。これは`dealer.unshift()`をそのまま呼び出すラッパーです。
+>
+> ```ts
+> await deal(items, (item, update, index, setLineHeader, push, unshift) => {
+> 	return async () => {
+> 		const result = await process(item);
+> 		// 通常のリンクは末尾、優先リンクは先頭へ割り込ませる
+> 		await push(...result.normalLinks);
+> 		await unshift(...result.priorityLinks);
+> 	};
+> });
+> ```
 
 ### Lanesクラス
 
