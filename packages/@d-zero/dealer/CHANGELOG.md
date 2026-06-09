@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.8.0...@d-zero/dealer@1.9.0) (2026-06-09)
+
+### Features
+
+- **dealer:** expose unshift to deal() setup callback ([6266ae8](https://github.com/d-zero-dev/tools/commit/6266ae8732f06cfae5708dbb4bfd96b2a276b25a))
+
 # [1.8.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.7.5...@d-zero/dealer@1.8.0) (2026-06-08)
 
 ### Bug Fixes
