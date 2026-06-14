@@ -75,12 +75,18 @@ export async function remoteInspector(options: RemoteInspectorOptions): Promise<
 }
 
 /**
+ * SFTP でリモートファイルを取得し、ローカルと比較する。
  *
- * @param client
- * @param localFile
- * @param localDir
- * @param remoteDir
- * @param root
+ * `root` の役目: ファイルリストにドキュメントルート相対ではない形（例: `htdocs/index.html`）
+ * でパスが書かれている運用に対し、リモート側の絶対パスを正しく組み立てるため
+ * **リモートパス計算前に root プレフィックスを除去**する。
+ * 例: ファイルリスト `htdocs/css/style.css` + `root='htdocs'` + `remoteDir='/var/www/html'`
+ *  → リモート `/var/www/html/css/style.css`。設定なしだと `/var/www/html/htdocs/css/style.css` になり比較対象がずれる。
+ * @param client - SFTP クライアント
+ * @param localFile - ローカルファイルのパス
+ * @param localDir - ローカルベースディレクトリ
+ * @param remoteDir - リモートベースディレクトリ
+ * @param root - リストエントリから除去するルートプレフィックス
  */
 async function compareFile(
 	client: Client,
