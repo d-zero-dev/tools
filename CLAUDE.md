@@ -72,7 +72,8 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 
 タスクに応じて `.claude/skills/` 配下のスキルを参照すること。
 
-| スキル          | パス                                      | 用途                                                    |
-| --------------- | ----------------------------------------- | ------------------------------------------------------- |
-| Product Manager | `.claude/skills/product-manager/SKILL.md` | リポジトリ分析、ドキュメント生成・レビュー、PR レビュー |
-| QA Engineer     | `.claude/skills/qa-engineer/SKILL.md`     | コードレビュー、テスト品質チェック、カバレッジ改善      |
+| スキル          | パス                                      | 用途                                                        |
+| --------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| Product Manager | `.claude/skills/product-manager/SKILL.md` | リポジトリ分析、ドキュメント生成・レビュー、PR レビュー     |
+| QA Engineer     | `.claude/skills/qa-engineer/SKILL.md`     | コードレビュー、テスト品質チェック、カバレッジ改善          |
+| Impl            | `.claude/skills/impl/SKILL.md`            | 合意済み計画の実装・検証・PR 作成までのオーケストレーション |
