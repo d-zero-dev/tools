@@ -1,35 +1,20 @@
 # `@d-zero/google-sheets`
 
-Google Sheets API を使いやすくラップした TypeScript ライブラリです。型安全なテーブル操作を提供します。
+Google Sheets API を型安全にラップしたライブラリ。`SheetTable` で「ヘッダー定義済みのテーブル」として読み書きする。
 
-## インストール
+## Installation
 
-```bash
-npm install @d-zero/google-sheets @d-zero/google-auth
+```sh
+yarn add @d-zero/google-sheets @d-zero/google-auth
 ```
 
-## 基本的な使い方
+## Usage
 
-### 認証
-
-```typescript
+```ts
 import { authentication } from '@d-zero/google-auth';
-
-// クレデンシャルファイルのパスを直接指定
-const auth = await authentication('path/to/credentials.json', [
-	'https://www.googleapis.com/auth/spreadsheets',
-]);
-
-// または環境変数GOOGLE_AUTH_CREDENTIALSから自動取得
-const auth = await authentication(null, ['https://www.googleapis.com/auth/spreadsheets']);
-```
-
-認証の詳細は [@d-zero/google-auth](../google-auth/README.md) を参照してください。
-
-### データを書き込む
-
-```typescript
 import { SheetTable } from '@d-zero/google-sheets';
+
+const auth = await authentication(null, ['https://www.googleapis.com/auth/spreadsheets']);
 
 const table = await SheetTable.create(
 	'https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit',
@@ -46,256 +31,17 @@ const table = await SheetTable.create(
 );
 
 await table.addRecords([
-	{
-		name: '田中太郎',
-		email: 'tanaka@example.com',
-		age: { value: 25 },
-		registered: { value: new Date('2024-01-15') },
-	},
+	{ name: '田中太郎', email: 'tanaka@example.com', age: { value: 25 } },
 ]);
 ```
 
-### データを読み取る
+書式・条件付き書式・読み取り API は `src/sheet-table.ts` の JSDoc を参照。
 
-```typescript
-const table = await SheetTable.create(
-	'https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit',
-	'Products',
-	auth,
-	{
-		search: ['id', 'name', 'price', 'inStock'],
-	},
-);
+## 重要な制約
 
-const products = await table.getData();
-```
+- **大量行のストリーミング送信は 2500 行チャンクで自動分割**される（Sheets API のメモリ・タイムアウト制約への対応）
+- **遅延セル（`{ value: thunk }`）は flush 中に自動展開**される。展開中に新たな遅延セルが見つかった場合は早期 flush を停止して整合性を保つ
+- **`onProgress` コールバック内で `addRecords` を再入呼びしてはならない** — buffer mutation 破壊で行順が壊れる
+- **同一インスタンスへの並列呼び出し禁止** — 行順・送信件数の保証は逐次呼び出し前提
 
-### セルのスタイリング
-
-文字列の代わりにオブジェクトを渡すことで、セルの書式を指定できます。
-
-```typescript
-await table.addRecords([
-	{
-		title: 'プロジェクトA',
-		link: {
-			value: 'https://example.com',
-			textFormat: {
-				link: { uri: 'https://example.com' },
-				foregroundColor: { blue: 1.0 },
-			},
-		},
-		status: {
-			value: '完了',
-			textFormat: {
-				bold: true,
-				foregroundColor: { green: 0.8 },
-			},
-		},
-	},
-]);
-```
-
-### 条件付き書式
-
-ヘッダー定義時に条件付き書式を設定できます。
-
-```typescript
-const table = await SheetTable.create(spreadsheetUrl, 'Sales', auth, {
-	define: {
-		date: '日付',
-		amount: {
-			label: '売上金額',
-			conditionalFormatRules: [
-				{
-					booleanRule: {
-						condition: {
-							type: 'NUMBER_GREATER_THAN_EQ',
-							values: [{ userEnteredValue: '10000' }],
-						},
-						format: {
-							backgroundColor: { red: 0.8, green: 1.0, blue: 0.8 },
-						},
-					},
-				},
-			],
-		},
-		status: 'ステータス',
-	},
-});
-```
-
-## API リファレンス
-
-### `SheetTable`
-
-#### 静的メソッド
-
-##### `SheetTable.create(sheetUrl, sheetName, auth, header, options?)`
-
-テーブルを作成します。シートが存在しない場合は作成されます。
-
-**パラメータ:**
-
-- `sheetUrl: string` - スプレッドシートの URL
-- `sheetName: string` - シート名
-- `auth: OAuth2Client` - 認証クライアント
-- `header` - ヘッダー設定
-  - `{ define: { [key: string]: string | HeaderCell } }` - ヘッダーを定義する
-  - `{ search: string[] }` - 既存のヘッダーを検索する
-- `options?` - オプション設定
-  - `bodyStartRow?: number` - データ開始行（デフォルト: 2）
-  - `frozen?: { rows: number; cols: number }` - 固定する行・列数
-
-**戻り値:** `Promise<SheetTable>`
-
-#### インスタンスメソッド
-
-##### `addRecords(records)`
-
-レコードを追加します。
-
-**パラメータ:**
-
-- `records` - レコードの配列。各値は `string` または `{ value, textFormat?, cellFormat?, ... }` オブジェクト（文字列以外の値も `{ value: ... }` でラップ）
-
-##### `getData()`
-
-すべてのデータを取得します。セルの型（文字列、数値、日付など）は自動変換されます。
-
-**戻り値:** `Promise<T[]>`
-
-### 型定義
-
-#### `HeaderCell`
-
-```typescript
-type HeaderCell = {
-	readonly label: string;
-	readonly conditionalFormatRules?: sheets_v4.Schema$ConditionalFormatRule[];
-};
-```
-
-#### `CellData`
-
-```typescript
-type CellData<T = CellRawData> = {
-	readonly value: T;
-	readonly textFormat?: sheets_v4.Schema$TextFormat | null;
-	readonly cellFormat?: sheets_v4.Schema$CellFormat | null;
-	readonly image?: boolean;
-	readonly note?: string;
-	readonly ifNull?: T;
-};
-```
-
-#### `CellRawData`
-
-```typescript
-type CellRawData = string | number | boolean | Date | null | undefined;
-```
-
-#### `Row`
-
-```typescript
-type Row = readonly Cell[];
-```
-
-#### `CellType`
-
-```typescript
-type CellType = 'string' | 'number' | 'boolean' | 'date' | 'formula' | 'error';
-```
-
-#### `CellTypeInfo`
-
-```typescript
-type CellTypeInfo = {
-	readonly index: number;
-	readonly type: CellType;
-};
-```
-
-**`textFormat` の主なプロパティ:**
-
-- `bold?: boolean` - 太字
-- `italic?: boolean` - 斜体
-- `foregroundColor?: { red?: number; green?: number; blue?: number }` - 文字色（0.0-1.0）
-- `link?: { uri: string }` - ハイパーリンク
-
-詳細は [Google Sheets API リファレンス](https://developers.google.com/sheets/api/reference/rest) を参照してください。
-
-### 低レベル API
-
-`SheetTable` を使わず、より細かい制御が必要な場合は `Sheets` クラスを直接使用できます。
-
-```typescript
-import { Sheets } from '@d-zero/google-sheets';
-
-const sheets = new Sheets(sheetUrl, auth);
-const sheet = await sheets.create('SheetName');
-// sheet.addRowData(), sheet.setHeaders() など
-```
-
-詳細は [ソースコード](./src) を参照してください。
-
-### 大量行のストリーミング送信 (`appendRow` / `flush`)
-
-数万行クラスのデータを `addRowData(rows[])` で一括渡しすると、API リクエスト本文の gzip 圧縮中に呼び出し元のヒープを圧迫する場合があります。`Sheet` は行を逐次積む API を提供しており、内部で控えめなチャンク（既定 2500 行）に区切って自動送信します。
-
-```typescript
-const sheet = await sheets.create('Large Data');
-await sheet.setHeaders(['URL', 'Title']);
-
-for (const page of pages) {
-	const rows = generateRows(page);
-	await sheet.appendRow(...rows); // 可変長。配列はスプレッドで渡す
-}
-await sheet.flush(); // 末尾の未送信分を排出
-```
-
-#### 動作仕様
-
-- `appendRow(...rows)` は内部バッファに行を積み、2500 行に達した時点で先頭から `addRowData()` 経由で送信する
-- `flush()` は未送信分を全て送り切る。空バッファでの呼び出しは no-op、連続呼び出しも冪等
-- `sheet.sentCount` getter で累計送信行数を取得できる（進捗表示用途）
-- `sheet.onProgress` コールバックを設定すると、内部 chunk flush ごとに `(sent, remaining)` を受け取って能動的に進捗表示を駆動できる（後述）
-
-#### 進捗コールバック (`onProgress`)
-
-`appendRow(...rows)` の呼び出し内側で複数の chunk が逐次送信される間、外側からは `await` がブロックして見えるため「進捗が止まったように見える」問題が起きます。`sheet.onProgress` を設定すると各 chunk 送信直後に通知を受け取れます。
-
-```typescript
-const sheet = await sheets.create('Large Data');
-await sheet.setHeaders(['URL', 'Title']);
-
-const total = rows.length;
-sheet.onProgress = (sent, _remaining) => {
-	process.stdout.write(`\rSending ${sent}/${total} rows...`);
-};
-try {
-	await sheet.appendRow(...rows); // 63K 行を一括で渡しても、内部 chunk ごとに onProgress が走る
-} finally {
-	sheet.onProgress = undefined;
-}
-```
-
-##### 仕様
-
-- 引数は `(sent, remaining)`。`sent` は累計送信行数、`remaining` はバッファに残る未送信行数
-- 戻り値は `void | Promise<void>`。`Promise` を返すと次の chunk 送信は await してから走る
-- **例外耐性**: コールバックが throw / reject しても送信処理は中断されず、内部 debug log に記録して残りの chunk を送り続ける。表示バグでデータが落ちない設計
-- **再入禁止**: コールバック内で同じ `Sheet` インスタンスへの `appendRow` / `flush` を呼ばないこと。flush 中の内部バッファを再操作すると `splice`/`push` の境界条件が壊れる。表示・ログ・別シートへの記録など、対象 sheet を変更しない用途に限定する
-- 未設定（既定）の場合は呼ばれない。後方互換
-
-#### 遅延セルの自動検出
-
-`createCellData(() => ({...}))` で生成された thunk セルが行に 1 つでも含まれると、`appendRow` はその時点で自動 flush を停止し、明示的な `flush()` 呼び出しまで全行をバッファに保持します。これは thunk が呼び出し元の共有状態を `provide()` 評価時に参照するためで、ストリーミングで早期送信すると thunk がまだ確定していない時点で実行され、結果が壊れるのを防ぎます。FIFO 順を保つため、遅延行が一度入ったあとは後続の eager 行も同じくバッファに留まります。
-
-#### 同時実行の制約
-
-`appendRow` / `flush` は同一 `Sheet` インスタンスに対して **逐次** に呼ぶ前提です（`await` で完了を待ってから次を呼ぶ）。`Promise.all` 等で並行に呼ぶと内部バッファの mutation がインターリーブし、行順や送信件数が壊れる可能性があります。シート単位で並列処理したい場合はインスタンスを分離してください。
-
-## ライセンス
-
-MIT
+理由・実装は `src/sheet-table.ts` および `src/sheet.ts` の JSDoc を参照。

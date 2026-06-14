@@ -1,164 +1,65 @@
 # `@d-zero/print`
 
-ウェブサイトのスクリーンショットを撮影するツールです。
+Puppeteer でマルチデバイス対応のスクリーンショットを撮影する CLI / ライブラリ。`png` / `pdf` / `note`（メモ欄付き PDF）に対応。
 
-- Puppeteerを実行してページのスクリーンショットを撮影します
-- `png`、`pdf`、`note`の3つの形式で出力できます
-- 複数のデバイスサイズでスクリーンショットを撮影可能（7種類のプリセット + カスタム設定）
-- レスポンシブデザインの検証に最適
-
-## CLI
+## Installation
 
 ```sh
-npx @d-zero/print -f <listfile> [options]
+yarn add @d-zero/print
+```
+
+## Usage
+
+```sh
 npx @d-zero/print <url>... [options]
+npx @d-zero/print -f <listfile> [options]
 ```
 
-リストをファイルから読み込むか、URLを直接指定して実行します。
+オプションは `--help`、デバイスプリセットは [`@d-zero/puppeteer-page-scan`](../puppeteer-page-scan/) を参照。
 
-実行した結果は`.print`ディレクトリに保存されます。
-
-### オプション
-
-- `-v, --version`: バージョンを表示
-- `-f, --listfile <file>`: URLリストを持つファイルのパス
-- `<url>`: 対象のURL（複数指定可能）
-- `-t, --type <type>`: 出力形式（デフォルト: png）
-  - `png`: PNG画像（指定されたデバイスサイズで生成されます）
-  - `pdf`: PDFファイル（ブラウザの印刷機能を使用、Print CSSが適用されます）
-  - `note`: PNG画像のスクリーンショットに対してメモ欄付きのPDFファイルが生成されます
-- `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
-- `-T, --timeout <ms>`: リクエストタイムアウト（ミリ秒、デフォルト: 30000）
-- `-o, --open-disclosures`: キャプチャ前にすべての`<details>`要素を開き、すべての`button[aria-expanded="false"]`要素をクリックします
-  - 新しい要素が見つからなくなるまで繰り返し処理（最大1000回、各イテレーション後500ms待機）
-  - ネストされた要素や動的に生成される要素にも対応
-  - 最大イテレーション数に達した場合はエラーで終了
-- `--limit <number>`: 並列実行数の上限（デフォルト: 10）
-- `--interval <ms>`: 並列実行間の間隔（デフォルト: なし）
-  - 数値または"min-max"形式でランダム範囲を指定可能
-- `--scroll-interval <ms>`: ページ内スクロールのステップ間隔（デフォルト: ランダム 200-500ms）
-  - 数値または"min-max"形式でランダム範囲を指定可能
-- `--scroll-distance <px>`: 1ステップで進むスクロール距離（デフォルト: ビューポート高さの 50-100% のランダム）
-  - 数値または"min-max"形式でランダム範囲を指定可能
-- `--debug`: デバッグモード（デフォルト: false）
-- `--verbose`: 詳細ログモード（デフォルト: false）
-
-### 利用可能なデバイスプリセット
-
-- `desktop`: 1400px幅
-- `tablet`: 768px幅
-- `mobile`: 375px幅（2倍解像度）
-- `desktop-hd`: 1920px幅
-- `desktop-compact`: 1280px幅
-- `mobile-large`: 414px幅（3倍解像度）
-- `mobile-small`: 320px幅（2倍解像度）
-
-### 使用例
-
-```sh
-# デフォルトデバイス（desktop-compact, mobile）
-npx @d-zero/print https://example.com
-
-# カスタムデバイス指定
-npx @d-zero/print https://example.com --devices desktop,tablet,mobile
-
-# PDF出力
-npx @d-zero/print -f urls.txt --type pdf
-
-# ファイルから読み込み + デバイス指定
-npx @d-zero/print -f urls.txt --devices desktop,mobile
-
-# disclosure要素を展開してキャプチャ
-npx @d-zero/print https://example.com --open-disclosures
-npx @d-zero/print https://example.com -o
-```
-
-#### URLリストのファイルフォーマット
+### URL リストファイル
 
 ```txt
 https://example.com
-https://example.com/a
-https://example.com/b
 ID:ABC https://example.com/c
-ID:XYZ https://example.com/xyz/001
 # コメント
-# https://example.com/d
 ```
 
-URLの手前に任意のIDを付与することで、出力ファイル名にIDが含まれます。ホワイトスペースで区切ることでIDとURLを分けることができます。
-IDが指定されていない場合は、連番がIDとして使用されます。連番は1から始まり、3桁のゼロパディングされた数字として出力されます。空行を除いた行数が連番として使用されます。
+ID 未指定の場合は連番（1 から、3 桁ゼロパディング）が振られる。
 
-`#`で始まる行はコメントとして無視されます。
-
-## ページフック
-
-[Frontmatter](https://jekyllrb.com/docs/front-matter/)の`hooks`に配列としてスクリプトファイルのパスを渡すと、ページを開いた後（厳密にはPuppeteerの`waitUntil: 'networkidle0'`のタイミング直後）にそれらのスクリプトを実行します。スクリプトは配列の順番通りに逐次実行されます。
+### Frontmatter で hook 指定
 
 ```txt
 ---
 hooks:
-  - ./hook1.cjs
-  - ./hook2.mjs
+  - ./hook1.mjs
 ---
 
 https://example.com
-https://example.com/a
-︙
 ```
 
-フックスクリプトは、以下のようにエクスポートされた関数を持つモジュールとして定義します。
+`hooks` ファイルパスを通じて Puppeteer 実行側プロセスでフックが実行される。IPC 越境のため**関数配列ではなくパスを渡す**仕様（詳細は [`@d-zero/puppeteer-page-scan`](../puppeteer-page-scan/) の `PageHookSource`）。
 
-```js
-/**
- * @type {import('@d-zero/print').PageHook}
- */
-export default async function (page, { name, width, resolution, log }) {
-	// 非同期処理可能
-	// page: PuppeteerのPageオブジェクト
-	// name: サイズ名（'desktop' | 'mobile'）
-	// width: ウィンドウ幅
-	// resolution: 解像度
-	// log: ロガー
+### Basic 認証
 
-	// ログイン処理の例
-	log('login');
-	await page.type('#username', 'user');
-	await page.type('#password', 'pass');
-	await page.click('button[type="submit"]');
-	await page.waitForNavigation();
-	log('login done');
-}
-```
+URL に資格情報を含める: `https://user:pass@example.com`
 
-例のように、ページにログインする処理をフックスクリプトに記述することで、ユーザー認証が必要なページのスクリーンショットを撮影することができます。
+### `--open-disclosures`
 
-## 認証
+撮影前に `<details>` と `button[aria-expanded="false"]` をすべて展開。最大 1000 イテレーション・各 500ms 待機。終了条件と制限の WHY は `src/print.ts` の JSDoc を参照。
 
-### Basic認証
+### スクロール挙動
 
-Basic認証が必要なページの場合はURLにユーザー名とパスワードを含めます。
+未指定時は人間らしいランダム化が掛かる。**決定論が必要な場合（VRT、レコーディング、比較など）は `scrollInterval` / `scrollDistance` を明示**する。詳細は [`@d-zero/puppeteer-scroll`](../puppeteer-scroll/)。
 
-例: `https://user:pass@example.com`
-
-## ライブラリとしての使用
-
-CLIだけでなく、プログラムからも使用できます。
+## Library
 
 ```ts
 import { print } from '@d-zero/print';
-import type { PrintOptions, PrintType, PageHook } from '@d-zero/print';
 
-await print(['https://example.com', 'https://example.com/about'], {
-	type: 'png', // 出力形式: 'png' | 'pdf' | 'note'
-	devices: {
-		desktop: { width: 1400 },
-		mobile: { width: 375, resolution: 2 },
-	},
-	timeout: 30000,
-	interval: 1000, // または { random: { min: 500, max: 1500 } } でランダム間隔
-	openDisclosures: true,
-	scrollInterval: { random: { min: 200, max: 500 } }, // スクロールステップ間隔（省略時はランダム 200-500ms）
-	scrollDistance: { random: { min: 300, max: 900 } }, // 1ステップで進むピクセル数（省略時はビューポート高さの 50-100% のランダム）
+await print(['https://example.com'], {
+	type: 'png',
+	devices: { desktop: { width: 1400 }, mobile: { width: 375, resolution: 2 } },
 	hooks: {
 		paths: ['./hooks/login.mjs'],
 		baseDir: process.cwd(),
@@ -166,31 +67,4 @@ await print(['https://example.com', 'https://example.com/about'], {
 });
 ```
 
-#### `hooks` の指定方法（破壊的変更）
-
-`print` はフックを子プロセス（Puppeteer 実行側）で動かす都合上、`hooks` には **フックファイルのパス（`PageHookSource`）**を渡します。`PageHook` 関数配列は IPC を越境できないため受け付けません。
-
-```ts
-// ❌ 旧 API（〜 2.6.x）。Node IPC で関数が失われ TypeError になっていました
-hooks: [async (page, ctx) => { /* ... */ }];
-
-// ✅ 新 API（2.7.0 以降）
-hooks: {
-	paths: ['./hooks/login.mjs'],
-	baseDir: process.cwd(),
-};
-```
-
-詳細は [MIGRATION-page-hooks.md](../../../MIGRATION-page-hooks.md) を参照してください。
-
-#### スクロール挙動について
-
-`scrollInterval`と`scrollDistance`を省略すると、人間のスクロールに近い揺らぎを付けるために自動でランダム化されます。決定論的な再現性（VRT、レコーディング、比較など）が必要な場合は固定値を渡してください。詳細は[`@d-zero/puppeteer-scroll`](../puppeteer-scroll/README.md#デフォルト挙動)を参照。
-
-### エクスポートされる型
-
-- `PrintOptions`: `print`関数のオプション型
-- `PrintType`: 出力形式（`'png' | 'pdf' | 'note'`）
-- `PageHook`: ページフック関数の型（`@d-zero/puppeteer-page-scan`から再エクスポート）
-  - フックファイル内で `@type` JSDoc 注釈に使用します
-  - `print()` の `hooks` プロパティでは使用しません（[`PageHookSource`](../puppeteer-page-scan/README.md#pagehooksource)を使用）
+`hooks` は `PageHookSource`（パス + baseDir）形式で渡す。詳細は [MIGRATION-page-hooks.md](../../../MIGRATION-page-hooks.md)。

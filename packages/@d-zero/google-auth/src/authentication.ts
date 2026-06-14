@@ -13,18 +13,40 @@ import { log } from './debug.js';
 
 const FINISHED_MESSAGE = `🔑 ${c.bold.green('Authentication successful')}\n`;
 
+/**
+ * OAuth2 Desktop フロー時のブラウザ認証タイムアウト。
+ * 5 分は人間が手元のブラウザで「URL を開く → ログイン → 同意」をこなすのに
+ * 余裕がある一方、CI などで誤って起動した場合にハングし続けないギリギリの上限。
+ */
 const AUTH_TIMEOUT_MS = 5 * 60 * 1000;
 
 export type AuthenticationOptions = {
+	/** トークンファイルの保存先パス（デフォルト: クレデンシャルファイルと同じディレクトリに `.token` 拡張子で保存）。 */
 	readonly tokenFilePath?: string;
+	/**
+	 * `true` のときキャッシュ済みトークンの `expiry_date` を起動時に検査し、
+	 * 期限切れなら自動で再認証する。デフォルト `false` の理由は、
+	 * Google OAuth クライアントが API 呼び出し時に自動でリフレッシュトークンから
+	 * 再取得するため、明示チェックは「起動時に固まる前に気付きたい運用」でだけ必要だから。
+	 */
 	readonly checkTokenExpiry?: boolean;
 };
 
 /**
+ * Google API 用 `OAuth2Client` を解決する。
  *
- * @param credentialFilePath
- * @param scope
- * @param options
+ * 認証方式は以下の優先順位で試す（最初に成立したものを使う）:
+ * 1. 引数の `credentialFilePath`（明示指定が常に最優先）
+ * 2. 環境変数 `GOOGLE_AUTH_CREDENTIALS`
+ * 3. ADC（Application Default Credentials） — `gcloud auth application-default login`、
+ *    `GOOGLE_APPLICATION_CREDENTIALS`、GCE メタデータなど
+ *
+ * 1 → 2 の順なのは「ローカル開発で `.env` の値を一時的にオーバーライドしたい」用途のため。
+ * ADC を最後にすることで、CI/CD でクレデンシャル未指定でもサーバ側 metadata 経由で
+ * 自然にフォールバックできる。すべて失敗時はセットアップガイダンス付きエラーを投げる。
+ * @param credentialFilePath - クレデンシャル JSON のパス。`null`/`undefined` で環境変数 → ADC にフォールバック
+ * @param scope - OAuth スコープ配列
+ * @param options - OAuth2 Desktop フロー時のみ有効なオプション
  */
 export async function authentication(
 	credentialFilePath: string | undefined | null,
