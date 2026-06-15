@@ -37,6 +37,9 @@
 		"mypassphrase",
 
 		// Shell keywords
-		"elif"
+		"elif",
+
+		// code-review effort level
+		"xhigh"
 	]
 }
