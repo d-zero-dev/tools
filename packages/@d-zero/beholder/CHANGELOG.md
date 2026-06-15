@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.6](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@2.1.5...@d-zero/beholder@2.1.6) (2026-06-15)
+
+### Bug Fixes
+
+- **beholder:** prevent getMeta from hanging on unresponsive pages ([f55bb26](https://github.com/d-zero-dev/tools/commit/f55bb261c1868b40709cbae6aa17d273c5516e74)), closes [#874](https://github.com/d-zero-dev/tools/issues/874)
+
 ## [2.1.5](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@2.1.4...@d-zero/beholder@2.1.5) (2026-05-27)
 
 **Note:** Version bump only for package @d-zero/beholder
