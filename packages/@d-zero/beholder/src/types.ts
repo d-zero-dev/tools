@@ -427,4 +427,10 @@ export type ScraperOptions = {
 	headCheckResult?: PageData;
 	/** Timeout (ms) for page.goto(). Default: 60_000 (60s). */
 	navigationTimeout?: number;
+	/**
+	 * Timeout (ms) for DOM evaluation operations (meta/image/anchor extraction).
+	 * Bounds how long extraction may hang on a page with an unresponsive main thread.
+	 * Default: 30_000 (30s).
+	 */
+	domEvaluationTimeout?: number;
 };

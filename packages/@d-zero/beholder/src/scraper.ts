@@ -22,7 +22,12 @@ import { retry as retryable } from '@d-zero/shared/retry';
 import { TypedAwaitEventEmitter as EventEmitter } from '@d-zero/shared/typed-await-event-emitter';
 
 import { resourceLog, scraperLog } from './debug.js';
-import { getAnchorList, getImageList, getMeta } from './dom-evaluation.js';
+import {
+	DEFAULT_DOM_EVALUATION_TIMEOUT,
+	getAnchorList,
+	getImageList,
+	getMeta,
+} from './dom-evaluation.js';
 import { isError } from './is-error.js';
 import { keywordCheck } from './keyword-check.js';
 import { findDisconnectionFailures } from './network-disconnection.js';
@@ -360,6 +365,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			options?.disableQueries == null
 				? undefined
 				: { disableQueries: options.disableQueries };
+		const domEvaluationTimeout =
+			options?.domEvaluationTimeout ?? DEFAULT_DOM_EVALUATION_TIMEOUT;
 		const networkLogs: Record<string, NetworkLog> = {};
 
 		// Clear stale state from previous retries (@retryable may re-invoke this method
@@ -626,7 +633,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			isExternal,
 			message: '',
 		});
-		const anchorList = await getAnchorList(page, parseOpts);
+		const anchorList = await getAnchorList(page, parseOpts, domEvaluationTimeout);
 
 		void this.emit('changePhase', {
 			pid: process.pid,
@@ -635,7 +642,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			isExternal,
 			message: '',
 		});
-		const meta = await getMeta(page);
+		const meta = await getMeta(page, domEvaluationTimeout);
 
 		const imageList = captureImages
 			? await (async () => {
@@ -651,6 +658,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 						url.withoutHashAndAuth,
 						isExternal,
 						imageLoadTimeout,
+						domEvaluationTimeout,
 					);
 				})()
 			: [];
@@ -691,6 +699,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * @param url - The page URL string (without hash and auth)
 	 * @param isExternal - Whether the page is external
 	 * @param imageLoadTimeout - Timeout (ms) for waiting images to complete loading
+	 * @param domEvaluationTimeout - Timeout (ms) for the in-page image extraction `page.evaluate`
 	 * @returns Array of image elements from all device presets (may be partial if some viewports failed)
 	 */
 	@retryable({
@@ -720,6 +729,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		url: string,
 		isExternal: boolean,
 		imageLoadTimeout: number,
+		domEvaluationTimeout: number,
 	): Promise<ImageElement[]> {
 		const listener = this.#createPageScanListener(isExternal);
 		const devices: { key: string; preset: { width: number; resolution?: number } }[] = [
@@ -767,7 +777,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					isExternal,
 					message: `📸 ${key}: Extracting images%dots%`,
 				});
-				const images = await getImageList(page, preset.width);
+				const images = await getImageList(page, preset.width, domEvaluationTimeout);
 				imageList.push(...images);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
