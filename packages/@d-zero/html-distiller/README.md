@@ -1,65 +1,19 @@
-# HTML Distiller
+# `@d-zero/html-distiller`
 
-A tool for precisely extracting essential information from HTML, enhancing machine readability. It removes unnecessary elements and provides the needed data in JSON format.
+HTML から不要な要素を削除し、機械可読な JSON ツリーに変換するユーティリティ。
 
-## Install
+## Installation
 
-```shell
-npm install @d-zero/html-distiller
+```sh
+yarn add @d-zero/html-distiller
 ```
 
-## API
+## Usage
 
 ```ts
 import { distill } from '@d-zero/html-distiller';
 
-const html = `
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<title>Test</title>
-	</head>
-	<body>
-		<h1>Hello, World!</h1>
-	</body>
-</html>
-`;
-
-const result = distill(html);
-console.log(result);
-```
-
-## Output
-
-```json
-{
-	"tree": [
-		{
-			"name": "html",
-			"attr": {
-				"lang": "en"
-			},
-			"content": [
-				{
-					"name": "head",
-					"content": [
-						{
-							"name": "title",
-							"content": ["Test"]
-						}
-					]
-				},
-				{
-					"name": "body",
-					"content": [
-						{
-							"name": "h1",
-							"content": ["Hello, World!"]
-						}
-					]
-				}
-			]
-		}
-	]
-}
+const result = distill(
+	'<!doctype html><html lang="en"><body><h1>Hello</h1></body></html>',
+);
 ```

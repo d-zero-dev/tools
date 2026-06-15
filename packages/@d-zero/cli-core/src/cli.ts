@@ -4,8 +4,13 @@ import { parseInterval } from '@d-zero/shared/parse-interval';
 import minimist from 'minimist';
 
 /**
+ * CLI アプリケーションを作成し、コマンドライン引数をパースする。検証に失敗した場合は使用方法を表示して終了する。
  *
- * @param config
+ * `name` と `version` を設定すると、`-v`/`--version` でバージョン情報を表示できる。
+ * ただし利用側の `aliases` で `v` が既に別オプションに割り当てられている場合、
+ * `-v` の上書きを避けるため `--version` のみ有効になる。利用側の意図的なエイリアス
+ * を勝手に奪わないための仕様。
+ * @param config - CLI 設定オブジェクト
  */
 export function createCLI<T extends BaseCLIOptions>(config: CLIConfig<T>): ParsedCLI<T> {
 	// Only add -v alias for version if not already used by the CLI

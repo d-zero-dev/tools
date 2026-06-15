@@ -7,6 +7,15 @@ import { getValueByField } from './get-value-by-field.js';
 
 type QueryDatabaseResponse = Awaited<ReturnType<Client['dataSources']['query']>>;
 
+/**
+ * Notion データベースを取得し、テーブル形式に変換するクライアント。
+ *
+ * `getDB` / `getTable` は一度取得した結果をインスタンス内にキャッシュし、
+ * 同一インスタンスに対する 2 回目以降の呼び出しでは API を叩かない。
+ * クエリ条件（`options.sorts`）はキャッシュキーとしては扱わないため、
+ * **異なる条件で取得し直したい場合は新しいインスタンスを作る**こと。
+ * Notion API は read レート制限が厳しめなので、不要な再取得を避けるための既定動作。
+ */
 export class NotionDB {
 	#client: Client;
 	#db: QueryDatabaseResponse | null = null;

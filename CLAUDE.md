@@ -12,7 +12,6 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 
 - `package.json` — scripts、devDependencies、Volta（Node 24 / Yarn 4）
 - `lerna.json` — **independent バージョンモード**、`packages/@d-zero/*`
-- `ARCHITECTURE.md` — パッケージ一覧、レイヤ構成、設計方針、主要な技術スタック
 - `README.md` — リポジトリ概要
 - `tsconfig.json` — TypeScript 設定
 - 各パッケージの構成は `packages/@d-zero/*/package.json` を参照
@@ -34,7 +33,7 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 
 ## アーキテクチャ
 
-詳細は [`ARCHITECTURE.md`](../ARCHITECTURE.md) を参照。各パッケージのカテゴリ・依存関係・設計方針はそちらに集約されている。
+各パッケージの責務・依存関係はソースコードと `package.json` の `dependencies` から把握すること。設計判断の WHY は該当コード位置の JSDoc に記載する（例: `puppeteer-page-scan/src/types.ts` の `PageHookSource`、`dealer/src/deal.ts` の `AbortSignal` 挙動）。
 
 ドキュメントと実装に矛盾がある場合は、**実装が正**とし、ドキュメントを修正すること。
 
@@ -72,7 +71,8 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 
 タスクに応じて `.claude/skills/` 配下のスキルを参照すること。
 
-| スキル          | パス                                      | 用途                                                    |
-| --------------- | ----------------------------------------- | ------------------------------------------------------- |
-| Product Manager | `.claude/skills/product-manager/SKILL.md` | リポジトリ分析、ドキュメント生成・レビュー、PR レビュー |
-| QA Engineer     | `.claude/skills/qa-engineer/SKILL.md`     | コードレビュー、テスト品質チェック、カバレッジ改善      |
+| スキル          | パス                                      | 用途                                                        |
+| --------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| Product Manager | `.claude/skills/product-manager/SKILL.md` | リポジトリ分析、ドキュメント生成・レビュー、PR レビュー     |
+| QA Engineer     | `.claude/skills/qa-engineer/SKILL.md`     | コードレビュー、テスト品質チェック、カバレッジ改善          |
+| Impl            | `.claude/skills/impl/SKILL.md`            | 合意済み計画の実装・検証・PR 作成までのオーケストレーション |

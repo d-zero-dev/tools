@@ -137,6 +137,13 @@ interface RoarSettings<Commands extends Record<string, CommandDef>> {
 	 * Program version string (e.g. `"1.2.3"`).
 	 * When provided, the CLI prints this value and exits with code `0`
 	 * if the first argument is `-v` or `--version`.
+	 *
+	 * 判定は `argv[0]` の位置でのみ行われる。サブコマンドの後ろ（例: `my-cli build -v`）
+	 * に置いた場合はそのコマンドが定義した `shortFlag: 'v'` のフラグとして解釈され、
+	 * バージョン表示は発火しない。これはサブコマンド固有の `-v` を奪わないための仕様。
+	 *
+	 * 空文字列 `''` を設定した場合も「version が指定された」と扱われ、空行を出力して
+	 * `exit(0)` する（`undefined` のみが「未指定」を意味する）。
 	 */
 	version?: string;
 	/** Map of sub-command names to their definitions. */

@@ -1,168 +1,52 @@
 # `@d-zero/archaeologist`
 
-**🕵️ Archaeologist: アーキオロジスト**
+ウェブサイトの本番と開発、新旧ページなどを比較する CLI。Puppeteer でレンダリング後のスクリーンショット・DOM・テキストを比較する他、生 HTML（`code` タイプ）はブラウザ不要で比較する。
 
-ウェブサイトの本番環境と開発環境や、新旧のページの比較するためのツールです。
+## Installation
 
-- Puppeteerを実行してページのスクリーンショットを撮影します
-- 複数のデバイスサイズでスクリーンショットを撮影可能（7種類のプリセット + カスタム設定）
-- スクリーンショットは画像差分（ビジュアルリグレッション）を検出・出力します
-- HTMLの差分も検出します
-- 生HTMLソースの差分も検出します（ブラウザ不要）
-- レスポンシブデザインの差分検証に最適
+```sh
+yarn add @d-zero/archaeologist
+```
 
-## CLI
+## Usage
 
 ```sh
 npx @d-zero/archaeologist <urlA> <urlB> [options]
 npx @d-zero/archaeologist -f <listfile> [options]
 ```
 
-2つのURLを直接指定するか、URLリストを持つファイルを指定して実行します。
+オプションは `--help`、デバイスプリセットは `src/devices.ts` を参照。
 
-### オプション
+### 比較タイプ（`-t`）
 
-- `-v, --version`: バージョンを表示
-- `-f, --listfile <filepath>`: URLリストを持つファイルのパス
-- `-t, --type <types>`: 比較タイプの指定（`image,dom,text,code`、カンマ区切り）
-- `-s, --selector <selector>`: 比較対象を限定するCSSセレクター
-- `-i, --ignore <selector>`: 無視するCSSセレクター
-- `-d, --devices <devices>`: デバイスプリセット（カンマ区切り、デフォルト: desktop-compact,mobile）
-- `--freeze <filepath>`: フリーズモード用ファイルパス
-- `--combined`: 環境AとBのスクリーンショットを左右に並べた合成画像を出力
-- `--limit <number>`: 並列実行数の上限（デフォルト: 10）
-- `--interval <ms>`: 並列実行間の間隔（デフォルト: なし）
-  - 数値または"min-max"形式でランダム範囲を指定可能
-- `--debug`: デバッグモード（デフォルト: false）
-- `--verbose`: 詳細ログモード（デフォルト: false）
+| タイプ  | 内容                                     | ブラウザ |
+| ------- | ---------------------------------------- | -------- |
+| `image` | ピクセル単位の VRT                       | 必要     |
+| `dom`   | レンダリング後の DOM 差分（JS 実行後）   | 必要     |
+| `text`  | テキスト差分（形態素解析）               | 必要     |
+| `code`  | HTTP で取得した生 HTML 差分（JS 実行前） | 不要     |
 
-### 利用可能なデバイスプリセット
+**`code` のみを指定するとブラウザを起動しない**（高速、デバイスサイズ非依存）。理由・実装は `src/cli.ts` の関連 JSDoc を参照。
 
-- `desktop`: 1400px幅
-- `tablet`: 768px幅
-- `mobile`: 375px幅（2倍解像度）
-- `desktop-hd`: 1920px幅
-- `desktop-compact`: 1280px幅
-- `mobile-large`: 414px幅（3倍解像度）
-- `mobile-small`: 320px幅（2倍解像度）
+### フリーズモード（`--freeze`）
 
-### 比較タイプ
-
-`-t` オプションで指定する比較タイプの詳細:
-
-| タイプ  | 説明                                                                                   | ブラウザ |
-| ------- | -------------------------------------------------------------------------------------- | -------- |
-| `image` | スクリーンショットのピクセル単位のビジュアル差分                                       | 必要     |
-| `dom`   | ブラウザでレンダリングされた後のDOMツリーの差分（JavaScript実行後の状態）              | 必要     |
-| `text`  | ページのテキストコンテンツの差分（形態素解析による比較）                               | 必要     |
-| `code`  | HTTPで取得した生HTMLソースの差分（JavaScript実行前の状態、デバイスサイズに依存しない） | 不要     |
-
-デフォルトではすべてのタイプが有効です。`code` のみを指定した場合はブラウザを起動せずに実行されます。
-
-### 使用例
-
-```sh
-# 2つのURLを直接比較
-npx @d-zero/archaeologist http://localhost:3000/page https://example.com/page
-
-# デフォルトデバイス（desktop-compact, mobile）
-npx @d-zero/archaeologist -f urls.txt
-
-# カスタムデバイス指定
-npx @d-zero/archaeologist -f urls.txt --devices desktop,tablet,mobile
-
-# 合成画像を出力（2つの環境のスクリーンショットを左右に並べて表示）
-npx @d-zero/archaeologist -f urls.txt --combined
-
-# 生HTMLソースの差分のみ比較（ブラウザ不要）
-npx @d-zero/archaeologist -f urls.txt -t code
-
-# 画像差分と生HTMLソース差分を併用
-npx @d-zero/archaeologist -f urls.txt -t image,code
-
-# フリーズモード（参照用スクリーンショット作成）
-npx @d-zero/archaeologist --freeze urls.txt
-```
+将来の比較用に「参照スクリーンショット」を作成して保存する。後続の通常実行はこれを比較元として使う。
 
 ### ファイルフォーマット
-
-ファイルの先頭には比較対象のホストを指定します。[Frontmatter](https://jekyllrb.com/docs/front-matter/)形式で`comparisonHost`に指定します。
-
-```txt
----
-comparisonHost: https://stage.example.com
----
-
-https://example.com
-https://example.com/a
-https://example.com/b
-https://example.com/c
-https://example.com/xyz/001
-```
-
-上記のサンプルファイルの場合、以下のURLが比較されます。
-
-| 比較元                        | 比較対象                            |
-| ----------------------------- | ----------------------------------- |
-| `https://example.com`         | `https://stage.example.com`         |
-| `https://example.com/a`       | `https://stage.example.com/a`       |
-| `https://example.com/b`       | `https://stage.example.com/b`       |
-| `https://example.com/c`       | `https://stage.example.com/c`       |
-| `https://example.com/xyz/001` | `https://stage.example.com/xyz/001` |
-
-実行した結果は`.archaeologist`ディレクトリに保存されます。
-
-## ページフック
-
-[Frontmatter](https://jekyllrb.com/docs/front-matter/)の`hooks`に配列としてスクリプトファイルのパスを渡すと、ページを開いた後（厳密にはPuppeteerの`waitUntil: 'networkidle0'`のタイミング直後）にそれらのスクリプトを実行します。スクリプトは配列の順番通りに逐次実行されます。
 
 ```txt
 ---
 comparisonHost: https://stage.example.com
 hooks:
-  - ./hook1.cjs
-  - ./hook2.mjs
+  - ./hook1.mjs
 ---
 
 https://example.com
 https://example.com/a
-︙
 ```
 
-フックスクリプトは、以下のようにエクスポートされた関数を持つモジュールとして定義します。
+`hooks` の IPC 越境制約は [`@d-zero/puppeteer-page-scan`](../puppeteer-page-scan/) の `PageHookSource` を参照。
 
-```js
-/**
- * @type {import('@d-zero/archaeologist').PageHook}
- */
-export default async function (page, { name, width, resolution, log }) {
-	// 非同期処理可能
-	// page: PuppeteerのPageオブジェクト
-	// name: サイズ名（'desktop' | 'mobile'）
-	// width: ウィンドウ幅
-	// resolution: 解像度
-	// log: ロガー
+### Basic 認証
 
-	// ログイン処理の例
-	log('login');
-	await page.type('#username', 'user');
-	await page.type('#password', 'pass');
-	await page.click('button[type="submit"]');
-	await page.waitForNavigation();
-	log('login done');
-}
-```
-
-例のように、ページにログインする処理をフックスクリプトに記述することで、ユーザー認証が必要なページのスクリーンショットを撮影することができます。
-
-> **挙動変更のお知らせ:** これまでのバージョンでは、内部のプロセス間通信の制約により設定ファイルの `hooks` が `analyze` / `--freeze` の両モードで無視されていました。本リリース（次回 minor）から正しく実行されます。詳細は [MIGRATION-page-hooks.md](../../../MIGRATION-page-hooks.md) を参照してください。
-
-## 認証
-
-### Basic認証
-
-Basic認証が必要なページの場合はURLにユーザー名とパスワードを含めます。
-
-例: `https://user:pass@example.com`
-
-`image`/`dom`/`text` タイプではPuppeteerが認証を処理します。`code` タイプではHTTPリクエストに`Authorization`ヘッダーとして認証情報を付与します。サーバーがリダイレクトを返す場合でも認証ヘッダーは維持されます。
+URL に資格情報を含める: `https://user:pass@example.com`。`code` タイプは HTTP リクエストに `Authorization` ヘッダを付与し、リダイレクト後も維持する（コードを見ても分かりにくい挙動なので注意）。詳細は `src/code-compare.ts` の JSDoc。
