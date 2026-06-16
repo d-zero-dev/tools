@@ -8,7 +8,54 @@
 export type { ExURL, ParseURLOptions } from '@d-zero/shared/parse-url';
 export type { CompressType } from '@d-zero/shared/detect-compress';
 export type { CDNType } from '@d-zero/shared/detect-cdn';
+export type {
+	Meta,
+	OpenGraphMeta,
+	OgArticleMeta,
+	OgBookMeta,
+	OgProfileMeta,
+	OgMusicMeta,
+	OgVideoNsMeta,
+	TwitterMeta,
+	FbMeta,
+	FediverseMeta,
+	AppleMeta,
+	MsApplicationMeta,
+	VerificationMeta,
+	GoogleMeta,
+	GeoMeta,
+	CitationMeta,
+	RdfaMeta,
+	MicrodataMeta,
+	AmpMeta,
+	LegacyMeta,
+	MobileMeta,
+	MicroformatsMeta,
+	PinterestMeta,
+	SlackMeta,
+	LinkedInMeta,
+	ExperimentalMeta,
+	WikiMeta,
+	LinkMeta,
+	LinkEntry,
+	JsonLdEntry,
+	OthersBucket,
+	ScriptEntry,
+	IframeEntry,
+	TagsMeta,
+	TagDetail,
+	TagEntry,
+	TagSource,
+	ViewportMeta,
+	RobotsMeta,
+	ReferrerMeta,
+	FormatDetectionMeta,
+	HttpEquivMeta,
+	HttpEquivRefresh,
+	RawHeadEntry,
+} from './meta/types.js';
 
+import type { Meta } from './meta/types.js';
 import type { CDNType } from '@d-zero/shared/detect-cdn';
 import type { CompressType } from '@d-zero/shared/detect-compress';
 import type { ExURL } from '@d-zero/shared/parse-url';
@@ -177,59 +224,6 @@ export type AnchorData = {
 	 * Set by `processAnchors()` in the crawler; not available in the sub-process.
 	 */
 	isExternal?: boolean;
-};
-
-/**
- * Metadata extracted from a page's `<head>` element.
- */
-export type Meta = {
-	/** The `lang` attribute of the `<html>` element. */
-	lang?: string;
-
-	/** The text content of the `<title>` element. */
-	title: string;
-
-	/** The `content` attribute of `<meta name="description">`. */
-	description?: string;
-
-	/** The `content` attribute of `<meta name="keywords">`. */
-	keywords?: string;
-
-	/** Whether `noindex` is present in the robots meta tag. */
-	noindex?: boolean;
-
-	/** Whether `nofollow` is present in the robots meta tag. */
-	nofollow?: boolean;
-
-	/** Whether `noarchive` is present in the robots meta tag. */
-	noarchive?: boolean;
-
-	/** The canonical URL from `<link rel="canonical">`. */
-	canonical?: string;
-
-	/** The alternate URL from `<link rel="alternate">`. */
-	alternate?: string;
-
-	/** The Open Graph type (`og:type`). */
-	'og:type'?: string;
-
-	/** The Open Graph title (`og:title`). */
-	'og:title'?: string;
-
-	/** The Open Graph site name (`og:site_name`). */
-	'og:site_name'?: string;
-
-	/** The Open Graph description (`og:description`). */
-	'og:description'?: string;
-
-	/** The Open Graph URL (`og:url`). */
-	'og:url'?: string;
-
-	/** The Open Graph image URL (`og:image`). */
-	'og:image'?: string;
-
-	/** The Twitter Card type (`twitter:card`). */
-	'twitter:card'?: string;
 };
 
 /**

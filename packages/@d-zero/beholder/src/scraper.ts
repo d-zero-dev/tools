@@ -30,6 +30,7 @@ import {
 } from './dom-evaluation.js';
 import { isError } from './is-error.js';
 import { keywordCheck } from './keyword-check.js';
+import { emptyMeta } from './meta/classify.js';
 import { findDisconnectionFailures } from './network-disconnection.js';
 import { parseUrl } from './parse-url.js';
 
@@ -131,9 +132,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				contentType: null,
 				contentLength: null,
 				responseHeaders: {},
-				meta: {
-					title: '',
-				},
+				meta: emptyMeta(),
 				imageList: [],
 				anchorList: [],
 				html: '',
@@ -546,9 +545,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				contentType,
 				contentLength,
 				responseHeaders,
-				meta: {
-					title: '',
-				},
+				meta: emptyMeta(),
 				imageList: [],
 				anchorList: [],
 				html: '',
@@ -585,6 +582,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		});
 
 		if (isExternal) {
+			const externalMeta = emptyMeta();
+			externalMeta.title = title;
 			return {
 				url,
 				isTarget: false,
@@ -595,9 +594,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				contentType,
 				contentLength,
 				responseHeaders,
-				meta: {
-					title,
-				},
+				meta: externalMeta,
 				imageList: [],
 				anchorList: [],
 				html,
@@ -642,7 +639,16 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			isExternal,
 			message: `%countdown(${domEvaluationTimeout},getMeta_${url.withoutHash},s)%s`,
 		});
-		const meta = await getMeta(page, domEvaluationTimeout);
+		const meta = await getMeta(
+			page,
+			{
+				url: url.withoutHashAndAuth,
+				html,
+				statusCode: status,
+				headers: responseHeaders ?? undefined,
+			},
+			domEvaluationTimeout,
+		);
 
 		const imageList = captureImages
 			? await (async () => {

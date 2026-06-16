@@ -23,7 +23,8 @@
 		"@d-zero/puppeteer-page-scan": "4.5.1",
 		"@d-zero/shared": "0.22.0",
 		"debug": "4.4.3",
-		"puppeteer": "24.37.5"
+		"puppeteer": "24.37.5",
+		"simple-wappalyzer": "1.1.99"
 	},
 	"devDependencies": {
 		"@types/debug": "4.1.12"
