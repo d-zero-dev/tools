@@ -254,17 +254,12 @@ function mockAnchorHandle(
  * Builds a page mock for the new `getAnchorList` implementation, wiring up
  * `_client()` to return a stub CDP session whose `send(method)` is dispatched
  * by `axNodes`/`describeNodes` (matched by `objectId`).
- * @param anchors Anchor element handles to be returned by `page.$$()`.
- * @param axNodes Raw AX nodes returned by `Accessibility.getFullAXTree`.
- * @param describeNodes Map from `objectId` → `backendNodeId` for `DOM.describeNode`.
- * @param overrides Optional overrides for `getFullAXTree` / `describeNode` behavior
- *                  (e.g., simulate timeout or rejection).
- * @param args
- * @param args.anchors
- * @param args.axNodes
- * @param args.describeNodes
- * @param args.getFullAXTree
- * @param args.describeNode
+ * @param args - Mock configuration.
+ * @param args.anchors - Anchor element handles to be returned by `page.$$()`.
+ * @param args.axNodes - Raw AX nodes returned by `Accessibility.getFullAXTree`.
+ * @param args.describeNodes - Map from `objectId` → `backendNodeId` for `DOM.describeNode`.
+ * @param args.getFullAXTree - Optional override for `Accessibility.getFullAXTree` (e.g., simulate rejection).
+ * @param args.describeNode - Optional override for `DOM.describeNode` (e.g., simulate rejection).
  */
 function mockPageForAnchors(args: {
 	anchors: ElementHandle<Element>[];
