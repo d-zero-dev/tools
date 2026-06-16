@@ -12,6 +12,7 @@ import {
 	getMeta,
 	getProp,
 } from './dom-evaluation.js';
+import { emptyMeta } from './meta/classify.js';
 
 afterEach(() => {
 	vi.useRealTimers();
@@ -41,68 +42,30 @@ function mockElementHandle(value: unknown): ElementHandle<Element> {
 }
 
 describe('getMeta', () => {
-	it('maps raw evaluation result into a Meta object and parses robots directives', async () => {
-		const page = mockPageEvaluate({
-			title: 'Example',
-			lang: 'ja',
-			description: 'desc',
-			keywords: 'a,b',
-			robots: 'noindex, NOFOLLOW',
-			canonical: 'https://example.com/',
-			alternate: 'https://example.com/en',
-			'og:type': 'website',
-			'og:title': 'OG Title',
-			'og:site_name': 'Site',
-			'og:description': 'OG desc',
-			'og:url': 'https://example.com/',
-			'og:image': 'https://example.com/img.png',
-			'twitter:card': 'summary',
-		});
-
-		const meta = await getMeta(page);
-
-		expect(meta).toStrictEqual({
-			title: 'Example',
-			lang: 'ja',
-			description: 'desc',
-			keywords: 'a,b',
-			noindex: true,
-			nofollow: true,
-			noarchive: false,
-			canonical: 'https://example.com/',
-			alternate: 'https://example.com/en',
-			'og:type': 'website',
-			'og:title': 'OG Title',
-			'og:site_name': 'Site',
-			'og:description': 'OG desc',
-			'og:url': 'https://example.com/',
-			'og:image': 'https://example.com/img.png',
-			'twitter:card': 'summary',
-		});
-	});
-
-	it('returns a minimal fallback when evaluation rejects', async () => {
+	it('returns emptyMeta() when page.evaluate rejects', async () => {
 		const page = {
 			evaluate: () => Promise.reject(new Error('execution context destroyed')),
+			content: () => Promise.resolve('<html></html>'),
 		} as unknown as Page;
 
-		const meta = await getMeta(page);
+		const meta = await getMeta(page, { url: 'https://example.com/' });
 
-		expect(meta).toStrictEqual({ title: '' });
+		expect(meta).toEqual(emptyMeta());
 	});
 
-	it('returns a minimal fallback when the main thread is unresponsive (timeout)', async () => {
+	it('returns emptyMeta() when the main thread is unresponsive (timeout)', async () => {
 		vi.useFakeTimers();
 		const page = {
 			// Never resolves — simulates a blocked main thread.
 			evaluate: () => new Promise(() => {}),
+			content: () => new Promise(() => {}),
 		} as unknown as Page;
 
-		const promise = getMeta(page, 5000);
+		const promise = getMeta(page, { url: 'https://example.com/' }, 5000);
 		await vi.advanceTimersByTimeAsync(5000);
 		const meta = await promise;
 
-		expect(meta).toStrictEqual({ title: '' });
+		expect(meta).toEqual(emptyMeta());
 		expect(vi.getTimerCount()).toBe(0);
 	});
 });

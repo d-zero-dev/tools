@@ -14,12 +14,15 @@
  * @see {@link ./types.ts} for the data types returned by these functions
  */
 
+import type { RawHeadEntry } from './meta/types.js';
 import type { AnchorData, ImageElement, Meta, ParseURLOptions } from './types.js';
 import type { CDPSession, ElementHandle, Page } from 'puppeteer';
 
 import { raceWithTimeout } from '@d-zero/shared/race-with-timeout';
 
 import { domDetailsLog, domLog } from './debug.js';
+import { classify, emptyMeta } from './meta/classify.js';
+import { detectTags } from './meta/tag-detection.js';
 import { parseUrl } from './parse-url.js';
 
 const pid = `${process.pid}`;
@@ -490,81 +493,275 @@ async function resolveAnchor(
 }
 
 /**
- * Extracts comprehensive meta information from the page's `<head>`.
+ * Required context for {@link getMeta}. Provided by the scraper from data it
+ * already has on hand (URL it navigated to, response status/headers it received).
  *
- * Collects all metadata in a single `page.evaluate` call (14 CDP round-trips
- * collapsed into 1) wrapped in {@link raceWithTimeout}. On timeout (an unresponsive
- * page) a minimal `{ title: '' }` is returned rather than hanging.
+ * `html` is optional: when omitted, `getMeta` falls back to `page.content()`
+ * to obtain the rendered HTML for the third-party tag detection pass.
+ */
+export type GetMetaContext = {
+	/** The fully resolved URL of the page (after redirects). */
+	readonly url: string;
+	/** Rendered HTML. Falls back to `page.content()` when omitted. */
+	readonly html?: string;
+	/** Response status code, surfaced to the Wappalyzer driver. */
+	readonly statusCode?: number;
+	/** Response headers; case is preserved by the caller, lowercased internally. */
+	readonly headers?: Record<string, string | string[] | undefined>;
+	/**
+	 * When `true`, the returned `Meta` includes `_raw: RawHeadEntry[]` for
+	 * debugging. Default `false` to keep the serialized payload small.
+	 */
+	readonly includeRaw?: boolean;
+};
+
+const WINDOW_GLOBALS_TO_CHECK: readonly string[] = [
+	'dataLayer',
+	'gtag',
+	'ga',
+	'_gaq',
+	'fbq',
+	'_fbq',
+	'clarity',
+	'_hjSettings',
+	'_hjid',
+	'twq',
+	'ttq',
+	'_linkedin_partner_id',
+	'pintrk',
+	'amplitude',
+	'mixpanel',
+	'analytics',
+	'heap',
+	'posthog',
+	'plausible',
+	'fathom',
+	'_paq',
+	's_account',
+	's',
+	'ym',
+	'UET',
+	'optimizely',
+	'_hsq',
+	'Sentry',
+	'Intercom',
+	'intercomSettings',
+	'drift',
+	'Tawk_API',
+	'zE',
+	'OneTrust',
+	'Cookiebot',
+	'Stripe',
+	'grecaptcha',
+];
+
+/**
+ * Extracts comprehensive metadata from the page.
  *
- * Collected metadata:
- * - `title` - The document title.
- * - `lang` - The `lang` attribute of the `<html>` element.
- * - `description` - The `<meta name="description">` content.
- * - `keywords` - The `<meta name="keywords">` content.
- * - `noindex` / `nofollow` / `noarchive` - Parsed from the `<meta name="robots">` directives.
- * - `canonical` - The `<link rel="canonical">` content.
- * - `alternate` - The `<link rel="alternate">` content.
- * - Open Graph tags: `og:type`, `og:title`, `og:site_name`, `og:description`, `og:url`, `og:image`.
- * - `twitter:card` - The Twitter Card type.
- * @param page - The Puppeteer page to extract meta information from.
- * @param timeout - Timeout in ms for the evaluation. Defaults to {@link DEFAULT_DOM_EVALUATION_TIMEOUT}.
- * @returns An object containing all extracted meta properties.
+ * Two passes happen in parallel:
+ * 1. Browser-side `collectHead()` serializes every `<meta>`, `<link>`,
+ *    relevant `<script>`, `<base>`, `<noscript>`/`<iframe>` and a curated
+ *    set of `window` globals into a `RawHeadEntry[]`. Node-side `classify()`
+ *    then maps those entries to typed `Meta` fields using the lookup tables
+ *    in `./meta/keys.ts`, with unknown entries preserved in `Meta.others`.
+ * 2. `detectTags()` runs `simple-wappalyzer` over the page HTML to produce
+ *    `Meta.tags` (technology detection + real-ID extraction).
+ *
+ * The whole call is wrapped in `raceWithTimeout`. On timeout an empty `Meta`
+ * (with `title: ''` and empty required arrays/objects) is returned.
+ * @param page
+ * @param context
+ * @param timeout
+ * @example
+ * ```ts
+ * const meta = await getMeta(page, {
+ *   url: 'https://example.com/',
+ *   html: await page.content(),
+ *   statusCode: response.status,
+ *   headers: response.headers,
+ * });
+ * console.log(meta.title);                         // <title> text
+ * console.log(meta.og?.image);                     // og:image[] array
+ * console.log(meta.robots?.noindex);               // parsed robots
+ * console.log(meta.tags.detected.Analytics);       // Wappalyzer hits
+ * console.log(meta.tags.entries.find(e => e.provider === 'Google Analytics')?.id);
+ * ```
  */
 export async function getMeta(
 	page: Page,
+	context: GetMetaContext,
 	timeout: number = DEFAULT_DOM_EVALUATION_TIMEOUT,
 ): Promise<Meta> {
 	log('Getting Meta');
 
 	const { result, timeout: timedOut } = await raceWithTimeout(
-		() =>
-			page
-				.evaluate(() => {
-					/* global document, HTMLMetaElement, HTMLLinkElement */
-					const content = (selector: string): string => {
-						const el = document.querySelector(selector);
-						return el instanceof HTMLMetaElement ? el.content : '';
-					};
-					const linkHref = (selector: string): string => {
-						const el = document.querySelector(selector);
-						return el instanceof HTMLLinkElement ? el.href : '';
-					};
-					return {
-						title: document.title,
-						lang: document.documentElement.lang,
-						description: content('meta[name="description"]'),
-						keywords: content('meta[name="keywords"]'),
-						robots: content('meta[name="robots"]'),
-						canonical: linkHref('link[rel="canonical"]'),
-						alternate: linkHref('link[rel="alternate"]'),
-						'og:type': content('meta[property="og:type"]'),
-						'og:title': content('meta[property="og:title"]'),
-						'og:site_name': content('meta[property="og:site_name"]'),
-						'og:description': content('meta[property="og:description"]'),
-						'og:url': content('meta[property="og:url"]'),
-						'og:image': content('meta[property="og:image"]'),
-						'twitter:card': content('meta[name="twitter:card"]'),
-					};
-				})
-				.catch(() => null),
+		() => runGetMeta(page, context),
 		timeout,
 	);
 
 	if (timedOut || result == null) {
 		log('Meta extraction timed out or failed; returning fallback');
-		return { title: '' };
+		return emptyMeta();
 	}
 
-	const { robots: robotsVal, ...rest } = result;
-	const robots = new Set(robotsVal.split(',').map((robot) => robot.trim().toLowerCase()));
-	const meta: Meta = {
-		...rest,
-		noindex: robots.has('noindex'),
-		nofollow: robots.has('nofollow'),
-		noarchive: robots.has('noarchive'),
-	};
-
 	log('Got meta');
-	dLog('Meta data are: %O', meta);
-	return meta;
+	dLog('Meta data are: %O', result);
+	return result;
+}
+
+/**
+ *
+ * @param page
+ * @param context
+ */
+async function runGetMeta(page: Page, context: GetMetaContext): Promise<Meta | null> {
+	try {
+		const rawPromise = collectHeadOnPage(page);
+		const htmlPromise: Promise<string> =
+			context.html === undefined
+				? page.content().catch(() => '')
+				: Promise.resolve(context.html);
+		const [raw, html] = await Promise.all([rawPromise, htmlPromise]);
+		const tags = await detectTags({
+			url: context.url,
+			html,
+			...(context.statusCode === undefined ? {} : { statusCode: context.statusCode }),
+			...(context.headers === undefined ? {} : { headers: context.headers }),
+		});
+		return classify(raw, {
+			tags,
+			...(context.includeRaw ? { includeRaw: true } : {}),
+		});
+	} catch (error) {
+		log('runGetMeta failed: %O', error);
+		return null;
+	}
+}
+
+/**
+ *
+ * @param page
+ */
+async function collectHeadOnPage(page: Page): Promise<RawHeadEntry[]> {
+	const raw = await page
+		.evaluate((knownGlobals: readonly string[]) => {
+			/* global document, HTMLLinkElement, HTMLMetaElement, HTMLBaseElement,
+			   HTMLScriptElement, HTMLIFrameElement */
+			type Out = unknown;
+			const entries: Out[] = [];
+
+			const html = document.documentElement;
+			entries.push(
+				{
+					kind: 'html',
+					lang: html.lang || undefined,
+					dir: html.dir || undefined,
+					xmlns: html.getAttribute('xmlns') ?? undefined,
+					prefix: html.getAttribute('prefix') ?? undefined,
+					vocab: html.getAttribute('vocab') ?? undefined,
+					typeOf: html.getAttribute('typeof') ?? undefined,
+					itemscope: html.hasAttribute('itemscope') || undefined,
+					itemtype: html.getAttribute('itemtype') ?? undefined,
+					amp: html.hasAttribute('amp') || undefined,
+					lightning: html.hasAttribute('⚡') || undefined,
+				},
+				{ kind: 'title', content: document.title },
+			);
+
+			for (const base of document.querySelectorAll('base')) {
+				if (!(base instanceof HTMLBaseElement)) continue;
+				entries.push({
+					kind: 'base',
+					href: base.getAttribute('href') ?? undefined,
+					target: base.getAttribute('target') ?? undefined,
+				});
+			}
+
+			for (const meta of document.querySelectorAll('meta')) {
+				if (!(meta instanceof HTMLMetaElement)) continue;
+				const name = meta.getAttribute('name');
+				const property = meta.getAttribute('property');
+				const httpEquiv = meta.getAttribute('http-equiv');
+				const itemprop = meta.getAttribute('itemprop');
+				const charset = meta.getAttribute('charset');
+				const content = meta.getAttribute('content');
+				const media = meta.getAttribute('media');
+				entries.push({
+					kind: 'meta',
+					name: name ? name.toLowerCase() : undefined,
+					property: property ? property.toLowerCase() : undefined,
+					httpEquiv: httpEquiv ? httpEquiv.toLowerCase() : undefined,
+					itemprop: itemprop ?? undefined,
+					charset: charset ?? undefined,
+					content: content ?? undefined,
+					media: media ?? undefined,
+				});
+			}
+
+			for (const link of document.querySelectorAll('link[href]')) {
+				if (!(link instanceof HTMLLinkElement)) continue;
+				const relRaw = link.getAttribute('rel') ?? '';
+				const rel = relRaw.toLowerCase().split(/\s+/u).filter(Boolean);
+				entries.push({
+					kind: 'link',
+					rel,
+					href: link.getAttribute('href') ?? '',
+					type: link.getAttribute('type') ?? undefined,
+					media: link.getAttribute('media') ?? undefined,
+					sizes: link.getAttribute('sizes') ?? undefined,
+					title: link.getAttribute('title') ?? undefined,
+					hreflang: link.getAttribute('hreflang') ?? undefined,
+					as: link.getAttribute('as') ?? undefined,
+					crossorigin: link.getAttribute('crossorigin') ?? undefined,
+					color: link.getAttribute('color') ?? undefined,
+					blocking: link.getAttribute('blocking') ?? undefined,
+					imagesrcset: link.getAttribute('imagesrcset') ?? undefined,
+				});
+			}
+
+			const STRUCTURED_TYPES = new Set([
+				'application/ld+json',
+				'speculationrules',
+				'application/json+oembed',
+				'application/xml+oembed',
+			]);
+			for (const script of document.querySelectorAll('script[type]')) {
+				if (!(script instanceof HTMLScriptElement)) continue;
+				const scriptType = (script.getAttribute('type') ?? '').toLowerCase();
+				if (!STRUCTURED_TYPES.has(scriptType)) continue;
+				const src = script.getAttribute('src') ?? undefined;
+				const text = script.textContent ?? '';
+				const inHead = !!script.closest('head');
+				const inNoscript = !!script.closest('noscript');
+				const location = inHead ? 'head' : inNoscript ? 'noscript' : 'body';
+				entries.push({
+					kind: 'script',
+					scriptType,
+					content: text || undefined,
+					src,
+					location,
+				});
+			}
+
+			for (const iframe of document.querySelectorAll('iframe[src]')) {
+				if (!(iframe instanceof HTMLIFrameElement)) continue;
+				const src = iframe.getAttribute('src') ?? '';
+				if (!src) continue;
+				const inHead = !!iframe.closest('head');
+				const inNoscript = !!iframe.closest('noscript');
+				const location = inHead ? 'head' : inNoscript ? 'noscript' : 'body';
+				entries.push({ kind: 'iframe', src, location });
+			}
+
+			const win = window as unknown as Record<string, unknown>;
+			const presentGlobals = knownGlobals.filter((name) => win[name] !== undefined);
+			if (presentGlobals.length > 0) {
+				entries.push({ kind: 'window-global', names: presentGlobals });
+			}
+
+			return entries;
+		}, WINDOW_GLOBALS_TO_CHECK)
+		.catch(() => [] as unknown[]);
+
+	return raw as RawHeadEntry[];
 }

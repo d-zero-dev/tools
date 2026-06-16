@@ -40,6 +40,59 @@
 		"elif",
 
 		// code-review effort level
-		"xhigh"
+		"xhigh",
+
+		// HTML meta tag terms (frontmatter-keys.md)
+		"Fediverse",
+		"DCTERMS",
+		"dcterms",
+		"rdfa",
+		"Rdfa",
+		"noimageindex",
+		"noodp",
+		"noydir",
+		"indexifembedded",
+		"ahrefs",
+		"detectify",
+		"seznam",
+		"nositelinkssearchbox",
+		"nopagereadaloud",
+		"adsense",
+		"nopin",
+		"rels",
+		"gbfs",
+		"lrdd",
+
+		// Wappalyzer (technology fingerprint library)
+		"wappalyzer",
+		"Wappalyzer",
+
+		// Analytics / tag provider names + identifiers
+		"pintrk",
+		"optimizely",
+		"Optimizely",
+		"Tawk",
+		"tawk",
+		"grecaptcha",
+		"hjid",
+		"hjsv",
+		"fbevents",
+		"Matomo",
+		"matomo",
+		"sdkid",
+		"zdassets",
+		"cbid",
+		"XYZW",
+
+		// Microsoft verification / DCTERMS keys
+		"msvalidate",
+		"conformsto",
+		"isformatof",
+		"ispartof",
+		"isreferencedby",
+		"isreplacedby",
+		"isrequiredby",
+		"isversionof",
+		"tableofcontents"
 	]
 }
