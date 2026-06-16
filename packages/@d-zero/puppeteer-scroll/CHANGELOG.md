@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@4.0.0...@d-zero/puppeteer-scroll@4.0.1) (2026-06-15)
+
+**Note:** Version bump only for package @d-zero/puppeteer-scroll
+
 # [4.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@3.1.18...@d-zero/puppeteer-scroll@4.0.0) (2026-05-27)
 
 - feat(puppeteer-scroll)!: randomize default scroll interval and distance ([3907d15](https://github.com/d-zero-dev/tools/commit/3907d1547da584d930ec3b2d436c98538ad6fbd0))

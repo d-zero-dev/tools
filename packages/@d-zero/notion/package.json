@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/notion",
-	"version": "2.0.19",
+	"version": "2.0.20",
 	"description": "A simple Notion API client for D-ZERO tools",
 	"author": "D-ZERO",
 	"license": "MIT",
