@@ -430,7 +430,7 @@ export type ScraperOptions = {
 	/**
 	 * Timeout (ms) for DOM evaluation operations (meta/image/anchor extraction).
 	 * Bounds how long extraction may hang on a page with an unresponsive main thread.
-	 * Default: 30_000 (30s).
+	 * Default: 180_000 (180s, aligned with the upstream retryable timeout).
 	 */
 	domEvaluationTimeout?: number;
 };

@@ -631,7 +631,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			name: 'getAnchors',
 			url,
 			isExternal,
-			message: '',
+			message: `%countdown(${domEvaluationTimeout},getAnchors_${url.withoutHash},s)%s`,
 		});
 		const anchorList = await getAnchorList(page, parseOpts, domEvaluationTimeout);
 
@@ -640,7 +640,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			name: 'getMeta',
 			url,
 			isExternal,
-			message: '',
+			message: `%countdown(${domEvaluationTimeout},getMeta_${url.withoutHash},s)%s`,
 		});
 		const meta = await getMeta(page, domEvaluationTimeout);
 
@@ -651,7 +651,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 						name: 'extractImages',
 						url,
 						isExternal,
-						message: '',
+						message: `%countdown(${domEvaluationTimeout},extractImages_${url.withoutHash},s)%s`,
 					});
 					return this.#fetchImages(
 						page,
