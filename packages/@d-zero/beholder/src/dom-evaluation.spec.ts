@@ -1,5 +1,8 @@
 import type { ElementHandle, Page } from 'puppeteer';
 
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -231,15 +234,76 @@ describe('getProp', () => {
 	});
 });
 
+/**
+ * Builds an anchor element handle whose `remoteObject().objectId` and per-property
+ * reads can be customized for the new Strategy F implementation.
+ * @param objectId The remote object id used to map this handle back to an AX node.
+ * @param props Property values returned by `getProperty(propName).jsonValue()`.
+ */
+function mockAnchorHandle(
+	objectId: string,
+	props: Record<string, unknown>,
+): ElementHandle<Element> {
+	return {
+		remoteObject: () => ({ objectId }),
+		getProperty: (propName: string) =>
+			Promise.resolve({
+				jsonValue: () => Promise.resolve(props[propName] ?? ''),
+			}),
+	} as unknown as ElementHandle<Element>;
+}
+
+/**
+ * Builds a page mock for the new `getAnchorList` implementation, wiring up
+ * `_client()` to return a stub CDP session whose `send(method)` is dispatched
+ * by `axNodes`/`describeNodes` (matched by `objectId`).
+ * @param args - Mock configuration.
+ * @param args.anchors - Anchor element handles to be returned by `page.$$()`.
+ * @param args.axNodes - Raw AX nodes returned by `Accessibility.getFullAXTree`.
+ * @param args.describeNodes - Map from `objectId` → `backendNodeId` for `DOM.describeNode`.
+ * @param args.getFullAXTree - Optional override for `Accessibility.getFullAXTree` (e.g., simulate rejection).
+ * @param args.describeNode - Optional override for `DOM.describeNode` (e.g., simulate rejection).
+ */
+function mockPageForAnchors(args: {
+	anchors: ElementHandle<Element>[];
+	axNodes?: Array<{
+		backendDOMNodeId?: number;
+		ignored?: boolean;
+		name?: { value?: unknown };
+	}>;
+	describeNodes?: Record<string, number | undefined>;
+	getFullAXTree?: () => Promise<unknown>;
+	describeNode?: (params: { objectId: string }) => Promise<unknown>;
+}): Page {
+	const { anchors, axNodes = [], describeNodes = {}, getFullAXTree, describeNode } = args;
+	const client = {
+		send: (method: string, params?: { objectId?: string }) => {
+			if (method === 'Accessibility.getFullAXTree') {
+				return getFullAXTree ? getFullAXTree() : Promise.resolve({ nodes: axNodes });
+			}
+			if (method === 'DOM.describeNode') {
+				if (describeNode) return describeNode({ objectId: params?.objectId ?? '' });
+				const backendNodeId =
+					params?.objectId == null ? undefined : describeNodes[params.objectId];
+				return Promise.resolve({ node: { backendNodeId } });
+			}
+			return Promise.reject(new Error(`unexpected CDP method: ${method}`));
+		},
+	};
+	return {
+		$$: () => Promise.resolve(anchors),
+		_client: () => client,
+	} as unknown as Page;
+}
+
 describe('getAnchorList', () => {
-	it('resolves the href and prefers the accessible name from the accessibility tree', async () => {
-		const $anchor = mockElementHandle('https://example.com/page');
-		const page = {
-			$$: () => Promise.resolve([$anchor]),
-			accessibility: {
-				snapshot: () => Promise.resolve({ name: 'Accessible Name' }),
-			},
-		} as unknown as Page;
+	it('resolves the href and uses the accessible name from the AX tree', async () => {
+		const $anchor = mockAnchorHandle('obj-1', { href: 'https://example.com/page' });
+		const page = mockPageForAnchors({
+			anchors: [$anchor],
+			axNodes: [{ backendDOMNodeId: 42, name: { value: 'Accessible Name' } }],
+			describeNodes: { 'obj-1': 42 },
+		});
 
 		const anchors = await getAnchorList(page);
 
@@ -248,22 +312,84 @@ describe('getAnchorList', () => {
 		expect(anchors[0]?.href.href).toBe('https://example.com/page');
 	});
 
-	it('falls back to trimmed textContent when the accessibility tree has no node', async () => {
+	it('uses an empty AX name as-is without falling back to textContent', async () => {
+		// Mirrors the old `axNode.name || ''` behavior: when the AX tree DOES contain
+		// the anchor (so it's not "missing from the tree") but its computed name is
+		// empty, we keep the empty string — no textContent fallback.
+		const textContent = vi.fn();
 		const $anchor = {
-			getProperty: vi
-				.fn()
-				// First getProp call reads `href`, second reads `textContent`.
-				.mockResolvedValueOnce({
-					jsonValue: () => Promise.resolve('https://example.com/page'),
-				})
-				.mockResolvedValueOnce({ jsonValue: () => Promise.resolve('  Link text  ') }),
-		} as unknown as ElementHandle<Element>;
-		const page = {
-			$$: () => Promise.resolve([$anchor]),
-			accessibility: {
-				snapshot: () => Promise.resolve(null),
+			remoteObject: () => ({ objectId: 'obj-1' }),
+			getProperty: (propName: string) => {
+				if (propName === 'href') {
+					return Promise.resolve({
+						jsonValue: () => Promise.resolve('https://example.com/page'),
+					});
+				}
+				textContent();
+				return Promise.resolve({ jsonValue: () => Promise.resolve('text fallback') });
 			},
-		} as unknown as Page;
+		} as unknown as ElementHandle<Element>;
+		const page = mockPageForAnchors({
+			anchors: [$anchor],
+			axNodes: [{ backendDOMNodeId: 42, name: { value: '' } }],
+			describeNodes: { 'obj-1': 42 },
+		});
+
+		const anchors = await getAnchorList(page);
+
+		expect(anchors).toHaveLength(1);
+		expect(anchors[0]?.textContent).toBe('');
+		expect(textContent).not.toHaveBeenCalled();
+	});
+
+	it('falls back to textContent for ignored AX nodes (aria-hidden / display:none anchors)', async () => {
+		// Mirrors puppeteer's high-level snapshot({root}) with interestingOnly:true,
+		// which returns null for ignored nodes — old code then used textContent.
+		const $anchor = mockAnchorHandle('obj-1', {
+			href: 'https://example.com/page',
+			textContent: 'Visible text',
+		});
+		const page = mockPageForAnchors({
+			anchors: [$anchor],
+			axNodes: [{ backendDOMNodeId: 42, ignored: true, name: { value: '' } }],
+			describeNodes: { 'obj-1': 42 },
+		});
+
+		const anchors = await getAnchorList(page);
+
+		expect(anchors).toHaveLength(1);
+		expect(anchors[0]?.textContent).toBe('Visible text');
+	});
+
+	it('drops a single anchor whose handle throws (detached) without rejecting the whole list', async () => {
+		const $detached = {
+			remoteObject: () => {
+				throw new Error('Handle is detached');
+			},
+		} as unknown as ElementHandle<Element>;
+		const $good = mockAnchorHandle('obj-1', { href: 'https://example.com/page' });
+		const page = mockPageForAnchors({
+			anchors: [$detached, $good],
+			axNodes: [{ backendDOMNodeId: 42, name: { value: 'Name' } }],
+			describeNodes: { 'obj-1': 42 },
+		});
+
+		const anchors = await getAnchorList(page);
+
+		expect(anchors).toHaveLength(1);
+		expect(anchors[0]?.href.href).toBe('https://example.com/page');
+	});
+
+	it('falls back to trimmed textContent when the anchor is not represented in the AX tree', async () => {
+		const $anchor = mockAnchorHandle('obj-1', {
+			href: 'https://example.com/page',
+			textContent: '  Link text  ',
+		});
+		const page = mockPageForAnchors({
+			anchors: [$anchor],
+			axNodes: [], // anchor's backendNodeId not present
+			describeNodes: { 'obj-1': 99 },
+		});
 
 		const anchors = await getAnchorList(page);
 
@@ -271,14 +397,132 @@ describe('getAnchorList', () => {
 		expect(anchors[0]?.textContent).toBe('Link text');
 	});
 
+	it('falls back to textContent when the AX tree response is malformed (no `nodes` field)', async () => {
+		// Defensive: an unexpected CDP shape must not throw or pollute the map.
+		const $anchor = mockAnchorHandle('obj-1', {
+			href: 'https://example.com/page',
+			textContent: 'Plain text',
+		});
+		const page = mockPageForAnchors({
+			anchors: [$anchor],
+			getFullAXTree: () => Promise.resolve({}),
+			describeNodes: { 'obj-1': 1 },
+		});
+
+		const anchors = await getAnchorList(page);
+
+		expect(anchors).toHaveLength(1);
+		expect(anchors[0]?.textContent).toBe('Plain text');
+	});
+
+	it('falls back to textContent when DOM.describeNode response is malformed (no `node` field)', async () => {
+		// Defensive: an unexpected CDP shape must not throw inside Promise.all.
+		const $anchor = mockAnchorHandle('obj-1', {
+			href: 'https://example.com/page',
+			textContent: 'Plain text',
+		});
+		const page = mockPageForAnchors({
+			anchors: [$anchor],
+			axNodes: [{ backendDOMNodeId: 1, name: { value: 'AX Name' } }],
+			describeNode: () => Promise.resolve({}),
+		});
+
+		const anchors = await getAnchorList(page);
+
+		expect(anchors).toHaveLength(1);
+		expect(anchors[0]?.textContent).toBe('Plain text');
+	});
+
+	it('falls back to textContent for every anchor when the AX tree fetch rejects', async () => {
+		const $anchor = mockAnchorHandle('obj-1', {
+			href: 'https://example.com/page',
+			textContent: 'Plain text',
+		});
+		const page = mockPageForAnchors({
+			anchors: [$anchor],
+			getFullAXTree: () => Promise.reject(new Error('CDP unavailable')),
+			describeNodes: { 'obj-1': 1 },
+		});
+
+		const anchors = await getAnchorList(page);
+
+		expect(anchors).toHaveLength(1);
+		expect(anchors[0]?.textContent).toBe('Plain text');
+	});
+
+	it('falls back to textContent when DOM.describeNode rejects for an anchor', async () => {
+		const $anchor = mockAnchorHandle('obj-1', {
+			href: 'https://example.com/page',
+			textContent: 'Plain text',
+		});
+		const page = mockPageForAnchors({
+			anchors: [$anchor],
+			axNodes: [{ backendDOMNodeId: 1, name: { value: 'AX Name' } }],
+			describeNode: () => Promise.reject(new Error('detached')),
+		});
+
+		const anchors = await getAnchorList(page);
+
+		expect(anchors).toHaveLength(1);
+		expect(anchors[0]?.textContent).toBe('Plain text');
+	});
+
+	it('returns partial results when the overall operation exceeds the timeout', async () => {
+		vi.useFakeTimers();
+		const $fast = mockAnchorHandle('obj-fast', { href: 'https://example.com/fast' });
+		const $slow = {
+			remoteObject: () => ({ objectId: 'obj-slow' }),
+			getProperty: () => new Promise(() => {}), // never resolves
+		} as unknown as ElementHandle<Element>;
+		const page = mockPageForAnchors({
+			anchors: [$fast, $slow],
+			axNodes: [{ backendDOMNodeId: 1, name: { value: 'Fast' } }],
+			describeNodes: { 'obj-fast': 1, 'obj-slow': 2 },
+		});
+
+		const promise = getAnchorList(page, undefined, 5000);
+		await vi.advanceTimersByTimeAsync(5000);
+		const anchors = await promise;
+
+		// The fast anchor was collected before the overall race tripped; the slow
+		// one was abandoned.
+		expect(anchors).toHaveLength(1);
+		expect(anchors[0]?.href.href).toBe('https://example.com/fast');
+	});
+
 	it('skips non-HTTP links', async () => {
-		const $anchor = mockElementHandle('javascript:void(0)');
+		const $anchor = mockAnchorHandle('obj-1', { href: 'javascript:void(0)' });
+		const page = mockPageForAnchors({
+			anchors: [$anchor],
+			axNodes: [{ backendDOMNodeId: 1, name: { value: 'JS link' } }],
+			describeNodes: { 'obj-1': 1 },
+		});
+
+		const anchors = await getAnchorList(page);
+
+		expect(anchors).toStrictEqual([]);
+	});
+
+	it("falls back to textContent for every anchor when puppeteer's internal CDP session is unavailable", async () => {
+		const $anchor = mockAnchorHandle('obj-1', {
+			href: 'https://example.com/page',
+			textContent: '  Plain text  ',
+		});
+		// Page mock without `_client()`: simulates puppeteer wrappers that hide the
+		// internal session — the function must still produce anchor data, just
+		// without AX names.
 		const page = {
 			$$: () => Promise.resolve([$anchor]),
-			accessibility: {
-				snapshot: () => Promise.resolve(null),
-			},
 		} as unknown as Page;
+
+		const anchors = await getAnchorList(page);
+
+		expect(anchors).toHaveLength(1);
+		expect(anchors[0]?.textContent).toBe('Plain text');
+	});
+
+	it('returns an empty array when the page has no anchors', async () => {
+		const page = mockPageForAnchors({ anchors: [] });
 
 		const anchors = await getAnchorList(page);
 
@@ -287,7 +531,28 @@ describe('getAnchorList', () => {
 });
 
 describe('DEFAULT_DOM_EVALUATION_TIMEOUT', () => {
-	it('defaults to 30 seconds', () => {
-		expect(DEFAULT_DOM_EVALUATION_TIMEOUT).toBe(30_000);
+	it('defaults to 180 seconds', () => {
+		expect(DEFAULT_DOM_EVALUATION_TIMEOUT).toBe(180_000);
+	});
+});
+
+/**
+ * Tripwire: `getAnchorList` reads `(page as any)._client()` to reuse puppeteer's
+ * internal CDP session. Unit tests mock that method directly, so a silent
+ * removal/rename in a future puppeteer release would not be caught by the
+ * functional tests — the production path would just fall back to
+ * textContent-only mode without anyone noticing.
+ *
+ * This block inspects the actual installed puppeteer-core source to assert the
+ * `_client()` method still exists. If puppeteer drops or renames it, this test
+ * fails and forces a maintainer to update `getInternalCDPClient` instead of
+ * silently degrading.
+ */
+describe('puppeteer internal API tripwire', () => {
+	it('puppeteer-core CDP Page still defines _client()', () => {
+		const require = createRequire(import.meta.url);
+		const cdpPagePath = require.resolve('puppeteer-core/lib/cjs/puppeteer/cdp/Page.js');
+		const src = readFileSync(cdpPagePath, 'utf8');
+		expect(src).toMatch(/_client\s*\(\s*\)\s*\{/);
 	});
 });
