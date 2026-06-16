@@ -197,8 +197,21 @@ interface DescribeNodeResponse {
 }
 
 /**
+ * One-shot warning latch: only the first time `_client()` is missing in a
+ * process do we log the degradation. Subsequent calls stay silent to avoid
+ * spamming logs while every page in a crawl re-enters the fallback path.
+ */
+let warnedAboutMissingClient = false;
+
+/**
  * Returns puppeteer's internal CDP session for the page, or `null` if it is
- * unreachable (e.g., test mocks, puppeteer wrappers that hide the internal API).
+ * unreachable (e.g., test mocks, puppeteer wrappers that hide the internal API,
+ * or a future puppeteer release that renames `_client`).
+ *
+ * WHY a warning log: callers transparently fall back to textContent-only mode
+ * when this returns `null`, which masks a silent perf regression if a
+ * puppeteer update removes `_client`. The warning makes the degraded state
+ * observable in production logs so a maintainer can patch the access path.
  *
  * Callers fall back to a textContent-only path when this returns `null`.
  * @param page - The Puppeteer page.
@@ -206,8 +219,27 @@ interface DescribeNodeResponse {
 function getInternalCDPClient(page: Page): CDPSession | null {
 	try {
 		const client = (page as unknown as Partial<PageWithInternalClient>)._client?.();
-		return client ?? null;
-	} catch {
+		if (!client) {
+			if (!warnedAboutMissingClient) {
+				warnedAboutMissingClient = true;
+				log(
+					'WARN: puppeteer Page._client() returned no session — getAnchorList ' +
+						'falls back to textContent-only mode. Verify the installed puppeteer ' +
+						'version still exposes the internal _client() accessor.',
+				);
+			}
+			return null;
+		}
+		return client;
+	} catch (error) {
+		if (!warnedAboutMissingClient) {
+			warnedAboutMissingClient = true;
+			log(
+				'WARN: puppeteer Page._client() threw — getAnchorList falls back to ' +
+					'textContent-only mode. Error: %O',
+				error,
+			);
+		}
 		return null;
 	}
 }

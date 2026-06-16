@@ -1,5 +1,8 @@
 import type { ElementHandle, Page } from 'puppeteer';
 
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -530,5 +533,26 @@ describe('getAnchorList', () => {
 describe('DEFAULT_DOM_EVALUATION_TIMEOUT', () => {
 	it('defaults to 180 seconds', () => {
 		expect(DEFAULT_DOM_EVALUATION_TIMEOUT).toBe(180_000);
+	});
+});
+
+/**
+ * Tripwire: `getAnchorList` reads `(page as any)._client()` to reuse puppeteer's
+ * internal CDP session. Unit tests mock that method directly, so a silent
+ * removal/rename in a future puppeteer release would not be caught by the
+ * functional tests — the production path would just fall back to
+ * textContent-only mode without anyone noticing.
+ *
+ * This block inspects the actual installed puppeteer-core source to assert the
+ * `_client()` method still exists. If puppeteer drops or renames it, this test
+ * fails and forces a maintainer to update `getInternalCDPClient` instead of
+ * silently degrading.
+ */
+describe('puppeteer internal API tripwire', () => {
+	it('puppeteer-core CDP Page still defines _client()', () => {
+		const require = createRequire(import.meta.url);
+		const cdpPagePath = require.resolve('puppeteer-core/lib/cjs/puppeteer/cdp/Page.js');
+		const src = readFileSync(cdpPagePath, 'utf8');
+		expect(src).toMatch(/_client\s*\(\s*\)\s*\{/);
 	});
 });
