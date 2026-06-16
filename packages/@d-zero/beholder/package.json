@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/beholder",
-	"version": "2.1.6",
+	"version": "3.0.0",
 	"description": "Page-level scraper for web crawling and auditing",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -20,7 +20,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/puppeteer-page-scan": "4.5.1",
+		"@d-zero/puppeteer-page-scan": "4.5.2",
 		"@d-zero/shared": "0.22.0",
 		"debug": "4.4.3",
 		"puppeteer": "24.37.5",
