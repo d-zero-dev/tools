@@ -45,14 +45,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@axe-core/puppeteer@npm:4.11.0":
-  version: 4.11.0
-  resolution: "@axe-core/puppeteer@npm:4.11.0"
+"@axe-core/puppeteer@npm:4.11.3":
+  version: 4.11.3
+  resolution: "@axe-core/puppeteer@npm:4.11.3"
   dependencies:
-    axe-core: "npm:~4.11.0"
+    axe-core: "npm:~4.11.4"
   peerDependencies:
     puppeteer: ">=1.10.0"
-  checksum: 10c0/4599f0d8a925172bbe0f380e9330616b56f08eed93495f94c84086e4adf1ce191e73e876ec7df08eaf15252028cdfb7b70a688e1f237e1a0cb29317970a86df0
+  checksum: 10c0/adca342479d1cff0cef2db9eb8ef898aa9d843e76dc1269bcf4fe8fc58d3461b773e8e85bc1ae3c8dc3f7e3aa185dca4170ecf1212d5d6e7651a329afe76badd
   languageName: node
   linkType: hard
 
@@ -962,14 +962,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/a11y-check-axe-scenario@workspace:packages/@d-zero/a11y-check-axe-scenario"
   dependencies:
-    "@axe-core/puppeteer": "npm:4.11.0"
+    "@axe-core/puppeteer": "npm:4.11.3"
     "@d-zero/a11y-check-core": "npm:0.7.3"
     "@d-zero/db-wcag": "npm:1.0.0-alpha.1"
     "@d-zero/shared": "npm:0.22.0"
-    axe-core: "npm:4.11.1"
+    axe-core: "npm:4.11.4"
     puppeteer: "npm:24.37.5"
   peerDependencies:
-    axe-core: 4.11.1
+    axe-core: 4.11.4
     puppeteer: 24.37.5
   languageName: unknown
   linkType: soft
@@ -5008,10 +5008,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:4.11.1, axe-core@npm:~4.11.0":
-  version: 4.11.1
-  resolution: "axe-core@npm:4.11.1"
-  checksum: 10c0/1e6997454b61c7c9a4d740f395952835dcf87f2c04fd81577217d68634d197d602c224f9e8f17b22815db4c117a2519980cfc8911fc0027c54a6d8ebca47c6a7
+"axe-core@npm:4.11.4, axe-core@npm:~4.11.4":
+  version: 4.11.4
+  resolution: "axe-core@npm:4.11.4"
+  checksum: 10c0/c4aa83fc3eac5f7a0d0cb1a28f9d073acf0c06ce8daacc38608faa278c57ce084c028c850746b98817ae4c101c30c1a32e95ea34748c4b4c7419b9b81221ef84
   languageName: node
   linkType: hard
 

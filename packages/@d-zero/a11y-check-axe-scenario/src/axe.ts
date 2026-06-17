@@ -1,7 +1,7 @@
 import type { A11yCheckAxeOptions } from './types.js';
 import type { AxeResults } from 'axe-core';
 
-import AxePuppeteer from '@axe-core/puppeteer';
+import { AxePuppeteer } from '@axe-core/puppeteer';
 import { createScenario } from '@d-zero/a11y-check-core';
 import { Cache } from '@d-zero/shared/cache';
 
