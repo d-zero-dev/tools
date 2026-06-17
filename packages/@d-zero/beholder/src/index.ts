@@ -12,6 +12,8 @@
  */
 export { default as default } from './scraper.js';
 export { isError } from './is-error.js';
+export { extractMetaFromDocument } from './extract-meta.js';
+export type { ExtractMetaContext } from './extract-meta.js';
 export { detectCompress } from '@d-zero/shared/detect-compress';
 export type { CompressType } from '@d-zero/shared/detect-compress';
 export { detectCDN } from '@d-zero/shared/detect-cdn';
