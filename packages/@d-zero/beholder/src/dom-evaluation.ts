@@ -22,6 +22,7 @@ import { raceWithTimeout } from '@d-zero/shared/race-with-timeout';
 
 import { domDetailsLog, domLog } from './debug.js';
 import { classify, emptyMeta } from './meta/classify.js';
+import { WINDOW_GLOBALS_TO_CHECK, collectHeadFromDocument } from './meta/collect-head.js';
 import { detectTags } from './meta/tag-detection.js';
 import { parseUrl } from './parse-url.js';
 
@@ -515,46 +516,6 @@ export type GetMetaContext = {
 	readonly includeRaw?: boolean;
 };
 
-const WINDOW_GLOBALS_TO_CHECK: readonly string[] = [
-	'dataLayer',
-	'gtag',
-	'ga',
-	'_gaq',
-	'fbq',
-	'_fbq',
-	'clarity',
-	'_hjSettings',
-	'_hjid',
-	'twq',
-	'ttq',
-	'_linkedin_partner_id',
-	'pintrk',
-	'amplitude',
-	'mixpanel',
-	'analytics',
-	'heap',
-	'posthog',
-	'plausible',
-	'fathom',
-	'_paq',
-	's_account',
-	's',
-	'ym',
-	'UET',
-	'optimizely',
-	'_hsq',
-	'Sentry',
-	'Intercom',
-	'intercomSettings',
-	'drift',
-	'Tawk_API',
-	'zE',
-	'OneTrust',
-	'Cookiebot',
-	'Stripe',
-	'grecaptcha',
-];
-
 /**
  * Extracts comprehensive metadata from the page.
  *
@@ -639,129 +600,27 @@ async function runGetMeta(page: Page, context: GetMetaContext): Promise<Meta | n
 }
 
 /**
+ * Collects raw `<head>` entries from a Puppeteer page by injecting
+ * {@link collectHeadFromDocument} into the page realm.
  *
- * @param page
+ * WHY string-eval instead of `page.evaluate(fn, args)`: the shared
+ * implementation lives in this module (`collectHeadFromDocument`), and a
+ * `page.evaluate(() => collectHeadFromDocument(window, …))` wrapper cannot
+ * reach that module-scope binding inside the page realm — only the wrapper's
+ * own source crosses the CDP boundary. Serializing the implementation via
+ * `Function.prototype.toString` and invoking it through
+ * `page.evaluate(string)` is what keeps the Puppeteer path and the
+ * jsdom path on one source of truth.
+ *
+ * The same {@link collectHeadFromDocument} function is also exposed via
+ * {@link ../extract-meta.ts | extractMetaFromDocument} for jsdom/Node callers,
+ * so the two paths cannot drift apart.
+ * @param page - The Puppeteer page whose document will be inspected.
  */
 async function collectHeadOnPage(page: Page): Promise<RawHeadEntry[]> {
-	const raw = await page
-		.evaluate((knownGlobals: readonly string[]) => {
-			/* global document, HTMLLinkElement, HTMLMetaElement, HTMLBaseElement,
-			   HTMLScriptElement, HTMLIFrameElement */
-			type Out = unknown;
-			const entries: Out[] = [];
-
-			const html = document.documentElement;
-			entries.push(
-				{
-					kind: 'html',
-					lang: html.lang || undefined,
-					dir: html.dir || undefined,
-					xmlns: html.getAttribute('xmlns') ?? undefined,
-					prefix: html.getAttribute('prefix') ?? undefined,
-					vocab: html.getAttribute('vocab') ?? undefined,
-					typeOf: html.getAttribute('typeof') ?? undefined,
-					itemscope: html.hasAttribute('itemscope') || undefined,
-					itemtype: html.getAttribute('itemtype') ?? undefined,
-					amp: html.hasAttribute('amp') || undefined,
-					lightning: html.hasAttribute('⚡') || undefined,
-				},
-				{ kind: 'title', content: document.title },
-			);
-
-			for (const base of document.querySelectorAll('base')) {
-				if (!(base instanceof HTMLBaseElement)) continue;
-				entries.push({
-					kind: 'base',
-					href: base.getAttribute('href') ?? undefined,
-					target: base.getAttribute('target') ?? undefined,
-				});
-			}
-
-			for (const meta of document.querySelectorAll('meta')) {
-				if (!(meta instanceof HTMLMetaElement)) continue;
-				const name = meta.getAttribute('name');
-				const property = meta.getAttribute('property');
-				const httpEquiv = meta.getAttribute('http-equiv');
-				const itemprop = meta.getAttribute('itemprop');
-				const charset = meta.getAttribute('charset');
-				const content = meta.getAttribute('content');
-				const media = meta.getAttribute('media');
-				entries.push({
-					kind: 'meta',
-					name: name ? name.toLowerCase() : undefined,
-					property: property ? property.toLowerCase() : undefined,
-					httpEquiv: httpEquiv ? httpEquiv.toLowerCase() : undefined,
-					itemprop: itemprop ?? undefined,
-					charset: charset ?? undefined,
-					content: content ?? undefined,
-					media: media ?? undefined,
-				});
-			}
-
-			for (const link of document.querySelectorAll('link[href]')) {
-				if (!(link instanceof HTMLLinkElement)) continue;
-				const relRaw = link.getAttribute('rel') ?? '';
-				const rel = relRaw.toLowerCase().split(/\s+/u).filter(Boolean);
-				entries.push({
-					kind: 'link',
-					rel,
-					href: link.getAttribute('href') ?? '',
-					type: link.getAttribute('type') ?? undefined,
-					media: link.getAttribute('media') ?? undefined,
-					sizes: link.getAttribute('sizes') ?? undefined,
-					title: link.getAttribute('title') ?? undefined,
-					hreflang: link.getAttribute('hreflang') ?? undefined,
-					as: link.getAttribute('as') ?? undefined,
-					crossorigin: link.getAttribute('crossorigin') ?? undefined,
-					color: link.getAttribute('color') ?? undefined,
-					blocking: link.getAttribute('blocking') ?? undefined,
-					imagesrcset: link.getAttribute('imagesrcset') ?? undefined,
-				});
-			}
-
-			const STRUCTURED_TYPES = new Set([
-				'application/ld+json',
-				'speculationrules',
-				'application/json+oembed',
-				'application/xml+oembed',
-			]);
-			for (const script of document.querySelectorAll('script[type]')) {
-				if (!(script instanceof HTMLScriptElement)) continue;
-				const scriptType = (script.getAttribute('type') ?? '').toLowerCase();
-				if (!STRUCTURED_TYPES.has(scriptType)) continue;
-				const src = script.getAttribute('src') ?? undefined;
-				const text = script.textContent ?? '';
-				const inHead = !!script.closest('head');
-				const inNoscript = !!script.closest('noscript');
-				const location = inHead ? 'head' : inNoscript ? 'noscript' : 'body';
-				entries.push({
-					kind: 'script',
-					scriptType,
-					content: text || undefined,
-					src,
-					location,
-				});
-			}
-
-			for (const iframe of document.querySelectorAll('iframe[src]')) {
-				if (!(iframe instanceof HTMLIFrameElement)) continue;
-				const src = iframe.getAttribute('src') ?? '';
-				if (!src) continue;
-				const inHead = !!iframe.closest('head');
-				const inNoscript = !!iframe.closest('noscript');
-				const location = inHead ? 'head' : inNoscript ? 'noscript' : 'body';
-				entries.push({ kind: 'iframe', src, location });
-			}
-
-			const win = window as unknown as Record<string, unknown>;
-			const presentGlobals = knownGlobals.filter((name) => win[name] !== undefined);
-			if (presentGlobals.length > 0) {
-				entries.push({ kind: 'window-global', names: presentGlobals });
-			}
-
-			return entries;
-		}, WINDOW_GLOBALS_TO_CHECK)
-		.catch(() => [] as unknown[]);
-
+	const fnSource = collectHeadFromDocument.toString();
+	const globalsLiteral = JSON.stringify(WINDOW_GLOBALS_TO_CHECK);
+	const expr = `(${fnSource})(window, ${globalsLiteral})`;
+	const raw = await page.evaluate(expr).catch(() => [] as unknown[]);
 	return raw as RawHeadEntry[];
 }
