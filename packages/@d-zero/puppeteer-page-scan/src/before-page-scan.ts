@@ -13,7 +13,26 @@ type Options = {
 	openDisclosures?: boolean;
 	scrollInterval?: number | DelayOptions;
 	scrollDistance?: number | DelayOptions;
+	/**
+	 * Maximum `document.body.scrollHeight` (px) tolerated before `scrollAllOver`
+	 * is skipped. Pages whose post-load scrollHeight exceeds this threshold
+	 * return `{ scrolled: false, scrollHeight }` without scrolling, so callers
+	 * can decide to abandon the device preset rather than letting the scroll
+	 * run unbounded. Omit to disable the check (legacy behavior).
+	 */
+	maxScrollHeight?: number;
 } & Size;
+
+export type BeforePageScanResult = {
+	/**
+	 * `true` when `scrollAllOver` ran to completion (or to a stuck bail-out).
+	 * `false` when the scroll was skipped because `scrollHeight` exceeded
+	 * `maxScrollHeight`.
+	 */
+	scrolled: boolean;
+	/** `document.body.scrollHeight` measured immediately before scroll. */
+	scrollHeight: number;
+};
 
 /**
  * Open all disclosure elements on the page
@@ -88,12 +107,17 @@ async function openAllDisclosures(
  * @param url
  * @param options
  */
-export async function beforePageScan(page: Page, url: string, options?: Options) {
+export async function beforePageScan(
+	page: Page,
+	url: string,
+	options?: Options,
+): Promise<BeforePageScanResult> {
 	const listener = options?.listener;
 	const name = options?.name ?? 'default';
 	const width = options?.width ?? 1400;
 	const resolution = options?.resolution;
 	const timeout = options?.timeout || 5000;
+	const maxScrollHeight = options?.maxScrollHeight;
 	const countDownId = `${name}${url}_timeout`;
 
 	listener?.('setViewport', { name, width, resolution });
@@ -131,6 +155,23 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 		});
 	}
 
+	// WHY measure before scrollAllOver: pathological pages can have a
+	// post-load scrollHeight of millions of pixels (e.g. responsive data
+	// tables that expand to ~321k px at 320px viewport, and worse cases exist).
+	// `scrollAllOver` has no upper bound, so without this guard it can run
+	// for tens of minutes — long enough to exceed any reasonable retry
+	// timeout, leaving the scroll's page.evaluate calls executing in the
+	// background while the next retry attempts to use the same page.
+	const scrollHeight = await page.evaluate(() => document.body.scrollHeight);
+
+	if (maxScrollHeight !== undefined && scrollHeight > maxScrollHeight) {
+		listener?.('hook', {
+			name,
+			message: `Skipped scroll: scrollHeight ${scrollHeight} exceeds limit ${maxScrollHeight}`,
+		});
+		return { scrolled: false, scrollHeight };
+	}
+
 	listener?.('scroll', {
 		name,
 		scrollY: 0,
@@ -140,9 +181,11 @@ export async function beforePageScan(page: Page, url: string, options?: Options)
 	await scrollAllOver(page, {
 		interval: options?.scrollInterval,
 		distance: options?.scrollDistance,
-		logger: (scrollY, scrollHeight, message) =>
-			listener?.('scroll', { name, scrollY, scrollHeight, message }),
+		logger: (scrollY, scrollHeightCurrent, message) =>
+			listener?.('scroll', { name, scrollY, scrollHeight: scrollHeightCurrent, message }),
 	});
+
+	return { scrolled: true, scrollHeight };
 }
 
 /**
