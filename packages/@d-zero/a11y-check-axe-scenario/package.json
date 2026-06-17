@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/a11y-check-axe-scenario",
-	"version": "0.5.26",
+	"version": "0.5.27",
 	"description": "Accessibility Checker Axe Scenario",
 	"author": "D-ZERO",
 	"license": "MIT",
