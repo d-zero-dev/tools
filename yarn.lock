@@ -966,10 +966,10 @@ __metadata:
     "@d-zero/a11y-check-core": "npm:0.7.3"
     "@d-zero/db-wcag": "npm:1.0.0-alpha.1"
     "@d-zero/shared": "npm:0.22.0"
-    axe-core: "npm:4.11.1"
+    axe-core: "npm:4.11.4"
     puppeteer: "npm:24.37.5"
   peerDependencies:
-    axe-core: 4.11.1
+    axe-core: 4.11.4
     puppeteer: 24.37.5
   languageName: unknown
   linkType: soft
@@ -5008,14 +5008,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:4.11.1":
-  version: 4.11.1
-  resolution: "axe-core@npm:4.11.1"
-  checksum: 10c0/1e6997454b61c7c9a4d740f395952835dcf87f2c04fd81577217d68634d197d602c224f9e8f17b22815db4c117a2519980cfc8911fc0027c54a6d8ebca47c6a7
-  languageName: node
-  linkType: hard
-
-"axe-core@npm:~4.11.4":
+"axe-core@npm:4.11.4, axe-core@npm:~4.11.4":
   version: 4.11.4
   resolution: "axe-core@npm:4.11.4"
   checksum: 10c0/c4aa83fc3eac5f7a0d0cb1a28f9d073acf0c06ce8daacc38608faa278c57ce084c028c850746b98817ae4c101c30c1a32e95ea34748c4b4c7419b9b81221ef84
