@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.0.0...@d-zero/beholder@3.1.0) (2026-06-17)
+
+### Features
+
+- **beholder:** expose extractMetaFromDocument for jsdom-backed meta extraction ([a56e21c](https://github.com/d-zero-dev/tools/commit/a56e21c17dcc1e542595a596074c5d8e659c1168))
+
 # [3.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@2.1.6...@d-zero/beholder@3.0.0) (2026-06-16)
 
 ### Bug Fixes
