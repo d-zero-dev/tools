@@ -5,9 +5,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { beforePageScan } from './before-page-scan.js';
 
-vi.mock('@d-zero/puppeteer-scroll', () => ({
-	scrollAllOver: vi.fn(() => Promise.resolve()),
-}));
+vi.mock('@d-zero/puppeteer-scroll', async () => {
+	const actual = await vi.importActual<typeof import('@d-zero/puppeteer-scroll')>(
+		'@d-zero/puppeteer-scroll',
+	);
+	return {
+		...actual,
+		scrollAllOver: vi.fn(() => Promise.resolve()),
+	};
+});
 
 /**
  *
@@ -248,15 +254,40 @@ describe('beforePageScan → maxScrollHeight ガード', () => {
 		expect(scrollAllOver).toHaveBeenCalledTimes(1);
 	});
 
-	it('page.evaluate が reject した場合 beforePageScan も reject し、scrollAllOver は呼ばれない', async () => {
+	it('page.evaluate が detached Frame で reject しても 3 回までリトライして scroll を続行する', async () => {
+		const evaluate = vi
+			.fn()
+			.mockRejectedValueOnce(new Error("Attempted to use detached Frame 'XXX'."))
+			.mockResolvedValueOnce(500_000);
 		const page = {
 			url: vi.fn(() => 'about:blank'),
 			setViewport: vi.fn(() => Promise.resolve()),
 			goto: vi.fn(() => Promise.resolve()),
 			reload: vi.fn(() => Promise.resolve()),
-			evaluate: vi.fn(() =>
-				Promise.reject(new Error("Attempted to use detached Frame 'XXX'.")),
-			),
+			evaluate,
+		} as unknown as Page;
+
+		const result = await beforePageScan(page, 'https://example.com', {
+			name: 'mobile-small',
+			width: 320,
+			maxScrollHeight: 1_000_000,
+		});
+
+		expect(result).toEqual({ scrolled: true, scrollHeight: 500_000 });
+		expect(evaluate).toHaveBeenCalledTimes(2);
+		expect(scrollAllOver).toHaveBeenCalledTimes(1);
+	});
+
+	it('detached Frame が連続 3 回続くと諦めて呼び出し元にエラーを伝播する', async () => {
+		const evaluate = vi
+			.fn()
+			.mockRejectedValue(new Error("Attempted to use detached Frame 'XXX'."));
+		const page = {
+			url: vi.fn(() => 'about:blank'),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto: vi.fn(() => Promise.resolve()),
+			reload: vi.fn(() => Promise.resolve()),
+			evaluate,
 		} as unknown as Page;
 
 		await expect(
@@ -266,6 +297,29 @@ describe('beforePageScan → maxScrollHeight ガード', () => {
 				maxScrollHeight: 1_000_000,
 			}),
 		).rejects.toThrow("Attempted to use detached Frame 'XXX'.");
+		expect(evaluate).toHaveBeenCalledTimes(3);
 		expect(scrollAllOver).not.toHaveBeenCalled();
+	});
+
+	it('detached Frame 以外のエラーは即座に伝播し、リトライされない', async () => {
+		const evaluate = vi
+			.fn()
+			.mockRejectedValue(new Error('TypeError: foo is not a function'));
+		const page = {
+			url: vi.fn(() => 'about:blank'),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto: vi.fn(() => Promise.resolve()),
+			reload: vi.fn(() => Promise.resolve()),
+			evaluate,
+		} as unknown as Page;
+
+		await expect(
+			beforePageScan(page, 'https://example.com', {
+				name: 'mobile-small',
+				width: 320,
+				maxScrollHeight: 1_000_000,
+			}),
+		).rejects.toThrow('TypeError');
+		expect(evaluate).toHaveBeenCalledTimes(1);
 	});
 });

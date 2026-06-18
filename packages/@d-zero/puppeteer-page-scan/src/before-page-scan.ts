@@ -3,7 +3,7 @@ import type { Listener } from '@d-zero/puppeteer-general-actions';
 import type { DelayOptions } from '@d-zero/shared/delay';
 import type { Page } from 'puppeteer';
 
-import { scrollAllOver } from '@d-zero/puppeteer-scroll';
+import { evaluateWithFrameRetry, scrollAllOver } from '@d-zero/puppeteer-scroll';
 
 type Options = {
 	name: string;
@@ -162,7 +162,17 @@ export async function beforePageScan(
 	// for tens of minutes — long enough to exceed any reasonable retry
 	// timeout, leaving the scroll's page.evaluate calls executing in the
 	// background while the next retry attempts to use the same page.
-	const scrollHeight = await page.evaluate(() => document.body.scrollHeight);
+	//
+	// WHY retry on detached-Frame: this evaluation runs immediately after
+	// `page.reload()` resolves, which is exactly when Chrome may still be
+	// finishing an internal main-frame swap. A single read landing in that
+	// window throws even though the page itself is doing nothing observable,
+	// and the throw escapes `beforePageScan` before `scrollAllOver`'s own
+	// retry layer can absorb anything. Reuse the same retry helper as
+	// `scrollAllOver` to keep the swap-window absorption consistent.
+	const scrollHeight = await evaluateWithFrameRetry(() =>
+		page.evaluate(() => document.body.scrollHeight),
+	);
 
 	if (maxScrollHeight !== undefined && scrollHeight > maxScrollHeight) {
 		listener?.('hook', {
