@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.1](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.6.0...@d-zero/puppeteer-page-scan@4.6.1) (2026-06-18)
+
+### Bug Fixes
+
+- **puppeteer-page-scan:** retry post-reload scrollHeight evaluate on detached-Frame errors ([d8ca8d4](https://github.com/d-zero-dev/tools/commit/d8ca8d43ebf584bc15379a680a0736600d3b2081))
+
 # [4.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.5.2...@d-zero/puppeteer-page-scan@4.6.0) (2026-06-18)
 
 ### Features
