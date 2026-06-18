@@ -213,4 +213,60 @@ describe('scrollAllOver', () => {
 
 		expect(evaluateCalls[1]?.args[0]).toBe(1);
 	});
+
+	it('page.evaluate が detached Frame で reject したら短い遅延後にリトライして進行する', async () => {
+		const evaluate = vi
+			.fn()
+			.mockRejectedValueOnce(new Error("Attempted to use detached Frame 'X'."))
+			.mockResolvedValueOnce(300)
+			.mockResolvedValueOnce([200, 300])
+			.mockResolvedValueOnce([300, 300])
+			.mockResolvedValue();
+		const page = { evaluate } as unknown as Page;
+		const logger = vi.fn();
+
+		await scrollAllOver(page, { interval: 0, logger });
+
+		expect(evaluate).toHaveBeenCalled();
+		expect(logger).toHaveBeenCalledWith(300, 300, 'End of page');
+	});
+
+	it('page.evaluate が Session closed で reject してもリトライで吸収される', async () => {
+		const evaluate = vi
+			.fn()
+			.mockResolvedValueOnce(300)
+			.mockRejectedValueOnce(
+				new Error('Protocol error (Runtime.callFunctionOn): Session closed.'),
+			)
+			.mockResolvedValueOnce([200, 300])
+			.mockResolvedValueOnce([300, 300])
+			.mockResolvedValue();
+		const page = { evaluate } as unknown as Page;
+		const logger = vi.fn();
+
+		await scrollAllOver(page, { interval: 0, logger });
+
+		expect(logger).toHaveBeenCalledWith(300, 300, 'End of page');
+	});
+
+	it('detached Frame が連続 3 回続くと諦めて呼び出し元にエラーを伝播する', async () => {
+		const evaluate = vi
+			.fn()
+			.mockRejectedValue(new Error("Attempted to use detached Frame 'X'."));
+		const page = { evaluate } as unknown as Page;
+
+		await expect(scrollAllOver(page, { interval: 0 })).rejects.toThrow(
+			"Attempted to use detached Frame 'X'.",
+		);
+	});
+
+	it('detached Frame 以外のエラーは即座に伝播し、リトライされない', async () => {
+		const evaluate = vi
+			.fn()
+			.mockRejectedValue(new Error('TypeError: foo is not a function'));
+		const page = { evaluate } as unknown as Page;
+
+		await expect(scrollAllOver(page, { interval: 0 })).rejects.toThrow('TypeError');
+		expect(evaluate).toHaveBeenCalledTimes(1);
+	});
 });
