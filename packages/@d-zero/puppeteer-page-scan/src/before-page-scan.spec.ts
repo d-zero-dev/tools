@@ -11,14 +11,15 @@ vi.mock('@d-zero/puppeteer-scroll', () => ({
 
 /**
  *
+ * @param scrollHeight
  */
-function createMockPage(): Page {
+function createMockPage(scrollHeight = 0): Page {
 	return {
 		url: vi.fn(() => 'about:blank'),
 		setViewport: vi.fn(() => Promise.resolve()),
 		goto: vi.fn(() => Promise.resolve()),
 		reload: vi.fn(() => Promise.resolve()),
-		evaluate: vi.fn(() => Promise.resolve()),
+		evaluate: vi.fn(() => Promise.resolve(scrollHeight)),
 	} as unknown as Page;
 }
 
@@ -130,7 +131,7 @@ describe('beforePageScan → hooks の呼び出し', () => {
 				name: 'test',
 				width: 1024,
 			}),
-		).resolves.toBeUndefined();
+		).resolves.toEqual({ scrolled: true, scrollHeight: 0 });
 	});
 
 	it('hooks の途中で throw した場合、後続の hook は呼ばれず例外が伝搬する', async () => {
@@ -169,5 +170,102 @@ describe('beforePageScan → hooks の呼び出し', () => {
 			name: 'desktop',
 			message: 'hello from hook',
 		});
+	});
+});
+
+describe('beforePageScan → maxScrollHeight ガード', () => {
+	beforeEach(() => {
+		vi.mocked(scrollAllOver).mockClear();
+	});
+
+	it('scrollHeight が maxScrollHeight を超えるとき scrollAllOver を呼ばず scrolled:false を返す', async () => {
+		const page = createMockPage(2_000_000);
+		const listener = vi.fn();
+
+		const result = await beforePageScan(page, 'https://example.com', {
+			name: 'mobile-small',
+			width: 320,
+			maxScrollHeight: 1_000_000,
+			listener,
+		});
+
+		expect(result).toEqual({ scrolled: false, scrollHeight: 2_000_000 });
+		expect(scrollAllOver).not.toHaveBeenCalled();
+		expect(listener).toHaveBeenCalledWith('hook', {
+			name: 'mobile-small',
+			message: 'Skipped scroll: scrollHeight 2000000 exceeds limit 1000000',
+		});
+	});
+
+	it('scrollHeight が maxScrollHeight 以下のとき scrollAllOver を呼んで scrolled:true を返す', async () => {
+		const page = createMockPage(500_000);
+
+		const result = await beforePageScan(page, 'https://example.com', {
+			name: 'mobile-small',
+			width: 320,
+			maxScrollHeight: 1_000_000,
+		});
+
+		expect(result).toEqual({ scrolled: true, scrollHeight: 500_000 });
+		expect(scrollAllOver).toHaveBeenCalledTimes(1);
+	});
+
+	it('maxScrollHeight 未指定のときは scrollHeight にかかわらず scrollAllOver を呼ぶ', async () => {
+		const page = createMockPage(99_999_999);
+
+		const result = await beforePageScan(page, 'https://example.com', {
+			name: 'test',
+			width: 1024,
+		});
+
+		expect(result).toEqual({ scrolled: true, scrollHeight: 99_999_999 });
+		expect(scrollAllOver).toHaveBeenCalledTimes(1);
+	});
+
+	it('scrollHeight が maxScrollHeight と等しいとき（境界）は scroll する', async () => {
+		const page = createMockPage(1_000_000);
+
+		const result = await beforePageScan(page, 'https://example.com', {
+			name: 'test',
+			width: 320,
+			maxScrollHeight: 1_000_000,
+		});
+
+		expect(result).toEqual({ scrolled: true, scrollHeight: 1_000_000 });
+		expect(scrollAllOver).toHaveBeenCalledTimes(1);
+	});
+
+	it('maxScrollHeight: 0 を指定すると undefined と区別され、scrollHeight が 0 のときのみ scroll する', async () => {
+		const page = createMockPage(0);
+
+		const result = await beforePageScan(page, 'https://example.com', {
+			name: 'test',
+			width: 320,
+			maxScrollHeight: 0,
+		});
+
+		expect(result).toEqual({ scrolled: true, scrollHeight: 0 });
+		expect(scrollAllOver).toHaveBeenCalledTimes(1);
+	});
+
+	it('page.evaluate が reject した場合 beforePageScan も reject し、scrollAllOver は呼ばれない', async () => {
+		const page = {
+			url: vi.fn(() => 'about:blank'),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto: vi.fn(() => Promise.resolve()),
+			reload: vi.fn(() => Promise.resolve()),
+			evaluate: vi.fn(() =>
+				Promise.reject(new Error("Attempted to use detached Frame 'XXX'.")),
+			),
+		} as unknown as Page;
+
+		await expect(
+			beforePageScan(page, 'https://example.com', {
+				name: 'mobile-small',
+				width: 320,
+				maxScrollHeight: 1_000_000,
+			}),
+		).rejects.toThrow("Attempted to use detached Frame 'XXX'.");
+		expect(scrollAllOver).not.toHaveBeenCalled();
 	});
 });

@@ -39,6 +39,18 @@ const log = scraperLog.extend(pid);
 const rLog = resourceLog.extend(pid);
 
 /**
+ * Upper bound for `document.body.scrollHeight` tolerated by `#fetchImages`.
+ * Pages exceeding this at a given device preset are skipped to keep
+ * `scrollAllOver` from running long enough to outlast the @retryable
+ * timeout and collide with a follow-up retry on the same Puppeteer page.
+ *
+ * 1,000,000 px is roughly 3× the worst real-world value we have measured
+ * (a responsive data-table page reached ~321k px at 320px viewport), so
+ * normal responsive sites complete well within the 20 min retry budget.
+ */
+const MAX_SCROLL_HEIGHT = 1_000_000;
+
+/**
  * Page-level scraper that extracts data from a single browser page.
  *
  * The scraper returns results as values from `scrapeStart()` rather than
@@ -308,9 +320,18 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	/**
 	 * Navigates the page to the target URL and extracts full page data.
 	 *
-	 * WHY retryable with 3-min timeout: Page navigation can fail due to transient
-	 * network issues or slow-loading pages. The decorator retries automatically,
-	 * emitting `retryWait` / `retryExhausted` phase events for progress monitoring.
+	 * WHY retryable with 25-min timeout: Page navigation can fail due to
+	 * transient network issues or slow-loading pages. The decorator retries
+	 * automatically, emitting `retryWait` / `retryExhausted` phase events for
+	 * progress monitoring. The timeout must accommodate the worst-case
+	 * `#fetchImages` runtime (its own @retryable allows up to 20 min for
+	 * pages with very large `scrollHeight` at narrow viewports). A shorter
+	 * `#fetchData` timeout would race `#fetchImages` to completion: when the
+	 * outer race fires first, `Promise.race` does not cancel the inner
+	 * `#fetchImages`, so a new `#fetchData` retry starts while the previous
+	 * attempt's scroll evaluates are still running on the same page —
+	 * exactly the collision that surfaces as "Attempted to use detached
+	 * Frame" or "Session closed".
 	 *
 	 * Flow:
 	 * 1. Register request/response/requestfailed listeners to capture sub-resources (internal pages only)
@@ -330,7 +351,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * @returns Full page data or skipped page data if an exclusion rule matched
 	 */
 	@retryable({
-		timeout: 3 * 60 * 1000,
+		timeout: 25 * 60 * 1000,
 		onWait(this: Scraper, determinedInterval, retryCount, methodName, error) {
 			void this.emit('changePhase', {
 				pid: process.pid,
@@ -698,9 +719,23 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * changes and triggers a reload. Isolating each device preset allows partial
 	 * results — if one viewport fails, the other can still succeed.
 	 *
-	 * WHY retryable with 5-min timeout and `fallback: []`: Image extraction is
+	 * WHY retryable with 20-min timeout and `fallback: []`: Image extraction is
 	 * best-effort. If all retries fail, an empty array is returned rather than
-	 * failing the entire page scrape.
+	 * failing the entire page scrape. The 20-min wall clock accommodates pages
+	 * whose mobile-small `scrollHeight` reaches ~300k px (observed on
+	 * responsive data tables, which take ~5 min to scroll). A shorter timeout
+	 * causes a second retry to start while the previous attempt's
+	 * `scrollAllOver` is still running its `page.evaluate` calls in the
+	 * background — `Promise.race` in `retry.ts` does not cancel `fn()`. The
+	 * collision then surfaces as "Attempted to use detached Frame" or
+	 * "Session closed" when the new attempt's reload / setViewport runs on
+	 * the same page as the old attempt's pending evaluates.
+	 *
+	 * WHY pass `maxScrollHeight`: Even 20 min is not enough for pathological
+	 * pages whose layout explodes at narrow viewports. Skipping the device
+	 * preset entirely keeps the timeout-vs-background-evaluate collision from
+	 * ever being triggered, at the cost of losing that viewport's image data
+	 * for those pages. See {@link MAX_SCROLL_HEIGHT} for the chosen threshold.
 	 * @param page - Puppeteer page instance
 	 * @param url - The page URL string (without hash and auth)
 	 * @param isExternal - Whether the page is external
@@ -709,7 +744,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * @returns Array of image elements from all device presets (may be partial if some viewports failed)
 	 */
 	@retryable({
-		timeout: 5 * 60 * 1000,
+		timeout: 20 * 60 * 1000,
 		fallback: [],
 		onWait(this: Scraper, determinedInterval, retryCount, methodName, error) {
 			void this.emit('changePhase', {
@@ -754,13 +789,25 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					message: `📷 ${key} ↔️ ${preset.width}px`,
 				});
 
-				await beforePageScan(page, url, {
+				const scanResult = await beforePageScan(page, url, {
 					name: key,
 					width: preset.width,
 					resolution: preset.resolution,
 					listener,
 					timeout: 5000,
+					maxScrollHeight: MAX_SCROLL_HEIGHT,
 				});
+
+				if (!scanResult.scrolled) {
+					void this.emit('changePhase', {
+						pid: process.pid,
+						name: 'retryExhausted',
+						url: null,
+						isExternal: false,
+						message: `📷 ${key}: skipped — scrollHeight ${scanResult.scrollHeight} exceeds limit ${MAX_SCROLL_HEIGHT}`,
+					});
+					continue;
+				}
 
 				void this.emit('changePhase', {
 					pid: process.pid,

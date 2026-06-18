@@ -1,4 +1,5 @@
 export { beforePageScan } from './before-page-scan.js';
+export type { BeforePageScanResult } from './before-page-scan.js';
 export {
 	defaultSizes,
 	devicePresets,
