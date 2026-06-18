@@ -15,6 +15,51 @@ import { resolveValue } from './resolve-value.js';
 const MAX_STUCK_ITERATIONS = 3;
 
 /**
+ * Max attempts for each `page.evaluate` call when it fails with a transient
+ * frame error (Chrome may briefly swap or re-attach the main frame during a
+ * long scroll, even when the target site is not doing anything observable).
+ * Three attempts with a 200 ms gap absorbs the typical re-attach window
+ * without masking a genuinely broken page.
+ */
+const MAX_EVALUATE_RETRIES = 3;
+const DETACHED_RETRY_DELAY_MS = 200;
+
+/**
+ * Transient errors that occur when `page.evaluate` lands inside Puppeteer's
+ * own frame-swap or session-teardown window. Retrying after a short delay
+ * usually succeeds because the new execution context is then in place.
+ * @param error - Error caught from `page.evaluate`.
+ * @returns `true` when the error is a known transient frame/session error.
+ */
+function isTransientFrameError(error: unknown): boolean {
+	if (!(error instanceof Error)) return false;
+	return /Attempted to use detached Frame|Session closed|Execution context was destroyed/i.test(
+		error.message,
+	);
+}
+
+/**
+ * Retries `evaluator` (typically a `page.evaluate` call) when it fails with
+ * a transient frame error. Non-transient errors are re-thrown immediately.
+ * @template T - Evaluator return type.
+ * @param evaluator - Thunk that performs a single `page.evaluate` call.
+ * @returns Whatever `evaluator` returns on success.
+ */
+async function evaluateWithFrameRetry<T>(evaluator: () => Promise<T>): Promise<T> {
+	let lastError: unknown;
+	for (let attempt = 0; attempt < MAX_EVALUATE_RETRIES; attempt++) {
+		try {
+			return await evaluator();
+		} catch (error) {
+			lastError = error;
+			if (!isTransientFrameError(error)) throw error;
+			await new Promise((resolve) => setTimeout(resolve, DETACHED_RETRY_DELAY_MS));
+		}
+	}
+	throw lastError;
+}
+
+/**
  * Default interval range (ms) used when `options.interval` is omitted.
  * Randomized to mimic human-like reading pauses while staying close to the
  * historical 300 ms fixed default.
@@ -57,7 +102,9 @@ export async function scrollAllOver(page: Page, options?: Options) {
 	const distance = options?.distance;
 
 	let currentScrollY = 0;
-	let scrollHeight = await page.evaluate(() => document.body.scrollHeight);
+	let scrollHeight = await evaluateWithFrameRetry(() =>
+		page.evaluate(() => document.body.scrollHeight),
+	);
 	let prevScrollY = -1;
 	let stuckCount = 0;
 
@@ -66,28 +113,30 @@ export async function scrollAllOver(page: Page, options?: Options) {
 		// cannot stall the loop into the stuck-detection bail out.
 		const stepDistance =
 			distance === undefined ? null : Math.max(1, resolveValue(distance));
-		[currentScrollY, scrollHeight] = await page.evaluate(
-			(step, ratioMin, ratioMax) => {
-				// When step is null, sample a random fraction of the viewport
-				// height so each scroll feels less mechanical.
-				const actualStep =
-					step ??
-					Math.max(
-						1,
-						Math.floor(
-							document.documentElement.clientHeight *
-								(ratioMin + Math.random() * (ratioMax - ratioMin)),
-						),
-					);
-				globalThis.scrollBy(0, actualStep);
-				return [
-					Math.ceil(globalThis.scrollY + globalThis.innerHeight),
-					Math.ceil(document.body.scrollHeight),
-				] as const;
-			},
-			stepDistance,
-			DEFAULT_DISTANCE_RATIO_MIN,
-			DEFAULT_DISTANCE_RATIO_MAX,
+		[currentScrollY, scrollHeight] = await evaluateWithFrameRetry(() =>
+			page.evaluate(
+				(step, ratioMin, ratioMax) => {
+					// When step is null, sample a random fraction of the viewport
+					// height so each scroll feels less mechanical.
+					const actualStep =
+						step ??
+						Math.max(
+							1,
+							Math.floor(
+								document.documentElement.clientHeight *
+									(ratioMin + Math.random() * (ratioMax - ratioMin)),
+							),
+						);
+					globalThis.scrollBy(0, actualStep);
+					return [
+						Math.ceil(globalThis.scrollY + globalThis.innerHeight),
+						Math.ceil(document.body.scrollHeight),
+					] as const;
+				},
+				stepDistance,
+				DEFAULT_DISTANCE_RATIO_MIN,
+				DEFAULT_DISTANCE_RATIO_MAX,
+			),
 		);
 		options?.logger?.(currentScrollY, scrollHeight, 'Scrolling');
 
@@ -107,10 +156,12 @@ export async function scrollAllOver(page: Page, options?: Options) {
 
 	options?.logger?.(currentScrollY, scrollHeight, 'End of page');
 
-	await page.evaluate(() => {
-		// Move the scroll position to the top of the page.
-		globalThis.scrollTo(0, 0);
-	});
+	await evaluateWithFrameRetry(() =>
+		page.evaluate(() => {
+			// Move the scroll position to the top of the page.
+			globalThis.scrollTo(0, 0);
+		}),
+	);
 	await delay(400);
 
 	options?.logger?.(currentScrollY, scrollHeight, 'End of page');
