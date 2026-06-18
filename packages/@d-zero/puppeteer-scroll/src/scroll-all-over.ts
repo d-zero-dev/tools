@@ -2,6 +2,7 @@ import type { Page } from 'puppeteer';
 
 import { delay, type DelayOptions } from '@d-zero/shared/delay';
 
+import { evaluateWithFrameRetry } from './evaluate-with-frame-retry.js';
 import { resolveValue } from './resolve-value.js';
 
 /**
@@ -13,51 +14,6 @@ import { resolveValue } from './resolve-value.js';
  * enough to confirm that scrolling is genuinely blocked.
  */
 const MAX_STUCK_ITERATIONS = 3;
-
-/**
- * Max attempts for each `page.evaluate` call when it fails with a transient
- * frame error (Chrome may briefly swap or re-attach the main frame during a
- * long scroll, even when the target site is not doing anything observable).
- * Three attempts with a 200 ms gap absorbs the typical re-attach window
- * without masking a genuinely broken page.
- */
-const MAX_EVALUATE_RETRIES = 3;
-const DETACHED_RETRY_DELAY_MS = 200;
-
-/**
- * Transient errors that occur when `page.evaluate` lands inside Puppeteer's
- * own frame-swap or session-teardown window. Retrying after a short delay
- * usually succeeds because the new execution context is then in place.
- * @param error - Error caught from `page.evaluate`.
- * @returns `true` when the error is a known transient frame/session error.
- */
-function isTransientFrameError(error: unknown): boolean {
-	if (!(error instanceof Error)) return false;
-	return /Attempted to use detached Frame|Session closed|Execution context was destroyed/i.test(
-		error.message,
-	);
-}
-
-/**
- * Retries `evaluator` (typically a `page.evaluate` call) when it fails with
- * a transient frame error. Non-transient errors are re-thrown immediately.
- * @template T - Evaluator return type.
- * @param evaluator - Thunk that performs a single `page.evaluate` call.
- * @returns Whatever `evaluator` returns on success.
- */
-async function evaluateWithFrameRetry<T>(evaluator: () => Promise<T>): Promise<T> {
-	let lastError: unknown;
-	for (let attempt = 0; attempt < MAX_EVALUATE_RETRIES; attempt++) {
-		try {
-			return await evaluator();
-		} catch (error) {
-			lastError = error;
-			if (!isTransientFrameError(error)) throw error;
-			await new Promise((resolve) => setTimeout(resolve, DETACHED_RETRY_DELAY_MS));
-		}
-	}
-	throw lastError;
-}
 
 /**
  * Default interval range (ms) used when `options.interval` is omitted.
