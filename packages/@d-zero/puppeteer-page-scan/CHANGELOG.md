@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.5.2...@d-zero/puppeteer-page-scan@4.6.0) (2026-06-18)
+
+### Features
+
+- **puppeteer-page-scan:** add maxScrollHeight guard to beforePageScan ([ff0c54d](https://github.com/d-zero-dev/tools/commit/ff0c54d40943100e5b38b1f1df43c06096951282))
+
 ## [4.5.2](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.5.1...@d-zero/puppeteer-page-scan@4.5.2) (2026-06-16)
 
 **Note:** Version bump only for package @d-zero/puppeteer-page-scan

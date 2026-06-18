@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/a11y-check-core",
-	"version": "0.7.4",
+	"version": "0.7.5",
 	"description": "Accessibility Checker (Core Module)",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -31,7 +31,7 @@
 	},
 	"devDependencies": {
 		"@d-zero/dealer": "1.9.2",
-		"@d-zero/puppeteer-page-scan": "4.5.2"
+		"@d-zero/puppeteer-page-scan": "4.6.0"
 	},
 	"repository": {
 		"type": "git",

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.3](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@4.0.2...@d-zero/puppeteer-scroll@4.0.3) (2026-06-18)
+
+### Bug Fixes
+
+- **puppeteer-scroll:** retry page.evaluate on transient detached-Frame / Session-closed errors ([b464f42](https://github.com/d-zero-dev/tools/commit/b464f42b099bf90ee988fe2d1c509089d9cedb1c))
+
 ## [4.0.2](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-scroll@4.0.1...@d-zero/puppeteer-scroll@4.0.2) (2026-06-16)
 
 **Note:** Version bump only for package @d-zero/puppeteer-scroll

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.1](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.1.0...@d-zero/beholder@3.1.1) (2026-06-18)
+
+### Bug Fixes
+
+- **beholder:** extend #fetchData retryable timeout to 25 min to enclose #fetchImages ([3bcf8d2](https://github.com/d-zero-dev/tools/commit/3bcf8d28b51e213515d88ed1cecb392d1229c03c))
+- **beholder:** guard #fetchImages against scrollHeight runaway and detached frame races ([5b5347f](https://github.com/d-zero-dev/tools/commit/5b5347f4ca3888fd030d71cea1c6781cbae784d0))
+
 # [3.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.0.0...@d-zero/beholder@3.1.0) (2026-06-17)
 
 ### Features
