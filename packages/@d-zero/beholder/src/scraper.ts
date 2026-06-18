@@ -320,9 +320,18 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	/**
 	 * Navigates the page to the target URL and extracts full page data.
 	 *
-	 * WHY retryable with 3-min timeout: Page navigation can fail due to transient
-	 * network issues or slow-loading pages. The decorator retries automatically,
-	 * emitting `retryWait` / `retryExhausted` phase events for progress monitoring.
+	 * WHY retryable with 25-min timeout: Page navigation can fail due to
+	 * transient network issues or slow-loading pages. The decorator retries
+	 * automatically, emitting `retryWait` / `retryExhausted` phase events for
+	 * progress monitoring. The timeout must accommodate the worst-case
+	 * `#fetchImages` runtime (its own @retryable allows up to 20 min for
+	 * pages with very large `scrollHeight` at narrow viewports). A shorter
+	 * `#fetchData` timeout would race `#fetchImages` to completion: when the
+	 * outer race fires first, `Promise.race` does not cancel the inner
+	 * `#fetchImages`, so a new `#fetchData` retry starts while the previous
+	 * attempt's scroll evaluates are still running on the same page —
+	 * exactly the collision that surfaces as "Attempted to use detached
+	 * Frame" or "Session closed".
 	 *
 	 * Flow:
 	 * 1. Register request/response/requestfailed listeners to capture sub-resources (internal pages only)
@@ -342,7 +351,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * @returns Full page data or skipped page data if an exclusion rule matched
 	 */
 	@retryable({
-		timeout: 3 * 60 * 1000,
+		timeout: 25 * 60 * 1000,
 		onWait(this: Scraper, determinedInterval, retryCount, methodName, error) {
 			void this.emit('changePhase', {
 				pid: process.pid,
