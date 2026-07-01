@@ -8,16 +8,63 @@ on:
     branches:
       - main
       - dev
+  schedule:
+    - cron: "0 17 * * 1-5" # UTC 17:00 = JST 02:00, weekdays
+  workflow_dispatch:
+    inputs:
+      full_matrix:
+        description: "Run build-test on the full multi-OS matrix (like nightly)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
-  test:
-    strategy:
-      matrix:
-        os: [macOS-latest, windows-latest]
-        node: [24]
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Detect docs-only changes
+        id: filter
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        with:
+          filters: |
+            code:
+              - '!**/*.md'
+              - '!LICENSE'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/CODEOWNERS'
+              - '!.claude/**'
+              - '!.cursor/**'
+              - '!.vscode/**'
 
-    runs-on: ${{ matrix.os }}
+  setup-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - name: Compute OS matrix
+        id: set
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.full_matrix }}" = "true" ]; then
+            echo 'matrix={"os":["ubuntu-latest","macOS-latest","windows-latest"]}' >> "$GITHUB_OUTPUT"
+          else
+            echo 'matrix={"os":["ubuntu-latest"]}' >> "$GITHUB_OUTPUT"
+          fi
 
+  lint:
+    needs: [changes]
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -25,7 +72,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 24
 
       - name: Enable Corepack and setup Yarn v4
         run: |
@@ -36,8 +83,43 @@ jobs:
         id: cache-depends
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
         with:
-          path: '**/node_modules'
-          key: os-${{ matrix.os }}-node${{ matrix.node }}-${{ hashFiles('yarn.lock') }}
+          path: "**/node_modules"
+          key: os-ubuntu-latest-node24-${{ hashFiles('yarn.lock') }}
+
+      - name: Install dependencies
+        if: steps.cache-depends.outputs.cache-hit != 'true'
+        run: yarn install --immutable
+
+      - name: Lint
+        run: yarn lint
+
+  build-test:
+    needs: [changes, setup-matrix, lint]
+    if: needs.changes.outputs.code == 'true'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: 24
+
+      - name: Enable Corepack and setup Yarn v4
+        run: |
+          corepack enable
+          yarn --version
+
+      - name: Cache dependencies
+        id: cache-depends
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
+        with:
+          path: "**/node_modules"
+          key: os-${{ matrix.os }}-node24-${{ hashFiles('yarn.lock') }}
 
       - name: Create .yarnrc for Windows
         if: runner.os == 'Windows' && steps.cache-depends.outputs.cache-hit != 'true'
@@ -50,8 +132,54 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Lint
-        run: yarn lint
-
       - name: Test
         run: yarn test
+
+  ci-required:
+    needs: [changes, lint, build-test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate job results
+        shell: bash
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS"
+          failed=$(echo "$NEEDS" | jq -r 'to_entries[] | select(.value.result == "failure" or .value.result == "cancelled") | .key')
+          if [ -n "$failed" ]; then
+            echo "Failed jobs: $failed"
+            exit 1
+          fi
+
+  nightly-report:
+    needs: [build-test]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Ensure ci-failure label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh label create ci-failure --color d73a4a --description "Nightly CI failure" --force
+
+      - name: Open or update failure issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MARKER: "[nightly-ci-failure]"
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          existing=$(gh issue list --search "in:title $MARKER" --state open --json number --jq '.[0].number' || echo "")
+          title="$MARKER Nightly CI failure ($(date -u +%Y-%m-%d))"
+          body="Nightly build-test failed. See: $RUN_URL"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label "ci-failure"
+          fi

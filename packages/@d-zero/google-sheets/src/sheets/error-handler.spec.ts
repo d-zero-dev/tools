@@ -4,16 +4,28 @@ import { delay } from '@d-zero/shared/delay';
 import { GaxiosError } from 'gaxios';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 
-import { ErrorHandler } from './error-handler.js';
+import { createErrorHandler } from './error-handler.js';
 
 vi.mock('@d-zero/shared/delay', () => ({
 	delay: vi.fn().mockResolvedValue(),
 }));
 
+const { errorLogMock, gaxiosErrorLogMock } = vi.hoisted(() => ({
+	errorLogMock: vi.fn(),
+	gaxiosErrorLogMock: vi.fn(),
+}));
+
 vi.mock('../debug.js', () => {
-	const noop = () => {};
-	noop.extend = () => noop;
-	return { log: noop };
+	const baseLog: ((...args: unknown[]) => void) & {
+		extend: (name: string) => (...args: unknown[]) => void;
+	} = Object.assign(() => {}, {
+		extend(name: string) {
+			if (name === 'Error') return errorLogMock;
+			if (name === 'GaxiosError') return gaxiosErrorLogMock;
+			return () => {};
+		},
+	});
+	return { log: baseLog };
 });
 
 /**
@@ -49,7 +61,7 @@ function createGaxiosErrorWithCode(code: string, message = 'Error') {
 }
 
 /**
- * ErrorHandler デコレータをテストするためのテストクラス。
+ * `createErrorHandler` のリトライ挙動をテストするための対象クラス。
  */
 class TestTarget {
 	/** メソッドが呼ばれた回数。 */
@@ -58,23 +70,22 @@ class TestTarget {
 	/** 呼び出し時にスローするエラーのリスト。空になると成功を返す。 */
 	errors: Error[] = [];
 
-	/**
-	 * テスト対象メソッド。
-	 */
-	@ErrorHandler()
-	// eslint-disable-next-line @typescript-eslint/require-await
+	readonly #handle = createErrorHandler('doWork');
+
 	async doWork(): Promise<string> {
-		this.callCount++;
-		const error = this.errors.shift();
-		if (error) {
-			throw error;
-		}
-		return 'success';
+		return this.#handle(() => {
+			this.callCount++;
+			const error = this.errors.shift();
+			if (error) {
+				throw error;
+			}
+			return Promise.resolve('success');
+		});
 	}
 }
 
 /**
- * ErrorHandler デコレータを log オプション付きでテストするクラス。
+ * `createErrorHandler` を log オプション付きでテストするクラス。
  */
 class TestTargetWithLog {
 	/** メソッドが呼ばれた回数。 */
@@ -84,33 +95,32 @@ class TestTargetWithLog {
 	errors: Error[] = [];
 
 	/** log コールバックで受け取ったメッセージ。 */
-	logMessages: Parameters<ErrorHandlerOptions<TestTargetWithLog>['log']>[0][] = [];
+	logMessages: Parameters<ErrorHandlerOptions['log']>[0][] = [];
 
-	/**
-	 * テスト対象メソッド。
-	 */
-	@ErrorHandler<TestTargetWithLog>({
-		log(message) {
-			this.logMessages.push(message);
-		},
-	})
-	// eslint-disable-next-line @typescript-eslint/require-await
+	readonly #handle = createErrorHandler('doWork', {
+		log: (message) => this.logMessages.push(message),
+	});
+
 	async doWork(): Promise<string> {
-		this.callCount++;
-		const error = this.errors.shift();
-		if (error) {
-			throw error;
-		}
-		return 'success';
+		return this.#handle(() => {
+			this.callCount++;
+			const error = this.errors.shift();
+			if (error) {
+				throw error;
+			}
+			return Promise.resolve('success');
+		});
 	}
 }
 
 beforeEach(() => {
 	vi.mocked(delay).mockReset();
 	vi.mocked(delay).mockResolvedValue();
+	errorLogMock.mockReset();
+	gaxiosErrorLogMock.mockReset();
 });
 
-describe('ErrorHandler - 5xx Server Error', () => {
+describe('createErrorHandler - 5xx Server Error', () => {
 	test('502 エラー時に 30 秒待機してリトライする', async () => {
 		const target = new TestTarget();
 		target.errors = [createGaxiosError(502, '502 Bad Gateway', 'Bad Gateway')];
@@ -202,7 +212,7 @@ describe('ErrorHandler - 5xx Server Error', () => {
 	});
 });
 
-describe('ErrorHandler - 429 Too Many Requests', () => {
+describe('createErrorHandler - 429 Too Many Requests', () => {
 	test('response.status が 429 のとき 110 秒待機してリトライする', async () => {
 		const target = new TestTarget();
 		target.errors = [createGaxiosError(429)];
@@ -240,7 +250,7 @@ describe('ErrorHandler - 429 Too Many Requests', () => {
 	});
 });
 
-describe('ErrorHandler - 403 User Rate Limit Exceeded', () => {
+describe('createErrorHandler - 403 User Rate Limit Exceeded', () => {
 	test('response.status が 403 かつ "User rate limit exceeded" メッセージのとき 60 秒待機してリトライする', async () => {
 		const target = new TestTarget();
 		target.errors = [createGaxiosError(403, 'User rate limit exceeded')];
@@ -261,7 +271,7 @@ describe('ErrorHandler - 403 User Rate Limit Exceeded', () => {
 	});
 });
 
-describe('ErrorHandler - ECONNRESET', () => {
+describe('createErrorHandler - ECONNRESET', () => {
 	test('ECONNRESET エラー時に 5 秒待機してリトライする', async () => {
 		const target = new TestTarget();
 		target.errors = [createGaxiosErrorWithCode('ECONNRESET')];
@@ -275,7 +285,7 @@ describe('ErrorHandler - ECONNRESET', () => {
 });
 
 /**
- * 複数のデコレート済みメソッドを持つテストクラス。
+ * 複数のメソッドに別々のハンドラを持つテストクラス。
  * メソッド間のリトライカウント独立性を検証する。
  */
 class TestTargetMultiMethod {
@@ -291,36 +301,33 @@ class TestTargetMultiMethod {
 	/** methodB 呼び出し時にスローするエラーのリスト。 */
 	errorsB: Error[] = [];
 
-	/**
-	 * テスト対象メソッド A。
-	 */
-	@ErrorHandler()
-	// eslint-disable-next-line @typescript-eslint/require-await
+	readonly #handleA = createErrorHandler('methodA');
+	readonly #handleB = createErrorHandler('methodB');
+
 	async methodA(): Promise<string> {
-		this.callCountA++;
-		const error = this.errorsA.shift();
-		if (error) {
-			throw error;
-		}
-		return 'A';
+		return this.#handleA(() => {
+			this.callCountA++;
+			const error = this.errorsA.shift();
+			if (error) {
+				throw error;
+			}
+			return Promise.resolve('A');
+		});
 	}
 
-	/**
-	 * テスト対象メソッド B。
-	 */
-	@ErrorHandler()
-	// eslint-disable-next-line @typescript-eslint/require-await
 	async methodB(): Promise<string> {
-		this.callCountB++;
-		const error = this.errorsB.shift();
-		if (error) {
-			throw error;
-		}
-		return 'B';
+		return this.#handleB(() => {
+			this.callCountB++;
+			const error = this.errorsB.shift();
+			if (error) {
+				throw error;
+			}
+			return Promise.resolve('B');
+		});
 	}
 }
 
-describe('ErrorHandler - 最大リトライ回数', () => {
+describe('createErrorHandler - 最大リトライ回数', () => {
 	test('リトライが 10 回を超えると元の GaxiosError をスローする', async () => {
 		const target = new TestTarget();
 		target.errors = Array.from({ length: 11 }, () => createGaxiosError(502));
@@ -392,7 +399,7 @@ describe('ErrorHandler - 最大リトライ回数', () => {
 	});
 });
 
-describe('ErrorHandler - 非リトライ対象のエラー', () => {
+describe('createErrorHandler - 非リトライ対象のエラー', () => {
 	test('GaxiosError 以外のエラーはそのままスローされる', async () => {
 		const target = new TestTarget();
 		target.errors = [new Error('generic error')];
@@ -415,5 +422,125 @@ describe('ErrorHandler - 非リトライ対象のエラー', () => {
 
 		await expect(target.doWork()).rejects.toThrow();
 		expect(target.callCount).toBe(1);
+	});
+});
+
+describe('createErrorHandler - ログ文言の配線', () => {
+	test('Max retries 超過時のログに methodName が含まれる', async () => {
+		const target = new TestTarget();
+		target.errors = Array.from({ length: 11 }, () => createGaxiosError(502));
+
+		await expect(target.doWork()).rejects.toThrow();
+
+		expect(errorLogMock).toHaveBeenCalledWith(
+			expect.stringContaining('Max retries (10) exceeded in doWork()'),
+		);
+	});
+
+	test('非リトライエラー時のログに methodName が含まれる', async () => {
+		const target = new TestTarget();
+		target.errors = [createGaxiosError(404)];
+
+		await expect(target.doWork()).rejects.toThrow();
+
+		expect(errorLogMock).toHaveBeenCalledWith('Caught in: doWork()');
+	});
+
+	test('methodName にクラス名修飾子を含むと完全修飾名でログされる', async () => {
+		const handle = createErrorHandler('Foo.bar');
+
+		await expect(
+			handle(() => {
+				throw createGaxiosError(404);
+			}),
+		).rejects.toThrow();
+
+		expect(errorLogMock).toHaveBeenCalledWith('Caught in: Foo.bar()');
+	});
+
+	test('options.log 未指定時はリトライ時に gaxiosErrorLog で wording が出力される', async () => {
+		const target = new TestTarget();
+		target.errors = [createGaxiosError(502, '502 Bad Gateway', 'Bad Gateway')];
+
+		await target.doWork();
+
+		expect(gaxiosErrorLogMock).toHaveBeenCalledWith(
+			expect.stringContaining(
+				'ServerError(502): Waiting 30000ms for Bad Gateway (retry 1/10)',
+			),
+		);
+		expect(gaxiosErrorLogMock).toHaveBeenCalledWith(
+			expect.stringContaining('ServerError(502): Resumed after 30000ms'),
+		);
+	});
+});
+
+describe('createErrorHandler - Excel ヒントの多重連結ガード', () => {
+	test('リトライを跨いで同一 GaxiosError インスタンスが再スローされても Excel ヒントは 1 回のみ追記される', async () => {
+		const sharedError = createGaxiosError(
+			502,
+			'This operation is not supported for this document',
+			'Bad Gateway',
+		);
+		const target = new TestTarget();
+		// 同じインスタンスを 3 回連続でスロー → 4 回目で成功 (502 はリトライ対象)
+		target.errors = [sharedError, sharedError, sharedError];
+
+		await target.doWork();
+
+		const hintOccurrences = (sharedError.message.match(/⚠️ Hint:/g) ?? []).length;
+		expect(hintOccurrences).toBe(1);
+	});
+
+	test('別の呼び出し越しに同じインスタンスを再投入しても Excel ヒントは追記済みなら冪等', async () => {
+		const error = createGaxiosError(
+			404,
+			'This operation is not supported for this document',
+			'Not Found',
+		);
+		const target = new TestTarget();
+		target.errors = [error];
+
+		await expect(target.doWork()).rejects.toThrow();
+		expect((error.message.match(/⚠️ Hint:/g) ?? []).length).toBe(1);
+
+		// 二度目: 同じインスタンスをもう一度通しても重複追加されない
+		target.errors = [error];
+		await expect(target.doWork()).rejects.toThrow();
+		expect((error.message.match(/⚠️ Hint:/g) ?? []).length).toBe(1);
+	});
+});
+
+describe('createErrorHandler - 並列呼び出しの retryCount 独立性', () => {
+	test('同一ハンドラへの並列呼び出しで retryCount は独立し、合計失敗回数が MAX_RETRIES を超えても両方成功できる', async () => {
+		const handle = createErrorHandler('parallel');
+
+		let countA = 0;
+		let countB = 0;
+		const FAILURES = 7;
+
+		const promiseA = handle(() => {
+			countA++;
+			if (countA <= FAILURES) {
+				return Promise.reject(createGaxiosError(502));
+			}
+			return Promise.resolve('A done');
+		});
+		const promiseB = handle(() => {
+			countB++;
+			if (countB <= FAILURES) {
+				return Promise.reject(createGaxiosError(502));
+			}
+			return Promise.resolve('B done');
+		});
+
+		const [resultA, resultB] = await Promise.all([promiseA, promiseB]);
+
+		// retryCount が共有されていれば、A+B = 14 回の失敗が積み上がり MAX_RETRIES (10) を超えて
+		// 両方または片方が Max retries exceeded で reject されるはず。独立していれば両方成功する。
+		expect(resultA).toBe('A done');
+		expect(resultB).toBe('B done');
+		expect(countA).toBe(FAILURES + 1);
+		expect(countB).toBe(FAILURES + 1);
 	});
 });
