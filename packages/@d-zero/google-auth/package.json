@@ -30,7 +30,7 @@
 		"googleapis": "171.4.0"
 	},
 	"devDependencies": {
-		"@types/debug": "4.1.12",
+		"@types/debug": "4.1.13",
 		"dotenv": "17.3.1"
 	},
 	"repository": {
