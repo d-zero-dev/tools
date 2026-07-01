@@ -27,7 +27,7 @@
 		"simple-wappalyzer": "1.1.99"
 	},
 	"devDependencies": {
-		"@types/debug": "4.1.12",
+		"@types/debug": "4.1.13",
 		"@types/jsdom": "28.0.3",
 		"jsdom": "29.1.1"
 	},
