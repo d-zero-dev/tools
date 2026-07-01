@@ -42,6 +42,9 @@
 		// code-review effort level
 		"xhigh",
 
+		// GitHub Actions authors
+		"dorny",
+
 		// HTML meta tag terms (frontmatter-keys.md)
 		"Fediverse",
 		"DCTERMS",
