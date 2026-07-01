@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.4](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.7.3...@d-zero/google-auth@0.7.4) (2026-07-01)
+
+**Note:** Version bump only for package @d-zero/google-auth
+
 ## [0.7.3](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.7.2...@d-zero/google-auth@0.7.3) (2026-06-16)
 
 **Note:** Version bump only for package @d-zero/google-auth

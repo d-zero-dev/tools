@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/filematch",
-	"version": "1.2.8",
+	"version": "1.2.9",
 	"description": "A simple file matching library",
 	"author": "D-ZERO",
 	"license": "MIT",
