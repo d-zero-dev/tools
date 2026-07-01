@@ -4,18 +4,22 @@ import type { OAuth2Client } from 'google-auth-library';
 import { GaxiosError } from 'gaxios';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 
-const { batchUpdateMock, errorLogMock } = vi.hoisted(() => ({
-	batchUpdateMock: vi.fn(),
-	errorLogMock: vi.fn(),
-}));
+const { batchUpdateMock, spreadsheetsGetMock, valuesGetMock, errorLogMock } = vi.hoisted(
+	() => ({
+		batchUpdateMock: vi.fn(),
+		spreadsheetsGetMock: vi.fn(),
+		valuesGetMock: vi.fn(),
+		errorLogMock: vi.fn(),
+	}),
+);
 
 vi.mock('googleapis', () => ({
 	google: {
 		sheets: vi.fn(() => ({
 			spreadsheets: {
 				batchUpdate: batchUpdateMock,
-				get: vi.fn(),
-				values: { get: vi.fn() },
+				get: spreadsheetsGetMock,
+				values: { get: valuesGetMock },
 			},
 		})),
 	},
@@ -56,53 +60,83 @@ function createGaxios502(): GaxiosError {
 const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/abc123/edit';
 const fakeAuth = {} as unknown as OAuth2Client;
 
+/**
+ * `Sheets` の各メソッドとそれに対応する googleapis モック・期待ラベルの対応表。
+ * 全メソッドが同じ handlerFor パターンで配線されているため、テーブル駆動で網羅する。
+ */
+const methods = [
+	{
+		name: 'batchUpdate' as const,
+		expectedLabel: 'Sheets.batchUpdate',
+		mock: batchUpdateMock,
+		successValue: { data: { replies: [] } },
+		invoke: (sheets: InstanceType<typeof Sheets>) =>
+			sheets.batchUpdate({ addSheet: { properties: { title: 't' } } }),
+	},
+	{
+		name: 'get' as const,
+		expectedLabel: 'Sheets.get',
+		mock: valuesGetMock,
+		successValue: { data: {} },
+		invoke: (sheets: InstanceType<typeof Sheets>) => sheets.get({ range: 'A1' }),
+	},
+	{
+		name: 'getRawSheetList' as const,
+		expectedLabel: 'Sheets.getRawSheetList',
+		mock: spreadsheetsGetMock,
+		successValue: { data: { sheets: [] } },
+		invoke: (sheets: InstanceType<typeof Sheets>) => sheets.getRawSheetList(),
+	},
+	{
+		name: 'getWithGridData' as const,
+		expectedLabel: 'Sheets.getWithGridData',
+		mock: spreadsheetsGetMock,
+		successValue: { data: { sheets: [] } },
+		invoke: (sheets: InstanceType<typeof Sheets>) => sheets.getWithGridData('A1:B2'),
+	},
+];
+
 beforeEach(() => {
 	batchUpdateMock.mockReset();
+	spreadsheetsGetMock.mockReset();
+	valuesGetMock.mockReset();
 	errorLogMock.mockReset();
 });
 
-describe('Sheets - onLog wiring', () => {
-	test('502 リトライ時に onLog が waiting: true/false で呼ばれる', async () => {
-		batchUpdateMock
-			.mockRejectedValueOnce(createGaxios502())
-			.mockResolvedValue({ data: { replies: [] } });
+describe('Sheets - onLog wiring (per method)', () => {
+	for (const { name, expectedLabel, mock, successValue, invoke } of methods) {
+		test(`${name}: 502 リトライ時に onLog が waiting: true/false で呼ばれる`, async () => {
+			mock.mockRejectedValueOnce(createGaxios502()).mockResolvedValue(successValue);
 
-		const sheets = new Sheets(spreadsheetUrl, fakeAuth);
-		const messages: ErrorHandlerMessage[] = [];
-		sheets.onLog = (msg) => messages.push(msg);
+			const sheets = new Sheets(spreadsheetUrl, fakeAuth);
+			const messages: ErrorHandlerMessage[] = [];
+			sheets.onLog = (msg) => messages.push(msg);
 
-		await sheets.batchUpdate({
-			addSheet: { properties: { title: 't' } },
+			await invoke(sheets);
+
+			expect(messages).toHaveLength(2);
+			expect(messages[0]).toMatchObject({ waiting: true, code: 502 });
+			expect(messages[1]).toMatchObject({ waiting: false, code: 502 });
 		});
 
-		expect(messages).toHaveLength(2);
-		expect(messages[0]).toMatchObject({ waiting: true, code: 502 });
-		expect(messages[1]).toMatchObject({ waiting: false, code: 502 });
-	});
+		test(`${name}: onLog 未設定でもリトライは動作する`, async () => {
+			mock.mockRejectedValueOnce(createGaxios502()).mockResolvedValue(successValue);
 
-	test('onLog 未設定でもリトライは動作する', async () => {
-		batchUpdateMock
-			.mockRejectedValueOnce(createGaxios502())
-			.mockResolvedValue({ data: { replies: [] } });
+			const sheets = new Sheets(spreadsheetUrl, fakeAuth);
 
-		const sheets = new Sheets(spreadsheetUrl, fakeAuth);
+			await expect(invoke(sheets)).resolves.toBeDefined();
+		});
 
-		await expect(
-			sheets.batchUpdate({ addSheet: { properties: { title: 't' } } }),
-		).resolves.toBeDefined();
-	});
+		test(`${name}: Max retries 超過時のログに ${expectedLabel} が含まれる`, async () => {
+			mock.mockRejectedValue(createGaxios502());
 
-	test('Max retries 超過時のログに Sheets.batchUpdate が含まれる', async () => {
-		batchUpdateMock.mockRejectedValue(createGaxios502());
+			const sheets = new Sheets(spreadsheetUrl, fakeAuth);
 
-		const sheets = new Sheets(spreadsheetUrl, fakeAuth);
+			await expect(invoke(sheets)).rejects.toThrow(GaxiosError);
 
-		await expect(
-			sheets.batchUpdate({ addSheet: { properties: { title: 't' } } }),
-		).rejects.toThrow(GaxiosError);
-
-		expect(errorLogMock).toHaveBeenCalledWith(
-			expect.stringContaining('Max retries (10) exceeded in Sheets.batchUpdate()'),
-		);
-	});
+			expect(errorLogMock).toHaveBeenCalledWith(
+				expect.stringContaining(`Max retries (10) exceeded in ${expectedLabel}()`),
+			);
+		});
+	}
 });
