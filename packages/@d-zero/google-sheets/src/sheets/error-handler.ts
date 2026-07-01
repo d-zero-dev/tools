@@ -20,7 +20,7 @@ const errorLog = log.extend('Error');
 const gaxiosErrorLog = log.extend('GaxiosError');
 
 /**
- * ErrorHandler のログコールバックに渡されるメッセージ。
+ * `createErrorHandler` のログコールバックに渡されるメッセージ。
  */
 export type ErrorHandlerMessage = {
 	readonly message: string;
@@ -31,10 +31,13 @@ export type ErrorHandlerMessage = {
 };
 
 /**
- * ErrorHandler デコレータのオプション。
+ * `createErrorHandler` のオプション。
+ *
+ * `this` バインディングを行いたい場合は、呼び出し側でクロージャで束縛して渡すこと
+ * （例: `log: (msg) => sheets.onLog?.(msg)`）。
  */
-export type ErrorHandlerOptions<C> = {
-	readonly log: (this: C, message: ErrorHandlerMessage) => void;
+export type ErrorHandlerOptions = {
+	readonly log: (message: ErrorHandlerMessage) => void;
 };
 
 /**
@@ -94,9 +97,17 @@ function classifyRetryableError(error: GaxiosError): RetryableErrorInfo | null {
 	return null;
 }
 
+/** Excel ファイルが Google Sheets として開かれた場合のヒント文。 */
+const EXCEL_HINT =
+	'⚠️ Hint: This error may occur when accessing a file that is not a Google Spreadsheet file, such as an Excel file.';
+
 /**
  * Google Sheets API のエラーを検出し、リトライ可能なエラーに対して
- * 自動的に待機・再試行を行うメソッドデコレータファクトリ。
+ * 自動的に待機・再試行を行うエラーハンドラを生成する。
+ *
+ * 返却関数は元処理を関数引数で受け取り、リトライ込みで実行する。
+ * リトライカウントは呼び出しごとに独立する（再帰の引数で伝搬）ので、
+ * 同一ハンドラへの並列呼び出し間でカウンタが混線しない。
  *
  * リトライ対象:
  * - 429 Too Many Requests（110 秒待機）
@@ -105,82 +116,88 @@ function classifyRetryableError(error: GaxiosError): RetryableErrorInfo | null {
  * - ECONNRESET（5 秒待機）
  *
  * 最大リトライ回数は {@link MAX_RETRIES} で制限される。
- * @param options - ログコールバックを含むオプション
+ *
+ * Decorator ではなく高階関数として実装しているのは、Vite 8 が同梱する Oxc トランスフォーマが
+ * ES (stage-3) decorators の lowering を未サポートのため
+ * （{@link https://github.com/oxc-project/oxc/issues/9170}）。
+ *
+ * 移行に伴い、非リトライ例外時のログプレフィックスは旧 decorator の
+ * `Caught by decorator in: ClassName.methodName()` から `Caught in: ClassName.methodName()`
+ * に変更されている（"by decorator" は実装的にもう正確でないため）。旧プレフィックスに依存した
+ * ログ集約ルール（Datadog monitor、CloudWatch metric filter 等）があれば追従が必要。
+ * @param methodName - ログ出力に用いるメソッド名。`ClassName.methodName` の形式で渡すと
+ *   旧 decorator 実装と同じ完全修飾ログが残る
+ * @param options - ログコールバックを含むオプション（省略時は debug 経由のログのみ）
  */
-export function ErrorHandler<C extends object>(options?: ErrorHandlerOptions<C>) {
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-	return (method: Function, context: ClassMethodDecoratorContext) => {
-		let retryCount = 0;
-
-		return async function callee(
-			this: C,
-			...args: unknown[]
-		): // eslint-disable-next-line @typescript-eslint/no-explicit-any
-		Promise<any> {
-			try {
-				const result = await method.apply(this, args);
-				retryCount = 0;
-				return result;
-			} catch (error) {
-				if (error instanceof GaxiosError) {
-					if (
-						error.message.includes('This operation is not supported for this document')
-					) {
-						error.message = `${error.message}\n⚠️ Hint: This error may occur when accessing a file that is not a Google Spreadsheet file, such as an Excel file.`;
-					}
-
-					const retryable = classifyRetryableError(error);
-					if (retryable) {
-						retryCount++;
-						if (retryCount > MAX_RETRIES) {
-							retryCount = 0;
-							errorLog(
-								`${retryable.label}: Max retries (${MAX_RETRIES}) exceeded in ${String(context.name)}.${method.name}()`,
-							);
-							throw error;
-						}
-
-						const statusText = error.response?.statusText || 'Error';
-
-						if (options?.log) {
-							options.log.call(this, {
-								message: retryable.label,
-								waitTime: retryable.waitTime,
-								waiting: true,
-								code: retryable.code,
-								error,
-							});
-						} else {
-							gaxiosErrorLog(
-								`${retryable.label}(${retryable.code}): Waiting ${retryable.waitTime}ms for ${statusText} (retry ${retryCount}/${MAX_RETRIES})`,
-							);
-						}
-
-						await delay(retryable.waitTime);
-
-						if (options?.log) {
-							options.log.call(this, {
-								message: retryable.label,
-								waitTime: retryable.waitTime,
-								waiting: false,
-								code: retryable.code,
-								error,
-							});
-						} else {
-							gaxiosErrorLog(
-								`${retryable.label}(${retryable.code}): Resumed after ${retryable.waitTime}ms`,
-							);
-						}
-
-						return await callee.apply(this, args);
-					}
+export function createErrorHandler(methodName: string, options?: ErrorHandlerOptions) {
+	/**
+	 * 元処理をリトライ込みで実行する。
+	 * @param method - リトライ対象の本体処理
+	 * @param retryCount - 現在のリトライ回数（再帰の引数として伝搬）
+	 */
+	async function run<R>(method: () => Promise<R>, retryCount: number): Promise<R> {
+		try {
+			return await method();
+		} catch (error) {
+			if (error instanceof GaxiosError) {
+				if (
+					error.message.includes('This operation is not supported for this document') &&
+					!error.message.includes(EXCEL_HINT)
+				) {
+					error.message = `${error.message}\n${EXCEL_HINT}`;
 				}
-				retryCount = 0;
-				errorLog(`Caught by decorator in: ${String(context.name)}.${method.name}()`);
-				throw error;
+
+				const retryable = classifyRetryableError(error);
+				if (retryable) {
+					const nextRetryCount = retryCount + 1;
+					if (nextRetryCount > MAX_RETRIES) {
+						errorLog(
+							`${retryable.label}: Max retries (${MAX_RETRIES}) exceeded in ${methodName}()`,
+						);
+						throw error;
+					}
+
+					const statusText = error.response?.statusText || 'Error';
+
+					if (options) {
+						options.log({
+							message: retryable.label,
+							waitTime: retryable.waitTime,
+							waiting: true,
+							code: retryable.code,
+							error,
+						});
+					} else {
+						gaxiosErrorLog(
+							`${retryable.label}(${retryable.code}): Waiting ${retryable.waitTime}ms for ${statusText} (retry ${nextRetryCount}/${MAX_RETRIES})`,
+						);
+					}
+
+					await delay(retryable.waitTime);
+
+					if (options) {
+						options.log({
+							message: retryable.label,
+							waitTime: retryable.waitTime,
+							waiting: false,
+							code: retryable.code,
+							error,
+						});
+					} else {
+						gaxiosErrorLog(
+							`${retryable.label}(${retryable.code}): Resumed after ${retryable.waitTime}ms`,
+						);
+					}
+
+					return await run(method, nextRetryCount);
+				}
 			}
-		};
-	};
+			errorLog(`Caught in: ${methodName}()`);
+			throw error;
+		}
+	}
+
+	return <R>(method: () => Promise<R>) => run(method, 0);
 }
 
 /**
