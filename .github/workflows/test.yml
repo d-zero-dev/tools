@@ -10,7 +10,12 @@ on:
       - dev
   schedule:
     - cron: "0 17 * * 1-5" # UTC 17:00 = JST 02:00, weekdays
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      full_matrix:
+        description: "Run build-test on the full multi-OS matrix (like nightly)"
+        type: boolean
+        default: false
 
 concurrency:
   group: test-${{ github.workflow }}-${{ github.ref }}
@@ -50,7 +55,7 @@ jobs:
         id: set
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.full_matrix }}" = "true" ]; then
             echo 'matrix={"os":["ubuntu-latest","macOS-latest","windows-latest"]}' >> "$GITHUB_OUTPUT"
           else
             echo 'matrix={"os":["ubuntu-latest"]}' >> "$GITHUB_OUTPUT"
