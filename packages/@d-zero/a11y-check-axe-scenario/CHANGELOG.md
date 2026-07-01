@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.30](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.5.29...@d-zero/a11y-check-axe-scenario@0.5.30) (2026-07-01)
+
+**Note:** Version bump only for package @d-zero/a11y-check-axe-scenario
+
+## [0.5.29](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.5.28...@d-zero/a11y-check-axe-scenario@0.5.29) (2026-06-18)
+
+**Note:** Version bump only for package @d-zero/a11y-check-axe-scenario
+
+## [0.5.28](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.5.27...@d-zero/a11y-check-axe-scenario@0.5.28) (2026-06-18)
+
+**Note:** Version bump only for package @d-zero/a11y-check-axe-scenario
+
+## [0.5.27](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.5.26...@d-zero/a11y-check-axe-scenario@0.5.27) (2026-06-17)
+
+### Bug Fixes
+
+- **a11y-check-axe-scenario:** use named import for AxePuppeteer ([f123068](https://github.com/d-zero-dev/tools/commit/f1230681ee5f6ec35d657c214db8aa053071c645))
+
+## [0.5.26](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.5.25...@d-zero/a11y-check-axe-scenario@0.5.26) (2026-06-16)
+
+**Note:** Version bump only for package @d-zero/a11y-check-axe-scenario
+
 ## [0.5.25](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.5.24...@d-zero/a11y-check-axe-scenario@0.5.25) (2026-06-15)
 
 **Note:** Version bump only for package @d-zero/a11y-check-axe-scenario

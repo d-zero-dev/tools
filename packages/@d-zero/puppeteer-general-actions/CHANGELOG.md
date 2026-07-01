@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.5](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-general-actions@1.2.4...@d-zero/puppeteer-general-actions@1.2.5) (2026-06-16)
+
+**Note:** Version bump only for package @d-zero/puppeteer-general-actions
+
 ## [1.2.4](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-general-actions@1.2.3...@d-zero/puppeteer-general-actions@1.2.4) (2026-06-15)
 
 **Note:** Version bump only for package @d-zero/puppeteer-general-actions

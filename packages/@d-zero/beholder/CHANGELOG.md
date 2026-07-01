@@ -3,6 +3,65 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.3](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.1.2...@d-zero/beholder@3.1.3) (2026-07-01)
+
+**Note:** Version bump only for package @d-zero/beholder
+
+## [3.1.2](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.1.1...@d-zero/beholder@3.1.2) (2026-06-18)
+
+**Note:** Version bump only for package @d-zero/beholder
+
+## [3.1.1](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.1.0...@d-zero/beholder@3.1.1) (2026-06-18)
+
+### Bug Fixes
+
+- **beholder:** extend #fetchData retryable timeout to 25 min to enclose #fetchImages ([3bcf8d2](https://github.com/d-zero-dev/tools/commit/3bcf8d28b51e213515d88ed1cecb392d1229c03c))
+- **beholder:** guard #fetchImages against scrollHeight runaway and detached frame races ([5b5347f](https://github.com/d-zero-dev/tools/commit/5b5347f4ca3888fd030d71cea1c6781cbae784d0))
+
+# [3.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.0.0...@d-zero/beholder@3.1.0) (2026-06-17)
+
+### Features
+
+- **beholder:** expose extractMetaFromDocument for jsdom-backed meta extraction ([a56e21c](https://github.com/d-zero-dev/tools/commit/a56e21c17dcc1e542595a596074c5d8e659c1168))
+
+# [3.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@2.1.6...@d-zero/beholder@3.0.0) (2026-06-16)
+
+### Bug Fixes
+
+- **beholder:** warn loudly and tripwire-test puppeteer Page.\_client() coverage ([97a07ea](https://github.com/d-zero-dev/tools/commit/97a07ea273e90d50bfede1d68f594ddee9c33268))
+
+- feat(beholder)!: expand meta extraction with frontmatter-keys schema and Wappalyzer tag detection ([6ee7861](https://github.com/d-zero-dev/tools/commit/6ee78617aac3fe3d5c022ccfd0df265de0c5310b))
+
+### Features
+
+- **beholder:** rewrite getAnchorList with single AX tree + parallel describeNode ([#876](https://github.com/d-zero-dev/tools/issues/876)) ([7e5b089](https://github.com/d-zero-dev/tools/commit/7e5b089695bd1e605d63c6faef2e8bf927bd861f))
+
+### BREAKING CHANGES
+
+- `Meta` is restructured from flat keys (`noindex`, `canonical`,
+  `'og:type'`, `'twitter:card'`, ...) into a nested shape backed by
+  `frontmatter-keys.md`. New required fields: `title`, `jsonLd`,
+  `speculationRules`, `originTrial`, `tags`, `others`. `getMeta(page)` now takes
+  a context object `getMeta(page, { url, html?, statusCode?, headers? }, timeout?)`.
+  Old top-level shortcuts (`canonical`, `alternate`, `noindex`, `nofollow`,
+  `noarchive`, `'og:*'`, `'twitter:card'`) are removed; values move to
+  `meta.link.canonical`, `meta.robots.*`, `meta.og.*`, `meta.twitter.*` etc.
+
+Changes:
+
+- New `src/meta/` module: `types.ts`, `keys.ts`, `parsers.ts`, `classify.ts`,
+  `id-extractors.ts`, `tag-detection.ts`, plus ambient `simple-wappalyzer.d.ts`
+- Browser-side `collectHead()` serializes every `<meta>`, `<link>`, structured-data
+  `<script>`, `<base>`, `<iframe>` plus a curated set of `window` globals into
+  `RawHeadEntry[]`; Node-side `classify()` maps these to typed Meta fields
+- `simple-wappalyzer` (MIT) added as a dependency for technology detection;
+  detected providers run through `id-extractors.ts` for real ID extraction
+  (GA4, GTM, UA, FB Pixel, Hotjar, Clarity, ...)
+- Unknown markup is preserved under `Meta.others` (meta/property/httpEquiv/
+  itemprop/link/script/iframe buckets) so nothing is silently dropped
+- Tests: parsers/classify/id-extractors/tag-detection units + getMeta
+  error/timeout fallback
+
 ## [2.1.6](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@2.1.5...@d-zero/beholder@2.1.6) (2026-06-15)
 
 ### Bug Fixes

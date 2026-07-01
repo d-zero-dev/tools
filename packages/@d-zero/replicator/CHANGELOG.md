@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.10.8](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.10.7...@d-zero/replicator@0.10.8) (2026-07-01)
+
+**Note:** Version bump only for package @d-zero/replicator
+
+## [0.10.7](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.10.6...@d-zero/replicator@0.10.7) (2026-06-18)
+
+**Note:** Version bump only for package @d-zero/replicator
+
+## [0.10.6](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.10.5...@d-zero/replicator@0.10.6) (2026-06-18)
+
+**Note:** Version bump only for package @d-zero/replicator
+
+## [0.10.5](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.10.4...@d-zero/replicator@0.10.5) (2026-06-16)
+
+**Note:** Version bump only for package @d-zero/replicator
+
 ## [0.10.4](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.10.3...@d-zero/replicator@0.10.4) (2026-06-15)
 
 **Note:** Version bump only for package @d-zero/replicator

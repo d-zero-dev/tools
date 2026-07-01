@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.7](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@4.0.6...@d-zero/archaeologist@4.0.7) (2026-07-01)
+
+**Note:** Version bump only for package @d-zero/archaeologist
+
+## [4.0.6](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@4.0.5...@d-zero/archaeologist@4.0.6) (2026-06-18)
+
+**Note:** Version bump only for package @d-zero/archaeologist
+
+## [4.0.5](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@4.0.4...@d-zero/archaeologist@4.0.5) (2026-06-18)
+
+**Note:** Version bump only for package @d-zero/archaeologist
+
+## [4.0.4](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@4.0.3...@d-zero/archaeologist@4.0.4) (2026-06-16)
+
+**Note:** Version bump only for package @d-zero/archaeologist
+
 ## [4.0.3](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@4.0.2...@d-zero/archaeologist@4.0.3) (2026-06-15)
 
 **Note:** Version bump only for package @d-zero/archaeologist
