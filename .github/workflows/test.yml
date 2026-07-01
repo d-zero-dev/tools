@@ -98,8 +98,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
@@ -126,34 +124,11 @@ jobs:
         if: steps.cache-depends.outputs.cache-hit != 'true'
         run: yarn install --immutable
 
-      - name: Determine since ref
-        id: since
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ] && [ -n "${{ github.base_ref }}" ]; then
-            git fetch origin ${{ github.base_ref }} --depth=100
-            echo "ref=origin/${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "ref=" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Build
-        shell: bash
-        run: |
-          if [ -n "${{ steps.since.outputs.ref }}" ]; then
-            yarn lerna run build --since ${{ steps.since.outputs.ref }} --include-dependents
-          else
-            yarn build
-          fi
+        run: yarn build
 
       - name: Test
-        shell: bash
-        run: |
-          if [ -n "${{ steps.since.outputs.ref }}" ]; then
-            yarn test --changed ${{ steps.since.outputs.ref }}
-          else
-            yarn test
-          fi
+        run: yarn test
 
   ci-required:
     needs: [changes, lint, build-test]
