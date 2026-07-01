@@ -1079,7 +1079,7 @@ __metadata:
   dependencies:
     "@d-zero/puppeteer-page-scan": "npm:4.5.1"
     "@d-zero/shared": "npm:0.22.0"
-    "@types/debug": "npm:4.1.12"
+    "@types/debug": "npm:4.1.13"
     "@types/jsdom": "npm:28.0.3"
     debug: "npm:4.4.3"
     jsdom: "npm:29.1.1"
@@ -1192,7 +1192,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/google-auth@workspace:packages/@d-zero/google-auth"
   dependencies:
-    "@types/debug": "npm:4.1.12"
+    "@types/debug": "npm:4.1.13"
     ansi-colors: "npm:4.1.3"
     debug: "npm:4.4.3"
     dotenv: "npm:17.3.1"
@@ -3682,7 +3682,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/debug@npm:4.1.12, @types/debug@npm:^4.1.0":
+"@types/debug@npm:4.1.13":
+  version: 4.1.13
+  resolution: "@types/debug@npm:4.1.13"
+  dependencies:
+    "@types/ms": "npm:*"
+  checksum: 10c0/e5e124021bbdb23a82727eee0a726ae0fc8a3ae1f57253cbcc47497f259afb357de7f6941375e773e1abbfa1604c1555b901a409d762ec2bb4c1612131d4afb7
+  languageName: node
+  linkType: hard
+
+"@types/debug@npm:^4.1.0":
   version: 4.1.12
   resolution: "@types/debug@npm:4.1.12"
   dependencies:
