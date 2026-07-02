@@ -27,7 +27,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"devDependencies": {
-		"@types/node": "24.11.0"
+		"@types/node": "26.0.1"
 	},
 	"repository": {
 		"type": "git",
