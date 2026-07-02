@@ -23,14 +23,14 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@axe-core/puppeteer": "4.11.3",
+		"@axe-core/puppeteer": "4.12.1",
 		"@d-zero/a11y-check-core": "0.7.7",
 		"@d-zero/db-wcag": "1.0.0-alpha.1",
 		"@d-zero/shared": "0.22.1"
 	},
 	"devDependencies": {
-		"axe-core": "4.11.4",
-		"puppeteer": "24.37.5"
+		"axe-core": "4.12.1",
+		"puppeteer": "24.43.1"
 	},
 	"peerDependencies": {
 		"axe-core": "4.11.4",
