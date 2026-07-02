@@ -27,7 +27,7 @@
 	},
 	"dependencies": {
 		"@d-zero/shared": "0.22.1",
-		"@notionhq/client": "5.11.0"
+		"@notionhq/client": "5.22.0"
 	},
 	"repository": {
 		"type": "git",
