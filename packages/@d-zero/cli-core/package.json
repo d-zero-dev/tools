@@ -23,11 +23,11 @@
 	},
 	"dependencies": {
 		"@d-zero/shared": "0.22.1",
-		"minimist": "^1.2.8"
+		"minimist": "1.2.8"
 	},
 	"devDependencies": {
 		"@types/minimist": "1.2.5",
-		"typescript": "5.9.3"
+		"typescript": "6.0.3"
 	},
 	"publishConfig": {
 		"access": "public"
