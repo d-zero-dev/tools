@@ -26,6 +26,9 @@
 	"workspaces": [
 		"packages/@d-zero/*"
 	],
+	"resolutions": {
+		"google-auth-library": "10.9.0"
+	},
 	"config": {
 		"commitizen": {
 			"path": "./node_modules/cz-customizable"
