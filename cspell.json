@@ -96,6 +96,9 @@
 		"isreplacedby",
 		"isrequiredby",
 		"isversionof",
-		"tableofcontents"
+		"tableofcontents",
+
+		// htmlparser2 callback name
+		"oncomment"
 	]
 }

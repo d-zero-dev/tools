@@ -44,6 +44,7 @@
 - [`@d-zero/fs`](./packages/%40d-zero/fs/README.md) - ファイルシステムユーティリティ（zip/unzip）
 - [`@d-zero/html-distiller`](./packages/%40d-zero/html-distiller/README.md) - HTML解析・抽出機能
 - [`@d-zero/notion`](./packages/%40d-zero/notion/README.md) - Notion API連携
+- [`@d-zero/page-cluster`](./packages/%40d-zero/page-cluster/README.md) - 重複・類似ページ検出のためのHTML構造トークナイザー
 - [`@d-zero/proc-talk`](./packages/%40d-zero/proc-talk/README.md) - プロセス間通信
 - [`@d-zero/readtext`](./packages/%40d-zero/readtext/README.md) - テキスト読み取り機能
 - [`@d-zero/roar`](./packages/%40d-zero/roar/README.md) - サブコマンド対応CLIヘルパーライブラリ（yargs-parserベース）
