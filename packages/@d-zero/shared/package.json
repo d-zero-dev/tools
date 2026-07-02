@@ -194,7 +194,7 @@
 		"escape-string-regexp": "5.0.0",
 		"front-matter": "4.0.2",
 		"micromatch": "4.0.8",
-		"sanitize-filename": "1.6.3"
+		"sanitize-filename": "1.6.4"
 	},
 	"devDependencies": {
 		"@types/micromatch": "4.0.10"
