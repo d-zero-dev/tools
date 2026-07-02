@@ -32,10 +32,10 @@
 		"puppeteer-extra-plugin-stealth": "2.11.2"
 	},
 	"devDependencies": {
-		"puppeteer": "24.43.1"
+		"puppeteer": "25.2.1"
 	},
 	"peerDependencies": {
-		"puppeteer": "24.37.5"
+		"puppeteer": "25.2.1"
 	},
 	"repository": {
 		"type": "git",
