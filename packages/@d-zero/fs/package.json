@@ -23,11 +23,11 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"archiver": "7.0.1",
-		"unzipper": "0.12.3"
+		"archiver": "8.0.0",
+		"unzipper": "0.12.5"
 	},
 	"devDependencies": {
-		"@types/archiver": "7.0.0",
+		"@types/archiver": "8.0.0",
 		"@types/unzipper": "0.10.11"
 	},
 	"repository": {
