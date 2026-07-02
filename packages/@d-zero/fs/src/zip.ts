@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import unzipper from 'unzipper';
 
 /**
@@ -10,7 +10,7 @@ import unzipper from 'unzipper';
  */
 export async function zip(outputfilePath: string, targetDir: string) {
 	const output = fs.createWriteStream(outputfilePath);
-	const archive = archiver('zip');
+	const archive = new ZipArchive();
 
 	archive.pipe(output);
 	archive.directory(targetDir, false);
