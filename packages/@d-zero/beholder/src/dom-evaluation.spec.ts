@@ -514,7 +514,7 @@ describe('DEFAULT_DOM_EVALUATION_TIMEOUT', () => {
 describe('puppeteer internal API tripwire', () => {
 	it('puppeteer-core CDP Page still defines _client()', () => {
 		const require = createRequire(import.meta.url);
-		const cdpPagePath = require.resolve('puppeteer-core/lib/cjs/puppeteer/cdp/Page.js');
+		const cdpPagePath = require.resolve('puppeteer-core/lib/puppeteer/cdp/Page.js');
 		const src = readFileSync(cdpPagePath, 'utf8');
 		expect(src).toMatch(/_client\s*\(\s*\)\s*\{/);
 	});
