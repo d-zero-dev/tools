@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.13](https://github.com/d-zero-dev/tools/compare/@d-zero/cli-core@1.3.12...@d-zero/cli-core@1.3.13) (2026-07-02)
+
+### Bug Fixes
+
+- **cli-core:** pin minimist and update typescript to 6.0.3 ([5c450d3](https://github.com/d-zero-dev/tools/commit/5c450d3567c79e606408b318857b33a3771c011e))
+
 ## [1.3.12](https://github.com/d-zero-dev/tools/compare/@d-zero/cli-core@1.3.11...@d-zero/cli-core@1.3.12) (2026-07-01)
 
 **Note:** Version bump only for package @d-zero/cli-core

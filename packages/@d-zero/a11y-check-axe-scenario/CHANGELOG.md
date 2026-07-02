@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.31](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.5.30...@d-zero/a11y-check-axe-scenario@0.5.31) (2026-07-02)
+
+**Note:** Version bump only for package @d-zero/a11y-check-axe-scenario
+
 ## [0.5.30](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-axe-scenario@0.5.29...@d-zero/a11y-check-axe-scenario@0.5.30) (2026-07-01)
 
 **Note:** Version bump only for package @d-zero/a11y-check-axe-scenario

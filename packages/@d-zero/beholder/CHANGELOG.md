@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.4](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.1.3...@d-zero/beholder@3.1.4) (2026-07-02)
+
+### Bug Fixes
+
+- **beholder:** update puppeteer to 25.2.1 and adjust internal API tripwire test ([9b0c5a9](https://github.com/d-zero-dev/tools/commit/9b0c5a9695042f151b966eb9a766ef7db0b69e45))
+
 ## [3.1.3](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.1.2...@d-zero/beholder@3.1.3) (2026-07-01)
 
 **Note:** Version bump only for package @d-zero/beholder

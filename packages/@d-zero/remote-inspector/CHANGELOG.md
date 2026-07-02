@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.13](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.6.12...@d-zero/remote-inspector@0.6.13) (2026-07-02)
+
+### Bug Fixes
+
+- **remote-inspector:** pin dependencies and update typescript to 6.0.3 ([5130d62](https://github.com/d-zero-dev/tools/commit/5130d62e9f787624989db009723a9c187f999c3c))
+
 ## [0.6.12](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.6.11...@d-zero/remote-inspector@0.6.12) (2026-07-01)
 
 **Note:** Version bump only for package @d-zero/remote-inspector

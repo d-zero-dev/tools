@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.6](https://github.com/d-zero-dev/tools/compare/@d-zero/fs@0.2.5...@d-zero/fs@0.2.6) (2026-07-02)
+
+### Bug Fixes
+
+- **fs:** use archiver ZipArchive class for archiver 8.x API ([607b8cf](https://github.com/d-zero-dev/tools/commit/607b8cfe2d828bf9832ebafbb5ab6c084de61692))
+
 ## [0.2.5](https://github.com/d-zero-dev/tools/compare/@d-zero/fs@0.2.4...@d-zero/fs@0.2.5) (2026-06-16)
 
 **Note:** Version bump only for package @d-zero/fs

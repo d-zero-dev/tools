@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.5](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.7.4...@d-zero/google-auth@0.7.5) (2026-07-02)
+
+### Bug Fixes
+
+- **google-auth:** pin google-auth-library and update dependencies ([35207ff](https://github.com/d-zero-dev/tools/commit/35207fff3aa735c87dc5e0ae4b013dbb7f00cfa4))
+
 ## [0.7.4](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.7.3...@d-zero/google-auth@0.7.4) (2026-07-01)
 
 **Note:** Version bump only for package @d-zero/google-auth
