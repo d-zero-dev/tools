@@ -24,6 +24,11 @@
  * trailing `''` that `ExURL.paths` produces for a directory-style URL (one
  * ending in `/`) doesn't fragment a section's key from the same section's
  * non-trailing-slash URLs.
+ *
+ * `depth` must be a positive integer. A non-positive or fractional depth has
+ * no sensible interpretation as "how many leading segments to keep", so it
+ * is rejected eagerly rather than silently coerced or left to produce a
+ * confusing result (e.g. slicing with a negative or fractional length).
  * @param paths
  * @param depth
  * @example
