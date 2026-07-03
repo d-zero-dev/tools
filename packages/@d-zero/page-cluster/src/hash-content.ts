@@ -8,8 +8,12 @@ import { normalizeForHash } from './normalize-for-hash.js';
  * to answer "did this script/style/svg/comment's content change", not
  * resist deliberate collision attacks, so the reduced collision resistance
  * of a truncated digest is an acceptable trade-off.
+ *
+ * Exported so other hashed-key producers in this package (e.g.
+ * `deriveStylesheetGroupKey`) use the same truncation length instead of
+ * picking their own.
  */
-const HASH_LENGTH = 16;
+export const HASH_LENGTH = 16;
 
 /**
  * Hashes `script`/`style`/`svg`/`noscript`/comment content instead of

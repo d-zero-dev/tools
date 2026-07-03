@@ -13,6 +13,7 @@
 		// page-cluster clustering/distance terminology
 		"jaccard",
 		"medoids",
+		"hrefs",
 
 		//
 		"gaxios",
