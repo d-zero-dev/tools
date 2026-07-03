@@ -12,8 +12,10 @@
 	"words": [
 		// page-cluster clustering/distance terminology
 		"jaccard",
+		"medoid",
 		"medoids",
 		"hrefs",
+		"Murtagh",
 
 		//
 		"gaxios",
