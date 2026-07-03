@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CDATA Sections In HTML</title>
+<style>/*<![CDATA[*/
+body { color: #222; }
+/*]]>*/</style>
+</head>
+<body>
+<header>
+<p id="marker-cdata-sections-in-html" data-marker="cdata-sections-in-html">MARKER_CDATA_SECTIONS_IN_HTML</p>
+</header>
+<main>
+<script>
+//<![CDATA[
+var greeting = "hello";
+console.log(greeting);
+//]]>
+</script>
+<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+<title><![CDATA[Icon Title With <Special> Characters]]></title>
+<circle cx="50" cy="50" r="40" />
+</svg>
+<p>Raw CDATA marker directly in HTML flow (not valid in HTML, parser must not crash): <![CDATA[this is raw text content]]></p>
+</main>
+</body>
+</html>

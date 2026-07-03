@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>タスク取得 API | CloudFlow API リファレンス</title>
+<meta name="description" content="CloudFlow APIのタスク取得エンドポイントに関するリファレンスです。">
+</head>
+<body class="api-ref-body">
+<header class="api-ref-topbar">
+  <a href="/" class="api-ref-topbar__logo">CloudFlow</a>
+  <nav class="api-ref-topbar__nav">
+    <ul class="api-ref-topbar__list">
+      <li><a href="/docs">ガイド</a></li>
+      <li class="api-ref-topbar__item--active" aria-current="page"><a href="/api">APIリファレンス</a></li>
+      <li><a href="/changelog">更新履歴</a></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="api-ref-layout">
+  <aside class="api-ref-sidebar">
+    <div class="api-ref-sidebar__search">
+      <input type="search" placeholder="エンドポイントを検索" aria-label="エンドポイント検索">
+    </div>
+    <nav class="api-ref-sidebar__nav" aria-label="APIエンドポイント一覧">
+      <div class="api-ref-sidebar__group">
+        <h3 class="api-ref-sidebar__group-title">タスク</h3>
+        <ul class="api-ref-sidebar__list">
+          <li><a href="/api/tasks/list"><span class="api-ref-method api-ref-method--get">GET</span>一覧取得</a></li>
+          <li class="api-ref-sidebar__item--active"><a href="/api/tasks/get" aria-current="page"><span class="api-ref-method api-ref-method--get">GET</span>詳細取得</a></li>
+          <li><a href="/api/tasks/create"><span class="api-ref-method api-ref-method--post">POST</span>作成</a></li>
+          <li><a href="/api/tasks/update"><span class="api-ref-method api-ref-method--put">PUT</span>更新</a></li>
+          <li><a href="/api/tasks/delete"><span class="api-ref-method api-ref-method--delete">DELETE</span>削除</a></li>
+        </ul>
+      </div>
+      <div class="api-ref-sidebar__group">
+        <h3 class="api-ref-sidebar__group-title">プロジェクト</h3>
+        <ul class="api-ref-sidebar__list">
+          <li><a href="/api/projects/list"><span class="api-ref-method api-ref-method--get">GET</span>一覧取得</a></li>
+          <li><a href="/api/projects/get"><span class="api-ref-method api-ref-method--get">GET</span>詳細取得</a></li>
+          <li><a href="/api/projects/create"><span class="api-ref-method api-ref-method--post">POST</span>作成</a></li>
+          <li><a href="/api/projects/archive"><span class="api-ref-method api-ref-method--post">POST</span>アーカイブ</a></li>
+        </ul>
+      </div>
+      <div class="api-ref-sidebar__group">
+        <h3 class="api-ref-sidebar__group-title">ユーザー</h3>
+        <ul class="api-ref-sidebar__list">
+          <li><a href="/api/users/me"><span class="api-ref-method api-ref-method--get">GET</span>自分の情報</a></li>
+          <li><a href="/api/users/list"><span class="api-ref-method api-ref-method--get">GET</span>一覧取得</a></li>
+          <li><a href="/api/users/invite"><span class="api-ref-method api-ref-method--post">POST</span>招待</a></li>
+        </ul>
+      </div>
+      <div class="api-ref-sidebar__group">
+        <h3 class="api-ref-sidebar__group-title">Webhook</h3>
+        <ul class="api-ref-sidebar__list">
+          <li><a href="/api/webhooks/list"><span class="api-ref-method api-ref-method--get">GET</span>一覧取得</a></li>
+          <li><a href="/api/webhooks/create"><span class="api-ref-method api-ref-method--post">POST</span>作成</a></li>
+          <li><a href="/api/webhooks/delete"><span class="api-ref-method api-ref-method--delete">DELETE</span>削除</a></li>
+        </ul>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="api-ref-content">
+    <p class="api-ref-endpoint-badge"><span class="api-ref-method api-ref-method--get">GET</span></p>
+    <h1 class="api-ref-endpoint-title"><code>/v1/tasks/{task_id}</code></h1>
+    <p class="api-ref-endpoint-desc">指定したIDのタスク詳細を取得します。</p>
+
+    <p id="marker-api-reference-docs-page" data-marker="api-reference-docs-page">MARKER_API_REFERENCE_DOCS_PAGE</p>
+
+    <h2 class="api-ref-heading">パスパラメータ</h2>
+    <table class="api-ref-table">
+      <thead>
+        <tr><th>名前</th><th>型</th><th>必須</th><th>説明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>task_id</code></td><td>string</td><td>必須</td><td>タスクの一意なID</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="api-ref-heading">クエリパラメータ</h2>
+    <table class="api-ref-table">
+      <thead>
+        <tr><th>名前</th><th>型</th><th>必須</th><th>説明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>expand</code></td><td>string</td><td>任意</td><td>関連リソースを展開して取得</td></tr>
+        <tr><td><code>fields</code></td><td>string</td><td>任意</td><td>返却するフィールドを絞り込む</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="api-ref-heading">リクエスト例</h2>
+    <pre class="api-ref-code-block"><code>curl -X GET https://api.cloudflow.example/v1/tasks/task_123 \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+
+    <h2 class="api-ref-heading">レスポンス例</h2>
+    <pre class="api-ref-code-block"><code>{
+  "id": "task_123",
+  "title": "デザインレビュー",
+  "status": "in_progress",
+  "assignee": "user_456",
+  "due_date": "2026-07-10"
+}</code></pre>
+
+    <h2 class="api-ref-heading">レスポンスフィールド</h2>
+    <table class="api-ref-table">
+      <thead>
+        <tr><th>フィールド</th><th>型</th><th>説明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>string</td><td>タスクID</td></tr>
+        <tr><td><code>title</code></td><td>string</td><td>タスクタイトル</td></tr>
+        <tr><td><code>status</code></td><td>string</td><td>タスクのステータス</td></tr>
+        <tr><td><code>assignee</code></td><td>string</td><td>担当者のユーザーID</td></tr>
+        <tr><td><code>due_date</code></td><td>string</td><td>期限日（ISO 8601形式）</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="api-ref-heading">ステータスコード</h2>
+    <table class="api-ref-table">
+      <thead>
+        <tr><th>コード</th><th>説明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>200</td><td>取得成功</td></tr>
+        <tr><td>401</td><td>認証エラー（APIキーが無効）</td></tr>
+        <tr><td>403</td><td>アクセス権限がない</td></tr>
+        <tr><td>404</td><td>指定したタスクが存在しない</td></tr>
+        <tr><td>429</td><td>レート制限超過</td></tr>
+        <tr><td>500</td><td>サーバー内部エラー</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="api-ref-heading">エラーレスポンス例</h2>
+    <pre class="api-ref-code-block"><code>{
+  "error": {
+    "code": "not_found",
+    "message": "指定されたタスクが見つかりません。"
+  }
+}</code></pre>
+  </main>
+</div>
+
+<footer class="api-ref-footer">
+  <div class="api-ref-footer__columns">
+    <div class="api-ref-footer__col">
+      <h3>製品</h3>
+      <ul>
+        <li><a href="/features">機能</a></li>
+        <li><a href="/pricing">料金</a></li>
+      </ul>
+    </div>
+    <div class="api-ref-footer__col">
+      <h3>開発者</h3>
+      <ul>
+        <li><a href="/docs">ガイド</a></li>
+        <li><a href="/api">APIリファレンス</a></li>
+      </ul>
+    </div>
+    <div class="api-ref-footer__col">
+      <h3>会社情報</h3>
+      <ul>
+        <li><a href="/about">会社概要</a></li>
+        <li><a href="/contact">お問い合わせ</a></li>
+      </ul>
+    </div>
+    <div class="api-ref-footer__col">
+      <h3>SNS</h3>
+      <ul>
+        <li><a href="https://twitter.com/cloudflow">Twitter</a></li>
+        <li><a href="https://github.com/cloudflow">GitHub</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="api-ref-footer__copyright">&copy; 2026 CloudFlow, Inc.</p>
+</footer>
+</body>
+</html>

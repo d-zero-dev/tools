@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tailwind Marketing Page</title>
+</head>
+<body>
+  <header class="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8">
+      <a class="text-xl font-extrabold text-gray-900" href="/">Launchpad</a>
+      <nav class="hidden md:flex">
+        <ul class="flex items-center gap-8">
+        <li><a class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-150" href="#">Product</a></li>
+        <li><a class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-150" href="#">Features</a></li>
+        <li><a class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-150" href="#">Pricing</a></li>
+        <li><a class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-150" href="#">Customers</a></li>
+        <li><a class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-150" href="#">Blog</a></li>
+        <li><a class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-150" href="#">Support</a></li>
+        </ul>
+      </nav>
+      <div class="hidden md:flex items-center gap-4">
+        <a class="text-sm font-medium text-gray-700 hover:text-indigo-600" href="/login">Sign in</a>
+        <button class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors duration-150" type="button">Get started</button>
+      </div>
+      <button class="md:hidden flex h-10 w-10 items-center justify-center rounded-md text-gray-700" type="button" aria-label="Open menu">&#9776;</button>
+    </div>
+    <ul class="md:hidden flex flex-col gap-1 px-2 pb-3">
+        <li><a class="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 rounded-md" href="#">Product</a></li>
+        <li><a class="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 rounded-md" href="#">Features</a></li>
+        <li><a class="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 rounded-md" href="#">Pricing</a></li>
+        <li><a class="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 rounded-md" href="#">Customers</a></li>
+        <li><a class="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 rounded-md" href="#">Blog</a></li>
+        <li><a class="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600 rounded-md" href="#">Support</a></li>
+    </ul>
+  </header>
+
+  <section class="relative isolate overflow-hidden bg-gradient-to-b from-indigo-50 to-white px-4 py-20 md:py-32 md:px-8">
+    <div class="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
+      <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 md:text-6xl">Ship your product <span class="text-indigo-600">10x faster</span></h1>
+      <p class="max-w-2xl text-lg text-gray-500 md:text-xl">The all-in-one platform for modern teams to build, deploy and monitor applications at scale.</p>
+      <div class="flex flex-col gap-4 sm:flex-row">
+        <button class="rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all duration-200" type="button">Start free trial</button>
+        <button class="rounded-lg border border-gray-300 bg-white px-6 py-3 text-base font-semibold text-gray-700 hover:bg-gray-50 transition-colors duration-150" type="button">Watch demo</button>
+      </div>
+      <img class="mt-12 w-full max-w-5xl rounded-xl shadow-2xl ring-1 ring-gray-900/10" src="/img/hero-screenshot.png" alt="Product screenshot" />
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 py-12 md:px-8">
+    <p class="text-center text-sm font-medium uppercase tracking-wide text-gray-400 mb-8">Trusted by fast-growing teams</p>
+    <div class="grid grid-cols-2 items-center gap-8 md:grid-cols-4 lg:grid-cols-8">
+      <img class="col-span-1 max-h-8 w-full object-contain grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all duration-200" src="/img/logo-1.svg" alt="Partner logo 1" />
+      <img class="col-span-1 max-h-8 w-full object-contain grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all duration-200" src="/img/logo-2.svg" alt="Partner logo 2" />
+      <img class="col-span-1 max-h-8 w-full object-contain grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all duration-200" src="/img/logo-3.svg" alt="Partner logo 3" />
+      <img class="col-span-1 max-h-8 w-full object-contain grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all duration-200" src="/img/logo-4.svg" alt="Partner logo 4" />
+      <img class="col-span-1 max-h-8 w-full object-contain grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all duration-200" src="/img/logo-5.svg" alt="Partner logo 5" />
+      <img class="col-span-1 max-h-8 w-full object-contain grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all duration-200" src="/img/logo-6.svg" alt="Partner logo 6" />
+      <img class="col-span-1 max-h-8 w-full object-contain grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all duration-200" src="/img/logo-7.svg" alt="Partner logo 7" />
+      <img class="col-span-1 max-h-8 w-full object-contain grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all duration-200" src="/img/logo-8.svg" alt="Partner logo 8" />
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 py-16 md:px-8">
+    <div class="mx-auto max-w-2xl text-center mb-12">
+      <h2 class="text-3xl font-extrabold text-gray-900 md:text-4xl">Everything you need</h2>
+      <p class="mt-4 text-lg text-gray-500">Powerful features wrapped in a delightful, minimal interface.</p>
+    </div>
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 1</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 2</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 3</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 4</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 5</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 6</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 7</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 8</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 9</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 10</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 11</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+      <article class="flex flex-col items-start p-6 bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 transition-shadow duration-200">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 mb-4"><span class="text-xl">&#9733;</span></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature 12</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Ship faster with automated pipelines and zero-config deploys built for teams of any size.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="bg-gray-900 px-4 py-16 md:px-8">
+    <dl class="mx-auto grid max-w-5xl grid-cols-2 gap-4 md:grid-cols-4">
+      <div class="flex flex-col items-center justify-center px-4 py-6 border-r last:border-r-0 border-gray-200">
+        <dt class="text-sm font-medium text-gray-500 uppercase tracking-wide">Customers</dt>
+        <dd class="mt-2 text-4xl font-extrabold text-gray-900">12,400+</dd>
+      </div>
+      <div class="flex flex-col items-center justify-center px-4 py-6 border-r last:border-r-0 border-gray-200">
+        <dt class="text-sm font-medium text-gray-500 uppercase tracking-wide">Uptime</dt>
+        <dd class="mt-2 text-4xl font-extrabold text-gray-900">99.99%</dd>
+      </div>
+      <div class="flex flex-col items-center justify-center px-4 py-6 border-r last:border-r-0 border-gray-200">
+        <dt class="text-sm font-medium text-gray-500 uppercase tracking-wide">Deploys / day</dt>
+        <dd class="mt-2 text-4xl font-extrabold text-gray-900">3.2M</dd>
+      </div>
+      <div class="flex flex-col items-center justify-center px-4 py-6 border-r last:border-r-0 border-gray-200">
+        <dt class="text-sm font-medium text-gray-500 uppercase tracking-wide">Countries</dt>
+        <dd class="mt-2 text-4xl font-extrabold text-gray-900">128</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 py-16 md:px-8">
+    <h2 class="text-center text-3xl font-extrabold text-gray-900 mb-12">Loved by developers everywhere</h2>
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-1.jpg" alt="Avatar 1" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 1</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-2.jpg" alt="Avatar 2" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 2</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-3.jpg" alt="Avatar 3" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 3</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-4.jpg" alt="Avatar 4" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 4</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-5.jpg" alt="Avatar 5" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 5</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-6.jpg" alt="Avatar 6" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 6</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-7.jpg" alt="Avatar 7" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 7</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-8.jpg" alt="Avatar 8" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 8</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-9.jpg" alt="Avatar 9" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 9</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-10.jpg" alt="Avatar 10" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 10</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-11.jpg" alt="Avatar 11" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 11</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+      <article class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+        <img class="h-10 w-10 rounded-full object-cover" src="/img/avatar-12.jpg" alt="Avatar 12" />
+        <blockquote class="text-sm text-gray-600 leading-relaxed">"This platform completely changed how our team ships product. Highly recommended."</blockquote>
+        <footer class="flex items-center gap-2 mt-auto">
+          <cite class="text-sm font-semibold text-gray-900 not-italic">Person 12</cite>
+          <span class="text-xs text-gray-400">VP Engineering</span>
+        </footer>
+      </article>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 py-16 md:px-8">
+    <h2 class="text-center text-3xl font-extrabold text-gray-900 mb-12">Simple, transparent pricing</h2>
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div class="flex flex-col rounded-2xl border border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
+        <h3 class="text-lg font-semibold text-gray-900">Starter</h3>
+        <p class="mt-4 flex items-baseline gap-1"><span class="text-4xl font-extrabold text-gray-900">$9</span><span class="text-sm text-gray-500">/mo</span></p>
+        <ul class="mt-6 flex flex-col gap-3 text-sm text-gray-600">
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 1</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 2</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 3</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 4</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 5</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 6</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 7</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 8</li>
+        </ul>
+        <button class="mt-8 w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors duration-150" type="button">Choose Starter</button>
+      </div>
+      <div class="flex flex-col rounded-2xl border border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
+        <h3 class="text-lg font-semibold text-gray-900">Growth</h3>
+        <p class="mt-4 flex items-baseline gap-1"><span class="text-4xl font-extrabold text-gray-900">$29</span><span class="text-sm text-gray-500">/mo</span></p>
+        <ul class="mt-6 flex flex-col gap-3 text-sm text-gray-600">
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 1</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 2</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 3</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 4</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 5</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 6</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 7</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 8</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 9</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 10</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 11</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 12</li>
+        </ul>
+        <button class="mt-8 w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors duration-150" type="button">Choose Growth</button>
+      </div>
+      <div class="flex flex-col rounded-2xl border border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
+        <h3 class="text-lg font-semibold text-gray-900">Enterprise</h3>
+        <p class="mt-4 flex items-baseline gap-1"><span class="text-4xl font-extrabold text-gray-900">$99</span><span class="text-sm text-gray-500">/mo</span></p>
+        <ul class="mt-6 flex flex-col gap-3 text-sm text-gray-600">
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 1</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 2</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 3</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 4</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 5</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 6</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 7</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 8</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 9</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 10</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 11</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 12</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 13</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 14</li>
+          <li class="flex items-center gap-2"><span class="text-green-500">&#10003;</span> Feature item 15</li>
+        </ul>
+        <button class="mt-8 w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors duration-150" type="button">Choose Enterprise</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-4 py-16 md:px-8">
+    <h2 class="text-center text-3xl font-extrabold text-gray-900 mb-12">Meet the team</h2>
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div class="flex flex-col items-center text-center gap-2 p-4">
+        <img class="h-20 w-20 rounded-full object-cover shadow-md" src="/img/team-1.jpg" alt="Team member 1" />
+        <h4 class="text-sm font-semibold text-gray-900">Member 1</h4>
+        <p class="text-xs text-gray-500">Product Design</p>
+        <ul class="flex gap-3 mt-1">
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">X</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">In</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">Gh</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col items-center text-center gap-2 p-4">
+        <img class="h-20 w-20 rounded-full object-cover shadow-md" src="/img/team-2.jpg" alt="Team member 2" />
+        <h4 class="text-sm font-semibold text-gray-900">Member 2</h4>
+        <p class="text-xs text-gray-500">Product Design</p>
+        <ul class="flex gap-3 mt-1">
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">X</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">In</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">Gh</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col items-center text-center gap-2 p-4">
+        <img class="h-20 w-20 rounded-full object-cover shadow-md" src="/img/team-3.jpg" alt="Team member 3" />
+        <h4 class="text-sm font-semibold text-gray-900">Member 3</h4>
+        <p class="text-xs text-gray-500">Product Design</p>
+        <ul class="flex gap-3 mt-1">
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">X</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">In</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">Gh</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col items-center text-center gap-2 p-4">
+        <img class="h-20 w-20 rounded-full object-cover shadow-md" src="/img/team-4.jpg" alt="Team member 4" />
+        <h4 class="text-sm font-semibold text-gray-900">Member 4</h4>
+        <p class="text-xs text-gray-500">Product Design</p>
+        <ul class="flex gap-3 mt-1">
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">X</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">In</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">Gh</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col items-center text-center gap-2 p-4">
+        <img class="h-20 w-20 rounded-full object-cover shadow-md" src="/img/team-5.jpg" alt="Team member 5" />
+        <h4 class="text-sm font-semibold text-gray-900">Member 5</h4>
+        <p class="text-xs text-gray-500">Product Design</p>
+        <ul class="flex gap-3 mt-1">
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">X</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">In</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">Gh</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col items-center text-center gap-2 p-4">
+        <img class="h-20 w-20 rounded-full object-cover shadow-md" src="/img/team-6.jpg" alt="Team member 6" />
+        <h4 class="text-sm font-semibold text-gray-900">Member 6</h4>
+        <p class="text-xs text-gray-500">Product Design</p>
+        <ul class="flex gap-3 mt-1">
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">X</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">In</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">Gh</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col items-center text-center gap-2 p-4">
+        <img class="h-20 w-20 rounded-full object-cover shadow-md" src="/img/team-7.jpg" alt="Team member 7" />
+        <h4 class="text-sm font-semibold text-gray-900">Member 7</h4>
+        <p class="text-xs text-gray-500">Product Design</p>
+        <ul class="flex gap-3 mt-1">
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">X</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">In</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">Gh</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col items-center text-center gap-2 p-4">
+        <img class="h-20 w-20 rounded-full object-cover shadow-md" src="/img/team-8.jpg" alt="Team member 8" />
+        <h4 class="text-sm font-semibold text-gray-900">Member 8</h4>
+        <p class="text-xs text-gray-500">Product Design</p>
+        <ul class="flex gap-3 mt-1">
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">X</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">In</a></li>
+          <li><a class="text-gray-400 hover:text-indigo-600" href="#">Gh</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 py-16 md:px-8">
+    <h2 class="text-center text-3xl font-extrabold text-gray-900 mb-12">From our customers</h2>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-5">
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-1.jpg" alt="Gallery 1" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-2.jpg" alt="Gallery 2" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-3.jpg" alt="Gallery 3" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-4.jpg" alt="Gallery 4" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-5.jpg" alt="Gallery 5" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-6.jpg" alt="Gallery 6" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-7.jpg" alt="Gallery 7" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-8.jpg" alt="Gallery 8" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-9.jpg" alt="Gallery 9" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-10.jpg" alt="Gallery 10" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-11.jpg" alt="Gallery 11" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-12.jpg" alt="Gallery 12" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-13.jpg" alt="Gallery 13" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-14.jpg" alt="Gallery 14" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-15.jpg" alt="Gallery 15" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-16.jpg" alt="Gallery 16" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-17.jpg" alt="Gallery 17" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-18.jpg" alt="Gallery 18" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-19.jpg" alt="Gallery 19" />
+      <img class="aspect-square w-full rounded-lg object-cover" src="/img/gallery-20.jpg" alt="Gallery 20" />
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 py-16 md:px-8">
+    <h2 class="text-center text-3xl font-extrabold text-gray-900 mb-12">Latest from the blog</h2>
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <article class="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <img class="h-40 w-full object-cover" src="/img/blog-1.jpg" alt="Blog 1" />
+        <div class="flex flex-col gap-2 p-5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-indigo-600">Engineering</span>
+          <h3 class="text-base font-semibold text-gray-900">How we scaled to a million requests 1</h3>
+          <p class="text-sm text-gray-500">A deep dive into our infrastructure choices and lessons learned.</p>
+          <a class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800" href="#">Read more &rarr;</a>
+        </div>
+      </article>
+      <article class="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <img class="h-40 w-full object-cover" src="/img/blog-2.jpg" alt="Blog 2" />
+        <div class="flex flex-col gap-2 p-5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-indigo-600">Engineering</span>
+          <h3 class="text-base font-semibold text-gray-900">How we scaled to a million requests 2</h3>
+          <p class="text-sm text-gray-500">A deep dive into our infrastructure choices and lessons learned.</p>
+          <a class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800" href="#">Read more &rarr;</a>
+        </div>
+      </article>
+      <article class="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <img class="h-40 w-full object-cover" src="/img/blog-3.jpg" alt="Blog 3" />
+        <div class="flex flex-col gap-2 p-5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-indigo-600">Engineering</span>
+          <h3 class="text-base font-semibold text-gray-900">How we scaled to a million requests 3</h3>
+          <p class="text-sm text-gray-500">A deep dive into our infrastructure choices and lessons learned.</p>
+          <a class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800" href="#">Read more &rarr;</a>
+        </div>
+      </article>
+      <article class="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <img class="h-40 w-full object-cover" src="/img/blog-4.jpg" alt="Blog 4" />
+        <div class="flex flex-col gap-2 p-5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-indigo-600">Engineering</span>
+          <h3 class="text-base font-semibold text-gray-900">How we scaled to a million requests 4</h3>
+          <p class="text-sm text-gray-500">A deep dive into our infrastructure choices and lessons learned.</p>
+          <a class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800" href="#">Read more &rarr;</a>
+        </div>
+      </article>
+      <article class="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <img class="h-40 w-full object-cover" src="/img/blog-5.jpg" alt="Blog 5" />
+        <div class="flex flex-col gap-2 p-5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-indigo-600">Engineering</span>
+          <h3 class="text-base font-semibold text-gray-900">How we scaled to a million requests 5</h3>
+          <p class="text-sm text-gray-500">A deep dive into our infrastructure choices and lessons learned.</p>
+          <a class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800" href="#">Read more &rarr;</a>
+        </div>
+      </article>
+      <article class="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <img class="h-40 w-full object-cover" src="/img/blog-6.jpg" alt="Blog 6" />
+        <div class="flex flex-col gap-2 p-5">
+          <span class="text-xs font-semibold uppercase tracking-wide text-indigo-600">Engineering</span>
+          <h3 class="text-base font-semibold text-gray-900">How we scaled to a million requests 6</h3>
+          <p class="text-sm text-gray-500">A deep dive into our infrastructure choices and lessons learned.</p>
+          <a class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800" href="#">Read more &rarr;</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-4 py-16 md:px-8">
+    <h2 class="text-center text-3xl font-extrabold text-gray-900 mb-8">Frequently asked questions</h2>
+    <div class="flex flex-col">
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 1?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 1 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 2?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 2 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 3?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 3 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 4?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 4 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 5?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 5 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 6?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 6 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 7?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 7 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 8?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 8 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 9?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 9 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 10?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 10 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 11?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 11 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 12?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 12 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 13?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 13 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 14?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 14 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 15?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 15 in a concise and helpful manner for prospective customers.</div>
+      </div>
+      <div class="border-b border-gray-200 py-4">
+        <button class="flex w-full items-center justify-between text-left text-sm font-medium text-gray-900" type="button">Question about topic 16?<span class="text-gray-400">+</span></button>
+        <div class="mt-2 text-sm text-gray-500 leading-relaxed">Answer explaining the details of topic 16 in a concise and helpful manner for prospective customers.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-indigo-600 px-4 py-16 text-center md:px-8">
+    <h2 class="text-3xl font-extrabold text-white md:text-4xl">Ready to get started?</h2>
+    <p class="mt-4 text-lg text-indigo-100">Join thousands of teams already building with Launchpad.</p>
+    <button class="mt-8 rounded-lg bg-white px-6 py-3 text-base font-semibold text-indigo-600 shadow-md hover:bg-indigo-50 transition-colors duration-150" type="button">Start your free trial</button>
+  </section>
+
+  <footer class="bg-gray-50 px-4 py-16 md:px-8">
+    <div class="mx-auto grid max-w-7xl grid-cols-2 gap-8 md:grid-cols-5">
+      <div class="flex flex-col gap-3">
+        <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Product</h4>
+        <ul class="flex flex-col gap-2">
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Overview</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Pricing</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Marketplace</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Changelog</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Docs</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Status</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col gap-3">
+        <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Company</h4>
+        <ul class="flex flex-col gap-2">
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">About</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Careers</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Press</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">News</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Contact</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Partners</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col gap-3">
+        <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Resources</h4>
+        <ul class="flex flex-col gap-2">
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Blog</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Guides</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Help Center</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">API Reference</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Community</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Webinars</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col gap-3">
+        <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Legal</h4>
+        <ul class="flex flex-col gap-2">
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Privacy</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Terms</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Security</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Cookies</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Licenses</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Compliance</a></li>
+        </ul>
+      </div>
+      <div class="flex flex-col gap-3">
+        <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Social</h4>
+        <ul class="flex flex-col gap-2">
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">X</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">LinkedIn</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">GitHub</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">YouTube</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Instagram</a></li>
+          <li><a class="text-sm text-gray-500 hover:text-gray-900" href="#">Discord</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mx-auto mt-12 flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-gray-200 pt-8 md:flex-row">
+      <p class="text-sm text-gray-400">&copy; 2026 Launchpad, Inc. All rights reserved.</p>
+      <form class="flex w-full max-w-sm gap-2 md:w-auto">
+        <input class="w-full flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" type="email" placeholder="Enter your email" />
+        <button class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700" type="submit">Subscribe</button>
+      </form>
+    </div>
+    <p id="marker-tailwind-marketing-page" data-marker="tailwind-marketing-page">MARKER_TAILWIND_MARKETING_PAGE</p>
+  </footer>
+
+</body>
+</html>

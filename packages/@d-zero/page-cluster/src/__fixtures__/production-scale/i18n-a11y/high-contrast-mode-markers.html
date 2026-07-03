@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>High Contrast Mode Markers</title>
+<style>
+@media (forced-colors: active) {
+	.icon-border {
+		forced-color-adjust: none;
+		border: 1px solid CanvasText;
+	}
+}
+@media (prefers-contrast: more) {
+	body {
+		background: Canvas;
+		color: CanvasText;
+	}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>Accessibility Preferences Demo</h1>
+</header>
+<main>
+<p>This page includes styling hooks for Windows High Contrast Mode and the <code>prefers-contrast</code> media feature.</p>
+<section>
+<h2>Icon Buttons</h2>
+<button type="button" class="icon-border" aria-label="Print page">🖨</button>
+<button type="button" class="icon-border" aria-label="Download document">⬇</button>
+</section>
+<section>
+<h2>Status Indicators</h2>
+<span role="img" aria-label="Success" class="icon-border">✔</span>
+<span role="img" aria-label="Warning" class="icon-border">⚠</span>
+<span role="img" aria-label="Error" class="icon-border">✖</span>
+</section>
+</main>
+<footer>
+<p id="marker-high-contrast-mode-markers" data-marker="high-contrast-mode-markers">MARKER_HIGH_CONTRAST_MODE_MARKERS</p>
+</footer>
+</body>
+</html>

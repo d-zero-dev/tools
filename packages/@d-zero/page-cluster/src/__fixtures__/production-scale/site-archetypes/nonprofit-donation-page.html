@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ご寄付のお願い | NPO法人みらいの種</title>
+<meta name="description" content="NPO法人みらいの種への寄付ページです。子どもたちの教育支援活動を継続するため、皆様のご支援をお願いいたします。">
+</head>
+<body class="donate-body">
+<header class="donate-header">
+  <div class="donate-header__inner">
+    <a href="/" class="donate-logo">
+      <img src="/img/logo.svg" alt="NPO法人みらいの種" width="160" height="40">
+    </a>
+    <nav class="donate-nav">
+      <ul class="donate-nav__list">
+        <li class="donate-nav__item"><a href="/about">活動について</a></li>
+        <li class="donate-nav__item"><a href="/reports">活動レポート</a></li>
+        <li class="donate-nav__item donate-nav__item--current" aria-current="page"><a href="/donate">寄付する</a></li>
+        <li class="donate-nav__item"><a href="/volunteer">ボランティア</a></li>
+        <li class="donate-nav__item"><a href="/contact">お問い合わせ</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="donate-main">
+  <section class="donate-hero">
+    <div class="donate-hero__text">
+      <h1 class="donate-hero__title">すべての子どもに、学ぶ機会を。</h1>
+      <p class="donate-hero__lead">私たちは、経済的な理由で学びを諦めざるを得ない子どもたちに、教育の機会を届ける活動を続けています。あなたのご支援が、未来を変える一歩になります。</p>
+      <a href="#donate-form" class="donate-btn donate-btn--primary">今すぐ寄付する</a>
+    </div>
+    <div class="donate-hero__media">
+      <img src="/img/hero-children.jpg" alt="学習支援教室で学ぶ子どもたち" width="560" height="360">
+    </div>
+  </section>
+
+  <p id="marker-nonprofit-donation-page" data-marker="nonprofit-donation-page">MARKER_NONPROFIT_DONATION_PAGE</p>
+
+  <section class="donate-impact">
+    <h2 class="donate-section-title">これまでの活動実績</h2>
+    <div class="donate-impact__grid">
+      <div class="donate-impact-card">
+        <p class="donate-impact-card__number">12,480<span class="donate-impact-card__unit">人</span></p>
+        <p class="donate-impact-card__label">支援した子どもの数</p>
+      </div>
+      <div class="donate-impact-card">
+        <p class="donate-impact-card__number">86<span class="donate-impact-card__unit">地域</span></p>
+        <p class="donate-impact-card__label">活動拠点数</p>
+      </div>
+      <div class="donate-impact-card">
+        <p class="donate-impact-card__number">3,200<span class="donate-impact-card__unit">名</span></p>
+        <p class="donate-impact-card__label">継続支援者数</p>
+      </div>
+      <div class="donate-impact-card">
+        <p class="donate-impact-card__number">18<span class="donate-impact-card__unit">年</span></p>
+        <p class="donate-impact-card__label">活動継続年数</p>
+      </div>
+      <div class="donate-impact-card">
+        <p class="donate-impact-card__number">95<span class="donate-impact-card__unit">%</span></p>
+        <p class="donate-impact-card__label">寄付金の活動充当率</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="donate-form-section" id="donate-form">
+    <h2 class="donate-section-title">寄付金額を選択してください</h2>
+    <form class="donate-form" action="/donate/submit" method="post">
+      <fieldset class="donate-amount">
+        <legend class="donate-amount__legend">寄付金額</legend>
+        <div class="donate-amount__options">
+          <button type="button" class="donate-amount__btn">1,000円</button>
+          <button type="button" class="donate-amount__btn">3,000円</button>
+          <button type="button" class="donate-amount__btn donate-amount__btn--selected" aria-pressed="true">5,000円</button>
+          <button type="button" class="donate-amount__btn">10,000円</button>
+          <button type="button" class="donate-amount__btn">30,000円</button>
+        </div>
+        <div class="donate-amount__custom">
+          <label for="donate-custom-amount" class="donate-amount__custom-label">その他の金額</label>
+          <input type="number" id="donate-custom-amount" name="customAmount" min="500" step="100" placeholder="金額を入力">
+        </div>
+      </fieldset>
+
+      <fieldset class="donate-frequency">
+        <legend class="donate-frequency__legend">寄付の頻度</legend>
+        <label class="donate-frequency__option"><input type="radio" name="frequency" value="once" checked> 単発</label>
+        <label class="donate-frequency__option"><input type="radio" name="frequency" value="monthly"> 毎月継続</label>
+      </fieldset>
+
+      <fieldset class="donate-profile">
+        <legend class="donate-profile__legend">お客様情報</legend>
+        <div class="donate-form__row">
+          <label for="donate-name" class="donate-form__label">お名前</label>
+          <input type="text" id="donate-name" name="name" required>
+        </div>
+        <div class="donate-form__row">
+          <label for="donate-email" class="donate-form__label">メールアドレス</label>
+          <input type="email" id="donate-email" name="email" required>
+        </div>
+      </fieldset>
+
+      <fieldset class="donate-payment">
+        <legend class="donate-payment__legend">お支払い方法</legend>
+        <label class="donate-payment__option"><input type="radio" name="payment" value="card" checked> クレジットカード</label>
+        <label class="donate-payment__option"><input type="radio" name="payment" value="bank"> 銀行振込</label>
+        <label class="donate-payment__option"><input type="radio" name="payment" value="konbini"> コンビニ払い</label>
+      </fieldset>
+
+      <button type="submit" class="donate-btn donate-btn--primary donate-btn--large">寄付を確定する</button>
+    </form>
+  </section>
+
+  <section class="donate-voices">
+    <h2 class="donate-section-title">支援者の声</h2>
+    <div class="donate-voices__grid">
+      <article class="donate-voice-card">
+        <blockquote class="donate-voice-card__quote">毎月の寄付が子どもたちの笑顔につながっていると知り、続ける励みになっています。</blockquote>
+        <p class="donate-voice-card__name">会社員 A様</p>
+      </article>
+      <article class="donate-voice-card">
+        <blockquote class="donate-voice-card__quote">活動レポートで具体的な成果が見えるので、安心して寄付を続けられます。</blockquote>
+        <p class="donate-voice-card__name">主婦 B様</p>
+      </article>
+      <article class="donate-voice-card">
+        <blockquote class="donate-voice-card__quote">少額から始められたので、無理なく継続支援ができています。</blockquote>
+        <p class="donate-voice-card__name">学生 C様</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="donate-reports">
+    <h2 class="donate-section-title">活動レポート</h2>
+    <div class="donate-reports__grid">
+      <article class="donate-report-card">
+        <img src="/img/report-1.jpg" alt="学習支援教室の様子" width="320" height="200">
+        <p class="donate-report-card__date">2026.06.20</p>
+        <h3 class="donate-report-card__title">夏季学習支援キャンプを開催しました</h3>
+        <a href="/reports/1" class="donate-report-card__link">続きを読む</a>
+      </article>
+      <article class="donate-report-card">
+        <img src="/img/report-2.jpg" alt="教材配布の様子" width="320" height="200">
+        <p class="donate-report-card__date">2026.05.15</p>
+        <h3 class="donate-report-card__title">新学期に向けた教材を1,200冊配布</h3>
+        <a href="/reports/2" class="donate-report-card__link">続きを読む</a>
+      </article>
+      <article class="donate-report-card">
+        <img src="/img/report-3.jpg" alt="地域交流イベント" width="320" height="200">
+        <p class="donate-report-card__date">2026.04.02</p>
+        <h3 class="donate-report-card__title">地域交流イベントに200名が参加</h3>
+        <a href="/reports/3" class="donate-report-card__link">続きを読む</a>
+      </article>
+      <article class="donate-report-card">
+        <img src="/img/report-4.jpg" alt="奨学金授与式" width="320" height="200">
+        <p class="donate-report-card__date">2026.03.10</p>
+        <h3 class="donate-report-card__title">奨学金授与式を実施しました</h3>
+        <a href="/reports/4" class="donate-report-card__link">続きを読む</a>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer class="donate-footer">
+  <div class="donate-footer__columns">
+    <div class="donate-footer__col">
+      <h3 class="donate-footer__heading">団体情報</h3>
+      <ul class="donate-footer__list">
+        <li><a href="/about">団体概要</a></li>
+        <li><a href="/finance">会計報告</a></li>
+        <li><a href="/members">役員紹介</a></li>
+      </ul>
+    </div>
+    <div class="donate-footer__col">
+      <h3 class="donate-footer__heading">支援方法</h3>
+      <ul class="donate-footer__list">
+        <li><a href="/donate">寄付する</a></li>
+        <li><a href="/volunteer">ボランティア募集</a></li>
+        <li><a href="/corporate">法人協賛</a></li>
+      </ul>
+    </div>
+    <div class="donate-footer__col">
+      <h3 class="donate-footer__heading">サポート</h3>
+      <ul class="donate-footer__list">
+        <li><a href="/faq">よくある質問</a></li>
+        <li><a href="/contact">お問い合わせ</a></li>
+      </ul>
+    </div>
+    <div class="donate-footer__col">
+      <h3 class="donate-footer__heading">SNS</h3>
+      <ul class="donate-footer__list">
+        <li><a href="https://twitter.com/mirainotane">Twitter</a></li>
+        <li><a href="https://facebook.com/mirainotane">Facebook</a></li>
+        <li><a href="https://instagram.com/mirainotane">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="donate-footer__copyright">&copy; 2026 NPO法人みらいの種 All rights reserved.</p>
+</footer>
+</body>
+</html>

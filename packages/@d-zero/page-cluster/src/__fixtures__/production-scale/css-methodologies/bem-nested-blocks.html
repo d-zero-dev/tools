@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bem Nested Blocks</title>
+</head>
+<body>
+  <nav class="menu menu--horizontal">
+    <div class="menu__search">
+      <input class="menu__search-input" type="search" placeholder="Search" />
+      <button class="menu__search-button menu__search-button--icon-only" type="button">Go</button>
+    </div>
+    <ul class="menu__list">
+      <li class="menu__item menu__item--active">
+        <a class="menu__link" href="/products">Products</a>
+        <ul class="menu__submenu">
+          <li class="menu__submenu-item"><a class="menu__submenu-link" href="/products/new">New Arrivals</a></li>
+          <li class="menu__submenu-item"><a class="menu__submenu-link" href="/products/sale">Sale</a></li>
+        </ul>
+      </li>
+      <li class="menu__item">
+        <a class="menu__link" href="/company">Company</a>
+        <ul class="menu__submenu menu__submenu--collapsed">
+          <li class="menu__submenu-item"><a class="menu__submenu-link" href="/company/about">About</a></li>
+          <li class="menu__submenu-item"><a class="menu__submenu-link" href="/company/careers">Careers</a></li>
+        </ul>
+      </li>
+      <li class="menu__item">
+        <a class="menu__link menu__link--disabled" href="/support">Support</a>
+      </li>
+    </ul>
+  </nav>
+  <p id="marker-bem-nested-blocks" data-marker="bem-nested-blocks">MARKER_BEM_NESTED_BLOCKS</p>
+
+</body>
+</html>

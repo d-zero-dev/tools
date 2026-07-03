@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>タイムライン | Chirply</title>
+<meta name="description" content="Chirplyのタイムラインフィード。フォロー中のユーザーの最新投稿をチェックしよう。">
+</head>
+<body class="feed-body">
+<header class="feed-topbar">
+  <a href="/" class="feed-topbar__logo">Chirply</a>
+  <input type="search" class="feed-topbar__search" placeholder="検索">
+  <nav class="feed-topbar__icons">
+    <a href="/notifications" class="feed-topbar__icon" aria-label="通知">🔔</a>
+    <a href="/messages" class="feed-topbar__icon" aria-label="メッセージ">✉️</a>
+  </nav>
+</header>
+
+<div class="feed-layout">
+  <aside class="feed-left">
+    <div class="feed-profile-summary">
+      <img src="/img/my-avatar.jpg" alt="自分のアバター" width="56" height="56" class="feed-profile-summary__avatar">
+      <p class="feed-profile-summary__name">中島 優</p>
+      <p class="feed-profile-summary__handle">@yu_nakajima</p>
+      <ul class="feed-profile-summary__stats">
+        <li><span class="feed-profile-summary__stat-num">482</span>フォロー中</li>
+        <li><span class="feed-profile-summary__stat-num">1,204</span>フォロワー</li>
+      </ul>
+    </div>
+    <nav class="feed-left-nav">
+      <ul class="feed-left-nav__list">
+        <li class="feed-left-nav__item feed-left-nav__item--active" aria-current="page"><a href="/home">ホーム</a></li>
+        <li class="feed-left-nav__item"><a href="/explore">探索</a></li>
+        <li class="feed-left-nav__item"><a href="/notifications">通知</a></li>
+        <li class="feed-left-nav__item"><a href="/messages">メッセージ</a></li>
+        <li class="feed-left-nav__item"><a href="/bookmarks">ブックマーク</a></li>
+        <li class="feed-left-nav__item"><a href="/profile">プロフィール</a></li>
+        <li class="feed-left-nav__item"><a href="/settings">設定</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="feed-timeline">
+    <div class="feed-composer">
+      <img src="/img/my-avatar.jpg" alt="自分のアバター" width="40" height="40">
+      <input type="text" class="feed-composer__input" placeholder="いまどうしてる？">
+      <button type="button" class="feed-composer__submit">投稿</button>
+    </div>
+
+    <p id="marker-social-media-feed-timeline" data-marker="social-media-feed-timeline">MARKER_SOCIAL_MEDIA_FEED_TIMELINE</p>
+
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-1.jpg" alt="田中みかのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">田中みか</span>
+            <span class="feed-post__handle">@user1000</span>
+            <time class="feed-post__time">1時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">今日は天気が良くて散歩日和でした。</p>
+        <img src="/img/post-1.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">3</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">1</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">0</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-2.jpg" alt="佐藤健のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">佐藤健</span>
+            <span class="feed-post__handle">@user1001</span>
+            <time class="feed-post__time">2時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">新しいカフェを見つけました。コーヒーが美味しい。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">10</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">4</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">2</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-3.jpg" alt="鈴木あゆみのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">鈴木あゆみ</span>
+            <span class="feed-post__handle">@user1002</span>
+            <time class="feed-post__time">3時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">仕事が一段落。週末はゆっくり休みます。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">17</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">7</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">4</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-4.jpg" alt="高橋大輔のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">高橋大輔</span>
+            <span class="feed-post__handle">@user1003</span>
+            <time class="feed-post__time">4時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">最近読んでいる本がすごく面白い。</p>
+        <img src="/img/post-4.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">24</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">10</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">6</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-5.jpg" alt="伊藤さくらのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">伊藤さくら</span>
+            <span class="feed-post__handle">@user1004</span>
+            <time class="feed-post__time">5時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">友人とランチ。久しぶりに話せて楽しかった。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">31</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">13</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">8</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-6.jpg" alt="渡辺翔太のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">渡辺翔太</span>
+            <span class="feed-post__handle">@user1005</span>
+            <time class="feed-post__time">6時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">新しいプロジェクトが始動しました。頑張ります。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">38</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">16</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">10</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-7.jpg" alt="山本ゆいのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">山本ゆい</span>
+            <span class="feed-post__handle">@user1006</span>
+            <time class="feed-post__time">7時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">週末は家族で公園に行ってきました。</p>
+        <img src="/img/post-7.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">45</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">19</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">12</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-8.jpg" alt="中村拓也のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">中村拓也</span>
+            <span class="feed-post__handle">@user1007</span>
+            <time class="feed-post__time">8時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">最近ジムに通い始めました。継続が大事。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">52</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">22</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">14</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-9.jpg" alt="小林あおいのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">小林あおい</span>
+            <span class="feed-post__handle">@user1008</span>
+            <time class="feed-post__time">9時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">美味しいラーメン屋さんを発見しました。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">59</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">25</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">16</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-10.jpg" alt="加藤りくのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">加藤りく</span>
+            <span class="feed-post__handle">@user1009</span>
+            <time class="feed-post__time">10時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">今日のミーティングで良いアイデアが出た。</p>
+        <img src="/img/post-10.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">66</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">28</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">18</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-11.jpg" alt="吉田まなみのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">吉田まなみ</span>
+            <span class="feed-post__handle">@user1010</span>
+            <time class="feed-post__time">11時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">映画を観てきました。感動しました。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">73</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">31</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">20</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-12.jpg" alt="山田陸のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">山田陸</span>
+            <span class="feed-post__handle">@user1011</span>
+            <time class="feed-post__time">12時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">新しいレシピに挑戦。なかなか上手にできた。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">80</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">34</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">22</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-13.jpg" alt="佐々木花のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">佐々木花</span>
+            <span class="feed-post__handle">@user1012</span>
+            <time class="feed-post__time">13時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">久しぶりに実家に帰省しました。</p>
+        <img src="/img/post-13.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">87</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">37</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">24</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-14.jpg" alt="松本蓮のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">松本蓮</span>
+            <span class="feed-post__handle">@user1013</span>
+            <time class="feed-post__time">14時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">今日は在宅勤務。集中できました。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">94</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">40</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">26</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-15.jpg" alt="井上さとのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">井上さと</span>
+            <span class="feed-post__handle">@user1014</span>
+            <time class="feed-post__time">15時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">愛犬と散歩。気持ちいい朝でした。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">101</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">43</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">28</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-16.jpg" alt="木村ひなたのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">木村ひなた</span>
+            <span class="feed-post__handle">@user1015</span>
+            <time class="feed-post__time">16時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">今日は天気が良くて散歩日和でした。</p>
+        <img src="/img/post-16.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">108</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">46</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">30</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-17.jpg" alt="林大地のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">林大地</span>
+            <span class="feed-post__handle">@user1016</span>
+            <time class="feed-post__time">17時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">新しいカフェを見つけました。コーヒーが美味しい。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">115</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">49</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">32</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-18.jpg" alt="斎藤ゆうなのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">斎藤ゆうな</span>
+            <span class="feed-post__handle">@user1017</span>
+            <time class="feed-post__time">18時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">仕事が一段落。週末はゆっくり休みます。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">122</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">52</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">34</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-19.jpg" alt="清水颯太のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">清水颯太</span>
+            <span class="feed-post__handle">@user1018</span>
+            <time class="feed-post__time">19時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">最近読んでいる本がすごく面白い。</p>
+        <img src="/img/post-19.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">129</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">55</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">36</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-20.jpg" alt="山口あかりのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">山口あかり</span>
+            <span class="feed-post__handle">@user1019</span>
+            <time class="feed-post__time">20時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">友人とランチ。久しぶりに話せて楽しかった。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">136</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">58</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">38</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-21.jpg" alt="松田悠斗のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">松田悠斗</span>
+            <span class="feed-post__handle">@user1020</span>
+            <time class="feed-post__time">21時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">新しいプロジェクトが始動しました。頑張ります。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">143</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">61</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">0</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-22.jpg" alt="井口かえでのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">井口かえで</span>
+            <span class="feed-post__handle">@user1021</span>
+            <time class="feed-post__time">22時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">週末は家族で公園に行ってきました。</p>
+        <img src="/img/post-22.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">150</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">64</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">2</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-23.jpg" alt="森田結衣のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">森田結衣</span>
+            <span class="feed-post__handle">@user1022</span>
+            <time class="feed-post__time">23時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">最近ジムに通い始めました。継続が大事。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">157</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">67</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">4</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-24.jpg" alt="石川あきらのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">石川あきら</span>
+            <span class="feed-post__handle">@user1023</span>
+            <time class="feed-post__time">1時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">美味しいラーメン屋さんを発見しました。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">164</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">70</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">6</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-25.jpg" alt="藤田さやかのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">藤田さやか</span>
+            <span class="feed-post__handle">@user1024</span>
+            <time class="feed-post__time">2時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">今日のミーティングで良いアイデアが出た。</p>
+        <img src="/img/post-25.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">171</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">73</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">8</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-26.jpg" alt="岡田隼人のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">岡田隼人</span>
+            <span class="feed-post__handle">@user1025</span>
+            <time class="feed-post__time">3時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">映画を観てきました。感動しました。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">178</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">76</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">10</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-27.jpg" alt="前田こはるのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">前田こはる</span>
+            <span class="feed-post__handle">@user1026</span>
+            <time class="feed-post__time">4時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">新しいレシピに挑戦。なかなか上手にできた。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">185</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">79</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">12</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-28.jpg" alt="後藤りょうのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">後藤りょう</span>
+            <span class="feed-post__handle">@user1027</span>
+            <time class="feed-post__time">5時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">久しぶりに実家に帰省しました。</p>
+        <img src="/img/post-28.jpg" alt="投稿画像" width="480" height="320" class="feed-post__image">
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">192</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">2</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">14</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-29.jpg" alt="阿部ひろのアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">阿部ひろ</span>
+            <span class="feed-post__handle">@user1028</span>
+            <time class="feed-post__time">6時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">今日は在宅勤務。集中できました。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">199</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">5</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">16</span></button>
+        </div>
+      </article>
+      <article class="feed-post">
+        <div class="feed-post__header">
+          <img src="/img/avatar-30.jpg" alt="村上美咲のアバター" width="48" height="48" class="feed-post__avatar">
+          <div class="feed-post__meta">
+            <span class="feed-post__username">村上美咲</span>
+            <span class="feed-post__handle">@user1029</span>
+            <time class="feed-post__time">7時間前</time>
+          </div>
+        </div>
+        <p class="feed-post__text">愛犬と散歩。気持ちいい朝でした。</p>
+        <div class="feed-post__actions">
+          <button type="button" class="feed-action feed-action--like"><span class="feed-action__icon" aria-hidden="true">♡</span><span class="feed-action__count">6</span></button>
+          <button type="button" class="feed-action feed-action--comment"><span class="feed-action__icon" aria-hidden="true">💬</span><span class="feed-action__count">8</span></button>
+          <button type="button" class="feed-action feed-action--share"><span class="feed-action__icon" aria-hidden="true">↗</span><span class="feed-action__count">18</span></button>
+        </div>
+      </article>
+  </main>
+
+  <aside class="feed-right">
+    <div class="feed-trends">
+      <h2 class="feed-trends__title">トレンド</h2>
+      <ul class="feed-trends__list">
+        <li class="feed-trend-item"><span class="feed-trend-item__category">エンタメ</span><span class="feed-trend-item__name">#夏フェス2026</span><span class="feed-trend-item__count">4.2万件</span></li>
+        <li class="feed-trend-item"><span class="feed-trend-item__category">スポーツ</span><span class="feed-trend-item__name">#日本代表</span><span class="feed-trend-item__count">2.8万件</span></li>
+        <li class="feed-trend-item"><span class="feed-trend-item__category">テクノロジー</span><span class="feed-trend-item__name">#AIニュース</span><span class="feed-trend-item__count">1.5万件</span></li>
+        <li class="feed-trend-item"><span class="feed-trend-item__category">ニュース</span><span class="feed-trend-item__name">#台風情報</span><span class="feed-trend-item__count">9,800件</span></li>
+        <li class="feed-trend-item"><span class="feed-trend-item__category">ゲーム</span><span class="feed-trend-item__name">#新作リリース</span><span class="feed-trend-item__count">6,200件</span></li>
+      </ul>
+    </div>
+    <div class="feed-suggestions">
+      <h2 class="feed-suggestions__title">おすすめユーザー</h2>
+      <ul class="feed-suggestions__list">
+        <li class="feed-suggestion-item">
+          <img src="/img/suggest-1.jpg" alt="鈴木一郎のアバター" width="40" height="40">
+          <span class="feed-suggestion-item__name">鈴木一郎</span>
+          <button type="button" class="feed-suggestion-item__follow">フォロー</button>
+        </li>
+        <li class="feed-suggestion-item">
+          <img src="/img/suggest-2.jpg" alt="田村みどりのアバター" width="40" height="40">
+          <span class="feed-suggestion-item__name">田村みどり</span>
+          <button type="button" class="feed-suggestion-item__follow">フォロー</button>
+        </li>
+        <li class="feed-suggestion-item">
+          <img src="/img/suggest-3.jpg" alt="長谷川誠のアバター" width="40" height="40">
+          <span class="feed-suggestion-item__name">長谷川誠</span>
+          <button type="button" class="feed-suggestion-item__follow">フォロー</button>
+        </li>
+        <li class="feed-suggestion-item">
+          <img src="/img/suggest-4.jpg" alt="橋本ゆかりのアバター" width="40" height="40">
+          <span class="feed-suggestion-item__name">橋本ゆかり</span>
+          <button type="button" class="feed-suggestion-item__follow">フォロー</button>
+        </li>
+        <li class="feed-suggestion-item">
+          <img src="/img/suggest-5.jpg" alt="石田健太のアバター" width="40" height="40">
+          <span class="feed-suggestion-item__name">石田健太</span>
+          <button type="button" class="feed-suggestion-item__follow">フォロー</button>
+        </li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<footer class="feed-footer">
+  <div class="feed-footer__columns">
+    <div class="feed-footer__col">
+      <h3 class="feed-footer__heading">会社情報</h3>
+      <ul class="feed-footer__list">
+        <li><a href="/about">運営会社</a></li>
+        <li><a href="/careers">採用情報</a></li>
+      </ul>
+    </div>
+    <div class="feed-footer__col">
+      <h3 class="feed-footer__heading">サポート</h3>
+      <ul class="feed-footer__list">
+        <li><a href="/help">ヘルプ</a></li>
+        <li><a href="/rules">利用ルール</a></li>
+      </ul>
+    </div>
+    <div class="feed-footer__col">
+      <h3 class="feed-footer__heading">法務</h3>
+      <ul class="feed-footer__list">
+        <li><a href="/terms">利用規約</a></li>
+        <li><a href="/privacy">プライバシーポリシー</a></li>
+      </ul>
+    </div>
+    <div class="feed-footer__col">
+      <h3 class="feed-footer__heading">SNS</h3>
+      <ul class="feed-footer__list">
+        <li><a href="https://twitter.com/chirply">Twitter</a></li>
+        <li><a href="https://instagram.com/chirply">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="feed-footer__copyright">&copy; 2026 Chirply, Inc.</p>
+</footer>
+</body>
+</html>

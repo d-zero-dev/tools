@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accessible Pagination Widget</title>
+</head>
+<body>
+<header>
+<h1>Search Results</h1>
+</header>
+<main>
+<ul>
+<li><a href="/articles/1">Understanding Web Accessibility Basics</a></li>
+<li><a href="/articles/2">A Guide to Semantic HTML</a></li>
+<li><a href="/articles/3">Color Contrast Best Practices</a></li>
+</ul>
+<nav aria-label="Pagination">
+<ul>
+<li><a href="/page/1" aria-label="Previous page" rel="prev">&laquo; Previous</a></li>
+<li><a href="/page/1">1</a></li>
+<li><a href="/page/2" aria-current="page">2</a></li>
+<li><a href="/page/3">3</a></li>
+<li><a href="/page/4">4</a></li>
+<li><a href="/page/3" aria-label="Next page" rel="next">Next &raquo;</a></li>
+</ul>
+</nav>
+</main>
+<footer>
+<p id="marker-accessible-pagination-widget" data-marker="accessible-pagination-widget">MARKER_ACCESSIBLE_PAGINATION_WIDGET</p>
+</footer>
+</body>
+</html>

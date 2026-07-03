@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ARIA-Heavy Accessible Widget Demo</title>
+</head>
+<body>
+<header role="banner">
+<h1>Accessible Widget Showcase</h1>
+</header>
+<main role="main">
+<section aria-labelledby="notify-heading">
+<h2 id="notify-heading">Notification Center</h2>
+<div role="alert" aria-live="assertive">Your changes have been saved successfully.</div>
+<div role="status" aria-live="polite">3 new messages received.</div>
+</section>
+<section aria-labelledby="progress-heading">
+<h2 id="progress-heading">Upload Progress</h2>
+<div role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100" aria-label="Upload progress">65%</div>
+</section>
+<section aria-labelledby="slider-heading">
+<h2 id="slider-heading">Volume Control</h2>
+<div role="slider" tabindex="0" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" aria-label="Volume"></div>
+</section>
+<section aria-labelledby="tree-heading">
+<h2 id="tree-heading">File Explorer</h2>
+<ul role="tree" aria-label="Files">
+<li role="treeitem" aria-expanded="true">Documents
+<ul role="group">
+<li role="treeitem">report.docx</li>
+<li role="treeitem">budget.xlsx</li>
+</ul>
+</li>
+<li role="treeitem" aria-expanded="false">Pictures</li>
+</ul>
+</section>
+<section aria-labelledby="switch-heading">
+<h2 id="switch-heading">Settings</h2>
+<button type="button" role="switch" aria-checked="true">Dark Mode</button>
+<button type="button" role="switch" aria-checked="false">Notifications</button>
+</section>
+</main>
+<footer role="contentinfo">
+<p id="marker-aria-heavy-accessible-widget" data-marker="aria-heavy-accessible-widget">MARKER_ARIA_HEAVY_ACCESSIBLE_WIDGET</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Huge Attribute Value Data URI</title>
+</head>
+<body>
+<header>
+<p id="marker-huge-attribute-value-data-uri" data-marker="huge-attribute-value-data-uri">MARKER_HUGE_ATTRIBUTE_VALUE_DATA_URI</p>
+</header>
+<main>
+<p>The following elements carry a base64 data URI attribute value. Kept short deliberately: tokenize() never reads src/style content (only class/role/type), so a long data URI adds test corpus weight without adding coverage.</p>
+<img src="data:image/png;base64,bAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA5AAAAAAAAAAAAA4A4AAAAAAAAAAAAAAAAAAAA4AAAAAAAAA4AAAAAAAAAAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" alt="inline data uri image">
+<div style="background-image:url(&#39;data:image/png;base64,bAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA5AAAAAAAAAAAAA4A4AAAAAAAAAAAAAAAAAAAA4AAAAAAAAA4AAAAAAAAAAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==&#39;);width:10px;height:10px;">Div with a data URI inside an inline style attribute.</div>
+</main>
+</body>
+</html>

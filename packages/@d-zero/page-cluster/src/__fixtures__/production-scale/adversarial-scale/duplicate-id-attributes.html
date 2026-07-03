@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Duplicate ID Attributes</title>
+</head>
+<body>
+<header id="header">
+<p id="marker-duplicate-id-attributes" data-marker="duplicate-id-attributes">MARKER_DUPLICATE_ID_ATTRIBUTES</p>
+</header>
+<div id="header"><p>Second element reusing id="header"</p></div>
+<div id="header"><p>Third element reusing id="header"</p></div>
+<main>
+<div id="item"><p>Item A with duplicate id="item"</p></div>
+<div id="item"><p>Item B with duplicate id="item"</p></div>
+<div id="item"><p>Item C with duplicate id="item"</p></div>
+<div id="item"><p>Item D with duplicate id="item"</p></div>
+<div id="item"><p>Item E with duplicate id="item"</p></div>
+<button id="submit">Submit</button>
+<button id="submit">Also Submit (duplicate)</button>
+</main>
+<footer id="footer"><p>Footer one</p></footer>
+<footer id="footer"><p>Footer two, duplicate id</p></footer>
+</body>
+</html>

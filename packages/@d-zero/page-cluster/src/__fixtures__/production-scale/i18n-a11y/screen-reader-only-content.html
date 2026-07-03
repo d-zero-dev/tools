@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Screen Reader Only Content</title>
+<style>
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+</style>
+</head>
+<body>
+<header>
+<a href="#main" class="sr-only">Skip to main content</a>
+<nav aria-label="Main">
+<ul>
+<li><a href="/">Home <span class="sr-only">(current page)</span></a></li>
+<li><a href="/products">Products</a></li>
+<li><a href="/cart">Cart <span class="sr-only">, 3 items</span></a></li>
+</ul>
+</nav>
+</header>
+<main id="main">
+<h1>Product Catalog</h1>
+<button type="button"><span aria-hidden="true">&times;</span><span class="sr-only">Close dialog</span></button>
+<p>Below is a table of products with visually hidden column context for screen reader users.</p>
+<table>
+<caption class="sr-only">Product pricing table</caption>
+<thead>
+<tr><th>Name</th><th>Price</th></tr>
+</thead>
+<tbody>
+<tr><td>Widget</td><td><span class="sr-only">Price: </span>$9.99</td></tr>
+<tr><td>Gadget</td><td><span class="sr-only">Price: </span>$19.99</td></tr>
+</tbody>
+</table>
+</main>
+<footer>
+<p id="marker-screen-reader-only-content" data-marker="screen-reader-only-content">MARKER_SCREEN_READER_ONLY_CONTENT</p>
+</footer>
+</body>
+</html>

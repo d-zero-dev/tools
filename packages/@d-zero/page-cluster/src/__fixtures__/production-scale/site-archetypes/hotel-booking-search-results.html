@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="全国のホテル・旅館を検索できる宿泊予約サイトの検索結果ページです。エリア・日程・人数で絞り込みができます。">
+<title>東京都のホテル検索結果 | やどとりホテル予約</title>
+</head>
+<body>
+<header class="hotel-header">
+  <div class="hotel-header__inner">
+    <a class="hotel-logo" href="/">やどとりホテル予約</a>
+    <nav class="hotel-nav" aria-label="グローバルナビゲーション">
+      <ul>
+        <li><a href="/">トップ</a></li>
+        <li><a href="/search" aria-current="page">宿を探す</a></li>
+        <li><a href="/domestic">国内旅行</a></li>
+        <li><a href="/overseas">海外旅行</a></li>
+        <li><a href="/mypage">マイページ</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="hotel-main">
+  <h1 class="hotel-page-title">東京都のホテル・旅館検索結果</h1>
+
+  <form class="hotel-search-bar" action="/search" method="get">
+    <label>エリア
+      <select name="area">
+        <option value="tokyo" selected>東京都</option>
+        <option value="osaka">大阪府</option>
+      </select>
+    </label>
+    <label>チェックイン
+      <input type="date" name="checkin" value="2026-08-01">
+    </label>
+    <label>チェックアウト
+      <input type="date" name="checkout" value="2026-08-02">
+    </label>
+    <label>人数
+      <select name="guests">
+        <option value="1">1名</option>
+        <option value="2" selected>2名</option>
+      </select>
+    </label>
+    <button type="submit">この条件で再検索</button>
+  </form>
+
+  <div class="hotel-layout">
+    <aside class="hotel-filters" aria-label="絞り込み検索">
+      <h2 class="hotel-filters__title">絞り込み検索</h2>
+
+      <fieldset class="hotel-filters__group">
+        <legend>星評価</legend>
+        <label><input type="checkbox" name="stars" value="5">★5</label>
+        <label><input type="checkbox" name="stars" value="4">★4</label>
+        <label><input type="checkbox" name="stars" value="3">★3</label>
+        <label><input type="checkbox" name="stars" value="2">★2</label>
+        <label><input type="checkbox" name="stars" value="1">★1</label>
+      </fieldset>
+
+      <fieldset class="hotel-filters__group">
+        <legend>価格帯</legend>
+        <label><input type="checkbox" name="price" value="5000">〜5,000円</label>
+        <label><input type="checkbox" name="price" value="10000">〜10,000円</label>
+        <label><input type="checkbox" name="price" value="20000">〜20,000円</label>
+        <label><input type="checkbox" name="price" value="30000">〜30,000円</label>
+      </fieldset>
+
+      <fieldset class="hotel-filters__group">
+        <legend>設備・サービス</legend>
+        <label><input type="checkbox" name="amenity" value="wifi">無料Wi-Fi</label>
+        <label><input type="checkbox" name="amenity" value="parking">駐車場あり</label>
+        <label><input type="checkbox" name="amenity" value="onsen">大浴場</label>
+        <label><input type="checkbox" name="amenity" value="breakfast">朝食付き</label>
+        <label><input type="checkbox" name="amenity" value="pet">ペット可</label>
+        <label><input type="checkbox" name="amenity" value="pool">プールあり</label>
+      </fieldset>
+
+      <fieldset class="hotel-filters__group">
+        <legend>エリア</legend>
+        <label><input type="checkbox" name="district" value="shinjuku">新宿</label>
+        <label><input type="checkbox" name="district" value="shibuya">渋谷</label>
+        <label><input type="checkbox" name="district" value="ginza">銀座</label>
+        <label><input type="checkbox" name="district" value="asakusa">浅草</label>
+        <label><input type="checkbox" name="district" value="odaiba">お台場</label>
+      </fieldset>
+
+      <button class="hotel-filters__apply" type="button">この条件で絞り込む</button>
+    </aside>
+
+    <section class="hotel-results" aria-label="ホテル一覧">
+      <div class="hotel-results__meta">
+        <p class="hotel-results__count">312件中 1〜28件を表示</p>
+        <label class="hotel-results__sort-label">並び替え
+          <select class="hotel-results__sort">
+            <option value="recommend">おすすめ順</option>
+            <option value="price">価格の安い順</option>
+            <option value="review">口コミ評価順</option>
+          </select>
+        </label>
+      </div>
+
+      <ul class="hotel-list">
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel01-1.jpg" alt="グランドホテルサンプルベイ 外観" width="160" height="120">
+            <img src="/images/hotel01-2.jpg" alt="グランドホテルサンプルベイ 客室" width="160" height="120">
+            <img src="/images/hotel01-3.jpg" alt="グランドホテルサンプルベイ ロビー" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">グランドホテルサンプルベイ</h3>
+            <p class="hotel-card__stars">★★★★★</p>
+            <p class="hotel-card__review">口コミ評価 4.8（2,340件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駐車場あり</li><li>大浴場</li><li>朝食付き</li><li>プールあり</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル区サンプル台場</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥18,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel02-1.jpg" alt="ホテルサンライズサンプル 外観" width="160" height="120">
+            <img src="/images/hotel02-2.jpg" alt="ホテルサンライズサンプル 客室" width="160" height="120">
+            <img src="/images/hotel02-3.jpg" alt="ホテルサンライズサンプル フロント" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ホテルサンライズサンプル</h3>
+            <p class="hotel-card__stars">★★★☆☆</p>
+            <p class="hotel-card__review">口コミ評価 4.2（980件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>朝食付き</li><li>コインランドリー</li><li>禁煙ルーム</li><li>駅近</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥9,800〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel03-1.jpg" alt="リゾートホテルサンプル温泉オーシャンビュー 外観" width="160" height="120">
+            <img src="/images/hotel03-2.jpg" alt="リゾートホテルサンプル温泉オーシャンビュー 客室" width="160" height="120">
+            <img src="/images/hotel03-3.jpg" alt="リゾートホテルサンプル温泉オーシャンビュー 露天風呂" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">リゾートホテルサンプル温泉オーシャンビュー</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.5（1,560件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駐車場あり</li><li>大浴場</li><li>露天風呂</li><li>朝食付き</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥22,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel04-1.jpg" alt="ビジネスホテルサンプルステーション 外観" width="160" height="120">
+            <img src="/images/hotel04-2.jpg" alt="ビジネスホテルサンプルステーション 客室" width="160" height="120">
+            <img src="/images/hotel04-3.jpg" alt="ビジネスホテルサンプルステーション エントランス" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ビジネスホテルサンプルステーション</h3>
+            <p class="hotel-card__stars">★★☆☆☆</p>
+            <p class="hotel-card__review">口コミ評価 3.8（620件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駅近</li><li>コインランドリー</li><li>禁煙ルーム</li><li>自販機</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥6,500〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel05-1.jpg" alt="京都嵐山温泉旅館花月 外観" width="160" height="120">
+            <img src="/images/hotel05-2.jpg" alt="京都嵐山温泉旅館花月 客室" width="160" height="120">
+            <img src="/images/hotel05-3.jpg" alt="京都嵐山温泉旅館花月 庭園" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル嵐山温泉旅館 花月</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.6（1,120件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>大浴場</li><li>露天風呂</li><li>朝食付き</li><li>夕食付き</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市右京区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥28,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel06-1.jpg" alt="ホテルオーシャンパークサンプル 外観" width="160" height="120">
+            <img src="/images/hotel06-2.jpg" alt="ホテルオーシャンパークサンプル 客室" width="160" height="120">
+            <img src="/images/hotel06-3.jpg" alt="ホテルオーシャンパークサンプル プール" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ホテルオーシャンパークサンプル</h3>
+            <p class="hotel-card__stars">★★★★★</p>
+            <p class="hotel-card__review">口コミ評価 4.7（2,010件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>プールあり</li><li>大浴場</li><li>朝食付き</li><li>ビーチ隣接</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥25,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel07-1.jpg" alt="カプセルホテルサンプル駅前 外観" width="160" height="120">
+            <img src="/images/hotel07-2.jpg" alt="カプセルホテルサンプル駅前 カプセル室内" width="160" height="120">
+            <img src="/images/hotel07-3.jpg" alt="カプセルホテルサンプル駅前 ラウンジ" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">カプセルホテルサンプル駅前</h3>
+            <p class="hotel-card__stars">★☆☆☆☆</p>
+            <p class="hotel-card__review">口コミ評価 3.5（430件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>大浴場</li><li>駅近</li><li>サウナ</li><li>ロッカー完備</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市北区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥3,200〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel08-1.jpg" alt="サンプル温泉ホテル緑風 外観" width="160" height="120">
+            <img src="/images/hotel08-2.jpg" alt="サンプル温泉ホテル緑風 客室" width="160" height="120">
+            <img src="/images/hotel08-3.jpg" alt="サンプル温泉ホテル緑風 温泉" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル温泉ホテル緑風</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.4（1,340件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駐車場あり</li><li>大浴場</li><li>露天風呂</li><li>朝食付き</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル郡サンプル町</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥19,500〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel09-1.jpg" alt="ホテルグレイスサンプルベイエリア 外観" width="160" height="120">
+            <img src="/images/hotel09-2.jpg" alt="ホテルグレイスサンプルベイエリア 客室" width="160" height="120">
+            <img src="/images/hotel09-3.jpg" alt="ホテルグレイスサンプルベイエリア 夜景" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ホテルグレイスサンプルベイエリア</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.3（1,780件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駐車場あり</li><li>朝食付き</li><li>夜景ビュー</li><li>禁煙ルーム</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市西区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥14,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel10-1.jpg" alt="サンプル高原リゾート&amp;スパ 外観" width="160" height="120">
+            <img src="/images/hotel10-2.jpg" alt="サンプル高原リゾート&amp;スパ 客室" width="160" height="120">
+            <img src="/images/hotel10-3.jpg" alt="サンプル高原リゾート&amp;スパ ラベンダー畑" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル高原リゾート&amp;スパ</h3>
+            <p class="hotel-card__stars">★★★★★</p>
+            <p class="hotel-card__review">口コミ評価 4.9（2,890件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駐車場あり</li><li>大浴場</li><li>スパ</li><li>朝食付き</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥32,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel11-1.jpg" alt="ホテルルミエールサンプル駅前 外観" width="160" height="120">
+            <img src="/images/hotel11-2.jpg" alt="ホテルルミエールサンプル駅前 客室" width="160" height="120">
+            <img src="/images/hotel11-3.jpg" alt="ホテルルミエールサンプル駅前 ロビー" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ホテルルミエールサンプル駅前</h3>
+            <p class="hotel-card__stars">★★★☆☆</p>
+            <p class="hotel-card__review">口コミ評価 4.0（760件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駅近</li><li>朝食付き</li><li>禁煙ルーム</li><li>コインランドリー</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市中村区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥8,900〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel12-1.jpg" alt="福岡シティホテルサンプル地区 外観" width="160" height="120">
+            <img src="/images/hotel12-2.jpg" alt="福岡シティホテルサンプル地区 客室" width="160" height="120">
+            <img src="/images/hotel12-3.jpg" alt="福岡シティホテルサンプル地区 フロント" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">福岡シティホテルサンプル地区</h3>
+            <p class="hotel-card__stars">★★★☆☆</p>
+            <p class="hotel-card__review">口コミ評価 4.1（890件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駅近</li><li>朝食付き</li><li>大浴場</li><li>禁煙ルーム</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市博多区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥9,200〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel13-1.jpg" alt="サンプル温泉パールホテル 外観" width="160" height="120">
+            <img src="/images/hotel13-2.jpg" alt="サンプル温泉パールホテル 客室" width="160" height="120">
+            <img src="/images/hotel13-3.jpg" alt="サンプル温泉パールホテル 露天風呂" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル温泉パールホテル</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.5（1,240件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>大浴場</li><li>露天風呂</li><li>朝食付き</li><li>ビーチ隣接</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル郡サンプル町</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥21,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel14-1.jpg" alt="ホテルアーバンステイ札幌 外観" width="160" height="120">
+            <img src="/images/hotel14-2.jpg" alt="ホテルアーバンステイ札幌 客室" width="160" height="120">
+            <img src="/images/hotel14-3.jpg" alt="ホテルアーバンステイ札幌 ロビー" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ホテルアーバンステイ札幌</h3>
+            <p class="hotel-card__stars">★★★☆☆</p>
+            <p class="hotel-card__review">口コミ評価 4.0（700件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駅近</li><li>朝食付き</li><li>大浴場</li><li>コインランドリー</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市中央区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥8,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel15-1.jpg" alt="サンプル高原フォレストヴィラ 外観" width="160" height="120">
+            <img src="/images/hotel15-2.jpg" alt="サンプル高原フォレストヴィラ 客室" width="160" height="120">
+            <img src="/images/hotel15-3.jpg" alt="サンプル高原フォレストヴィラ 森林テラス" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル高原フォレストヴィラ</h3>
+            <p class="hotel-card__stars">★★★★★</p>
+            <p class="hotel-card__review">口コミ評価 4.8（1,660件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駐車場あり</li><li>朝食付き</li><li>ペット可</li><li>暖炉付き客室</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル郡サンプル町</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥35,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel16-1.jpg" alt="ホテルコンフォートサンプル 外観" width="160" height="120">
+            <img src="/images/hotel16-2.jpg" alt="ホテルコンフォートサンプル 客室" width="160" height="120">
+            <img src="/images/hotel16-3.jpg" alt="ホテルコンフォートサンプル フロント" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ホテルコンフォートサンプル</h3>
+            <p class="hotel-card__stars">★★★☆☆</p>
+            <p class="hotel-card__review">口コミ評価 3.9（540件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駅近</li><li>朝食付き</li><li>禁煙ルーム</li><li>自販機</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市青葉区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥7,600〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel17-1.jpg" alt="サンプル温泉ビューホテル 外観" width="160" height="120">
+            <img src="/images/hotel17-2.jpg" alt="サンプル温泉ビューホテル 客室" width="160" height="120">
+            <img src="/images/hotel17-3.jpg" alt="サンプル温泉ビューホテル 温泉" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル温泉ビューホテル</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.4（1,050件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>大浴場</li><li>露天風呂</li><li>朝食付き</li><li>駐車場あり</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥17,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel18-1.jpg" alt="サンプルハーバーランドホテル 外観" width="160" height="120">
+            <img src="/images/hotel18-2.jpg" alt="サンプルハーバーランドホテル 客室" width="160" height="120">
+            <img src="/images/hotel18-3.jpg" alt="サンプルハーバーランドホテル 港夜景" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプルハーバーランドホテル</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.3（1,290件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駐車場あり</li><li>朝食付き</li><li>夜景ビュー</li><li>禁煙ルーム</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市中央区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥16,500〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel19-1.jpg" alt="サンプル島ビーチリゾート 外観" width="160" height="120">
+            <img src="/images/hotel19-2.jpg" alt="サンプル島ビーチリゾート 客室" width="160" height="120">
+            <img src="/images/hotel19-3.jpg" alt="サンプル島ビーチリゾート ビーチ" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル島ビーチリゾート</h3>
+            <p class="hotel-card__stars">★★★★★</p>
+            <p class="hotel-card__review">口コミ評価 4.9（2,470件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>プールあり</li><li>ビーチ隣接</li><li>朝食付き</li><li>シュノーケリング</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥38,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel20-1.jpg" alt="ホテルサンプル兼六 外観" width="160" height="120">
+            <img src="/images/hotel20-2.jpg" alt="ホテルサンプル兼六 客室" width="160" height="120">
+            <img src="/images/hotel20-3.jpg" alt="ホテルサンプル兼六 庭園" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ホテルサンプル兼六</h3>
+            <p class="hotel-card__stars">★★★☆☆</p>
+            <p class="hotel-card__review">口コミ評価 4.2（870件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駅近</li><li>朝食付き</li><li>大浴場</li><li>駐車場あり</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥10,500〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel21-1.jpg" alt="サンプル温泉望楼の宿 外観" width="160" height="120">
+            <img src="/images/hotel21-2.jpg" alt="サンプル温泉望楼の宿 客室" width="160" height="120">
+            <img src="/images/hotel21-3.jpg" alt="サンプル温泉望楼の宿 湯畑" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル温泉望楼の宿</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.6（1,410件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>大浴場</li><li>露天風呂</li><li>朝食付き</li><li>夕食付き</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル郡サンプル町</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥24,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel22-1.jpg" alt="ホテルサンプラザサンプル 外観" width="160" height="120">
+            <img src="/images/hotel22-2.jpg" alt="ホテルサンプラザサンプル 客室" width="160" height="120">
+            <img src="/images/hotel22-3.jpg" alt="ホテルサンプラザサンプル フロント" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ホテルサンプラザサンプル</h3>
+            <p class="hotel-card__stars">★★★☆☆</p>
+            <p class="hotel-card__review">口コミ評価 3.9（610件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駅近</li><li>朝食付き</li><li>禁煙ルーム</li><li>自販機</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市中区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥8,300〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel23-1.jpg" alt="サンプル半島マリンホテル 外観" width="160" height="120">
+            <img src="/images/hotel23-2.jpg" alt="サンプル半島マリンホテル 客室" width="160" height="120">
+            <img src="/images/hotel23-3.jpg" alt="サンプル半島マリンホテル 海景色" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル半島マリンホテル</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.3（960件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駐車場あり</li><li>大浴場</li><li>朝食付き</li><li>ビーチ隣接</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥15,800〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel24-1.jpg" alt="ホテルニューガイアサンプル 外観" width="160" height="120">
+            <img src="/images/hotel24-2.jpg" alt="ホテルニューガイアサンプル 客室" width="160" height="120">
+            <img src="/images/hotel24-3.jpg" alt="ホテルニューガイアサンプル 大浴場" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ホテルニューガイアサンプル</h3>
+            <p class="hotel-card__stars">★★★☆☆</p>
+            <p class="hotel-card__review">口コミ評価 4.0（730件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>大浴場</li><li>朝食付き</li><li>駅近</li><li>禁煙ルーム</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥9,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel25-1.jpg" alt="サンプル山麓グランピングリゾート 外観" width="160" height="120">
+            <img src="/images/hotel25-2.jpg" alt="サンプル山麓グランピングリゾート テント客室" width="160" height="120">
+            <img src="/images/hotel25-3.jpg" alt="サンプル山麓グランピングリゾート 富士山ビュー" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル山麓グランピングリゾート</h3>
+            <p class="hotel-card__stars">★★★★★</p>
+            <p class="hotel-card__review">口コミ評価 4.7（1,850件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駐車場あり</li><li>朝食付き</li><li>BBQ設備</li><li>富士山ビュー</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル郡サンプル町</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥29,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel26-1.jpg" alt="ビジネスホテルサンプル駅前 外観" width="160" height="120">
+            <img src="/images/hotel26-2.jpg" alt="ビジネスホテルサンプル駅前 客室" width="160" height="120">
+            <img src="/images/hotel26-3.jpg" alt="ビジネスホテルサンプル駅前 フロント" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">ビジネスホテルサンプル駅前</h3>
+            <p class="hotel-card__stars">★★☆☆☆</p>
+            <p class="hotel-card__review">口コミ評価 3.7（410件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>駅近</li><li>コインランドリー</li><li>禁煙ルーム</li><li>自販機</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市北区</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥6,200〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel27-1.jpg" alt="サンプル島サンセットリゾート 外観" width="160" height="120">
+            <img src="/images/hotel27-2.jpg" alt="サンプル島サンセットリゾート 客室" width="160" height="120">
+            <img src="/images/hotel27-3.jpg" alt="サンプル島サンセットリゾート 夕日ビーチ" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル島サンセットリゾート</h3>
+            <p class="hotel-card__stars">★★★★★</p>
+            <p class="hotel-card__review">口コミ評価 4.8（2,120件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>プールあり</li><li>ビーチ隣接</li><li>朝食付き</li><li>スパ</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥36,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+        <li class="hotel-card">
+          <div class="hotel-card__gallery">
+            <img src="/images/hotel28-1.jpg" alt="サンプル温泉やまなみ 外観" width="160" height="120">
+            <img src="/images/hotel28-2.jpg" alt="サンプル温泉やまなみ 客室" width="160" height="120">
+            <img src="/images/hotel28-3.jpg" alt="サンプル温泉やまなみ 渓流" width="160" height="120">
+          </div>
+          <div class="hotel-card__body">
+            <h3 class="hotel-card__name">サンプル温泉やまなみ</h3>
+            <p class="hotel-card__stars">★★★★☆</p>
+            <p class="hotel-card__review">口コミ評価 4.5（1,180件）</p>
+            <ul class="hotel-card__amenities">
+              <li>無料Wi-Fi</li><li>大浴場</li><li>露天風呂</li><li>朝食付き</li><li>駐車場あり</li>
+            </ul>
+            <p class="hotel-card__location">サンプル県サンプル市</p>
+          </div>
+          <div class="hotel-card__price">
+            <p class="hotel-card__price-amount">1泊 ¥20,000〜</p>
+            <button type="button">空室を見る</button>
+          </div>
+        </li>
+      </ul>
+
+      <nav class="hotel-pagination" aria-label="ページネーション">
+        <ul>
+          <li><a href="?page=1" aria-current="page">1</a></li>
+          <li><a href="?page=2">2</a></li>
+          <li><a href="?page=3">3</a></li>
+          <li><a href="?page=4">4</a></li>
+          <li><a href="?page=5">5</a></li>
+          <li><a href="?page=6">6</a></li>
+          <li><a href="?page=7">7</a></li>
+          <li><a href="?page=2">次へ</a></li>
+        </ul>
+      </nav>
+    </section>
+  </div>
+</main>
+
+<p id="marker-hotel-booking-search-results" data-marker="hotel-booking-search-results">MARKER_HOTEL_BOOKING_SEARCH_RESULTS</p>
+
+<footer class="hotel-footer">
+  <div class="hotel-footer__columns">
+    <div class="hotel-footer__column">
+      <h4>会社情報</h4>
+      <ul>
+        <li><a href="/about">運営会社</a></li>
+        <li><a href="/careers">採用情報</a></li>
+        <li><a href="/press">プレスリリース</a></li>
+        <li><a href="/terms">利用規約</a></li>
+      </ul>
+    </div>
+    <div class="hotel-footer__column">
+      <h4>ご利用ガイド</h4>
+      <ul>
+        <li><a href="/how-to-book">予約方法</a></li>
+        <li><a href="/cancel">キャンセルポリシー</a></li>
+        <li><a href="/payment">お支払い方法</a></li>
+        <li><a href="/faq">よくある質問</a></li>
+      </ul>
+    </div>
+    <div class="hotel-footer__column">
+      <h4>サポート</h4>
+      <ul>
+        <li><a href="/contact">お問い合わせ</a></li>
+        <li><a href="/support">カスタマーサポート</a></li>
+        <li><a href="/for-hotels">宿泊施設様向け</a></li>
+        <li><a href="/login-hotel">施設ログイン</a></li>
+      </ul>
+    </div>
+    <div class="hotel-footer__column">
+      <h4>公式SNS</h4>
+      <ul>
+        <li><a href="https://x.com/example">X（旧Twitter）</a></li>
+        <li><a href="https://facebook.com/example">Facebook</a></li>
+        <li><a href="https://instagram.com/example">Instagram</a></li>
+        <li><a href="https://youtube.com/example">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="hotel-footer__copyright">&copy; 2026 やどとりホテル予約</p>
+</footer>
+</body>
+</html>

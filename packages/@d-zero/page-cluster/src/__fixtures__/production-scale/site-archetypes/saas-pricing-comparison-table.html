@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>料金プラン | CloudFlow</title>
+<meta name="description" content="CloudFlowの料金プランと機能比較をご確認いただけます。">
+</head>
+<body class="pricing-body">
+<header class="pricing-header">
+  <div class="pricing-header__inner">
+    <a href="/" class="pricing-logo">CloudFlow</a>
+    <nav class="pricing-nav">
+      <ul class="pricing-nav__list">
+        <li class="pricing-nav__item"><a href="/">ホーム</a></li>
+        <li class="pricing-nav__item"><a href="/features">機能</a></li>
+        <li class="pricing-nav__item pricing-nav__item--current" aria-current="page"><a href="/pricing">料金</a></li>
+        <li class="pricing-nav__item"><a href="/docs">ドキュメント</a></li>
+      </ul>
+    </nav>
+    <a href="/signup" class="pricing-header__cta">無料で始める</a>
+  </div>
+</header>
+
+<main class="pricing-main">
+  <section class="pricing-intro">
+    <h1 class="pricing-intro__title">シンプルで分かりやすい料金プラン</h1>
+    <p class="pricing-intro__desc">チームの規模に合わせて最適なプランをお選びください。</p>
+
+    <div class="pricing-toggle" role="tablist">
+      <button type="button" class="pricing-toggle__btn pricing-toggle__btn--active" role="tab" aria-selected="true">月額払い</button>
+      <button type="button" class="pricing-toggle__btn" role="tab" aria-selected="false">年額払い（2ヶ月分お得）</button>
+    </div>
+  </section>
+
+  <p id="marker-saas-pricing-comparison-table" data-marker="saas-pricing-comparison-table">MARKER_SAAS_PRICING_COMPARISON_TABLE</p>
+
+  <section class="pricing-plans">
+    <div class="pricing-plans__grid">
+      <article class="pricing-plan-card">
+        <h2 class="pricing-plan-card__name">Free</h2>
+        <p class="pricing-plan-card__price"><span class="pricing-plan-card__amount">¥0</span> / 月</p>
+        <p class="pricing-plan-card__desc">個人利用や小規模チーム向け</p>
+        <ul class="pricing-plan-card__features">
+          <li>タスク数 100件まで</li>
+          <li>メンバー3人まで</li>
+          <li>基本サポート</li>
+        </ul>
+        <a href="/signup?plan=free" class="pricing-plan-card__cta">無料で始める</a>
+      </article>
+      <article class="pricing-plan-card pricing-plan-card--recommended">
+        <p class="pricing-plan-card__badge">おすすめ</p>
+        <h2 class="pricing-plan-card__name">Pro</h2>
+        <p class="pricing-plan-card__price"><span class="pricing-plan-card__amount">¥1,500</span> / 月</p>
+        <p class="pricing-plan-card__desc">成長中のチームに最適</p>
+        <ul class="pricing-plan-card__features">
+          <li>タスク数 無制限</li>
+          <li>メンバー20人まで</li>
+          <li>優先サポート</li>
+          <li>API連携</li>
+        </ul>
+        <a href="/signup?plan=pro" class="pricing-plan-card__cta">Proを選択</a>
+      </article>
+      <article class="pricing-plan-card">
+        <h2 class="pricing-plan-card__name">Business</h2>
+        <p class="pricing-plan-card__price"><span class="pricing-plan-card__amount">¥4,800</span> / 月</p>
+        <p class="pricing-plan-card__desc">部門横断の大規模チーム向け</p>
+        <ul class="pricing-plan-card__features">
+          <li>メンバー100人まで</li>
+          <li>SSO/SAML対応</li>
+          <li>専任サポート担当</li>
+          <li>監査ログ</li>
+        </ul>
+        <a href="/signup?plan=business" class="pricing-plan-card__cta">Businessを選択</a>
+      </article>
+      <article class="pricing-plan-card">
+        <h2 class="pricing-plan-card__name">Enterprise</h2>
+        <p class="pricing-plan-card__price"><span class="pricing-plan-card__amount">要問い合わせ</span></p>
+        <p class="pricing-plan-card__desc">カスタム要件に対応</p>
+        <ul class="pricing-plan-card__features">
+          <li>メンバー無制限</li>
+          <li>専用インスタンス</li>
+          <li>SLA保証</li>
+          <li>オンボーディング支援</li>
+        </ul>
+        <a href="/contact?plan=enterprise" class="pricing-plan-card__cta">問い合わせる</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="pricing-compare">
+    <h2 class="pricing-compare__title">機能比較表</h2>
+    <table class="pricing-compare__table">
+      <thead>
+        <tr>
+          <th scope="col">機能</th>
+          <th scope="col">Free</th>
+          <th scope="col">Pro</th>
+          <th scope="col">Business</th>
+          <th scope="col">Enterprise</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>タスク管理</td><td>○</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>ガントチャート</td><td>-</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>カンバンボード</td><td>○</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>ファイル添付容量</td><td>1GB</td><td>10GB</td><td>100GB</td><td>無制限</td></tr>
+        <tr><td>API連携</td><td>-</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>カスタムフィールド</td><td>-</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>自動化ワークフロー</td><td>-</td><td>3件まで</td><td>50件まで</td><td>無制限</td></tr>
+        <tr><td>レポート出力</td><td>-</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>ダッシュボードカスタマイズ</td><td>-</td><td>-</td><td>○</td><td>○</td></tr>
+        <tr><td>SSO/SAML</td><td>-</td><td>-</td><td>○</td><td>○</td></tr>
+        <tr><td>監査ログ</td><td>-</td><td>-</td><td>○</td><td>○</td></tr>
+        <tr><td>ロールベースアクセス制御</td><td>-</td><td>-</td><td>○</td><td>○</td></tr>
+        <tr><td>専用インスタンス</td><td>-</td><td>-</td><td>-</td><td>○</td></tr>
+        <tr><td>SLA保証</td><td>-</td><td>-</td><td>-</td><td>99.99%</td></tr>
+        <tr><td>専任サポート担当</td><td>-</td><td>-</td><td>○</td><td>○</td></tr>
+        <tr><td>電話サポート</td><td>-</td><td>-</td><td>-</td><td>○</td></tr>
+        <tr><td>データエクスポート</td><td>CSV</td><td>CSV/JSON</td><td>CSV/JSON</td><td>CSV/JSON/API</td></tr>
+        <tr><td>モバイルアプリ</td><td>○</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>チームメンバー数上限</td><td>3人</td><td>20人</td><td>100人</td><td>無制限</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="pricing-faq">
+    <h2 class="pricing-faq__title">よくある質問</h2>
+    <details class="pricing-faq__item">
+      <summary>年額払いにするとどれくらいお得ですか？</summary>
+      <p>年額払いを選択すると、2ヶ月分の料金が無料になります。</p>
+    </details>
+    <details class="pricing-faq__item">
+      <summary>プランのアップグレード・ダウングレードは可能ですか？</summary>
+      <p>はい、管理画面からいつでも変更でき、日割り計算されます。</p>
+    </details>
+    <details class="pricing-faq__item">
+      <summary>支払い方法は何がありますか？</summary>
+      <p>クレジットカードおよび請求書払い（Business以上）に対応しています。</p>
+    </details>
+    <details class="pricing-faq__item">
+      <summary>Enterpriseプランの見積もりはどう依頼すればよいですか？</summary>
+      <p>お問い合わせフォームから必要事項をご記入いただければ担当者よりご連絡します。</p>
+    </details>
+    <details class="pricing-faq__item">
+      <summary>プランを解約した場合、データはどうなりますか？</summary>
+      <p>解約後30日間はデータを保持し、その後完全に削除されます。</p>
+    </details>
+  </section>
+</main>
+
+<footer class="pricing-footer">
+  <div class="pricing-footer__columns">
+    <div class="pricing-footer__col">
+      <h3>会社情報</h3>
+      <ul>
+        <li><a href="/about">会社概要</a></li>
+        <li><a href="/careers">採用情報</a></li>
+      </ul>
+    </div>
+    <div class="pricing-footer__col">
+      <h3>サポート</h3>
+      <ul>
+        <li><a href="/help">ヘルプセンター</a></li>
+        <li><a href="/contact">お問い合わせ</a></li>
+      </ul>
+    </div>
+    <div class="pricing-footer__col">
+      <h3>法務</h3>
+      <ul>
+        <li><a href="/terms">利用規約</a></li>
+        <li><a href="/privacy">プライバシーポリシー</a></li>
+      </ul>
+    </div>
+    <div class="pricing-footer__col">
+      <h3>SNS</h3>
+      <ul>
+        <li><a href="https://twitter.com/cloudflow">Twitter</a></li>
+        <li><a href="https://linkedin.com/company/cloudflow">LinkedIn</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="pricing-footer__copyright">&copy; 2026 CloudFlow, Inc.</p>
+</footer>
+</body>
+</html>

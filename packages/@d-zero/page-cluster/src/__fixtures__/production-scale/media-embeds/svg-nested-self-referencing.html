@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>SVG自己ネストサンプル</title>
+</head>
+<body>
+<header class="page-header">
+<h1>入れ子SVGの検証ページ</h1>
+</header>
+<main class="content">
+<section class="diagram-section">
+<h2>ネスト構造1</h2>
+<svg width="200" height="200" viewBox="0 0 200 200">
+<rect x="0" y="0" width="200" height="200" fill="#eee"></rect>
+<svg x="20" y="20" width="160" height="160" viewBox="0 0 160 160">
+<circle cx="80" cy="80" r="70" fill="#66c"></circle>
+<svg x="10" y="10" width="140" height="140" viewBox="0 0 140 140">
+<rect x="0" y="0" width="140" height="140" fill="none" stroke="#333"></rect>
+<text x="10" y="20">nested-3</text>
+</svg>
+</svg>
+</svg>
+</section>
+<section class="diagram-section">
+<h2>ネスト構造2</h2>
+<svg width="300" height="150" viewBox="0 0 300 150">
+<g>
+<svg x="0" y="0" width="150" height="150">
+<circle cx="75" cy="75" r="60"></circle>
+</svg>
+<svg x="150" y="0" width="150" height="150">
+<circle cx="75" cy="75" r="60"></circle>
+<svg x="30" y="30" width="90" height="90">
+<rect width="90" height="90"></rect>
+</svg>
+</svg>
+</g>
+</svg>
+</section>
+<section class="diagram-section">
+<h2>ネスト構造3（深い入れ子）</h2>
+<svg width="100" height="100">
+<svg width="90" height="90">
+<svg width="80" height="80">
+<svg width="70" height="70">
+<svg width="60" height="60">
+<rect width="60" height="60" fill="red"></rect>
+</svg>
+</svg>
+</svg>
+</svg>
+</svg>
+</section>
+<section class="diagram-section">
+<h2>並列の単純SVG</h2>
+<p>以下は入れ子ではない通常のSVGです。</p>
+<svg width="50" height="50"><circle cx="25" cy="25" r="20"></circle></svg>
+<svg width="50" height="50"><rect width="50" height="50"></rect></svg>
+</section>
+</main>
+<section class="sitemap-extra" aria-label="サイトマップ">
+<h2>サイトマップ</h2>
+<ul class="sitemap-extra-list">
+<li><a href="/sitemap/svg-nested-self-referencing/page-1">関連ページ1</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-2">関連ページ2</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-3">関連ページ3</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-4">関連ページ4</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-5">関連ページ5</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-6">関連ページ6</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-7">関連ページ7</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-8">関連ページ8</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-9">関連ページ9</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-10">関連ページ10</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-11">関連ページ11</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-12">関連ページ12</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-13">関連ページ13</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-14">関連ページ14</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-15">関連ページ15</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-16">関連ページ16</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-17">関連ページ17</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-18">関連ページ18</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-19">関連ページ19</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-20">関連ページ20</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-21">関連ページ21</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-22">関連ページ22</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-23">関連ページ23</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-24">関連ページ24</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-25">関連ページ25</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-26">関連ページ26</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-27">関連ページ27</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-28">関連ページ28</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-29">関連ページ29</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-30">関連ページ30</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-31">関連ページ31</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-32">関連ページ32</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-33">関連ページ33</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-34">関連ページ34</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-35">関連ページ35</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-36">関連ページ36</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-37">関連ページ37</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-38">関連ページ38</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-39">関連ページ39</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-40">関連ページ40</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-41">関連ページ41</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-42">関連ページ42</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-43">関連ページ43</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-44">関連ページ44</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-45">関連ページ45</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-46">関連ページ46</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-47">関連ページ47</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-48">関連ページ48</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-49">関連ページ49</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-50">関連ページ50</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-51">関連ページ51</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-52">関連ページ52</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-53">関連ページ53</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-54">関連ページ54</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-55">関連ページ55</a></li>
+<li><a href="/sitemap/svg-nested-self-referencing/page-56">関連ページ56</a></li>
+</ul>
+</section>
+<p id="marker-svg-nested-self-referencing" data-marker="svg-nested-self-referencing">MARKER_SVG_NESTED_SELF_REFERENCING</p>
+<footer class="page-footer">
+<p>入れ子SVG検証用フィクスチャ</p>
+</footer>
+</body>
+</html>

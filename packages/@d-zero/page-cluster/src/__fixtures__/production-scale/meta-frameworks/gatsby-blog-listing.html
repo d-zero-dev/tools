@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ブログ一覧 | Gatsby Starter Blog Sample</title>
+  <meta name="description" content="Gatsbyで生成された静的ブログの一覧ページのサンプルです。">
+  <link rel="canonical" href="https://example-gatsby-blog.dummy/blog/">
+  <meta property="og:title" content="ブログ一覧 | Gatsby Starter Blog Sample">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://cdn.example-gatsby-blog.dummy">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="___gatsby">
+    <div id="gatsby-focus-wrapper">
+      <header class="site-header">
+        <div class="site-header__inner">
+          <a class="site-header__logo" href="/">Sample Gatsby Blog</a>
+          <nav class="site-header__nav" aria-label="グローバルナビゲーション">
+            <ul class="site-header__menu">
+              <li class="site-header__menu-item"><a href="/">ホーム</a></li>
+              <li class="site-header__menu-item"><a href="/blog/">ブログ</a></li>
+              <li class="site-header__menu-item"><a href="/tags/">タグ一覧</a></li>
+              <li class="site-header__menu-item"><a href="/about/">サイトについて</a></li>
+              <li class="site-header__menu-item"><a href="/contact/">お問い合わせ</a></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+      <main class="blog-listing">
+        <h1 class="blog-listing__heading">ブログ記事一覧</h1>
+        <p id="marker-gatsby-blog-listing" data-marker="gatsby-blog-listing">MARKER_GATSBY_BLOG_LISTING</p>
+        <div class="post-card-grid">
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-1/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-1.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-1.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-1.jpg" alt="React Hooksの基礎を理解するのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-1/">React Hooksの基礎を理解する</a></h2>
+            <time datetime="2026-01-01" class="post-card__date">2026年1月1日</time>
+            <p class="post-card__excerpt">この記事ではReact Hooksの基礎を理解するについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-1/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-2/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-2.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-2.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-2.jpg" alt="GraphQLとGatsbyの相性のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-2/">GraphQLとGatsbyの相性</a></h2>
+            <time datetime="2026-02-02" class="post-card__date">2026年2月2日</time>
+            <p class="post-card__excerpt">この記事ではGraphQLとGatsbyの相性について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-2/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-3/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-3.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-3.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-3.jpg" alt="静的サイト生成のメリットのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-3/">静的サイト生成のメリット</a></h2>
+            <time datetime="2026-03-03" class="post-card__date">2026年3月3日</time>
+            <p class="post-card__excerpt">この記事では静的サイト生成のメリットについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-3/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-4/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-4.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-4.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-4.jpg" alt="デザインシステム構築の勘所のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-4/">デザインシステム構築の勘所</a></h2>
+            <time datetime="2026-04-04" class="post-card__date">2026年4月4日</time>
+            <p class="post-card__excerpt">この記事ではデザインシステム構築の勘所について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-4/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-5/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-5.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-5.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-5.jpg" alt="アクセシビリティ改善チェックリストのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-5/">アクセシビリティ改善チェックリスト</a></h2>
+            <time datetime="2026-05-05" class="post-card__date">2026年5月5日</time>
+            <p class="post-card__excerpt">この記事ではアクセシビリティ改善チェックリストについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-5/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-6/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-6.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-6.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-6.jpg" alt="パフォーマンス最適化Tipsのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-6/">パフォーマンス最適化Tips</a></h2>
+            <time datetime="2026-06-06" class="post-card__date">2026年6月6日</time>
+            <p class="post-card__excerpt">この記事ではパフォーマンス最適化Tipsについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-6/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-7/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-7.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-7.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-7.jpg" alt="Webフォントの読み込み戦略のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-7/">Webフォントの読み込み戦略</a></h2>
+            <time datetime="2026-07-07" class="post-card__date">2026年7月7日</time>
+            <p class="post-card__excerpt">この記事ではWebフォントの読み込み戦略について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-7/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-8/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-8.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-8.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-8.jpg" alt="CSS Grid実践入門のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-8/">CSS Grid実践入門</a></h2>
+            <time datetime="2026-08-08" class="post-card__date">2026年8月8日</time>
+            <p class="post-card__excerpt">この記事ではCSS Grid実践入門について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-8/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-9/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-9.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-9.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-9.jpg" alt="TypeScript移行のロードマップのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-9/">TypeScript移行のロードマップ</a></h2>
+            <time datetime="2026-09-09" class="post-card__date">2026年9月9日</time>
+            <p class="post-card__excerpt">この記事ではTypeScript移行のロードマップについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-9/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-10/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-10.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-10.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-10.jpg" alt="コンポーネント設計のベストプラクティスのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-10/">コンポーネント設計のベストプラクティス</a></h2>
+            <time datetime="2026-10-10" class="post-card__date">2026年10月10日</time>
+            <p class="post-card__excerpt">この記事ではコンポーネント設計のベストプラクティスについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-10/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-11/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-11.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-11.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-11.jpg" alt="SEO対策の基本のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-11/">SEO対策の基本</a></h2>
+            <time datetime="2026-11-11" class="post-card__date">2026年11月11日</time>
+            <p class="post-card__excerpt">この記事ではSEO対策の基本について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-11/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-12/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-12.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-12.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-12.jpg" alt="画像最適化とlazy loadingのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-12/">画像最適化とlazy loading</a></h2>
+            <time datetime="2026-12-12" class="post-card__date">2026年12月12日</time>
+            <p class="post-card__excerpt">この記事では画像最適化とlazy loadingについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-12/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-13/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-13.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-13.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-13.jpg" alt="CI/CDパイプライン構築記のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-13/">CI/CDパイプライン構築記</a></h2>
+            <time datetime="2026-01-13" class="post-card__date">2026年1月13日</time>
+            <p class="post-card__excerpt">この記事ではCI/CDパイプライン構築記について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-13/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-14/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-14.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-14.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-14.jpg" alt="Jamstackアーキテクチャ入門のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-14/">Jamstackアーキテクチャ入門</a></h2>
+            <time datetime="2026-02-14" class="post-card__date">2026年2月14日</time>
+            <p class="post-card__excerpt">この記事ではJamstackアーキテクチャ入門について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-14/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-15/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-15.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-15.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-15.jpg" alt="サーバーレス関数の活用事例のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-15/">サーバーレス関数の活用事例</a></h2>
+            <time datetime="2026-03-15" class="post-card__date">2026年3月15日</time>
+            <p class="post-card__excerpt">この記事ではサーバーレス関数の活用事例について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-15/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-16/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-16.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-16.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-16.jpg" alt="Headless CMS比較レビューのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-16/">Headless CMS比較レビュー</a></h2>
+            <time datetime="2026-04-16" class="post-card__date">2026年4月16日</time>
+            <p class="post-card__excerpt">この記事ではHeadless CMS比較レビューについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-16/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-17/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-17.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-17.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-17.jpg" alt="ダークモード実装ガイドのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-17/">ダークモード実装ガイド</a></h2>
+            <time datetime="2026-05-17" class="post-card__date">2026年5月17日</time>
+            <p class="post-card__excerpt">この記事ではダークモード実装ガイドについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-17/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-18/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-18.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-18.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-18.jpg" alt="モーションデザインの原則のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-18/">モーションデザインの原則</a></h2>
+            <time datetime="2026-06-18" class="post-card__date">2026年6月18日</time>
+            <p class="post-card__excerpt">この記事ではモーションデザインの原則について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-18/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-19/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-19.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-19.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-19.jpg" alt="マイクロインタラクション事例集のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-19/">マイクロインタラクション事例集</a></h2>
+            <time datetime="2026-07-19" class="post-card__date">2026年7月19日</time>
+            <p class="post-card__excerpt">この記事ではマイクロインタラクション事例集について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-19/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-20/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-20.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-20.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-20.jpg" alt="A/Bテストの進め方のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-20/">A/Bテストの進め方</a></h2>
+            <time datetime="2026-08-20" class="post-card__date">2026年8月20日</time>
+            <p class="post-card__excerpt">この記事ではA/Bテストの進め方について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-20/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-21/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-21.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-21.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-21.jpg" alt="PWA化のステップのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-21/">PWA化のステップ</a></h2>
+            <time datetime="2026-09-21" class="post-card__date">2026年9月21日</time>
+            <p class="post-card__excerpt">この記事ではPWA化のステップについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-21/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-22/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-22.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-22.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-22.jpg" alt="Webアクセシビリティ監査ツールのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-22/">Webアクセシビリティ監査ツール</a></h2>
+            <time datetime="2026-10-22" class="post-card__date">2026年10月22日</time>
+            <p class="post-card__excerpt">この記事ではWebアクセシビリティ監査ツールについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-22/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-23/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-23.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-23.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-23.jpg" alt="デザイントークンの管理方法のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-23/">デザイントークンの管理方法</a></h2>
+            <time datetime="2026-11-23" class="post-card__date">2026年11月23日</time>
+            <p class="post-card__excerpt">この記事ではデザイントークンの管理方法について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-23/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-24/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-24.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-24.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-24.jpg" alt="Storybook活用術のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-24/">Storybook活用術</a></h2>
+            <time datetime="2026-12-24" class="post-card__date">2026年12月24日</time>
+            <p class="post-card__excerpt">この記事ではStorybook活用術について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-24/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-25/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-25.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-25.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-25.jpg" alt="モノレポ運用の知見のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-25/">モノレポ運用の知見</a></h2>
+            <time datetime="2026-01-25" class="post-card__date">2026年1月25日</time>
+            <p class="post-card__excerpt">この記事ではモノレポ運用の知見について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-25/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-26/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-26.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-26.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-26.jpg" alt="ESLint設定の最適化のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-26/">ESLint設定の最適化</a></h2>
+            <time datetime="2026-02-26" class="post-card__date">2026年2月26日</time>
+            <p class="post-card__excerpt">この記事ではESLint設定の最適化について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-26/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-27/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-27.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-27.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-27.jpg" alt="ユニットテスト戦略のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-27/">ユニットテスト戦略</a></h2>
+            <time datetime="2026-03-27" class="post-card__date">2026年3月27日</time>
+            <p class="post-card__excerpt">この記事ではユニットテスト戦略について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-27/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-28/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-28.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-28.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-28.jpg" alt="E2Eテスト自動化事例のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-28/">E2Eテスト自動化事例</a></h2>
+            <time datetime="2026-04-28" class="post-card__date">2026年4月28日</time>
+            <p class="post-card__excerpt">この記事ではE2Eテスト自動化事例について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-28/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-29/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-29.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-29.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-29.jpg" alt="コンテンツ設計ワークショップのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-29/">コンテンツ設計ワークショップ</a></h2>
+            <time datetime="2026-05-01" class="post-card__date">2026年5月1日</time>
+            <p class="post-card__excerpt">この記事ではコンテンツ設計ワークショップについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-29/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-30/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-30.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-30.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-30.jpg" alt="ブランドリニューアルの裏側のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-30/">ブランドリニューアルの裏側</a></h2>
+            <time datetime="2026-06-02" class="post-card__date">2026年6月2日</time>
+            <p class="post-card__excerpt">この記事ではブランドリニューアルの裏側について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-30/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-31/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-31.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-31.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-31.jpg" alt="多言語対応の実装パターンのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-31/">多言語対応の実装パターン</a></h2>
+            <time datetime="2026-07-03" class="post-card__date">2026年7月3日</time>
+            <p class="post-card__excerpt">この記事では多言語対応の実装パターンについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-31/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-32/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-32.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-32.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-32.jpg" alt="フォーム設計のUXパターンのサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-32/">フォーム設計のUXパターン</a></h2>
+            <time datetime="2026-08-04" class="post-card__date">2026年8月4日</time>
+            <p class="post-card__excerpt">この記事ではフォーム設計のUXパターンについて、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-32/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-33/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-33.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-33.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-33.jpg" alt="エラーハンドリングの考え方のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-33/">エラーハンドリングの考え方</a></h2>
+            <time datetime="2026-09-05" class="post-card__date">2026年9月5日</time>
+            <p class="post-card__excerpt">この記事ではエラーハンドリングの考え方について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-33/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-34/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-34.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-34.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-34.jpg" alt="キャッシュ戦略入門のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-34/">キャッシュ戦略入門</a></h2>
+            <time datetime="2026-10-06" class="post-card__date">2026年10月6日</time>
+            <p class="post-card__excerpt">この記事ではキャッシュ戦略入門について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+              <li class="tag-list__item"><a href="/tags/culture/">Culture</a></li>
+              <li class="tag-list__item"><a href="/tags/interview/">Interview</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-34/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-35/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-35.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-35.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-35.jpg" alt="画像CDN活用術のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-35/">画像CDN活用術</a></h2>
+            <time datetime="2026-11-07" class="post-card__date">2026年11月7日</time>
+            <p class="post-card__excerpt">この記事では画像CDN活用術について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/news/">News</a></li>
+              <li class="tag-list__item"><a href="/tags/release/">Release</a></li>
+              <li class="tag-list__item"><a href="/tags/tech/">Tech</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-35/">続きを読む</a>
+          </div>
+        </article>
+        <article class="post-card">
+          <a class="post-card__thumb-link" href="/blog/post-36/">
+            <picture>
+              <source type="image/webp" srcset="https://cdn.example-gatsby-blog.dummy/images/post-36.webp">
+              <source type="image/jpeg" srcset="https://cdn.example-gatsby-blog.dummy/images/post-36.jpg">
+              <img src="https://cdn.example-gatsby-blog.dummy/images/post-36.jpg" alt="Webフォントサブセット化のサムネイル" loading="lazy" decoding="async" width="640" height="360">
+            </picture>
+          </a>
+          <div class="post-card__body">
+            <h2 class="post-card__title"><a href="/blog/post-36/">Webフォントサブセット化</a></h2>
+            <time datetime="2026-12-08" class="post-card__date">2026年12月8日</time>
+            <p class="post-card__excerpt">この記事ではWebフォントサブセット化について、実際のプロジェクトで得られた知見をもとに解説します。現場で役立つ具体的な工夫や注意点をまとめました。</p>
+            <ul class="tag-list">
+              <li class="tag-list__item"><a href="/tags/tips/">Tips</a></li>
+              <li class="tag-list__item"><a href="/tags/event/">Event</a></li>
+              <li class="tag-list__item"><a href="/tags/design/">Design</a></li>
+            </ul>
+            <a class="post-card__more" href="/blog/post-36/">続きを読む</a>
+          </div>
+        </article>
+        </div>
+        <nav class="pagination" aria-label="ページネーション">
+          <ul class="pagination__list">
+            <li class="pagination__item pagination__item--prev"><span class="pagination__disabled">前へ</span></li>
+            <li class="pagination__item"><a class="pagination__link" href="/blog/page/1/" aria-current="page">1</a></li>
+            <li class="pagination__item"><a class="pagination__link" href="/blog/page/2/" aria-current="false">2</a></li>
+            <li class="pagination__item"><a class="pagination__link" href="/blog/page/3/" aria-current="false">3</a></li>
+            <li class="pagination__item"><a class="pagination__link" href="/blog/page/4/" aria-current="false">4</a></li>
+            <li class="pagination__item"><a class="pagination__link" href="/blog/page/5/" aria-current="false">5</a></li>
+            <li class="pagination__item"><a class="pagination__link" href="/blog/page/6/" aria-current="false">6</a></li>
+            <li class="pagination__item"><a class="pagination__link" href="/blog/page/7/" aria-current="false">7</a></li>
+            <li class="pagination__item"><a class="pagination__link" href="/blog/page/8/" aria-current="false">8</a></li>
+            <li class="pagination__item pagination__item--next"><a class="pagination__link" href="/blog/page/2/">次へ</a></li>
+          </ul>
+        </nav>
+      </main>
+      <aside class="site-sidebar">
+        <section class="site-sidebar__section">
+          <h2 class="site-sidebar__title">人気のタグ</h2>
+          <ul class="site-sidebar__tag-list">
+            <li><a href="/tags/tech/">Tech</a></li>
+            <li><a href="/tags/design/">Design</a></li>
+            <li><a href="/tags/news/">News</a></li>
+            <li><a href="/tags/tips/">Tips</a></li>
+            <li><a href="/tags/culture/">Culture</a></li>
+          </ul>
+        </section>
+        <section class="site-sidebar__section">
+          <h2 class="site-sidebar__title">運営について</h2>
+          <p>このブログはGatsbyの静的サイト生成機能を利用したサンプルサイトです。</p>
+        </section>
+      </aside>
+      <footer class="site-footer">
+        <div class="site-footer__inner">
+          <p class="site-footer__copyright">&copy; 2026 Sample Gatsby Blog. All rights reserved.</p>
+          <ul class="site-footer__links">
+            <li><a href="/privacy/">プライバシーポリシー</a></li>
+            <li><a href="/terms/">利用規約</a></li>
+            <li><a href="/sitemap.xml">サイトマップ</a></li>
+          </ul>
+          <ul class="site-footer__sns">
+            <li><a href="https://twitter.example-gatsby-blog.dummy/">Twitter</a></li>
+            <li><a href="https://github.example-gatsby-blog.dummy/">GitHub</a></li>
+            <li><a href="https://rss.example-gatsby-blog.dummy/feed.xml">RSS</a></li>
+          </ul>
+        </div>
+      </footer>
+    </div>
+  </div>
+  <script src="/webpack-runtime-abc123.js"></script>
+  <script src="/framework-def456.js"></script>
+  <script src="/app-ghi789.js"></script>
+  <script src="/page-data/blog/page-data.json" type="application/json"></script>
+</body>
+</html>

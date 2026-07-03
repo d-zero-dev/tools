@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accessible Tooltip Widget</title>
+</head>
+<body>
+<header>
+<h1>Account Settings</h1>
+</header>
+<main>
+<form>
+<label for="api-key">API Key
+<button type="button" aria-describedby="tooltip-apikey" class="tooltip-trigger" aria-label="More information about API keys">?</button>
+</label>
+<span role="tooltip" id="tooltip-apikey">Your API key can be found in the developer dashboard under Settings &gt; API.</span>
+<input type="text" id="api-key" name="api-key">
+<label for="webhook">Webhook URL
+<button type="button" aria-describedby="tooltip-webhook" class="tooltip-trigger" aria-label="More information about webhooks">?</button>
+</label>
+<span role="tooltip" id="tooltip-webhook">A webhook is a URL we call whenever an event occurs on your account.</span>
+<input type="url" id="webhook" name="webhook">
+</form>
+</main>
+<footer>
+<p id="marker-accessible-tooltip-widget" data-marker="accessible-tooltip-widget">MARKER_ACCESSIBLE_TOOLTIP_WIDGET</p>
+</footer>
+</body>
+</html>

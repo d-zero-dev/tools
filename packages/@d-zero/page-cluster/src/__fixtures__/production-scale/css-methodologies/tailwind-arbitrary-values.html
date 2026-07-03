@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tailwind Arbitrary Values</title>
+</head>
+<body>
+  <header class="relative h-[420px] bg-[url('/img/hero.jpg')] bg-cover bg-[center_top_20%]">
+    <div class="absolute top-[calc(100%-4rem)] left-1/2 w-[min(90%,720px)] -translate-x-1/2 rounded-[20px] bg-white/90 p-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.15)]">
+      <h1 class="text-[32px] leading-[38px] font-[800] text-[#0f172a]">Custom Storefront</h1>
+      <p class="mt-[8px] text-[15px] text-[#334155] w-[85%]">Precision-tuned utility values for a pixel-perfect layout.</p>
+      <button class="mt-[16px] h-[44px] w-[137px] rounded-[8px] bg-[#1da1f2] text-[14px] font-[600] text-white hover:bg-[#0d8ddb]" type="button">Shop now</button>
+    </div>
+  </header>
+  <main class="mt-[80px] px-[5vw]">
+    <nav aria-label="breadcrumb" class="text-[12px] text-[#64748b] mb-[24px]">
+      <ol class="flex gap-[6px]">
+        <li class="after:content-['/'] after:ml-[6px]">Home</li>
+        <li class="after:content-['/'] after:ml-[6px]">Shop</li>
+        <li class="text-[#0f172a]">Featured</li>
+      </ol>
+    </nav>
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-[20px]">
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 1</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 1</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$7.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$9.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 2</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 2</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$14.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$18.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 3</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 3</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$21.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$27.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 4</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 4</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$28.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$36.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 5</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 5</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$35.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$45.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 6</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 6</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$42.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$54.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 7</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 7</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$49.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$63.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 8</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 8</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$56.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$72.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 9</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 9</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$63.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$81.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 10</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 10</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$70.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$90.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 11</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 11</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$77.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$99.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 12</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 12</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$84.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$108.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 13</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 13</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$91.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$117.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 14</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 14</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$98.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$126.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 15</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 15</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$105.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$135.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 16</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 16</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$112.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$144.00</span>
+        </div>
+      </article>
+      <article class="w-[calc(33.333%-1rem)] min-w-[240px] bg-[#f7f7fb] rounded-[14px] p-[18px] shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+        <span class="inline-block text-[11px] font-[650] uppercase tracking-[0.08em] text-[#6b7280]">Category 17</span>
+        <h3 class="mt-[6px] text-[19px] leading-[1.3] text-[#111827]">Handmade item 17</h3>
+        <p class="mt-[4px] text-[13px] text-[#4b5563] max-w-[36ch]">Crafted from sustainably sourced oak and finished by hand.</p>
+        <div class="mt-[12px] flex items-center gap-[8px]">
+          <span class="text-[17px] text-[#1da1f2]">$119.00</span>
+          <span class="text-[12px] text-[#9ca3af] line-through">$153.00</span>
+        </div>
+      </article>
+    </div>
+    <div class="mt-[48px] grid grid-cols-[200px_1fr_120px] items-center gap-[16px] rounded-[12px] border-[1.5px] border-[#e2e8f0] p-[16px]">
+      <img class="h-[80px] w-[200px] object-cover rounded-[8px]" src="/img/banner.jpg" alt="Banner" />
+      <p class="text-[14px] text-[#334155] max-w-[60ch]">Use code <span class="text-[#1da1f2]">SAVE10</span> at checkout for an extra discount this week only.</p>
+      <button class="h-[36px] w-[100px] rounded-[6px] bg-[#0f172a] text-[12px] text-white" type="button">Apply</button>
+    </div>
+  </main>
+  <p id="marker-tailwind-arbitrary-values" data-marker="tailwind-arbitrary-values">MARKER_TAILWIND_ARBITRARY_VALUES</p>
+
+</body>
+</html>

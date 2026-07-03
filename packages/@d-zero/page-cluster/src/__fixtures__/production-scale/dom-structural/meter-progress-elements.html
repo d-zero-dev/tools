@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meter and Progress Elements</title>
+</head>
+<body>
+<main>
+<p id="marker-meter-progress-elements" data-marker="meter-progress-elements">MARKER_METER_PROGRESS_ELEMENTS</p>
+<div>
+<label for="disk-usage">Disk usage:</label>
+<meter id="disk-usage" min="0" max="100" low="60" high="90" optimum="20" value="45">45%</meter>
+</div>
+<div>
+<label for="score">Test score:</label>
+<meter id="score" min="0" max="10" value="7.5">7.5 out of 10</meter>
+</div>
+<div>
+<label for="download">Download progress:</label>
+<progress id="download" max="100" value="70">70%</progress>
+</div>
+<div>
+<label for="loading">Loading:</label>
+<progress id="loading"></progress>
+</div>
+<ul>
+<li>
+<span>Storage A</span>
+<meter min="0" max="1" value="0.3"></meter>
+</li>
+<li>
+<span>Storage B</span>
+<meter min="0" max="1" value="0.9"></meter>
+</li>
+</ul>
+</main>
+</body>
+</html>

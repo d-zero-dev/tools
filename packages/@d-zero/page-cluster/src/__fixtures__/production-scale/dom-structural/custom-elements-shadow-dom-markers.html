@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Custom Elements - Shadow DOM Markers</title>
+</head>
+<body>
+<main>
+<p id="marker-custom-elements-shadow-dom-markers" data-marker="custom-elements-shadow-dom-markers">MARKER_CUSTOM_ELEMENTS_SHADOW_DOM_MARKERS</p>
+<user-card>
+<template shadowrootmode="open">
+<style>:host { display: block; }</style>
+<div class="card">
+<slot name="avatar"></slot>
+<slot name="name">Anonymous</slot>
+</div>
+</template>
+<img slot="avatar" src="/avatar.png" alt="Avatar">
+<span slot="name">Jane Doe</span>
+</user-card>
+<rating-stars value="4">
+<template shadowrootmode="closed">
+<div class="stars" part="stars"></div>
+</template>
+</rating-stars>
+<progress-ring data-shadow="attached" data-percent="72">
+<template shadowrootmode="open">
+<svg part="ring"></svg>
+<slot></slot>
+</template>
+<span>72%</span>
+</progress-ring>
+</main>
+</body>
+</html>

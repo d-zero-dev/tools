@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accessible Modal with Focus Trap</title>
+</head>
+<body>
+<header>
+<h1>Subscription Settings</h1>
+<button type="button" id="open-modal" aria-haspopup="dialog">Open Settings</button>
+</header>
+<main>
+<p>Click the button above to open a modal dialog that traps keyboard focus until dismissed.</p>
+<div role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
+<h2 id="dialog-title">Manage Subscription</h2>
+<p id="dialog-desc">Choose a plan below or cancel to keep your current settings.</p>
+<form>
+<fieldset>
+<legend>Plan</legend>
+<label><input type="radio" name="plan" value="basic" checked> Basic</label>
+<label><input type="radio" name="plan" value="pro"> Pro</label>
+<label><input type="radio" name="plan" value="enterprise"> Enterprise</label>
+</fieldset>
+<div>
+<button type="submit">Save Changes</button>
+<button type="button" aria-label="Close dialog">Cancel</button>
+</div>
+</form>
+</div>
+</main>
+<footer>
+<p id="marker-accessible-modal-focus-trap" data-marker="accessible-modal-focus-trap">MARKER_ACCESSIBLE_MODAL_FOCUS_TRAP</p>
+</footer>
+</body>
+</html>

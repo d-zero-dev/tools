@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accessible Carousel Widget</title>
+</head>
+<body>
+<header>
+<h1>Featured Products</h1>
+</header>
+<main>
+<section aria-roledescription="carousel" aria-label="Featured products carousel">
+<div aria-live="polite">
+<div role="group" aria-roledescription="slide" aria-label="1 of 3">
+<img src="/img/product1.jpg" alt="Red running shoes on a white background">
+<p>Running Shoes - $59.99</p>
+</div>
+</div>
+<button type="button" aria-label="Previous slide">&laquo;</button>
+<button type="button" aria-label="Next slide">&raquo;</button>
+<div role="tablist" aria-label="Slide navigation">
+<button role="tab" aria-selected="true" aria-label="Slide 1"></button>
+<button role="tab" aria-selected="false" aria-label="Slide 2"></button>
+<button role="tab" aria-selected="false" aria-label="Slide 3"></button>
+</div>
+</section>
+</main>
+<footer>
+<p id="marker-accessible-carousel-widget" data-marker="accessible-carousel-widget">MARKER_ACCESSIBLE_CAROUSEL_WIDGET</p>
+</footer>
+</body>
+</html>

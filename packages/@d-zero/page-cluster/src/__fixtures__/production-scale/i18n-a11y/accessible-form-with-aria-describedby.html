@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accessible Form with aria-describedby</title>
+</head>
+<body>
+<header>
+<h1>Create Your Account</h1>
+</header>
+<main>
+<form novalidate>
+<div>
+<label for="username">Username</label>
+<input type="text" id="username" name="username" aria-describedby="username-help" aria-required="true">
+<p id="username-help">Must be 4-20 characters, letters and numbers only.</p>
+</div>
+<div>
+<label for="email">Email</label>
+<input type="email" id="email" name="email" aria-describedby="email-error" aria-invalid="true">
+<p id="email-error" role="alert">Please enter a valid email address.</p>
+</div>
+<div>
+<label for="password">Password</label>
+<input type="password" id="password" name="password" aria-describedby="password-help">
+<p id="password-help">At least 8 characters, including one number.</p>
+</div>
+<fieldset>
+<legend>Notification Preferences</legend>
+<label><input type="checkbox" name="notify" value="email"> Email me updates</label>
+<label><input type="checkbox" name="notify" value="sms"> Text me updates</label>
+</fieldset>
+<button type="submit">Create Account</button>
+</form>
+</main>
+<footer>
+<p id="marker-accessible-form-with-aria-describedby" data-marker="accessible-form-with-aria-describedby">MARKER_ACCESSIBLE_FORM_WITH_ARIA_DESCRIBEDBY</p>
+</footer>
+</body>
+</html>

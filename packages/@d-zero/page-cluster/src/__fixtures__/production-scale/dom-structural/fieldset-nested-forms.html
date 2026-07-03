@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fieldset - Nested Forms</title>
+</head>
+<body>
+<main>
+<p id="marker-fieldset-nested-forms" data-marker="fieldset-nested-forms">MARKER_FIELDSET_NESTED_FORMS</p>
+<form action="/checkout" method="post">
+<fieldset>
+<legend>Shipping Information</legend>
+<fieldset>
+<legend>Recipient</legend>
+<div>
+<label for="recipient-name">Name</label>
+<input type="text" id="recipient-name" name="recipient-name">
+</div>
+<div>
+<label for="recipient-phone">Phone</label>
+<input type="tel" id="recipient-phone" name="recipient-phone">
+</div>
+</fieldset>
+<fieldset>
+<legend>Address</legend>
+<fieldset>
+<legend>Domestic</legend>
+<div>
+<label for="prefecture">Prefecture</label>
+<input type="text" id="prefecture" name="prefecture">
+</div>
+<div>
+<label for="city">City</label>
+<input type="text" id="city" name="city">
+</div>
+</fieldset>
+<fieldset disabled>
+<legend>International (disabled)</legend>
+<div>
+<label for="country">Country</label>
+<input type="text" id="country" name="country">
+</div>
+</fieldset>
+</fieldset>
+</fieldset>
+<fieldset>
+<legend>Payment</legend>
+<div>
+<label for="card-number">Card Number</label>
+<input type="text" id="card-number" name="card-number">
+</div>
+</fieldset>
+<button type="submit">Place Order</button>
+</form>
+</main>
+</body>
+</html>

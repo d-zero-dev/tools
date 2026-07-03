@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>シューズ一覧 | Shoes Marche</title>
+<meta name="description" content="Shoes Marche のシューズ一覧ページ。ブランド・価格帯・サイズ・カラーで絞り込んでお好みの一足を見つけられます。">
+</head>
+<body class="cat-body">
+<header class="cat-header">
+  <div class="cat-header-top">
+    <a class="cat-logo" href="/">Shoes Marche</a>
+    <form class="cat-search-form" action="/search" method="get">
+      <input class="cat-search-input" type="search" name="q" placeholder="商品を検索">
+      <button class="cat-search-btn" type="submit">検索</button>
+    </form>
+    <div class="cat-header-icons">
+      <a class="cat-icon-link" href="/account">マイページ</a>
+      <a class="cat-icon-link" href="/cart">カート</a>
+    </div>
+  </div>
+  <nav class="cat-gnav" aria-label="グローバルナビゲーション">
+    <ul class="cat-gnav-list">
+      <li class="cat-gnav-item"><a class="cat-gnav-link" href="/">トップ</a></li>
+      <li class="cat-gnav-item"><a class="cat-gnav-link cat-gnav-link--active" href="/category/shoes" aria-current="page">シューズ</a></li>
+      <li class="cat-gnav-item"><a class="cat-gnav-link" href="/category/apparel">アパレル</a></li>
+      <li class="cat-gnav-item"><a class="cat-gnav-link" href="/category/accessories">アクセサリー</a></li>
+      <li class="cat-gnav-item"><a class="cat-gnav-link" href="/sale">セール</a></li>
+    </ul>
+  </nav>
+</header>
+<main class="cat-main">
+  <nav class="cat-breadcrumb" aria-label="パンくずリスト">
+    <ol class="cat-breadcrumb-list">
+      <li class="cat-breadcrumb-item"><a href="/">トップ</a></li>
+      <li class="cat-breadcrumb-item" aria-current="page">シューズ</li>
+    </ol>
+  </nav>
+
+  <div class="cat-layout">
+    <aside class="cat-sidebar" aria-label="絞り込み">
+      <h2 class="cat-sidebar-heading">絞り込み検索</h2>
+      <form class="cat-filter-form" action="/category/shoes" method="get">
+        <fieldset class="cat-filter-group">
+          <legend class="cat-filter-legend">ブランド</legend>
+          <ul class="cat-filter-list">
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="brand" value="rockrun">Rockrun</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="brand" value="comfoot">Comfoot</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="brand" value="aeroflow">Aeroflow</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="brand" value="nordwalk">Nordwalk</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="brand" value="bluemarine">Bluemarine</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="brand" value="sunterra">Sunterra</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="brand" value="vantage">Vantage</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="brand" value="kaiba">Kaiba</label></li>
+          </ul>
+        </fieldset>
+        <fieldset class="cat-filter-group">
+          <legend class="cat-filter-legend">価格帯</legend>
+          <ul class="cat-filter-list">
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="price" value="range-0">〜3,000円</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="price" value="range-1">3,000円〜5,000円</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="price" value="range-2">5,000円〜8,000円</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="price" value="range-3">8,000円〜12,000円</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="price" value="range-4">12,000円〜</label></li>
+          </ul>
+        </fieldset>
+        <fieldset class="cat-filter-group">
+          <legend class="cat-filter-legend">サイズ</legend>
+          <ul class="cat-filter-list cat-filter-list--grid">
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="22.0">22.0</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="22.5">22.5</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="23.0">23.0</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="23.5">23.5</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="24.0">24.0</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="24.5">24.5</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="25.0">25.0</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="25.5">25.5</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="26.0">26.0</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="26.5">26.5</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="27.0">27.0</label></li>
+          <li class="cat-filter-size-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="size" value="28.0">28.0</label></li>
+          </ul>
+        </fieldset>
+        <fieldset class="cat-filter-group">
+          <legend class="cat-filter-legend">カラー</legend>
+          <ul class="cat-filter-list">
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="color" value="ブラック">ブラック</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="color" value="ホワイト">ホワイト</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="color" value="ネイビー">ネイビー</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="color" value="レッド">レッド</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="color" value="グレー">グレー</label></li>
+          <li class="cat-filter-item"><label class="cat-filter-label"><input class="cat-filter-checkbox" type="checkbox" name="color" value="ベージュ">ベージュ</label></li>
+          </ul>
+        </fieldset>
+        <button class="cat-filter-submit-btn" type="submit">この条件で絞り込む</button>
+      </form>
+    </aside>
+
+    <div class="cat-content">
+      <div class="cat-toolbar">
+        <p class="cat-result-count">全 214 件中 1〜36件を表示</p>
+        <div class="cat-toolbar-controls">
+          <label class="cat-sort-label" for="cat-sort-select">並び替え</label>
+          <select class="cat-sort-select" id="cat-sort-select" name="sort">
+            <option value="recommended">おすすめ順</option>
+            <option value="price-asc">価格の安い順</option>
+            <option value="price-desc">価格の高い順</option>
+            <option value="new">新着順</option>
+            <option value="rating">評価の高い順</option>
+          </select>
+          <label class="cat-per-page-label" for="cat-per-page-select">表示件数</label>
+          <select class="cat-per-page-select" id="cat-per-page-select" name="per_page">
+            <option value="24">24件</option>
+            <option value="36" selected>36件</option>
+            <option value="48">48件</option>
+          </select>
+        </div>
+      </div>
+
+      <ul class="cat-product-grid">
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-1">
+            <img class="cat-product-img" src="/images/products/cat-1.jpg" alt="Aeroflow ランニングシューズ 1" width="220" height="220">
+            <p class="cat-product-name">Aeroflow ランニングシューズ 1</p>
+            <p class="cat-product-price">3,000円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="1">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-2">
+            <img class="cat-product-img" src="/images/products/cat-2.jpg" alt="Comfoot ウォーキングシューズ 2" width="220" height="220">
+            <p class="cat-product-name">Comfoot ウォーキングシューズ 2</p>
+            <p class="cat-product-price">3,137円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="2">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-3">
+            <img class="cat-product-img" src="/images/products/cat-3.jpg" alt="Nordwalk トレッキングブーツ 3" width="220" height="220">
+            <p class="cat-product-name">Nordwalk トレッキングブーツ 3</p>
+            <p class="cat-product-price">3,274円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="3">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-4">
+            <img class="cat-product-img" src="/images/products/cat-4.jpg" alt="Bluemarine スニーカー 4" width="220" height="220">
+            <p class="cat-product-name">Bluemarine スニーカー 4</p>
+            <p class="cat-product-price">3,411円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="4">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-5">
+            <img class="cat-product-img" src="/images/products/cat-5.jpg" alt="Sunterra サンダル 5" width="220" height="220">
+            <p class="cat-product-name">Sunterra サンダル 5</p>
+            <p class="cat-product-price">3,548円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="5">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-6">
+            <img class="cat-product-img" src="/images/products/cat-6.jpg" alt="Vantage バスケットシューズ 6" width="220" height="220">
+            <p class="cat-product-name">Vantage バスケットシューズ 6</p>
+            <p class="cat-product-price">3,685円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="6">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-7">
+            <img class="cat-product-img" src="/images/products/cat-7.jpg" alt="Kaiba テニスシューズ 7" width="220" height="220">
+            <p class="cat-product-name">Kaiba テニスシューズ 7</p>
+            <p class="cat-product-price">3,822円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="7">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-8">
+            <img class="cat-product-img" src="/images/products/cat-8.jpg" alt="Rockrun トレイルシューズ 8" width="220" height="220">
+            <p class="cat-product-name">Rockrun トレイルシューズ 8</p>
+            <p class="cat-product-price">3,959円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="8">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-9">
+            <img class="cat-product-img" src="/images/products/cat-9.jpg" alt="Aeroflow キッズシューズ 9" width="220" height="220">
+            <p class="cat-product-name">Aeroflow キッズシューズ 9</p>
+            <p class="cat-product-price">4,096円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="9">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-10">
+            <img class="cat-product-img" src="/images/products/cat-10.jpg" alt="Comfoot オフィスシューズ 10" width="220" height="220">
+            <p class="cat-product-name">Comfoot オフィスシューズ 10</p>
+            <p class="cat-product-price">4,233円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="10">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-11">
+            <img class="cat-product-img" src="/images/products/cat-11.jpg" alt="Nordwalk レインブーツ 11" width="220" height="220">
+            <p class="cat-product-name">Nordwalk レインブーツ 11</p>
+            <p class="cat-product-price">4,370円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="11">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-12">
+            <img class="cat-product-img" src="/images/products/cat-12.jpg" alt="Bluemarine デッキシューズ 12" width="220" height="220">
+            <p class="cat-product-name">Bluemarine デッキシューズ 12</p>
+            <p class="cat-product-price">4,507円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="12">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-13">
+            <img class="cat-product-img" src="/images/products/cat-13.jpg" alt="Aeroflow ランニングシューズ 13" width="220" height="220">
+            <p class="cat-product-name">Aeroflow ランニングシューズ 13</p>
+            <p class="cat-product-price">4,644円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="13">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-14">
+            <img class="cat-product-img" src="/images/products/cat-14.jpg" alt="Comfoot ウォーキングシューズ 14" width="220" height="220">
+            <p class="cat-product-name">Comfoot ウォーキングシューズ 14</p>
+            <p class="cat-product-price">4,781円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="14">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-15">
+            <img class="cat-product-img" src="/images/products/cat-15.jpg" alt="Nordwalk トレッキングブーツ 15" width="220" height="220">
+            <p class="cat-product-name">Nordwalk トレッキングブーツ 15</p>
+            <p class="cat-product-price">4,918円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="15">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-16">
+            <img class="cat-product-img" src="/images/products/cat-16.jpg" alt="Bluemarine スニーカー 16" width="220" height="220">
+            <p class="cat-product-name">Bluemarine スニーカー 16</p>
+            <p class="cat-product-price">5,055円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="16">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-17">
+            <img class="cat-product-img" src="/images/products/cat-17.jpg" alt="Sunterra サンダル 17" width="220" height="220">
+            <p class="cat-product-name">Sunterra サンダル 17</p>
+            <p class="cat-product-price">5,192円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="17">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-18">
+            <img class="cat-product-img" src="/images/products/cat-18.jpg" alt="Vantage バスケットシューズ 18" width="220" height="220">
+            <p class="cat-product-name">Vantage バスケットシューズ 18</p>
+            <p class="cat-product-price">5,329円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="18">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-19">
+            <img class="cat-product-img" src="/images/products/cat-19.jpg" alt="Kaiba テニスシューズ 19" width="220" height="220">
+            <p class="cat-product-name">Kaiba テニスシューズ 19</p>
+            <p class="cat-product-price">5,466円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="19">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-20">
+            <img class="cat-product-img" src="/images/products/cat-20.jpg" alt="Rockrun トレイルシューズ 20" width="220" height="220">
+            <p class="cat-product-name">Rockrun トレイルシューズ 20</p>
+            <p class="cat-product-price">5,603円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="20">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-21">
+            <img class="cat-product-img" src="/images/products/cat-21.jpg" alt="Aeroflow キッズシューズ 21" width="220" height="220">
+            <p class="cat-product-name">Aeroflow キッズシューズ 21</p>
+            <p class="cat-product-price">5,740円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="21">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-22">
+            <img class="cat-product-img" src="/images/products/cat-22.jpg" alt="Comfoot オフィスシューズ 22" width="220" height="220">
+            <p class="cat-product-name">Comfoot オフィスシューズ 22</p>
+            <p class="cat-product-price">5,877円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="22">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-23">
+            <img class="cat-product-img" src="/images/products/cat-23.jpg" alt="Nordwalk レインブーツ 23" width="220" height="220">
+            <p class="cat-product-name">Nordwalk レインブーツ 23</p>
+            <p class="cat-product-price">6,014円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="23">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-24">
+            <img class="cat-product-img" src="/images/products/cat-24.jpg" alt="Bluemarine デッキシューズ 24" width="220" height="220">
+            <p class="cat-product-name">Bluemarine デッキシューズ 24</p>
+            <p class="cat-product-price">6,151円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="24">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-25">
+            <img class="cat-product-img" src="/images/products/cat-25.jpg" alt="Aeroflow ランニングシューズ 25" width="220" height="220">
+            <p class="cat-product-name">Aeroflow ランニングシューズ 25</p>
+            <p class="cat-product-price">6,288円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="25">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-26">
+            <img class="cat-product-img" src="/images/products/cat-26.jpg" alt="Comfoot ウォーキングシューズ 26" width="220" height="220">
+            <p class="cat-product-name">Comfoot ウォーキングシューズ 26</p>
+            <p class="cat-product-price">6,425円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="26">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-27">
+            <img class="cat-product-img" src="/images/products/cat-27.jpg" alt="Nordwalk トレッキングブーツ 27" width="220" height="220">
+            <p class="cat-product-name">Nordwalk トレッキングブーツ 27</p>
+            <p class="cat-product-price">6,562円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="27">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-28">
+            <img class="cat-product-img" src="/images/products/cat-28.jpg" alt="Bluemarine スニーカー 28" width="220" height="220">
+            <p class="cat-product-name">Bluemarine スニーカー 28</p>
+            <p class="cat-product-price">6,699円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="28">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-29">
+            <img class="cat-product-img" src="/images/products/cat-29.jpg" alt="Sunterra サンダル 29" width="220" height="220">
+            <p class="cat-product-name">Sunterra サンダル 29</p>
+            <p class="cat-product-price">6,836円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="29">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-30">
+            <img class="cat-product-img" src="/images/products/cat-30.jpg" alt="Vantage バスケットシューズ 30" width="220" height="220">
+            <p class="cat-product-name">Vantage バスケットシューズ 30</p>
+            <p class="cat-product-price">6,973円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="30">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-31">
+            <img class="cat-product-img" src="/images/products/cat-31.jpg" alt="Kaiba テニスシューズ 31" width="220" height="220">
+            <p class="cat-product-name">Kaiba テニスシューズ 31</p>
+            <p class="cat-product-price">7,110円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="31">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-32">
+            <img class="cat-product-img" src="/images/products/cat-32.jpg" alt="Rockrun トレイルシューズ 32" width="220" height="220">
+            <p class="cat-product-name">Rockrun トレイルシューズ 32</p>
+            <p class="cat-product-price">7,247円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="32">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-33">
+            <img class="cat-product-img" src="/images/products/cat-33.jpg" alt="Aeroflow キッズシューズ 33" width="220" height="220">
+            <p class="cat-product-name">Aeroflow キッズシューズ 33</p>
+            <p class="cat-product-price">7,384円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="33">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-34">
+            <img class="cat-product-img" src="/images/products/cat-34.jpg" alt="Comfoot オフィスシューズ 34" width="220" height="220">
+            <p class="cat-product-name">Comfoot オフィスシューズ 34</p>
+            <p class="cat-product-price">7,521円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価3点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="34">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-35">
+            <img class="cat-product-img" src="/images/products/cat-35.jpg" alt="Nordwalk レインブーツ 35" width="220" height="220">
+            <p class="cat-product-name">Nordwalk レインブーツ 35</p>
+            <p class="cat-product-price">7,658円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価4点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--empty">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="35">カートに追加</button>
+        </li>
+        <li class="cat-product-card">
+          <a class="cat-product-link" href="/products/item-36">
+            <img class="cat-product-img" src="/images/products/cat-36.jpg" alt="Bluemarine デッキシューズ 36" width="220" height="220">
+            <p class="cat-product-name">Bluemarine デッキシューズ 36</p>
+            <p class="cat-product-price">7,795円（税込）</p>
+            <span class="cat-product-stars" aria-label="評価5点"><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span><span class="cat-star cat-star--filled">★</span></span>
+          </a>
+          <button class="cat-add-to-cart-btn" type="button" data-product-id="36">カートに追加</button>
+        </li>
+      </ul>
+
+      <nav class="cat-pagination" aria-label="ページネーション">
+        <ul class="cat-page-list">
+          <li class="cat-page-item cat-page-item--prev"><span class="cat-page-link cat-page-link--disabled">前へ</span></li>
+      <li class="cat-page-item cat-page-item--current"><a class="cat-page-link" href="/category/shoes?page=1" aria-current="page">1</a></li>
+      <li class="cat-page-item"><a class="cat-page-link" href="/category/shoes?page=2">2</a></li>
+      <li class="cat-page-item"><a class="cat-page-link" href="/category/shoes?page=3">3</a></li>
+      <li class="cat-page-item"><a class="cat-page-link" href="/category/shoes?page=4">4</a></li>
+      <li class="cat-page-item"><a class="cat-page-link" href="/category/shoes?page=5">5</a></li>
+      <li class="cat-page-item"><a class="cat-page-link" href="/category/shoes?page=6">6</a></li>
+      <li class="cat-page-item"><a class="cat-page-link" href="/category/shoes?page=7">7</a></li>
+      <li class="cat-page-item"><a class="cat-page-link" href="/category/shoes?page=8">8</a></li>
+          <li class="cat-page-item cat-page-item--next"><a class="cat-page-link" href="/category/shoes?page=2">次へ</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <p id="marker-ecommerce-category-listing-page" data-marker="ecommerce-category-listing-page">MARKER_ECOMMERCE_CATEGORY_LISTING_PAGE</p>
+</main>
+<footer class="cat-footer">
+  <div class="cat-footer-columns">
+    <div class="cat-footer-col">
+      <h3 class="cat-footer-col-heading">会社情報</h3>
+      <ul class="cat-footer-link-list">
+        <li><a href="/about">会社概要</a></li>
+        <li><a href="/careers">採用情報</a></li>
+        <li><a href="/news">お知らせ</a></li>
+        <li><a href="/investors">投資家情報</a></li>
+      </ul>
+    </div>
+    <div class="cat-footer-col">
+      <h3 class="cat-footer-col-heading">サポート</h3>
+      <ul class="cat-footer-link-list">
+        <li><a href="/faq">よくある質問</a></li>
+        <li><a href="/contact">お問い合わせ</a></li>
+        <li><a href="/shipping">配送について</a></li>
+        <li><a href="/returns">返品・交換</a></li>
+      </ul>
+    </div>
+    <div class="cat-footer-col">
+      <h3 class="cat-footer-col-heading">SNS</h3>
+      <ul class="cat-footer-link-list">
+        <li><a href="https://twitter.com/example">X (Twitter)</a></li>
+        <li><a href="https://instagram.com/example">Instagram</a></li>
+        <li><a href="https://facebook.com/example">Facebook</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="cat-copyright">&copy; 2026 Shoes Example Marche Inc.</p>
+</footer>
+</body>
+</html>

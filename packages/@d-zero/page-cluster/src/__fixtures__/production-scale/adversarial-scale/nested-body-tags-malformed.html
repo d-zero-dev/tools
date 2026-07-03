@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nested Body Tags Malformed</title>
+</head>
+<body>
+<header>
+<p id="marker-nested-body-tags-malformed" data-marker="nested-body-tags-malformed">MARKER_NESTED_BODY_TAGS_MALFORMED</p>
+</header>
+<body class="second-body">
+<p>Content after an illegal second &lt;body&gt; start tag.</p>
+<body class="third-body">
+<p>Content after an illegal third &lt;body&gt; start tag, still nested in source.</p>
+</body>
+<p>Content after a stray &lt;/body&gt; close tag that should not actually end the document.</p>
+</body>
+<main>
+<p>Main content that appears after multiple malformed body tags.</p>
+</main>
+</body>
+</html>

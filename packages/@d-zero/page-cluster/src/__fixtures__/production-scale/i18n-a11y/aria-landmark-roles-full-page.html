@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ARIA Landmark Roles Full Page</title>
+</head>
+<body>
+<header role="banner">
+<p>Site Header</p>
+</header>
+<nav role="navigation" aria-label="Primary">
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="/products">Products</a></li>
+<li><a href="/about">About</a></li>
+</ul>
+</nav>
+<div role="search">
+<form>
+<label for="q">Search</label>
+<input type="search" id="q" name="q">
+<button type="submit">Go</button>
+</form>
+</div>
+<main role="main">
+<article>
+<h1>Main Content Area</h1>
+<p>This page demonstrates the full set of landmark roles used for accessible page navigation via assistive technology.</p>
+</article>
+<section role="region" aria-label="Highlights">
+<h2>Highlights</h2>
+<ul>
+<li>Fast delivery</li>
+<li>24/7 support</li>
+</ul>
+</section>
+</main>
+<aside role="complementary" aria-label="Related links">
+<h2>Related</h2>
+<ul>
+<li><a href="/faq">FAQ</a></li>
+<li><a href="/help">Help Center</a></li>
+</ul>
+</aside>
+<footer role="contentinfo">
+<p>Contact information and copyright.</p>
+<p id="marker-aria-landmark-roles-full-page" data-marker="aria-landmark-roles-full-page">MARKER_ARIA_LANDMARK_ROLES_FULL_PAGE</p>
+</footer>
+</body>
+</html>

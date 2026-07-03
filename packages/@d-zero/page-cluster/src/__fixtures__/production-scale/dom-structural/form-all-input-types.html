@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Form - All Input Types</title>
+</head>
+<body>
+<main>
+<p id="marker-form-all-input-types" data-marker="form-all-input-types">MARKER_FORM_ALL_INPUT_TYPES</p>
+<form action="/submit" method="post">
+<div>
+<label for="f-text">Text</label>
+<input type="text" id="f-text" name="text">
+</div>
+<div>
+<label for="f-email">Email</label>
+<input type="email" id="f-email" name="email">
+</div>
+<div>
+<label for="f-password">Password</label>
+<input type="password" id="f-password" name="password">
+</div>
+<div>
+<label for="f-checkbox">Checkbox</label>
+<input type="checkbox" id="f-checkbox" name="checkbox">
+</div>
+<div>
+<label for="f-radio1">Radio 1</label>
+<input type="radio" id="f-radio1" name="radio" value="1">
+<label for="f-radio2">Radio 2</label>
+<input type="radio" id="f-radio2" name="radio" value="2">
+</div>
+<div>
+<label for="f-date">Date</label>
+<input type="date" id="f-date" name="date">
+</div>
+<div>
+<label for="f-color">Color</label>
+<input type="color" id="f-color" name="color">
+</div>
+<div>
+<label for="f-range">Range</label>
+<input type="range" id="f-range" name="range" min="0" max="100">
+</div>
+<div>
+<label for="f-file">File</label>
+<input type="file" id="f-file" name="file">
+</div>
+<input type="hidden" name="csrf" value="token-value">
+<div>
+<label for="f-search">Search</label>
+<input type="search" id="f-search" name="search">
+</div>
+<div>
+<label for="f-tel">Telephone</label>
+<input type="tel" id="f-tel" name="tel">
+</div>
+<div>
+<label for="f-url">URL</label>
+<input type="url" id="f-url" name="url">
+</div>
+<div>
+<label for="f-number">Number</label>
+<input type="number" id="f-number" name="number" min="0" max="10">
+</div>
+<div>
+<label for="f-week">Week</label>
+<input type="week" id="f-week" name="week">
+</div>
+<div>
+<label for="f-month">Month</label>
+<input type="month" id="f-month" name="month">
+</div>
+<div>
+<label for="f-time">Time</label>
+<input type="time" id="f-time" name="time">
+</div>
+<div>
+<label for="f-datetime">Datetime Local</label>
+<input type="datetime-local" id="f-datetime" name="datetime">
+</div>
+<div>
+<label for="f-image">Image Submit</label>
+<input type="image" id="f-image" name="image" src="/submit-icon.png" alt="Submit">
+</div>
+<div>
+<input type="button" value="Just a Button">
+<input type="reset" value="Reset">
+<input type="submit" value="Submit">
+</div>
+</form>
+</main>
+</body>
+</html>
