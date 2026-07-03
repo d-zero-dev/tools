@@ -39,6 +39,20 @@ export type Frame = {
 };
 
 /**
+ * Result of {@link ../compute-document-frequency.js | computeDocumentFrequency}: how many pages (out of `pageCount`) contain each token.
+ *
+ * `pageCount` travels bundled with `documentFrequency` rather than being a
+ * separate argument at call sites that consume it (e.g.
+ * `splitTokensByFrequency`), so the two can never be passed out of sync with
+ * each other (e.g. a caller re-slicing the page list after computing
+ * frequencies but before using them).
+ */
+export type DocumentFrequency = {
+	documentFrequency: ReadonlyMap<string, number>;
+	pageCount: number;
+};
+
+/**
  * Tags whose contents are hashed instead of being tokenized further.
  */
 export type OpaqueTagName = 'script' | 'style' | 'noscript' | 'svg';
