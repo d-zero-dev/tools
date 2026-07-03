@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bootstrap5 Navbar Component</title>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">BrandCo</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Solutions</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Enterprise</a></li>
+              <li><a class="dropdown-item" href="#">Startups</a></li>
+              <li><hr class="dropdown-divider" /></li>
+              <li><a class="dropdown-item" href="#">Nonprofits</a></li>
+            </ul>
+          </li>
+          <li class="nav-item"><a class="nav-link disabled" aria-disabled="true">Pricing</a></li>
+        </ul>
+        <form class="d-flex" role="search">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+        <ul class="navbar-nav ms-3">
+          <li class="nav-item"><a class="btn btn-primary btn-sm" href="#">Sign up</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container py-5">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">Home</a></li>
+        <li class="breadcrumb-item"><a href="#">Solutions</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Enterprise</li>
+      </ol>
+    </nav>
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+      New enterprise plan is now available.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  </div>
+  <footer class="border-top py-5 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-6 col-md-2">
+          <h6 class="text-uppercase small fw-bold">Product</h6>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Overview</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Pricing</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Integrations</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Changelog</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Roadmap</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-2">
+          <h6 class="text-uppercase small fw-bold">Company</h6>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">About</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Careers</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Blog</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Press</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-2">
+          <h6 class="text-uppercase small fw-bold">Resources</h6>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Docs</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">API</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Community</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Guides</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Status</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-2">
+          <h6 class="text-uppercase small fw-bold">Legal</h6>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Privacy</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Terms</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Security</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Cookies</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Licenses</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-2">
+          <h6 class="text-uppercase small fw-bold">Social</h6>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">X</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">LinkedIn</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">GitHub</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">YouTube</a></li>
+            <li class="nav-item mb-1"><a class="nav-link p-0 text-muted" href="#">Instagram</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="small text-muted mt-4 mb-0">&copy; 2026 BrandCo, Inc.</p>
+    </div>
+  </footer>
+  <p id="marker-bootstrap5-navbar-component" data-marker="bootstrap5-navbar-component">MARKER_BOOTSTRAP5_NAVBAR_COMPONENT</p>
+
+</body>
+</html>

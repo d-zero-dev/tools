@@ -120,6 +120,30 @@ describe('tokenize (stress cases)', () => {
 		expect(result.every((token) => token === 'body>ul>li')).toBe(true);
 		expect(elapsedMs).toBeLessThan(1000);
 	});
+
+	test('200,000 flat siblings do not crash (regression: spread-push into Array#push overflows the call stack)', () => {
+		// A flat, high-fan-out template (a sitemap/index/listing page) is
+		// exactly the shape this package is meant to cluster at crawl scale.
+		// `pendingPaths.push(...contributed)` used to spread the whole
+		// completed-children array as call arguments, which throws
+		// `RangeError: Maximum call stack size exceeded` once it crosses
+		// roughly 120k entries — see `run-tokenizer.ts` for the fix (a plain
+		// loop instead of a spread).
+		const html = `<body><ul>${'<li></li>'.repeat(200_000)}</ul></body>`;
+
+		let result: string[] = [];
+		const start = performance.now();
+		expect(() => {
+			result = tokenize(html);
+		}).not.toThrow();
+		const elapsedMs = performance.now() - start;
+
+		expect(result).toHaveLength(200_000);
+		expect(result.every((token) => token === 'body>ul>li')).toBe(true);
+		// Generous budget: this only needs to catch an accidental O(n²)
+		// reintroduction, not enforce a tight performance SLA.
+		expect(elapsedMs).toBeLessThan(5000);
+	});
 });
 
 describe('tokenize (malformed HTML)', () => {

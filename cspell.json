@@ -1,6 +1,14 @@
 {
 	"import": ["@d-zero/cspell-config"],
-	"ignorePaths": [".vscode/*", "**/CODEOWNERS"],
+	"ignorePaths": [
+		".vscode/*",
+		"**/CODEOWNERS",
+		// Synthetic HTML fixtures for page-cluster's production-scale tests:
+		// deliberately varied fictional brand names, product names, and
+		// multi-language (JA/AR/HE/ZH/KO) content, none of which is
+		// meaningful to spell-check.
+		"packages/@d-zero/page-cluster/src/__fixtures__/production-scale/**"
+	],
 	"words": [
 		//
 		"gaxios",
@@ -99,6 +107,9 @@
 		"tableofcontents",
 
 		// htmlparser2 callback name
-		"oncomment"
+		"oncomment",
+
+		// Divi Builder (WordPress page builder plugin)
+		"Divi"
 	]
 }

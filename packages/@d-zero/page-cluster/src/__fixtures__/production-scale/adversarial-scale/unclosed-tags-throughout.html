@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Unclosed Tags Throughout</title>
+</head>
+<body>
+<header>
+<p id="marker-unclosed-tags-throughout" data-marker="unclosed-tags-throughout">MARKER_UNCLOSED_TAGS_THROUGHOUT</p>
+</header>
+<main>
+<p>Paragraph one with no closing tag, text keeps going and going
+<p>Paragraph two is also unclosed and flows into the list below
+<ul>
+<li>First item unclosed
+<li>Second item unclosed
+<li>Third item unclosed
+<li>Fourth item unclosed
+</ul>
+<table>
+<tr>
+<td>Cell one unclosed
+<td>Cell two unclosed
+<tr>
+<td>Cell three unclosed
+<td>Cell four unclosed
+</table>
+<dl>
+<dt>Term one unclosed
+<dd>Definition one unclosed
+<dt>Term two unclosed
+<dd>Definition two unclosed
+</dl>
+<p>Option list without closing tags:
+<select>
+<option>Option A
+<option>Option B
+<option>Option C
+</select>
+<p>Another rogue paragraph
+<hr>
+<p>Trailing paragraph with no closing tag at all, the end of the document arrives before this is ever closed
+</main>
+</body>
+</html>

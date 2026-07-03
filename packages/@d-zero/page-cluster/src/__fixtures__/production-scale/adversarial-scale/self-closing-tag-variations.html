@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Self Closing Tag Variations</title>
+</head>
+<body>
+<header>
+<p id="marker-self-closing-tag-variations" data-marker="self-closing-tag-variations">MARKER_SELF_CLOSING_TAG_VARIATIONS</p>
+</header>
+<main>
+<p>Void elements without slash: line break<br>and another<br>rule below<hr>image below<img src="a.png" alt="a"></p>
+<p>Void elements with slash: line break<br/>and another<br />rule below<hr/>image below<img src="b.png" alt="b" /></p>
+<p>Input variations: <input type="text" name="a"><input type="text" name="b"/><input type="text" name="c" /></p>
+<div/>This div was self-closed but is not a void element, so its slash is ignored and content follows inline<span/>Span also self-closed, treated as opening tag<p/>Paragraph self-closed too
+<li/>List item self-closed outside of any list
+<custom-element/>Unknown custom element self-closed
+</main>
+</body>
+</html>

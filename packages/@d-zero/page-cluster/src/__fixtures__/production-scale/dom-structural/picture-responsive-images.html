@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Picture - Responsive Images</title>
+</head>
+<body>
+<main>
+<p id="marker-picture-responsive-images" data-marker="picture-responsive-images">MARKER_PICTURE_RESPONSIVE_IMAGES</p>
+<picture>
+<source srcset="/img/hero-large.avif" media="(min-width: 1200px)" type="image/avif">
+<source srcset="/img/hero-large.webp" media="(min-width: 1200px)" type="image/webp">
+<source srcset="/img/hero-medium.avif" media="(min-width: 600px)" type="image/avif">
+<source srcset="/img/hero-medium.webp" media="(min-width: 600px)" type="image/webp">
+<img src="/img/hero-fallback.jpg" alt="Hero banner" loading="eager">
+</picture>
+<figure>
+<picture>
+<source srcset="/img/product-1x.webp 1x, /img/product-2x.webp 2x" type="image/webp">
+<img src="/img/product-fallback.jpg" alt="Product photo" loading="lazy">
+</picture>
+<figcaption>Product photo with density-based sources.</figcaption>
+</figure>
+<picture>
+<source srcset="/img/dark-theme.png" media="(prefers-color-scheme: dark)">
+<img src="/img/light-theme.png" alt="Theme-aware illustration">
+</picture>
+</main>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ホーム | SvelteKit App Shell Sample</title>
+  <meta name="description" content="SvelteKitのアプリシェルとscoped CSSクラスを示すサンプルページです。">
+  <link rel="canonical" href="https://example-sveltekit-app.dummy/">
+  <link rel="icon" href="/favicon.png">
+  <link rel="modulepreload" href="/_app/immutable/entry/start.a1b2c3.js">
+  <link rel="modulepreload" href="/_app/immutable/entry/app.d4e5f6.js">
+  <link rel="modulepreload" href="/_app/immutable/nodes/0.g7h8i9.js">
+  <link rel="modulepreload" href="/_app/immutable/nodes/1.j0k1l2.js">
+  <link rel="stylesheet" href="/_app/immutable/assets/app.m3n4o5.css">
+</head>
+<body data-sveltekit-preload-data="hover">
+  <div class="app-shell svelte-a1b2c3">
+    <header class="app-shell__header svelte-a1b2c3">
+      <a class="app-shell__logo svelte-a1b2c3" href="/">SvelteKit Sample</a>
+      <nav class="app-shell__nav svelte-a1b2c3" aria-label="グローバルナビゲーション">
+        <ul class="svelte-a1b2c3">
+          <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/">ホーム</a></li>
+          <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/about/">サイトについて</a></li>
+          <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/blog/">ブログ</a></li>
+          <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/contact/">お問い合わせ</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="app-shell__main svelte-a1b2c3">
+      <section class="hero svelte-d7e8f9">
+        <h1 class="hero__title svelte-d7e8f9">SvelteKitで作るアプリシェル</h1>
+        <p class="hero__lead svelte-d7e8f9">サーバーサイドレンダリングとクライアントサイドのハイドレーションを組み合わせた高速なアプリケーションシェルのサンプルです。</p>
+        <p id="marker-sveltekit-app-shell" data-marker="sveltekit-app-shell">MARKER_SVELTEKIT_APP_SHELL</p>
+      </section>
+
+      <section class="card-grid svelte-g1h2i3">
+        <div class="card svelte-g1h2i3">
+          <h2 class="card__title svelte-g1h2i3">高速なルーティング</h2>
+          <p class="card__body svelte-g1h2i3">クライアントサイドルーティングによりページ遷移時の再読み込みを回避します。</p>
+        </div>
+        <div class="card svelte-g1h2i3">
+          <h2 class="card__title svelte-g1h2i3">柔軟なレンダリング戦略</h2>
+          <p class="card__body svelte-g1h2i3">ページごとにSSR・SSG・CSRを使い分けることができます。</p>
+        </div>
+        <div class="card svelte-g1h2i3">
+          <h2 class="card__title svelte-g1h2i3">軽量なランタイム</h2>
+          <p class="card__body svelte-g1h2i3">Svelteのコンパイラアプローチにより実行時オーバーヘッドを最小化します。</p>
+        </div>
+        <div class="card svelte-g1h2i3">
+          <h2 class="card__title svelte-g1h2i3">プログレッシブエンハンスメント</h2>
+          <p class="card__body svelte-g1h2i3">JavaScriptが無効な環境でもフォームが正しく動作します。</p>
+        </div>
+        <div class="card svelte-g1h2i3">
+          <h2 class="card__title svelte-g1h2i3">組み込みの型安全性</h2>
+          <p class="card__body svelte-g1h2i3">TypeScriptとの統合によりエンドツーエンドの型安全性を確保します。</p>
+        </div>
+        <div class="card svelte-g1h2i3">
+          <h2 class="card__title svelte-g1h2i3">柔軟なアダプター</h2>
+          <p class="card__body svelte-g1h2i3">Node・Vercel・Cloudflareなど様々な環境にデプロイできます。</p>
+        </div>
+      </section>
+
+      <section class="feature-list svelte-j4k5l6">
+        <h2 class="feature-list__title svelte-j4k5l6">主な特徴</h2>
+        <ul class="feature-list__items svelte-j4k5l6">
+          <li class="svelte-j4k5l6">ファイルベースルーティング</li>
+          <li class="svelte-j4k5l6">load関数によるデータ取得</li>
+          <li class="svelte-j4k5l6">フォームアクション</li>
+          <li class="svelte-j4k5l6">アダプターによる複数プラットフォーム対応</li>
+          <li class="svelte-j4k5l6">スコープドCSS</li>
+          <li class="svelte-j4k5l6">ストアによる状態管理</li>
+          <li class="svelte-j4k5l6">プリフェッチとプリロード</li>
+          <li class="svelte-j4k5l6">サーバーサイドフォームバリデーション</li>
+        </ul>
+      </section>
+
+      <section class="testimonial-section svelte-k9l0m1">
+        <h2 class="testimonial-section__title svelte-k9l0m1">利用者の声</h2>
+        <ul class="testimonial-section__list svelte-k9l0m1">
+          <li class="svelte-k9l0m1">
+            <p class="svelte-k9l0m1">ビルドサイズが小さく、初期表示が非常に速くなりました。</p>
+            <cite class="svelte-k9l0m1">フロントエンドエンジニア D氏</cite>
+          </li>
+          <li class="svelte-k9l0m1">
+            <p class="svelte-k9l0m1">load関数のおかげでデータ取得のコードが整理しやすくなりました。</p>
+            <cite class="svelte-k9l0m1">テックリード E氏</cite>
+          </li>
+          <li class="svelte-k9l0m1">
+            <p class="svelte-k9l0m1">フォームアクションによりサーバー処理の実装が簡潔になりました。</p>
+            <cite class="svelte-k9l0m1">バックエンドエンジニア F氏</cite>
+          </li>
+        </ul>
+      </section>
+
+      <section class="stats-section svelte-n2o3p4">
+        <h2 class="stats-section__title svelte-n2o3p4">導入実績</h2>
+        <div class="stats-section__grid svelte-n2o3p4">
+          <div class="stats-section__item svelte-n2o3p4">
+            <h3 class="svelte-n2o3p4">120+</h3>
+            <p class="svelte-n2o3p4">導入プロジェクト数</p>
+          </div>
+          <div class="stats-section__item svelte-n2o3p4">
+            <h3 class="svelte-n2o3p4">98%</h3>
+            <p class="svelte-n2o3p4">導入後の満足度</p>
+          </div>
+          <div class="stats-section__item svelte-n2o3p4">
+            <h3 class="svelte-n2o3p4">40%</h3>
+            <p class="svelte-n2o3p4">平均ビルド時間短縮率</p>
+          </div>
+          <div class="stats-section__item svelte-n2o3p4">
+            <h3 class="svelte-n2o3p4">3.2s</h3>
+            <p class="svelte-n2o3p4">平均初期表示時間</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="newsletter-section svelte-q5r6s7">
+        <h2 class="newsletter-section__title svelte-q5r6s7">最新情報を受け取る</h2>
+        <form class="newsletter-section__form svelte-q5r6s7">
+          <label for="sk-newsletter-email" class="svelte-q5r6s7">メールアドレス</label>
+          <input id="sk-newsletter-email" type="email" name="email" placeholder="you@example.com" class="svelte-q5r6s7">
+          <button type="submit" class="svelte-q5r6s7">登録する</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="app-shell__footer svelte-a1b2c3">
+      <div class="app-shell__footer-columns svelte-a1b2c3">
+        <div class="app-shell__footer-column svelte-a1b2c3">
+          <h3 class="svelte-a1b2c3">製品</h3>
+          <ul class="svelte-a1b2c3">
+            <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/features/">機能</a></li>
+            <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/pricing/">料金</a></li>
+            <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/docs/">ドキュメント</a></li>
+          </ul>
+        </div>
+        <div class="app-shell__footer-column svelte-a1b2c3">
+          <h3 class="svelte-a1b2c3">会社情報</h3>
+          <ul class="svelte-a1b2c3">
+            <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/about/">サイトについて</a></li>
+            <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/careers/">採用情報</a></li>
+            <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/blog/">ブログ</a></li>
+          </ul>
+        </div>
+        <div class="app-shell__footer-column svelte-a1b2c3">
+          <h3 class="svelte-a1b2c3">サポート</h3>
+          <ul class="svelte-a1b2c3">
+            <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/help/">ヘルプセンター</a></li>
+            <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/contact/">お問い合わせ</a></li>
+            <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/status/">稼働状況</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="svelte-a1b2c3">&copy; 2026 SvelteKit Sample. All rights reserved.</p>
+      <ul class="app-shell__footer-links svelte-a1b2c3">
+        <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/privacy/">プライバシーポリシー</a></li>
+        <li class="svelte-a1b2c3"><a class="svelte-a1b2c3" href="/terms/">利用規約</a></li>
+      </ul>
+    </footer>
+  </div>
+
+  <script type="module">import { start } from "/_app/immutable/entry/start.a1b2c3.js"; start({ env: {}, hydrate: { node_ids: [0, 1], data: [null, { type: "data", data: {} }], form: null, error: null } });</script>
+</body>
+</html>

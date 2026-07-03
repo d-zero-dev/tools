@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ご予約 | さくら内科クリニック</title>
+<meta name="description" content="さくら内科クリニックのオンライン診療予約ページ。診療科目、医師紹介、予約フォーム、アクセス情報をご案内します。">
+</head>
+<body class="clinic-body">
+<header class="clinic-header">
+  <a href="/" class="clinic-brand">
+    <img src="/img/clinic-logo.svg" alt="さくら内科クリニック" width="48" height="48">
+    <span class="clinic-brand__name">さくら内科クリニック</span>
+  </a>
+  <nav class="clinic-nav">
+    <ul class="clinic-nav__list">
+      <li class="clinic-nav__item"><a href="/departments">診療案内</a></li>
+      <li class="clinic-nav__item"><a href="/doctors">医師紹介</a></li>
+      <li class="clinic-nav__item clinic-nav__item--active" aria-current="page"><a href="/appointment">ご予約</a></li>
+      <li class="clinic-nav__item"><a href="/access">アクセス</a></li>
+    </ul>
+  </nav>
+  <a href="tel:0312345678" class="clinic-header__tel">000-0000-0000</a>
+</header>
+
+<main class="clinic-main">
+  <section class="clinic-intro">
+    <h1 class="clinic-intro__title">ご来院前にオンラインで予約</h1>
+    <p class="clinic-intro__lead">待ち時間を短縮するため、事前のオンライン予約をご利用ください。</p>
+  </section>
+
+  <p id="marker-medical-clinic-appointment-page" data-marker="medical-clinic-appointment-page">MARKER_MEDICAL_CLINIC_APPOINTMENT_PAGE</p>
+
+  <section class="clinic-departments">
+    <h2 class="clinic-heading">診療科目</h2>
+    <ul class="clinic-departments__list">
+      <li class="clinic-department-chip">内科</li>
+      <li class="clinic-department-chip">呼吸器内科</li>
+      <li class="clinic-department-chip">循環器内科</li>
+      <li class="clinic-department-chip">消化器内科</li>
+      <li class="clinic-department-chip">小児科</li>
+      <li class="clinic-department-chip">アレルギー科</li>
+      <li class="clinic-department-chip">健康診断</li>
+    </ul>
+  </section>
+
+  <section class="clinic-doctors">
+    <h2 class="clinic-heading">医師紹介</h2>
+    <div class="clinic-doctors__grid">
+      <article class="clinic-doctor-card">
+        <img src="/img/doctor-1.jpg" alt="院長 高橋一郎" width="140" height="140">
+        <h3 class="clinic-doctor-card__name">高橋 一郎</h3>
+        <p class="clinic-doctor-card__role">院長・内科</p>
+      </article>
+      <article class="clinic-doctor-card">
+        <img src="/img/doctor-2.jpg" alt="副院長 中村さゆり" width="140" height="140">
+        <h3 class="clinic-doctor-card__name">中村 さゆり</h3>
+        <p class="clinic-doctor-card__role">副院長・小児科</p>
+      </article>
+      <article class="clinic-doctor-card">
+        <img src="/img/doctor-3.jpg" alt="医師 木村誠" width="140" height="140">
+        <h3 class="clinic-doctor-card__name">木村 誠</h3>
+        <p class="clinic-doctor-card__role">呼吸器内科</p>
+      </article>
+      <article class="clinic-doctor-card">
+        <img src="/img/doctor-4.jpg" alt="医師 小林愛" width="140" height="140">
+        <h3 class="clinic-doctor-card__name">小林 愛</h3>
+        <p class="clinic-doctor-card__role">循環器内科</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="clinic-calendar">
+    <h2 class="clinic-heading">予約日を選択</h2>
+    <div class="clinic-calendar__week">
+      <button type="button" class="clinic-calendar__day">7/6(月)</button>
+      <button type="button" class="clinic-calendar__day">7/7(火)</button>
+      <button type="button" class="clinic-calendar__day clinic-calendar__day--selected" aria-pressed="true">7/8(水)</button>
+      <button type="button" class="clinic-calendar__day">7/9(木)</button>
+      <button type="button" class="clinic-calendar__day">7/10(金)</button>
+      <button type="button" class="clinic-calendar__day">7/11(土)</button>
+    </div>
+    <h3 class="clinic-calendar__subheading">時間帯を選択</h3>
+    <div class="clinic-calendar__slots">
+      <button type="button" class="clinic-slot">9:00</button>
+      <button type="button" class="clinic-slot">9:30</button>
+      <button type="button" class="clinic-slot">10:00</button>
+      <button type="button" class="clinic-slot clinic-slot--full" disabled>10:30</button>
+      <button type="button" class="clinic-slot">11:00</button>
+      <button type="button" class="clinic-slot">14:00</button>
+      <button type="button" class="clinic-slot">14:30</button>
+      <button type="button" class="clinic-slot">15:00</button>
+    </div>
+  </section>
+
+  <section class="clinic-appointment-form">
+    <h2 class="clinic-heading">患者情報の入力</h2>
+    <form class="clinic-form" action="/appointment/submit" method="post">
+      <div class="clinic-form__row">
+        <label for="clinic-name" class="clinic-form__label">氏名</label>
+        <input type="text" id="clinic-name" name="name" required>
+      </div>
+      <div class="clinic-form__row">
+        <label for="clinic-kana" class="clinic-form__label">フリガナ</label>
+        <input type="text" id="clinic-kana" name="kana" required>
+      </div>
+      <div class="clinic-form__row">
+        <label for="clinic-birthday" class="clinic-form__label">生年月日</label>
+        <input type="date" id="clinic-birthday" name="birthday" required>
+      </div>
+      <div class="clinic-form__row">
+        <label for="clinic-tel" class="clinic-form__label">電話番号</label>
+        <input type="tel" id="clinic-tel" name="tel" required>
+      </div>
+      <div class="clinic-form__row">
+        <label for="clinic-department" class="clinic-form__label">診療科目</label>
+        <select id="clinic-department" name="department">
+          <option value="internal">内科</option>
+          <option value="pediatrics">小児科</option>
+          <option value="respiratory">呼吸器内科</option>
+        </select>
+      </div>
+      <div class="clinic-form__row">
+        <label for="clinic-symptom" class="clinic-form__label">症状・ご相談内容</label>
+        <textarea id="clinic-symptom" name="symptom" rows="4"></textarea>
+      </div>
+      <button type="submit" class="clinic-form__submit">この内容で予約する</button>
+    </form>
+  </section>
+
+  <section class="clinic-access">
+    <h2 class="clinic-heading">アクセス</h2>
+    <p class="clinic-access__address">〒000-0000 サンプル県サンプル市サンプル町1-2-3 サンプルビル2F</p>
+    <img src="/img/clinic-map.png" alt="クリニック周辺地図" width="480" height="300">
+    <table class="clinic-hours-table">
+      <thead>
+        <tr>
+          <th>曜日</th>
+          <th>午前</th>
+          <th>午後</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>月曜日</td><td>9:00-12:30</td><td>14:00-18:00</td></tr>
+        <tr><td>火曜日</td><td>9:00-12:30</td><td>14:00-18:00</td></tr>
+        <tr><td>水曜日</td><td>9:00-12:30</td><td>休診</td></tr>
+        <tr><td>木曜日</td><td>9:00-12:30</td><td>14:00-18:00</td></tr>
+        <tr><td>金曜日</td><td>9:00-12:30</td><td>14:00-18:00</td></tr>
+        <tr><td>土曜日</td><td>9:00-13:00</td><td>休診</td></tr>
+        <tr><td>日曜日・祝日</td><td>休診</td><td>休診</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<footer class="clinic-footer">
+  <div class="clinic-footer__columns">
+    <div class="clinic-footer__col">
+      <h3 class="clinic-footer__heading">クリニック情報</h3>
+      <ul class="clinic-footer__list">
+        <li><a href="/about">クリニック紹介</a></li>
+        <li><a href="/doctors">医師紹介</a></li>
+        <li><a href="/access">アクセス</a></li>
+      </ul>
+    </div>
+    <div class="clinic-footer__col">
+      <h3 class="clinic-footer__heading">診療案内</h3>
+      <ul class="clinic-footer__list">
+        <li><a href="/departments">診療科目</a></li>
+        <li><a href="/checkup">健康診断</a></li>
+      </ul>
+    </div>
+    <div class="clinic-footer__col">
+      <h3 class="clinic-footer__heading">サポート</h3>
+      <ul class="clinic-footer__list">
+        <li><a href="/faq">よくある質問</a></li>
+        <li><a href="/contact">お問い合わせ</a></li>
+      </ul>
+    </div>
+    <div class="clinic-footer__col">
+      <h3 class="clinic-footer__heading">SNS</h3>
+      <ul class="clinic-footer__list">
+        <li><a href="https://twitter.com/sakura-clinic">Twitter</a></li>
+        <li><a href="https://instagram.com/sakura-clinic">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="clinic-footer__copyright">&copy; 2026 さくら内科クリニック</p>
+</footer>
+</body>
+</html>

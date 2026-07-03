@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="トラットリア・ソラーレのメニューページ。前菜からドリンクまで季節の料理をご紹介します。" />
+	<title>メニュー | Trattoria Solare（トラットリア・ソラーレ）</title>
+</head>
+<body>
+	<header class="menu-store-header">
+		<img class="menu-store-header__photo" src="/store/exterior.jpg" alt="トラットリア・ソラーレ外観" />
+		<div class="menu-store-header__inner">
+			<h1 class="menu-store-header__name">Trattoria Solare</h1>
+			<p class="menu-store-header__tagline">南イタリアの家庭料理を、気軽な一皿で。</p>
+			<nav class="menu-store-header__nav">
+				<ul>
+					<li><a href="/">トップ</a></li>
+					<li class="menu-store-header__nav-item--current" aria-current="page"><a href="/menu">メニュー</a></li>
+					<li><a href="/access">アクセス</a></li>
+					<li><a href="/reserve">予約</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<nav class="menu-tabs" aria-label="メニューカテゴリ">
+		<ul class="menu-tabs__list">
+			<li class="menu-tabs__item menu-tabs__item--active"><a href="#appetizer">前菜</a></li>
+			<li class="menu-tabs__item"><a href="#main">メイン</a></li>
+			<li class="menu-tabs__item"><a href="#dessert">デザート</a></li>
+			<li class="menu-tabs__item"><a href="#drink">ドリンク</a></li>
+		</ul>
+	</nav>
+
+	<main class="menu-main">
+		<section class="menu-category" id="appetizer">
+			<h2 class="menu-category__heading">前菜</h2>
+			<div class="menu-category__grid">
+				<article class="menu-dish"><img src="/dishes/caprese.jpg" alt="カプレーゼ" /><h3>カプレーゼ</h3><p>完熟トマトと水牛モッツァレラのシンプルな一皿。</p><span class="menu-dish__price">￥980</span><span class="menu-dish__allergen">乳</span></article>
+				<article class="menu-dish"><img src="/dishes/carpaccio.jpg" alt="鯛のカルパッチョ" /><h3>鯛のカルパッチョ</h3><p>柑橘とオリーブオイルで仕上げた鮮魚のカルパッチョ。</p><span class="menu-dish__price">￥1,280</span><span class="menu-dish__allergen">魚介</span></article>
+				<article class="menu-dish"><img src="/dishes/bruschetta.jpg" alt="ブルスケッタ" /><h3>3種のブルスケッタ</h3><p>トマト、きのこ、生ハムの3種盛り合わせ。</p><span class="menu-dish__price">￥1,100</span><span class="menu-dish__allergen">小麦</span></article>
+				<article class="menu-dish"><img src="/dishes/vitello.jpg" alt="ヴィテロトンナート" /><h3>ヴィテロトンナート</h3><p>仔牛肉とツナソースの伝統的な前菜。</p><span class="menu-dish__price">￥1,480</span><span class="menu-dish__allergen">卵・魚介</span></article>
+				<article class="menu-dish"><img src="/dishes/antipasto.jpg" alt="盛り合わせアンティパスト" /><h3>盛り合わせアンティパスト</h3><p>生ハム・チーズ・野菜のシェア向け盛り合わせ。</p><span class="menu-dish__price">￥1,980</span><span class="menu-dish__allergen">乳</span></article>
+				<article class="menu-dish"><img src="/dishes/soup.jpg" alt="ミネストローネ" /><h3>本日のミネストローネ</h3><p>季節野菜をじっくり煮込んだ定番スープ。</p><span class="menu-dish__price">￥780</span><span class="menu-dish__allergen">なし</span></article>
+			</div>
+		</section>
+
+		<section class="menu-category" id="main">
+			<h2 class="menu-category__heading">メイン</h2>
+			<div class="menu-category__grid">
+				<article class="menu-dish"><img src="/dishes/carbonara.jpg" alt="カルボナーラ" /><h3>カルボナーラ</h3><p>グアンチャーレと卵黄で仕上げる濃厚な一皿。</p><span class="menu-dish__price">￥1,580</span><span class="menu-dish__allergen">卵・乳・小麦</span></article>
+				<article class="menu-dish"><img src="/dishes/pescatore.jpg" alt="ペスカトーレ" /><h3>ペスカトーレ</h3><p>魚介の旨みを凝縮したトマトソースパスタ。</p><span class="menu-dish__price">￥1,880</span><span class="menu-dish__allergen">魚介・小麦</span></article>
+				<article class="menu-dish"><img src="/dishes/pizza-margherita.jpg" alt="マルゲリータ" /><h3>マルゲリータ</h3><p>薪窯で焼き上げるナポリ風マルゲリータ。</p><span class="menu-dish__price">￥1,680</span><span class="menu-dish__allergen">乳・小麦</span></article>
+				<article class="menu-dish"><img src="/dishes/osso-buco.jpg" alt="オッソブーコ" /><h3>仔牛すね肉のオッソブーコ</h3><p>じっくり煮込んだ仔牛肉の柔らかな一皿。</p><span class="menu-dish__price">￥2,680</span><span class="menu-dish__allergen">なし</span></article>
+				<article class="menu-dish"><img src="/dishes/risotto.jpg" alt="キノコのリゾット" /><h3>キノコのリゾット</h3><p>数種のキノコを合わせた香り高いリゾット。</p><span class="menu-dish__price">￥1,780</span><span class="menu-dish__allergen">乳</span></article>
+				<article class="menu-dish"><img src="/dishes/saltimbocca.jpg" alt="サルティンボッカ" /><h3>仔牛のサルティンボッカ</h3><p>生ハムとセージを重ねたローマの定番料理。</p><span class="menu-dish__price">￥2,180</span><span class="menu-dish__allergen">なし</span></article>
+				<article class="menu-dish"><img src="/dishes/branzino.jpg" alt="スズキのアクアパッツァ" /><h3>スズキのアクアパッツァ</h3><p>白身魚と貝を白ワインで蒸し上げた一皿。</p><span class="menu-dish__price">￥2,480</span><span class="menu-dish__allergen">魚介</span></article>
+				<article class="menu-dish"><img src="/dishes/pizza-diavola.jpg" alt="ディアボラ" /><h3>ディアボラ</h3><p>ピリ辛サラミをのせたスパイシーなピザ。</p><span class="menu-dish__price">￥1,780</span><span class="menu-dish__allergen">乳・小麦</span></article>
+			</div>
+		</section>
+
+		<section class="menu-category" id="dessert">
+			<h2 class="menu-category__heading">デザート</h2>
+			<div class="menu-category__grid">
+				<article class="menu-dish"><img src="/dishes/tiramisu.jpg" alt="ティラミス" /><h3>自家製ティラミス</h3><p>マスカルポーネとエスプレッソの王道デザート。</p><span class="menu-dish__price">￥880</span><span class="menu-dish__allergen">卵・乳</span></article>
+				<article class="menu-dish"><img src="/dishes/pannacotta.jpg" alt="パンナコッタ" /><h3>バニラパンナコッタ</h3><p>ベリーソースを添えた滑らかなパンナコッタ。</p><span class="menu-dish__price">￥780</span><span class="menu-dish__allergen">乳</span></article>
+				<article class="menu-dish"><img src="/dishes/gelato.jpg" alt="ジェラート3種盛り" /><h3>自家製ジェラート3種盛り</h3><p>季節のフレーバーから3種をお選びいただけます。</p><span class="menu-dish__price">￥820</span><span class="menu-dish__allergen">乳</span></article>
+				<article class="menu-dish"><img src="/dishes/cannoli.jpg" alt="カンノーリ" /><h3>シチリア風カンノーリ</h3><p>リコッタチーズを詰めたシチリアの伝統菓子。</p><span class="menu-dish__price">￥750</span><span class="menu-dish__allergen">乳・小麦</span></article>
+				<article class="menu-dish"><img src="/dishes/affogato.jpg" alt="アフォガード" /><h3>アフォガード</h3><p>バニラジェラートに熱いエスプレッソを注いで。</p><span class="menu-dish__price">￥680</span><span class="menu-dish__allergen">乳</span></article>
+				<article class="menu-dish"><img src="/dishes/torta.jpg" alt="チョコレートトルタ" /><h3>濃厚チョコレートトルタ</h3><p>カカオ72%のビターなチョコレートケーキ。</p><span class="menu-dish__price">￥820</span><span class="menu-dish__allergen">卵・乳・小麦</span></article>
+			</div>
+		</section>
+
+		<section class="menu-category" id="drink">
+			<h2 class="menu-category__heading">ドリンク</h2>
+			<div class="menu-category__grid">
+				<article class="menu-dish"><img src="/dishes/wine-red.jpg" alt="ハウスワイン赤" /><h3>ハウスワイン（赤）</h3><p>イタリア産のフルボディグラスワイン。</p><span class="menu-dish__price">￥780</span><span class="menu-dish__allergen">なし</span></article>
+				<article class="menu-dish"><img src="/dishes/wine-white.jpg" alt="ハウスワイン白" /><h3>ハウスワイン（白）</h3><p>爽やかな酸味のイタリア産グラスワイン。</p><span class="menu-dish__price">￥780</span><span class="menu-dish__allergen">なし</span></article>
+				<article class="menu-dish"><img src="/dishes/espresso.jpg" alt="エスプレッソ" /><h3>エスプレッソ</h3><p>豆から挽きたてのエスプレッソ。</p><span class="menu-dish__price">￥480</span><span class="menu-dish__allergen">なし</span></article>
+				<article class="menu-dish"><img src="/dishes/soda.jpg" alt="イタリアンソーダ" /><h3>自家製イタリアンソーダ</h3><p>季節のフルーツを使った爽やかなソーダ。</p><span class="menu-dish__price">￥650</span><span class="menu-dish__allergen">なし</span></article>
+			</div>
+		</section>
+
+		<section class="menu-reservation">
+			<h2>ご予約</h2>
+			<p>お電話またはオンラインからご予約いただけます。</p>
+			<a class="menu-reservation__button" href="/reserve">今すぐ予約する</a>
+		</section>
+
+		<section class="menu-store-info">
+			<h2>店舗情報</h2>
+			<div class="menu-store-info__grid">
+				<div class="menu-store-info__address">
+					<h3>住所</h3>
+					<p>サンプル県サンプル市サンプル町2-4-6 サンプルビル1F</p>
+				</div>
+				<div class="menu-store-info__hours">
+					<h3>営業時間</h3>
+					<ul>
+						<li>月〜金: 11:30-15:00 / 17:30-23:00</li>
+						<li>土日祝: 11:30-23:00</li>
+						<li>定休日: 火曜日</li>
+					</ul>
+				</div>
+				<div class="menu-store-info__map">
+					<h3>地図</h3>
+					<div class="menu-store-info__map-frame" role="img" aria-label="店舗周辺地図"></div>
+				</div>
+			</div>
+		</section>
+
+		<p id="marker-restaurant-menu-page" data-marker="restaurant-menu-page">MARKER_RESTAURANT_MENU_PAGE</p>
+	</main>
+
+	<footer class="menu-footer">
+		<div class="menu-footer__columns">
+			<div class="menu-footer__column">
+				<h3>店舗情報</h3>
+				<ul>
+					<li><a href="/access">アクセス</a></li>
+					<li><a href="/reserve">ご予約</a></li>
+					<li><a href="/event">イベント・貸切</a></li>
+				</ul>
+			</div>
+			<div class="menu-footer__column">
+				<h3>メニュー</h3>
+				<ul>
+					<li><a href="#appetizer">前菜</a></li>
+					<li><a href="#main">メイン</a></li>
+					<li><a href="#dessert">デザート</a></li>
+				</ul>
+			</div>
+			<div class="menu-footer__column">
+				<h3>お問い合わせ</h3>
+				<ul>
+					<li><a href="tel:0332223344">000-0000-0000</a></li>
+					<li><a href="/contact">お問い合わせフォーム</a></li>
+				</ul>
+			</div>
+			<div class="menu-footer__column">
+				<h3>SNS</h3>
+				<ul>
+					<li><a href="https://instagram.com/trattoria_solare">Instagram</a></li>
+					<li><a href="https://facebook.com/trattoriasolare">Facebook</a></li>
+				</ul>
+			</div>
+		</div>
+		<p class="menu-footer__copyright">&copy; 2026 Trattoria Solare</p>
+	</footer>
+</body>
+</html>

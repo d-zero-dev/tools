@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mixed Encoding Entities</title>
+</head>
+<body>
+<header>
+<p id="marker-mixed-encoding-entities" data-marker="mixed-encoding-entities">MARKER_MIXED_ENCODING_ENTITIES</p>
+</header>
+<main>
+<p>Named entities: &amp; &lt; &gt; &quot; &copy; &reg; &trade; &hellip; &mdash; &nbsp; &eacute;</p>
+<p>Decimal numeric references: &#233; &#8364; &#169; &#8482; &#38;</p>
+<p>Hexadecimal numeric references: &#x2603; &#x1F600; &#xE9; &#x263A;</p>
+<p>Double encoded entity: &amp;amp; &amp;lt;</p>
+<p>Malformed / unterminated entity: Tom &amp Jerry, A &notarealentity; B</p>
+<p>Raw UTF-8 multibyte text: 日本語のテキスト、Ñoño, café, 中文字符, emoji 🎉🔥✨</p>
+<p>Mixed in one sentence: Caf&eacute; &amp; Cr&#232;me br&#xFB;l&#xE9;e cost &euro;5 &mdash; enjoy! 🍮</p>
+</main>
+</body>
+</html>

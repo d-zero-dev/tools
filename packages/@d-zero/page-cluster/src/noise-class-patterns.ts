@@ -23,4 +23,27 @@ export const DEFAULT_NOISE_CLASS_PATTERNS: readonly RegExp[] = [
 	// that happen to end in a digit (e.g. `Section1`, `Banner99`) must not be
 	// caught by this — the whole point of requiring both a letter and a digit.
 	/^(?=.*[a-z])(?=.*\d)[a-z0-9]{6,10}$/,
+	// webpack CSS Modules' default `[name]_[local]__[hash]` convention, e.g.
+	// `Layout_root__f3k9d`, `Header_title__3xJ9k`. Anchored on the trailing
+	// `__` (exactly two underscores, not one) rather than the whole string,
+	// since here the hash is a suffix of an otherwise-meaningful name.
+	// Deliberately does NOT also match a single underscore: real-world class
+	// names commonly use one underscore as a general-purpose separator
+	// followed by a short alphanumeric variant suffix that is not a hash at
+	// all — e.g. Divi Builder's `et_pb_gutters3` (gutter-width setting 3 of
+	// 8), or hypothetical `grid_col12`/`row_span24`. Matching those against
+	// this pattern with only one underscore required turned them into false
+	// positives (confirmed via the production-scale fixture corpus); double
+	// underscore is a much rarer, more specifically BEM/CSS-Modules-coded
+	// convention, so it's a safer anchor. This does mean single-underscore
+	// hash suffixes (e.g. HubSpot's `hsForm_9f8e7d6c`) are not caught — an
+	// accepted gap, since under-filtering a rare pattern is safer than
+	// over-filtering common ones. Requiring both a letter and a digit in the
+	// suffix (case-insensitive: real generators mix case, e.g. `q7Rp1`)
+	// keeps genuine short BEM-ish element names ending in one digit and
+	// nothing else (`col2`, 4 chars) below the 5-char floor from matching;
+	// residual risk of a real element name coincidentally looking like a
+	// 5-8 char mixed hash right after `__` (e.g. `__col12`) is accepted,
+	// same trade-off as the generic pattern above.
+	/__(?=[a-z0-9]{5,8}$)(?=[a-z0-9]*[a-z])(?=[a-z0-9]*\d)[a-z0-9]{5,8}$/i,
 ];

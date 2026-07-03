@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Smacss Modules State</title>
+</head>
+<body>
+  <div class="l-fixed l-header">
+    <h1 class="mod-brand">Dashboard</h1>
+  </div>
+  <div class="l-inline l-nav">
+    <ul class="mod-tab">
+      <li class="mod-tab-item is-active">Overview</li>
+      <li class="mod-tab-item">Reports</li>
+      <li class="mod-tab-item is-disabled">Settings</li>
+    </ul>
+  </div>
+  <div class="l-fixed l-sidebar is-collapsed">
+    <ul class="mod-list">
+      <li class="mod-list-item is-active">Widget A</li>
+      <li class="mod-list-item">Widget B</li>
+      <li class="mod-list-item is-disabled">Widget C</li>
+    </ul>
+    <div class="mod-dialog is-hidden">
+      <p>Notification content</p>
+    </div>
+    <button class="mod-btn mod-btn-primary is-loading" type="button">Save</button>
+  </div>
+  <p id="marker-smacss-modules-state" data-marker="smacss-modules-state">MARKER_SMACSS_MODULES_STATE</p>
+
+</body>
+</html>

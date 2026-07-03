@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mixed LTR/RTL Bidirectional Content</title>
+</head>
+<body>
+<header>
+<h1>Global Support Center / <span dir="rtl" lang="ar">مركز الدعم العالمي</span></h1>
+<nav aria-label="Language switcher">
+<ul>
+<li><a href="/en" hreflang="en">English</a></li>
+<li><a href="/ar" hreflang="ar" dir="rtl" lang="ar">العربية</a></li>
+<li><a href="/he" hreflang="he" dir="rtl" lang="he">עברית</a></li>
+</ul>
+</nav>
+</header>
+<main>
+<article>
+<p>Welcome to our international support portal. Below is the same message in Arabic: <bdi dir="rtl" lang="ar">مرحباً بكم في بوابة الدعم الدولية الخاصة بنا</bdi> and in Hebrew: <bdi dir="rtl" lang="he">ברוכים הבאים לפורטל התמיכה הבינלאומי שלנו</bdi>.</p>
+<section dir="rtl" lang="ar">
+<h2>قسم باللغة العربية</h2>
+<p>هذا النص مكتوب بالكامل باللغة العربية ضمن قسم يحتوي على اتجاه من اليمين إلى اليسار، بينما بقية الصفحة تستخدم الاتجاه من اليسار إلى اليمين.</p>
+</section>
+<section dir="ltr" lang="en">
+<h2>English Section</h2>
+<p>This section is back to left-to-right English text, demonstrating that direction can switch mid-document depending on the nested element's <code>dir</code> attribute.</p>
+</section>
+</article>
+<aside>
+<p>Ticket number: <bdi>12345-ABC</bdi> / <bdi dir="rtl" lang="he">מספר כרטיס 12345</bdi></p>
+</aside>
+</main>
+<footer>
+<p id="marker-mixed-ltr-rtl-bidi" data-marker="mixed-ltr-rtl-bidi">MARKER_MIXED_LTR_RTL_BIDI</p>
+</footer>
+</body>
+</html>

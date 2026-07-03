@@ -31,4 +31,17 @@ describe('buildSegment', () => {
 			'input[role=switch,type=checkbox]',
 		);
 	});
+
+	test('a Tailwind arbitrary-value class is preserved verbatim, brackets and all', () => {
+		// Known, accepted limitation: a class containing literal `[`/`]`/`,`
+		// can visually collide with this function's own `[key=value]` bracket
+		// syntax (e.g. a class literally named `[role=button]` would be
+		// indistinguishable from an actual `role` attribute). This is not
+		// worth escaping for: Tailwind's arbitrary-value syntax produces CSS
+		// property values (`w-[137px]`, `text-[#1da1f2]`), never strings that
+		// look like `key=value` metadata, so real crawled markup can't
+		// actually trigger the collision.
+		expect(buildSegment('div', ['w-[137px]'])).toBe('.w-[137px]');
+		expect(buildSegment('div', ['w-[137px]'], 'button')).toBe('.w-[137px][role=button]');
+	});
 });

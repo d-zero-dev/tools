@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Form - Fieldset, Legend, Datalist</title>
+</head>
+<body>
+<main>
+<p id="marker-form-fieldset-legend-datalist" data-marker="form-fieldset-legend-datalist">MARKER_FORM_FIELDSET_LEGEND_DATALIST</p>
+<form action="/submit" method="post">
+<fieldset>
+<legend>Personal Information</legend>
+<div>
+<label for="browser">Favorite Browser</label>
+<input type="text" id="browser" name="browser" list="browsers">
+<datalist id="browsers">
+<option value="Chrome"></option>
+<option value="Firefox"></option>
+<option value="Safari"></option>
+<option value="Edge"></option>
+</datalist>
+</div>
+<div>
+<label for="city">City</label>
+<input type="text" id="city" name="city" list="cities">
+<datalist id="cities">
+<option value="Tokyo"></option>
+<option value="Osaka"></option>
+<option value="Nagoya"></option>
+</datalist>
+</div>
+</fieldset>
+<fieldset>
+<legend>Preferences</legend>
+<div>
+<label for="theme">Theme</label>
+<select id="theme" name="theme">
+<option value="light">Light</option>
+<option value="dark">Dark</option>
+</select>
+</div>
+</fieldset>
+</form>
+</main>
+</body>
+</html>

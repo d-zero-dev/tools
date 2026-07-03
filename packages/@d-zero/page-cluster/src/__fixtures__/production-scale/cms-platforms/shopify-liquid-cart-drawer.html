@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Cart &ndash; Nordwood Goods</title>
+  <meta name="description" content="Review the items in your cart before checkout.">
+  <link rel="canonical" href="https://example-nordwood-goods.myshopify.com/cart">
+  <meta property="og:site_name" content="Nordwood Goods">
+  <meta property="og:title" content="Cart &ndash; Nordwood Goods">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="https://cdn.shopify.com/s/files/1/0000/0001/t/1/assets/base.css">
+</head>
+<body class="template-index">
+  <a class="skip-to-content-link visually-hidden" href="#MainContent">Skip to content</a>
+
+  <header class="header-wrapper">
+    <div class="header header--middle-left page-width">
+      <div class="header__heading">
+        <a href="/" class="header__heading-link link link--text focus-inset">
+          <span class="h2">Nordwood Goods</span>
+        </a>
+      </div>
+      <nav class="header__inline-menu">
+        <ul class="list-menu list-menu--inline">
+          <li><a href="/collections/all" class="header__menu-item link link--text">Shop All</a></li>
+          <li><a href="/pages/about" class="header__menu-item link link--text">About</a></li>
+        </ul>
+      </nav>
+      <div class="header__icons">
+        <cart-icon-bubble class="header__icon header__icon--cart">
+          <a href="/cart" class="header__icon-cart link focus-inset">
+            <span class="cart-count-bubble">6</span>
+          </a>
+        </cart-icon-bubble>
+      </div>
+    </div>
+  </header>
+
+  <main id="MainContent" class="content-for-layout">
+    <div class="page-width">
+      <h1 class="visually-hidden">Home page</h1>
+      <p class="rte">Browse our latest arrivals or open your cart to check out.</p>
+    </div>
+  </main>
+
+  <cart-drawer id="CartDrawer" class="cart-drawer color-scheme-1">
+    <div class="cart-drawer__inner" tabindex="-1">
+      <div class="drawer__header">
+        <h2 class="drawer__heading">Your cart</h2>
+        <button type="button" class="drawer__close" aria-label="Close cart">
+          <span class="svg-wrapper">&times;</span>
+        </button>
+      </div>
+
+      <div class="cart-drawer__form">
+        <div class="drawer__contents" id="CartDrawer-CartItems">
+          <div class="cart-items-wrapper">
+            <ul class="cart-items" id="CartDrawer-Items" role="list">
+          <li class="cart-item" id="CartItem-1">
+            <div class="cart-item__media">
+              <a href="/products/classic-canvas-tote" class="cart-item__link" tabindex="-1">
+                <img
+                  class="cart-item__image"
+                  src="https://cdn.shopify.com/s/files/1/0000/0001/products/cart-1.jpg"
+                  alt="Classic Canvas Tote"
+                  loading="lazy"
+                  width="150"
+                  height="150"
+                >
+              </a>
+            </div>
+            <div class="cart-item__details">
+              <a href="/products/classic-canvas-tote" class="cart-item__name h4">Classic Canvas Tote</a>
+              <div class="product-option">
+                <dl>
+                  <div class="product-option__value">
+                    <dt>Variant:</dt>
+                    <dd>Natural / One Size</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="cart-item__price-wrapper">
+                <div class="price price--end">
+                  <span class="price-item price-item--regular">$38.00</span>
+                </div>
+              </div>
+              <div class="cart-item__quantity">
+                <div class="quantity">
+                  <button class="quantity__button" name="minus" type="button">
+                    <span class="visually-hidden">Decrease quantity</span>&minus;
+                  </button>
+                  <input
+                    class="quantity__input"
+                    type="number"
+                    name="updates[]"
+                    value="1"
+                    min="0"
+                    aria-label="Quantity"
+                  >
+                  <button class="quantity__button" name="plus" type="button">
+                    <span class="visually-hidden">Increase quantity</span>+
+                  </button>
+                </div>
+                <cart-remove-button>
+                  <a href="/cart/change?line=1&amp;quantity=0" class="cart-item__remove" aria-label="Remove Classic Canvas Tote">Remove</a>
+                </cart-remove-button>
+              </div>
+            </div>
+          </li>
+          <li class="cart-item" id="CartItem-2">
+            <div class="cart-item__media">
+              <a href="/products/ceramic-pour-over-set" class="cart-item__link" tabindex="-1">
+                <img
+                  class="cart-item__image"
+                  src="https://cdn.shopify.com/s/files/1/0000/0001/products/cart-2.jpg"
+                  alt="Ceramic Pour-Over Set"
+                  loading="lazy"
+                  width="150"
+                  height="150"
+                >
+              </a>
+            </div>
+            <div class="cart-item__details">
+              <a href="/products/ceramic-pour-over-set" class="cart-item__name h4">Ceramic Pour-Over Set</a>
+              <div class="product-option">
+                <dl>
+                  <div class="product-option__value">
+                    <dt>Variant:</dt>
+                    <dd>Charcoal</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="cart-item__price-wrapper">
+                <div class="price price--end">
+                  <span class="price-item price-item--regular">$54.00</span>
+                </div>
+              </div>
+              <div class="cart-item__quantity">
+                <div class="quantity">
+                  <button class="quantity__button" name="minus" type="button">
+                    <span class="visually-hidden">Decrease quantity</span>&minus;
+                  </button>
+                  <input
+                    class="quantity__input"
+                    type="number"
+                    name="updates[]"
+                    value="2"
+                    min="0"
+                    aria-label="Quantity"
+                  >
+                  <button class="quantity__button" name="plus" type="button">
+                    <span class="visually-hidden">Increase quantity</span>+
+                  </button>
+                </div>
+                <cart-remove-button>
+                  <a href="/cart/change?line=2&amp;quantity=0" class="cart-item__remove" aria-label="Remove Ceramic Pour-Over Set">Remove</a>
+                </cart-remove-button>
+              </div>
+            </div>
+          </li>
+          <li class="cart-item" id="CartItem-3">
+            <div class="cart-item__media">
+              <a href="/products/merino-wool-beanie" class="cart-item__link" tabindex="-1">
+                <img
+                  class="cart-item__image"
+                  src="https://cdn.shopify.com/s/files/1/0000/0001/products/cart-3.jpg"
+                  alt="Merino Wool Beanie"
+                  loading="lazy"
+                  width="150"
+                  height="150"
+                >
+              </a>
+            </div>
+            <div class="cart-item__details">
+              <a href="/products/merino-wool-beanie" class="cart-item__name h4">Merino Wool Beanie</a>
+              <div class="product-option">
+                <dl>
+                  <div class="product-option__value">
+                    <dt>Variant:</dt>
+                    <dd>Forest Green</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="cart-item__price-wrapper">
+                <div class="price price--end">
+                  <span class="price-item price-item--regular">$28.00</span>
+                </div>
+              </div>
+              <div class="cart-item__quantity">
+                <div class="quantity">
+                  <button class="quantity__button" name="minus" type="button">
+                    <span class="visually-hidden">Decrease quantity</span>&minus;
+                  </button>
+                  <input
+                    class="quantity__input"
+                    type="number"
+                    name="updates[]"
+                    value="1"
+                    min="0"
+                    aria-label="Quantity"
+                  >
+                  <button class="quantity__button" name="plus" type="button">
+                    <span class="visually-hidden">Increase quantity</span>+
+                  </button>
+                </div>
+                <cart-remove-button>
+                  <a href="/cart/change?line=3&amp;quantity=0" class="cart-item__remove" aria-label="Remove Merino Wool Beanie">Remove</a>
+                </cart-remove-button>
+              </div>
+            </div>
+          </li>
+          <li class="cart-item" id="CartItem-4">
+            <div class="cart-item__media">
+              <a href="/products/waxed-canvas-backpack" class="cart-item__link" tabindex="-1">
+                <img
+                  class="cart-item__image"
+                  src="https://cdn.shopify.com/s/files/1/0000/0001/products/cart-4.jpg"
+                  alt="Waxed Canvas Backpack"
+                  loading="lazy"
+                  width="150"
+                  height="150"
+                >
+              </a>
+            </div>
+            <div class="cart-item__details">
+              <a href="/products/waxed-canvas-backpack" class="cart-item__name h4">Waxed Canvas Backpack</a>
+              <div class="product-option">
+                <dl>
+                  <div class="product-option__value">
+                    <dt>Variant:</dt>
+                    <dd>Tan</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="cart-item__price-wrapper">
+                <div class="price price--end">
+                  <span class="price-item price-item--regular">$129.00</span>
+                </div>
+              </div>
+              <div class="cart-item__quantity">
+                <div class="quantity">
+                  <button class="quantity__button" name="minus" type="button">
+                    <span class="visually-hidden">Decrease quantity</span>&minus;
+                  </button>
+                  <input
+                    class="quantity__input"
+                    type="number"
+                    name="updates[]"
+                    value="1"
+                    min="0"
+                    aria-label="Quantity"
+                  >
+                  <button class="quantity__button" name="plus" type="button">
+                    <span class="visually-hidden">Increase quantity</span>+
+                  </button>
+                </div>
+                <cart-remove-button>
+                  <a href="/cart/change?line=4&amp;quantity=0" class="cart-item__remove" aria-label="Remove Waxed Canvas Backpack">Remove</a>
+                </cart-remove-button>
+              </div>
+            </div>
+          </li>
+          <li class="cart-item" id="CartItem-5">
+            <div class="cart-item__media">
+              <a href="/products/linen-throw-blanket" class="cart-item__link" tabindex="-1">
+                <img
+                  class="cart-item__image"
+                  src="https://cdn.shopify.com/s/files/1/0000/0001/products/cart-5.jpg"
+                  alt="Linen Throw Blanket"
+                  loading="lazy"
+                  width="150"
+                  height="150"
+                >
+              </a>
+            </div>
+            <div class="cart-item__details">
+              <a href="/products/linen-throw-blanket" class="cart-item__name h4">Linen Throw Blanket</a>
+              <div class="product-option">
+                <dl>
+                  <div class="product-option__value">
+                    <dt>Variant:</dt>
+                    <dd>Oat</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="cart-item__price-wrapper">
+                <div class="price price--end">
+                  <span class="price-item price-item--regular">$64.00</span>
+                </div>
+              </div>
+              <div class="cart-item__quantity">
+                <div class="quantity">
+                  <button class="quantity__button" name="minus" type="button">
+                    <span class="visually-hidden">Decrease quantity</span>&minus;
+                  </button>
+                  <input
+                    class="quantity__input"
+                    type="number"
+                    name="updates[]"
+                    value="1"
+                    min="0"
+                    aria-label="Quantity"
+                  >
+                  <button class="quantity__button" name="plus" type="button">
+                    <span class="visually-hidden">Increase quantity</span>+
+                  </button>
+                </div>
+                <cart-remove-button>
+                  <a href="/cart/change?line=5&amp;quantity=0" class="cart-item__remove" aria-label="Remove Linen Throw Blanket">Remove</a>
+                </cart-remove-button>
+              </div>
+            </div>
+          </li>
+          <li class="cart-item" id="CartItem-6">
+            <div class="cart-item__media">
+              <a href="/products/enamel-camp-cup" class="cart-item__link" tabindex="-1">
+                <img
+                  class="cart-item__image"
+                  src="https://cdn.shopify.com/s/files/1/0000/0001/products/cart-6.jpg"
+                  alt="Enamel Camp Cup"
+                  loading="lazy"
+                  width="150"
+                  height="150"
+                >
+              </a>
+            </div>
+            <div class="cart-item__details">
+              <a href="/products/enamel-camp-cup" class="cart-item__name h4">Enamel Camp Cup</a>
+              <div class="product-option">
+                <dl>
+                  <div class="product-option__value">
+                    <dt>Variant:</dt>
+                    <dd>Navy</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="cart-item__price-wrapper">
+                <div class="price price--end">
+                  <span class="price-item price-item--regular">$12.00</span>
+                </div>
+              </div>
+              <div class="cart-item__quantity">
+                <div class="quantity">
+                  <button class="quantity__button" name="minus" type="button">
+                    <span class="visually-hidden">Decrease quantity</span>&minus;
+                  </button>
+                  <input
+                    class="quantity__input"
+                    type="number"
+                    name="updates[]"
+                    value="3"
+                    min="0"
+                    aria-label="Quantity"
+                  >
+                  <button class="quantity__button" name="plus" type="button">
+                    <span class="visually-hidden">Increase quantity</span>+
+                  </button>
+                </div>
+                <cart-remove-button>
+                  <a href="/cart/change?line=6&amp;quantity=0" class="cart-item__remove" aria-label="Remove Enamel Camp Cup">Remove</a>
+                </cart-remove-button>
+              </div>
+            </div>
+          </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="cart-drawer__footer" id="CartDrawer-Footer">
+          <div class="totals">
+            <h3 class="totals__subtotal">Subtotal</h3>
+            <p class="totals__subtotal-value">$403.00</p>
+          </div>
+          <div class="cart-drawer__discounts">
+            <p class="cart-drawer__discount-note">Taxes and shipping calculated at checkout</p>
+          </div>
+          <div class="cart__ctas">
+            <a href="/cart" class="cart__view-cart-button button button--secondary">View cart</a>
+            <button
+              type="submit"
+              id="CartDrawer-Checkout"
+              class="cart__checkout-button button"
+              name="checkout"
+            >
+              Check out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </cart-drawer>
+
+  <p id="marker-shopify-liquid-cart-drawer" data-marker="shopify-liquid-cart-drawer">MARKER_SHOPIFY_LIQUID_CART_DRAWER</p>
+
+  <footer class="footer">
+    <div class="footer__content-bottom page-width">
+      <div class="footer__copyright">
+        <small class="copyright__content">&copy; 2026 Nordwood Goods. Powered by Shopify</small>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>amp-analytics コンポーネントサンプル</title>
+</head>
+<body>
+<header class="page-header">
+<h1>AMP計測ページ</h1>
+</header>
+<main class="content">
+<article class="amp-article">
+<h2>製品レビュー記事</h2>
+<amp-img src="/img/review-hero.jpg" width="800" height="450" layout="responsive" alt="レビュー記事画像"></amp-img>
+<p>レビュー本文がここに入ります。</p>
+</article>
+<amp-analytics type="googleanalytics" id="analytics1">
+<script type="application/json">
+{
+"vars": {
+"account": "UA-00000000-1"
+},
+"triggers": {
+"trackPageview": {
+"on": "visible",
+"request": "pageview"
+}
+}
+}
+</script>
+</amp-analytics>
+<amp-pixel src="https://example.com/pixel?ref=CANONICAL_URL" layout="nodisplay"></amp-pixel>
+<amp-analytics type="googletagmanager" id="analytics2" data-credentials="include">
+<script type="application/json">
+{
+"vars": {
+"gtm_id": "GTM-XXXXXXX"
+}
+}
+</script>
+</amp-analytics>
+</main>
+<section class="sitemap-extra" aria-label="サイトマップ">
+<h2>サイトマップ</h2>
+<ul class="sitemap-extra-list">
+<li><a href="/sitemap/amp-analytics-component/page-1">関連ページ1</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-2">関連ページ2</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-3">関連ページ3</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-4">関連ページ4</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-5">関連ページ5</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-6">関連ページ6</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-7">関連ページ7</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-8">関連ページ8</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-9">関連ページ9</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-10">関連ページ10</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-11">関連ページ11</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-12">関連ページ12</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-13">関連ページ13</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-14">関連ページ14</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-15">関連ページ15</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-16">関連ページ16</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-17">関連ページ17</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-18">関連ページ18</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-19">関連ページ19</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-20">関連ページ20</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-21">関連ページ21</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-22">関連ページ22</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-23">関連ページ23</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-24">関連ページ24</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-25">関連ページ25</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-26">関連ページ26</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-27">関連ページ27</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-28">関連ページ28</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-29">関連ページ29</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-30">関連ページ30</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-31">関連ページ31</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-32">関連ページ32</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-33">関連ページ33</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-34">関連ページ34</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-35">関連ページ35</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-36">関連ページ36</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-37">関連ページ37</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-38">関連ページ38</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-39">関連ページ39</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-40">関連ページ40</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-41">関連ページ41</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-42">関連ページ42</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-43">関連ページ43</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-44">関連ページ44</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-45">関連ページ45</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-46">関連ページ46</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-47">関連ページ47</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-48">関連ページ48</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-49">関連ページ49</a></li>
+<li><a href="/sitemap/amp-analytics-component/page-50">関連ページ50</a></li>
+</ul>
+</section>
+<p id="marker-amp-analytics-component" data-marker="amp-analytics-component">MARKER_AMP_ANALYTICS_COMPONENT</p>
+<footer class="page-footer">
+<p>&copy; 2026 Example Media Works</p>
+</footer>
+</body>
+</html>

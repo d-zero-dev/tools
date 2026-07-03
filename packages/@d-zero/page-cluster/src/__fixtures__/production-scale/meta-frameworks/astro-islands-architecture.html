@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Islands Architecture Demo | Astro Sample</title>
+  <meta name="description" content="Astroのアイランドアーキテクチャを示すサンプルページです。静的なHTMLと部分的にハイドレートされるアイランドが混在します。">
+  <link rel="canonical" href="https://example-astro-islands.dummy/">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/_astro/index.abcd1234.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-header__logo" href="/">Astro Islands Sample</a>
+      <nav class="site-header__nav" aria-label="グローバルナビゲーション">
+        <ul>
+          <li><a href="/">ホーム</a></li>
+          <li><a href="/about/">サイトについて</a></li>
+          <li><a href="/blog/">ブログ</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-main">
+    <h1 class="page-main__heading">Islands Architecture のデモ</h1>
+    <p id="marker-astro-islands-architecture" data-marker="astro-islands-architecture">MARKER_ASTRO_ISLANDS_ARCHITECTURE</p>
+
+    <section class="static-section">
+      <h2 class="static-section__title">静的コンテンツ（ハイドレーション不要）</h2>
+      <p class="static-section__body">このセクションはビルド時に生成された素のHTMLのみで構成されており、クライアント側のJavaScriptは一切読み込まれません。見出し・本文・画像といった静的な情報を表示するのに最適です。</p>
+      <article class="static-article">
+        <h3>Astroの設計思想</h3>
+        <p>Astroはデフォルトでゼロランタイムを目指し、必要な箇所だけを選択的にハイドレートします。これにより配信されるJavaScriptの量を最小限に抑えられます。</p>
+      </article>
+      <figure class="static-figure">
+        <img src="https://cdn.example-astro-islands.dummy/images/architecture-diagram.jpg" alt="アイランドアーキテクチャの概念図" width="800" height="450" loading="lazy">
+        <figcaption>静的な海の中に浮かぶインタラクティブな島、というメタファー</figcaption>
+      </figure>
+    </section>
+
+    <section class="island-section">
+      <h2 class="island-section__title">アイランド: カウンター（client:load）</h2>
+      <astro-island uid="cnt-01" component-url="/_astro/Counter.abc123.js" component-export="default" renderer-url="/_astro/client.xyz789.js" props="{&quot;count&quot;:0}" ssr client="load">
+        <astro-slot>
+          <div class="counter-widget" data-hydrated="pending">
+            <button type="button" class="counter-widget__decrement" aria-label="カウントを減らす">-</button>
+            <span class="counter-widget__value">0</span>
+            <button type="button" class="counter-widget__increment" aria-label="カウントを増やす">+</button>
+          </div>
+        </astro-slot>
+      </astro-island>
+    </section>
+
+    <section class="static-section">
+      <h2 class="static-section__title">記事本文（静的）</h2>
+      <article class="static-article">
+        <h3>導入事例の紹介</h3>
+        <p>あるメディアサイトではAstroへの移行によって、初期表示に必要なJavaScriptを大幅に削減し、Core Web Vitalsのスコアを改善しました。ページの大部分は静的なままで、必要な部分だけが動的になります。</p>
+        <p>この記事本文全体は静的HTMLとして配信されるため、追加のハイドレーションコストはかかりません。</p>
+      </article>
+    </section>
+
+    <section class="island-section">
+      <h2 class="island-section__title">アイランド: いいねボタン（client:visible）</h2>
+      <astro-island uid="like-01" component-url="/_astro/LikeButton.def456.js" component-export="default" renderer-url="/_astro/client.xyz789.js" props="{&quot;initialLikes&quot;:42,&quot;liked&quot;:false}" ssr client="visible">
+        <astro-slot>
+          <button type="button" class="like-button" data-hydrated="pending">
+            <span class="like-button__icon" aria-hidden="true">♡</span>
+            <span class="like-button__count">42</span>
+          </button>
+        </astro-slot>
+      </astro-island>
+    </section>
+
+    <section class="static-section">
+      <h2 class="static-section__title">関連記事（静的リスト）</h2>
+      <ul class="related-list">
+        <li class="related-list__item"><a href="/blog/astro-performance/">Astroでパフォーマンスを最適化する方法</a></li>
+        <li class="related-list__item"><a href="/blog/astro-vs-nextjs/">AstroとNext.jsの比較</a></li>
+        <li class="related-list__item"><a href="/blog/astro-partial-hydration/">部分的ハイドレーションの仕組み</a></li>
+      </ul>
+    </section>
+
+    <section class="island-section">
+      <h2 class="island-section__title">アイランド: 画像カルーセル（client:idle）</h2>
+      <astro-island uid="carousel-01" component-url="/_astro/Carousel.ghi789.js" component-export="default" renderer-url="/_astro/client.xyz789.js" props="{&quot;slides&quot;:3,&quot;active&quot;:0}" ssr client="idle">
+        <astro-slot>
+          <div class="carousel-widget" data-hydrated="pending">
+            <div class="carousel-widget__track">
+              <img src="https://cdn.example-astro-islands.dummy/images/slide-1.jpg" alt="スライド1" width="640" height="360">
+              <img src="https://cdn.example-astro-islands.dummy/images/slide-2.jpg" alt="スライド2" width="640" height="360">
+              <img src="https://cdn.example-astro-islands.dummy/images/slide-3.jpg" alt="スライド3" width="640" height="360">
+            </div>
+            <div class="carousel-widget__dots">
+              <span class="carousel-widget__dot carousel-widget__dot--active"></span>
+              <span class="carousel-widget__dot"></span>
+              <span class="carousel-widget__dot"></span>
+            </div>
+          </div>
+        </astro-slot>
+      </astro-island>
+    </section>
+
+    <section class="island-section">
+      <h2 class="island-section__title">アイランド: 検索ボックス（client:only="react"）</h2>
+      <astro-island uid="search-01" component-url="/_astro/SearchBox.jkl012.js" component-export="default" renderer-url="/_astro/client.xyz789.js" props="{&quot;placeholder&quot;:&quot;記事を検索&quot;}" client="only" client-only="react">
+        <astro-slot></astro-slot>
+      </astro-island>
+    </section>
+
+    <section class="static-section">
+      <h2 class="static-section__title">主な特徴（静的グリッド）</h2>
+      <div class="feature-grid">
+        <div class="feature-grid__item">
+          <span class="feature-grid__icon" aria-hidden="true">⚡</span>
+          <h3 class="feature-grid__title">ゼロJSがデフォルト</h3>
+          <p class="feature-grid__body">明示的に指定しない限りJavaScriptは配信されません。</p>
+        </div>
+        <div class="feature-grid__item">
+          <span class="feature-grid__icon" aria-hidden="true">🏝️</span>
+          <h3 class="feature-grid__title">アイランドアーキテクチャ</h3>
+          <p class="feature-grid__body">必要な部分だけを選択的にハイドレートできます。</p>
+        </div>
+        <div class="feature-grid__item">
+          <span class="feature-grid__icon" aria-hidden="true">🔌</span>
+          <h3 class="feature-grid__title">フレームワーク非依存</h3>
+          <p class="feature-grid__body">React・Vue・Svelteなど複数のUIフレームワークを併用できます。</p>
+        </div>
+        <div class="feature-grid__item">
+          <span class="feature-grid__icon" aria-hidden="true">🚀</span>
+          <h3 class="feature-grid__title">高速なビルド</h3>
+          <p class="feature-grid__body">Viteベースの高速なビルドパイプラインを備えています。</p>
+        </div>
+        <div class="feature-grid__item">
+          <span class="feature-grid__icon" aria-hidden="true">📦</span>
+          <h3 class="feature-grid__title">豊富なインテグレーション</h3>
+          <p class="feature-grid__body">公式・コミュニティ製の統合機能が多数用意されています。</p>
+        </div>
+        <div class="feature-grid__item">
+          <span class="feature-grid__icon" aria-hidden="true">🖼️</span>
+          <h3 class="feature-grid__title">画像最適化</h3>
+          <p class="feature-grid__body">組み込みの画像コンポーネントで自動的に最適化されます。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="static-section">
+      <h2 class="static-section__title">利用者の声（静的）</h2>
+      <ul class="testimonial-list">
+        <li class="testimonial-list__item">
+          <p class="testimonial-list__quote">アイランドアーキテクチャによってページの表示速度が劇的に改善しました。</p>
+          <cite class="testimonial-list__author">フロントエンドエンジニア A氏</cite>
+        </li>
+        <li class="testimonial-list__item">
+          <p class="testimonial-list__quote">既存のReactコンポーネント資産をそのまま活かせたのが決め手でした。</p>
+          <cite class="testimonial-list__author">テックリード B氏</cite>
+        </li>
+        <li class="testimonial-list__item">
+          <p class="testimonial-list__quote">静的サイトなのにインタラクティブな部分もスムーズに実装できます。</p>
+          <cite class="testimonial-list__author">デザインエンジニア C氏</cite>
+        </li>
+      </ul>
+    </section>
+
+    <section class="static-section">
+      <h2 class="static-section__title">よくある質問（静的FAQ）</h2>
+      <dl class="faq-list">
+        <dt class="faq-list__question">アイランドとは何ですか？</dt>
+        <dd class="faq-list__answer">ページ内で個別にハイドレートされるインタラクティブなUIコンポーネントの単位です。</dd>
+        <dt class="faq-list__question">複数のフレームワークを同一ページで使えますか？</dt>
+        <dd class="faq-list__answer">はい、React・Vue・Svelteなどのコンポーネントを混在させることができます。</dd>
+        <dt class="faq-list__question">SEOへの影響はありますか？</dt>
+        <dd class="faq-list__answer">静的HTMLが中心のため、一般的にSEOに有利とされています。</dd>
+        <dt class="faq-list__question">既存プロジェクトへの導入は容易ですか？</dt>
+        <dd class="faq-list__answer">段階的な移行がしやすい設計になっています。</dd>
+      </dl>
+    </section>
+
+    <section class="island-section">
+      <h2 class="island-section__title">アイランド: ニュースレター登録（client:visible）</h2>
+      <astro-island uid="newsletter-01" component-url="/_astro/Newsletter.mno345.js" component-export="default" renderer-url="/_astro/client.xyz789.js" props="{&quot;subscribed&quot;:false}" ssr client="visible">
+        <astro-slot>
+          <form class="newsletter-form" data-hydrated="pending">
+            <label for="newsletter-email">メールアドレス</label>
+            <input id="newsletter-email" type="email" name="email" placeholder="you@example.com">
+            <button type="submit">登録する</button>
+          </form>
+        </astro-slot>
+      </astro-island>
+    </section>
+
+    <section class="static-section">
+      <h2 class="static-section__title">技術スタック（静的リスト）</h2>
+      <ul class="tech-stack-list">
+        <li class="tech-stack-list__item">Astro</li>
+        <li class="tech-stack-list__item">React</li>
+        <li class="tech-stack-list__item">Vue</li>
+        <li class="tech-stack-list__item">Svelte</li>
+        <li class="tech-stack-list__item">Tailwind CSS</li>
+        <li class="tech-stack-list__item">Markdown / MDX</li>
+        <li class="tech-stack-list__item">Vite</li>
+        <li class="tech-stack-list__item">TypeScript</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p>&copy; 2026 Astro Islands Sample. All rights reserved.</p>
+      <ul class="site-footer__links">
+        <li><a href="/privacy/">プライバシーポリシー</a></li>
+        <li><a href="/terms/">利用規約</a></li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Script Injection Like Content Safe</title>
+</head>
+<body>
+<header>
+<p id="marker-script-injection-like-content-safe" data-marker="script-injection-like-content-safe">MARKER_SCRIPT_INJECTION_LIKE_CONTENT_SAFE</p>
+</header>
+<main>
+<script>
+// The following strings are inert data for parser stress-testing only; nothing here executes.
+var payloadA = "<img src=x onerror=alert(1)>";
+var payloadB = '<script>alert(2)<\/script>';
+var payloadC = "<svg onload=alert(3)>";
+var payloadD = "'; DROP TABLE users; --";
+document.title = "safe";
+</script>
+<p>User submitted comment (HTML-escaped, inert): &lt;img src=x onerror=alert(1)&gt;</p>
+<textarea readonly><script>alert('inside a textarea, treated as raw text')</script></textarea>
+<noscript><img src="x" onerror="alert(4)" alt="noscript payload, inert when scripting is enabled"></noscript>
+<pre>&lt;iframe src="javascript:alert(5)"&gt;&lt;/iframe&gt;</pre>
+</main>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="東京都内の賃貸物件検索結果。エリア・価格帯・間取り・駅距離で絞り込み検索ができます。" />
+	<title>賃貸物件検索結果 東京都内 | イエカラ不動産</title>
+</head>
+<body>
+	<header class="realestate-header">
+		<div class="realestate-header__inner">
+			<a class="realestate-logo" href="/">イエカラ不動産</a>
+			<nav class="realestate-nav">
+				<ul class="realestate-nav__list">
+					<li class="realestate-nav__item realestate-nav__item--current" aria-current="page"><a href="/rent">賃貸を探す</a></li>
+					<li class="realestate-nav__item"><a href="/buy">売買を探す</a></li>
+					<li class="realestate-nav__item"><a href="/sell">売却を相談する</a></li>
+					<li class="realestate-nav__item"><a href="/store">店舗一覧</a></li>
+				</ul>
+			</nav>
+		</div>
+		<nav class="realestate-breadcrumb" aria-label="パンくずリスト">
+			<ol>
+				<li><a href="/">ホーム</a></li>
+				<li><a href="/rent">賃貸を探す</a></li>
+				<li>東京都</li>
+			</ol>
+		</nav>
+	</header>
+
+	<main class="realestate-main">
+		<div class="realestate-layout">
+			<aside class="realestate-filters">
+				<h2 class="realestate-filters__heading">検索条件</h2>
+				<form class="realestate-filters__form">
+					<fieldset class="realestate-filters__group">
+						<legend>エリア</legend>
+						<ul>
+							<li><label><input type="checkbox" name="area" value="shibuya" />渋谷区</label></li>
+							<li><label><input type="checkbox" name="area" value="setagaya" />世田谷区</label></li>
+							<li><label><input type="checkbox" name="area" value="meguro" />目黒区</label></li>
+						</ul>
+					</fieldset>
+					<fieldset class="realestate-filters__group">
+						<legend>価格帯</legend>
+						<ul>
+							<li><label><input type="radio" name="price" value="0-8" />〜8万円</label></li>
+							<li><label><input type="radio" name="price" value="8-12" />8〜12万円</label></li>
+							<li><label><input type="radio" name="price" value="12-18" />12〜18万円</label></li>
+						</ul>
+					</fieldset>
+					<fieldset class="realestate-filters__group">
+						<legend>間取り</legend>
+						<ul>
+							<li><label><input type="checkbox" name="layout" value="1k" />1K/1DK</label></li>
+							<li><label><input type="checkbox" name="layout" value="1ldk" />1LDK/2K</label></li>
+							<li><label><input type="checkbox" name="layout" value="2ldk" />2LDK/3K</label></li>
+						</ul>
+					</fieldset>
+					<fieldset class="realestate-filters__group">
+						<legend>駅からの距離</legend>
+						<ul>
+							<li><label><input type="radio" name="walk" value="5" />徒歩5分以内</label></li>
+							<li><label><input type="radio" name="walk" value="10" />徒歩10分以内</label></li>
+							<li><label><input type="radio" name="walk" value="15" />徒歩15分以内</label></li>
+						</ul>
+					</fieldset>
+					<button type="submit" class="realestate-filters__submit">この条件で検索</button>
+				</form>
+			</aside>
+
+			<div class="realestate-results">
+				<section class="realestate-map">
+					<h2>地図から探す</h2>
+					<div class="realestate-map__frame" role="img" aria-label="検索エリアの地図"></div>
+				</section>
+
+				<p class="realestate-results__count">243件の物件が見つかりました</p>
+
+				<ul class="realestate-listing">
+					<li class="realestate-card">
+						<img src="/rooms/101.jpg" alt="渋谷区neopolis 101号室" />
+						<h3 class="realestate-card__price">￥128,000</h3>
+						<ul class="realestate-card__details">
+							<li>1LDK</li>
+							<li>38.2㎡</li>
+							<li>サンプルA駅 徒歩6分</li>
+							<li>東京都渋谷区サンプルA町1-1</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/102.jpg" alt="世田谷区グランメゾン 202号室" />
+						<h3 class="realestate-card__price">￥98,000</h3>
+						<ul class="realestate-card__details">
+							<li>1K</li>
+							<li>24.5㎡</li>
+							<li>サンプルN駅 徒歩9分</li>
+							<li>東京都世田谷区サンプルN町2-3</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/103.jpg" alt="目黒区パークサイド 303号室" />
+						<h3 class="realestate-card__price">￥215,000</h3>
+						<ul class="realestate-card__details">
+							<li>2LDK</li>
+							<li>56.8㎡</li>
+							<li>サンプルB駅 徒歩4分</li>
+							<li>東京都目黒区サンプルB町3-2</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/104.jpg" alt="新宿区サンライズ 404号室" />
+						<h3 class="realestate-card__price">￥110,000</h3>
+						<ul class="realestate-card__details">
+							<li>1DK</li>
+							<li>28.0㎡</li>
+							<li>サンプルC駅 徒歩12分</li>
+							<li>東京都新宿区サンプルC町1-4</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/105.jpg" alt="渋谷区リバーサイド 505号室" />
+						<h3 class="realestate-card__price">￥165,000</h3>
+						<ul class="realestate-card__details">
+							<li>1LDK</li>
+							<li>42.1㎡</li>
+							<li>サンプルO駅 徒歩7分</li>
+							<li>東京都渋谷区サンプルD町1-5</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/106.jpg" alt="世田谷区ヒルズ 606号室" />
+						<h3 class="realestate-card__price">￥88,000</h3>
+						<ul class="realestate-card__details">
+							<li>1K</li>
+							<li>21.9㎡</li>
+							<li>サンプルP駅 徒歩11分</li>
+							<li>東京都世田谷区サンプルP町2-6</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/107.jpg" alt="目黒区スカイテラス 707号室" />
+						<h3 class="realestate-card__price">￥298,000</h3>
+						<ul class="realestate-card__details">
+							<li>3LDK</li>
+							<li>72.4㎡</li>
+							<li>サンプルE駅 徒歩5分</li>
+							<li>東京都目黒区サンプルE町1-7</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/108.jpg" alt="新宿区パレス 808号室" />
+						<h3 class="realestate-card__price">￥135,000</h3>
+						<ul class="realestate-card__details">
+							<li>1LDK</li>
+							<li>36.7㎡</li>
+							<li>サンプルF駅 徒歩8分</li>
+							<li>東京都新宿区サンプルF町3-8</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/109.jpg" alt="渋谷区コート 909号室" />
+						<h3 class="realestate-card__price">￥102,000</h3>
+						<ul class="realestate-card__details">
+							<li>1K</li>
+							<li>25.3㎡</li>
+							<li>サンプルQ駅 徒歩10分</li>
+							<li>東京都渋谷区サンプルG町1-9</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/110.jpg" alt="世田谷区フォレスト 1010号室" />
+						<h3 class="realestate-card__price">￥182,000</h3>
+						<ul class="realestate-card__details">
+							<li>2LDK</li>
+							<li>50.2㎡</li>
+							<li>サンプルR駅 徒歩6分</li>
+							<li>東京都世田谷区サンプルR町2-10</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/111.jpg" alt="目黒区レジデンス 1111号室" />
+						<h3 class="realestate-card__price">￥120,000</h3>
+						<ul class="realestate-card__details">
+							<li>1DK</li>
+							<li>30.5㎡</li>
+							<li>サンプルS駅 徒歩9分</li>
+							<li>東京都目黒区サンプルH町1-11</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/112.jpg" alt="新宿区タワー 1212号室" />
+						<h3 class="realestate-card__price">￥320,000</h3>
+						<ul class="realestate-card__details">
+							<li>3LDK</li>
+							<li>80.1㎡</li>
+							<li>サンプルI駅 徒歩3分</li>
+							<li>東京都新宿区サンプルI町1-12</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/113.jpg" alt="渋谷区メゾン 1313号室" />
+						<h3 class="realestate-card__price">￥95,000</h3>
+						<ul class="realestate-card__details">
+							<li>1K</li>
+							<li>23.8㎡</li>
+							<li>サンプルJ駅 徒歩13分</li>
+							<li>東京都渋谷区サンプルJ町1-13</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/114.jpg" alt="世田谷区ガーデン 1414号室" />
+						<h3 class="realestate-card__price">￥148,000</h3>
+						<ul class="realestate-card__details">
+							<li>1LDK</li>
+							<li>40.0㎡</li>
+							<li>サンプルT駅 徒歩7分</li>
+							<li>東京都世田谷区サンプルT町1-14</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/115.jpg" alt="目黒区ヴィラ 1515号室" />
+						<h3 class="realestate-card__price">￥260,000</h3>
+						<ul class="realestate-card__details">
+							<li>2LDK</li>
+							<li>62.3㎡</li>
+							<li>サンプルU駅 徒歩5分</li>
+							<li>東京都目黒区サンプルK町1-15</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/116.jpg" alt="新宿区スイート 1616号室" />
+						<h3 class="realestate-card__price">￥115,000</h3>
+						<ul class="realestate-card__details">
+							<li>1DK</li>
+							<li>29.4㎡</li>
+							<li>サンプルL駅 徒歩8分</li>
+							<li>東京都新宿区サンプルL町1-16</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/117.jpg" alt="渋谷区パークコート 1717号室" />
+						<h3 class="realestate-card__price">￥178,000</h3>
+						<ul class="realestate-card__details">
+							<li>1LDK</li>
+							<li>44.6㎡</li>
+							<li>サンプルV駅 徒歩4分</li>
+							<li>東京都渋谷区サンプルM町1-17</li>
+						</ul>
+					</li>
+					<li class="realestate-card">
+						<img src="/rooms/118.jpg" alt="世田谷区アベニュー 1818号室" />
+						<h3 class="realestate-card__price">￥92,000</h3>
+						<ul class="realestate-card__details">
+							<li>1K</li>
+							<li>22.7㎡</li>
+							<li>サンプルW駅 徒歩10分</li>
+							<li>東京都世田谷区サンプルW町1-18</li>
+						</ul>
+					</li>
+				</ul>
+
+				<nav class="realestate-pagination" aria-label="検索結果ページ送り">
+					<ul>
+						<li><a href="?page=prev" aria-disabled="true">前へ</a></li>
+						<li><a href="?page=1" aria-current="page">1</a></li>
+						<li><a href="?page=2">2</a></li>
+						<li><a href="?page=3">3</a></li>
+						<li><a href="?page=4">4</a></li>
+						<li><a href="?page=next">次へ</a></li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+
+		<p id="marker-real-estate-listing-page" data-marker="real-estate-listing-page">MARKER_REAL_ESTATE_LISTING_PAGE</p>
+	</main>
+
+	<footer class="realestate-footer">
+		<div class="realestate-footer__columns">
+			<div class="realestate-footer__column">
+				<h3>会社情報</h3>
+				<ul>
+					<li><a href="/company">運営会社</a></li>
+					<li><a href="/store">店舗一覧</a></li>
+					<li><a href="/recruit">採用情報</a></li>
+				</ul>
+			</div>
+			<div class="realestate-footer__column">
+				<h3>物件を探す</h3>
+				<ul>
+					<li><a href="/rent">賃貸を探す</a></li>
+					<li><a href="/buy">売買を探す</a></li>
+					<li><a href="/sell">売却を相談する</a></li>
+				</ul>
+			</div>
+			<div class="realestate-footer__column">
+				<h3>サポート</h3>
+				<ul>
+					<li><a href="/faq">よくある質問</a></li>
+					<li><a href="/contact">お問い合わせ</a></li>
+					<li><a href="/terms">利用規約</a></li>
+				</ul>
+			</div>
+			<div class="realestate-footer__column">
+				<h3>SNS</h3>
+				<ul>
+					<li><a href="https://x.com/iekara_re">X (Twitter)</a></li>
+					<li><a href="https://instagram.com/iekara_re">Instagram</a></li>
+				</ul>
+			</div>
+		</div>
+		<p class="realestate-footer__copyright">&copy; 2026 イエカラ不動産</p>
+	</footer>
+</body>
+</html>

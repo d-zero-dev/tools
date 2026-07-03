@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mixed Void Elements - All Types</title>
+</head>
+<body>
+<main>
+<p id="marker-mixed-void-elements-all-types" data-marker="mixed-void-elements-all-types">MARKER_MIXED_VOID_ELEMENTS_ALL_TYPES</p>
+<p>Line one.<br>Line two.<wbr>ContinuedWithoutBreak</p>
+<hr>
+<img src="/img/photo.jpg" alt="A photo" width="200" height="100">
+<input type="text" name="quick-search" placeholder="Search...">
+<embed src="/media/animation.svg" type="image/svg+xml" width="300" height="200">
+<img src="/img/mapped.png" alt="Image map" usemap="#void-map">
+<map name="void-map">
+<area shape="rect" coords="0,0,50,50" href="/area-a" alt="Area A">
+<area shape="circle" coords="100,100,40" href="/area-b" alt="Area B">
+</map>
+<table>
+<colgroup>
+<col style="width: 30%">
+<col span="2" style="width: 35%">
+</colgroup>
+<tbody>
+<tr>
+<td>A</td>
+<td>B</td>
+<td>C</td>
+</tr>
+</tbody>
+</table>
+<picture>
+<source srcset="/img/large.webp" media="(min-width: 800px)" type="image/webp">
+<source srcset="/img/small.webp" type="image/webp">
+<img src="/img/fallback.jpg" alt="Fallback image">
+</picture>
+<video controls width="320" height="240">
+<source src="/media/movie.mp4" type="video/mp4">
+<track kind="subtitles" src="/media/subs-en.vtt" srclang="en" label="English">
+</video>
+<link rel="stylesheet" href="/print-only.css" itemprop="associatedMedia">
+<meta itemprop="datePublished" content="2026-07-03">
+</main>
+</body>
+</html>

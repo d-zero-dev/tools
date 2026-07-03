@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>口座照会 | ひまわりネット銀行</title>
+<meta name="description" content="ひまわりネット銀行のアカウントダッシュボード。口座残高、取引履歴、振込などの各種操作をご利用いただけます。">
+</head>
+<body class="bank-body">
+<header class="bank-header">
+  <a href="/" class="bank-header__logo">ひまわりネット銀行</a>
+  <nav class="bank-header__nav">
+    <ul class="bank-header__nav-list">
+      <li class="bank-header__nav-item"><a href="/dashboard">ダッシュボード</a></li>
+      <li class="bank-header__nav-item"><a href="/messages">お知らせ</a></li>
+      <li class="bank-header__nav-item"><a href="/settings">設定</a></li>
+    </ul>
+  </nav>
+  <div class="bank-header__user">
+    <span class="bank-header__username">山田 太郎 様</span>
+    <a href="/logout" class="bank-header__logout">ログアウト</a>
+  </div>
+</header>
+
+<div class="bank-layout">
+  <aside class="bank-sidebar">
+    <nav class="bank-sidebar__nav">
+      <ul class="bank-sidebar__list">
+        <li class="bank-sidebar__item bank-sidebar__item--current" aria-current="page"><a href="/accounts">口座一覧</a></li>
+        <li class="bank-sidebar__item"><a href="/transfer">振込・振替</a></li>
+        <li class="bank-sidebar__item"><a href="/deposit">入出金明細</a></li>
+        <li class="bank-sidebar__item"><a href="/cards">カード管理</a></li>
+        <li class="bank-sidebar__item"><a href="/loans">ローン</a></li>
+        <li class="bank-sidebar__item"><a href="/investment">資産運用</a></li>
+        <li class="bank-sidebar__item"><a href="/statements">明細書</a></li>
+        <li class="bank-sidebar__item"><a href="/support">サポート</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="bank-main">
+    <section class="bank-summary">
+      <h1 class="bank-summary__title">口座残高サマリー</h1>
+      <div class="bank-summary__grid">
+        <article class="bank-summary-card">
+          <h2 class="bank-summary-card__label">普通預金</h2>
+          <p class="bank-summary-card__number">1,250,000円</p>
+          <p class="bank-summary-card__account">口座番号 1234567</p>
+        </article>
+        <article class="bank-summary-card">
+          <h2 class="bank-summary-card__label">定期預金</h2>
+          <p class="bank-summary-card__number">3,000,000円</p>
+          <p class="bank-summary-card__account">口座番号 7654321</p>
+        </article>
+        <article class="bank-summary-card">
+          <h2 class="bank-summary-card__label">クレジットカード</h2>
+          <p class="bank-summary-card__number">-128,400円</p>
+          <p class="bank-summary-card__account">ひまわりVISAカード</p>
+        </article>
+        <article class="bank-summary-card">
+          <h2 class="bank-summary-card__label">外貨預金</h2>
+          <p class="bank-summary-card__number">2,340.55米ドル</p>
+          <p class="bank-summary-card__account">口座番号 9988776</p>
+        </article>
+      </div>
+    </section>
+
+    <p id="marker-banking-account-dashboard" data-marker="banking-account-dashboard">MARKER_BANKING_ACCOUNT_DASHBOARD</p>
+
+    <section class="bank-quick-actions">
+      <h2 class="bank-section-title">クイック操作</h2>
+      <div class="bank-quick-actions__list">
+        <button type="button" class="bank-action-btn">振込</button>
+        <button type="button" class="bank-action-btn">入金</button>
+        <button type="button" class="bank-action-btn">出金</button>
+        <button type="button" class="bank-action-btn">明細ダウンロード</button>
+        <button type="button" class="bank-action-btn">カード管理</button>
+      </div>
+    </section>
+
+    <section class="bank-notices">
+      <h2 class="bank-section-title">お知らせ</h2>
+      <ul class="bank-notices__list">
+        <li class="bank-notice-item"><span class="bank-notice-item__date">2026/07/01</span><span class="bank-notice-item__text">システムメンテナンスのお知らせ（7/10 深夜）</span></li>
+        <li class="bank-notice-item"><span class="bank-notice-item__date">2026/06/28</span><span class="bank-notice-item__text">夏のキャンペーン開始のご案内</span></li>
+        <li class="bank-notice-item"><span class="bank-notice-item__date">2026/06/20</span><span class="bank-notice-item__text">セキュリティ強化に関する重要なお知らせ</span></li>
+        <li class="bank-notice-item"><span class="bank-notice-item__date">2026/06/15</span><span class="bank-notice-item__text">振込手数料改定のご案内</span></li>
+        <li class="bank-notice-item"><span class="bank-notice-item__date">2026/06/05</span><span class="bank-notice-item__text">アプリの新機能追加について</span></li>
+      </ul>
+    </section>
+
+    <section class="bank-transactions">
+      <h2 class="bank-section-title">取引履歴</h2>
+      <table class="bank-tx-table">
+        <thead>
+          <tr class="bank-tx-header-row">
+            <th>日付</th>
+            <th>摘要</th>
+            <th>入出金額</th>
+            <th>残高</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/01</td><td class="bank-tx-desc">給与振込</td><td class="bank-tx-amount">+61,369円</td><td class="bank-tx-balance">1,311,369円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/02</td><td class="bank-tx-desc">カード引落し（ショッピング）</td><td class="bank-tx-amount">-16,112円</td><td class="bank-tx-balance">1,295,257円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/03</td><td class="bank-tx-desc">ATM出金</td><td class="bank-tx-amount">-147,194円</td><td class="bank-tx-balance">1,148,063円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/04</td><td class="bank-tx-desc">電気料金</td><td class="bank-tx-amount">-131,393円</td><td class="bank-tx-balance">1,016,670円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/05</td><td class="bank-tx-desc">水道料金</td><td class="bank-tx-amount">-120,026円</td><td class="bank-tx-balance">896,644円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/06</td><td class="bank-tx-desc">家賃振込</td><td class="bank-tx-amount">-76,158円</td><td class="bank-tx-balance">820,486円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/07</td><td class="bank-tx-desc">ネットショッピング</td><td class="bank-tx-amount">-56,736円</td><td class="bank-tx-balance">763,750円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/08</td><td class="bank-tx-desc">携帯電話料金</td><td class="bank-tx-amount">-48,580円</td><td class="bank-tx-balance">715,170円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/09</td><td class="bank-tx-desc">保険料引落し</td><td class="bank-tx-amount">-224,208円</td><td class="bank-tx-balance">490,962円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/10</td><td class="bank-tx-desc">定期預金利息</td><td class="bank-tx-amount">+19,663円</td><td class="bank-tx-balance">510,625円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/11</td><td class="bank-tx-desc">振込手数料</td><td class="bank-tx-amount">-18,622円</td><td class="bank-tx-balance">492,003円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/12</td><td class="bank-tx-desc">コンビニATM出金</td><td class="bank-tx-amount">-52,123円</td><td class="bank-tx-balance">439,880円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/13</td><td class="bank-tx-desc">サブスクリプション利用料</td><td class="bank-tx-amount">-117,629円</td><td class="bank-tx-balance">322,251円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/14</td><td class="bank-tx-desc">医療費支払い</td><td class="bank-tx-amount">-124,981円</td><td class="bank-tx-balance">197,270円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/15</td><td class="bank-tx-desc">駐車場代</td><td class="bank-tx-amount">-67,951円</td><td class="bank-tx-balance">129,319円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/16</td><td class="bank-tx-desc">ガス料金</td><td class="bank-tx-amount">-16,912円</td><td class="bank-tx-balance">112,407円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/17</td><td class="bank-tx-desc">飲食代金引落し</td><td class="bank-tx-amount">-10,724円</td><td class="bank-tx-balance">101,683円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/18</td><td class="bank-tx-desc">定期券購入</td><td class="bank-tx-amount">-22,949円</td><td class="bank-tx-balance">78,734円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/19</td><td class="bank-tx-desc">ふるさと納税</td><td class="bank-tx-amount">-11,857円</td><td class="bank-tx-balance">66,877円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/20</td><td class="bank-tx-desc">積立投資信託購入</td><td class="bank-tx-amount">-23,851円</td><td class="bank-tx-balance">43,026円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/21</td><td class="bank-tx-desc">給与振込</td><td class="bank-tx-amount">+498,520円</td><td class="bank-tx-balance">541,546円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/22</td><td class="bank-tx-desc">カード引落し（ショッピング）</td><td class="bank-tx-amount">-6,407円</td><td class="bank-tx-balance">535,139円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/23</td><td class="bank-tx-desc">ATM出金</td><td class="bank-tx-amount">-86,707円</td><td class="bank-tx-balance">448,432円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/24</td><td class="bank-tx-desc">電気料金</td><td class="bank-tx-amount">-22,457円</td><td class="bank-tx-balance">425,975円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/25</td><td class="bank-tx-desc">水道料金</td><td class="bank-tx-amount">-8,138円</td><td class="bank-tx-balance">417,837円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/26</td><td class="bank-tx-desc">家賃振込</td><td class="bank-tx-amount">-148,684円</td><td class="bank-tx-balance">269,153円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/27</td><td class="bank-tx-desc">ネットショッピング</td><td class="bank-tx-amount">-8,451円</td><td class="bank-tx-balance">260,702円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/28</td><td class="bank-tx-desc">携帯電話料金</td><td class="bank-tx-amount">-11,588円</td><td class="bank-tx-balance">249,114円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/29</td><td class="bank-tx-desc">保険料引落し</td><td class="bank-tx-amount">-17,947円</td><td class="bank-tx-balance">231,167円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/06/30</td><td class="bank-tx-desc">定期預金利息</td><td class="bank-tx-amount">+5,658円</td><td class="bank-tx-balance">236,825円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/01</td><td class="bank-tx-desc">振込手数料</td><td class="bank-tx-amount">-5,162円</td><td class="bank-tx-balance">231,663円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/02</td><td class="bank-tx-desc">コンビニATM出金</td><td class="bank-tx-amount">-20,219円</td><td class="bank-tx-balance">211,444円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/03</td><td class="bank-tx-desc">サブスクリプション利用料</td><td class="bank-tx-amount">-5,370円</td><td class="bank-tx-balance">206,074円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/04</td><td class="bank-tx-desc">医療費支払い</td><td class="bank-tx-amount">-19,120円</td><td class="bank-tx-balance">186,954円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/05</td><td class="bank-tx-desc">駐車場代</td><td class="bank-tx-amount">-18,333円</td><td class="bank-tx-balance">168,621円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/06</td><td class="bank-tx-desc">ガス料金</td><td class="bank-tx-amount">-14,168円</td><td class="bank-tx-balance">154,453円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/07</td><td class="bank-tx-desc">飲食代金引落し</td><td class="bank-tx-amount">-2,578円</td><td class="bank-tx-balance">151,875円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/08</td><td class="bank-tx-desc">定期券購入</td><td class="bank-tx-amount">-24,387円</td><td class="bank-tx-balance">127,488円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/09</td><td class="bank-tx-desc">ふるさと納税</td><td class="bank-tx-amount">-6,844円</td><td class="bank-tx-balance">120,644円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/10</td><td class="bank-tx-desc">積立投資信託購入</td><td class="bank-tx-amount">-20,146円</td><td class="bank-tx-balance">100,498円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/11</td><td class="bank-tx-desc">給与振込</td><td class="bank-tx-amount">+4,313円</td><td class="bank-tx-balance">104,811円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/12</td><td class="bank-tx-desc">カード引落し（ショッピング）</td><td class="bank-tx-amount">-15,670円</td><td class="bank-tx-balance">89,141円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/13</td><td class="bank-tx-desc">ATM出金</td><td class="bank-tx-amount">-19,260円</td><td class="bank-tx-balance">69,881円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/14</td><td class="bank-tx-desc">電気料金</td><td class="bank-tx-amount">-10,381円</td><td class="bank-tx-balance">59,500円</td></tr>
+        <tr class="bank-tx-row"><td class="bank-tx-date">2026/07/15</td><td class="bank-tx-desc">水道料金</td><td class="bank-tx-amount">-3,946円</td><td class="bank-tx-balance">55,554円</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+
+<footer class="bank-footer">
+  <div class="bank-footer__columns">
+    <div class="bank-footer__col">
+      <h3 class="bank-footer__heading">サービス</h3>
+      <ul class="bank-footer__list">
+        <li><a href="/accounts">口座照会</a></li>
+        <li><a href="/transfer">振込サービス</a></li>
+        <li><a href="/loans">ローン</a></li>
+      </ul>
+    </div>
+    <div class="bank-footer__col">
+      <h3 class="bank-footer__heading">サポート</h3>
+      <ul class="bank-footer__list">
+        <li><a href="/help">ヘルプセンター</a></li>
+        <li><a href="/security">セキュリティ対策</a></li>
+        <li><a href="/contact">お問い合わせ</a></li>
+      </ul>
+    </div>
+    <div class="bank-footer__col">
+      <h3 class="bank-footer__heading">会社情報</h3>
+      <ul class="bank-footer__list">
+        <li><a href="/about">運営会社</a></li>
+        <li><a href="/terms">利用規約</a></li>
+        <li><a href="/privacy">プライバシーポリシー</a></li>
+      </ul>
+    </div>
+    <div class="bank-footer__col">
+      <h3 class="bank-footer__heading">SNS</h3>
+      <ul class="bank-footer__list">
+        <li><a href="https://twitter.com/himawari-bank">Twitter</a></li>
+        <li><a href="https://facebook.com/himawari-bank">Facebook</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="bank-footer__copyright">&copy; 2026 ひまわりネット銀行</p>
+</footer>
+</body>
+</html>

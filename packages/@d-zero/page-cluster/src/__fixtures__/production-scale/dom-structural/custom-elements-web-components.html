@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Custom Elements - Web Components</title>
+</head>
+<body>
+<main>
+<p id="marker-custom-elements-web-components" data-marker="custom-elements-web-components">MARKER_CUSTOM_ELEMENTS_WEB_COMPONENTS</p>
+<my-custom-widget data-widget-id="widget-1">
+<x-tab-panel data-active="true">
+<x-tab-label>Overview</x-tab-label>
+<x-tab-content>
+<p>Overview content goes here.</p>
+</x-tab-content>
+</x-tab-panel>
+<x-tab-panel data-active="false">
+<x-tab-label>Details</x-tab-label>
+<x-tab-content>
+<p>Details content goes here.</p>
+</x-tab-content>
+</x-tab-panel>
+</my-custom-widget>
+<user-avatar-badge user-id="42" size="large"></user-avatar-badge>
+<app-notification-toast type="success">
+<span>Saved successfully.</span>
+</app-notification-toast>
+</main>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="全国の求人情報を検索できる求人検索サイトの検索結果ページです。職種・勤務地・年収などで絞り込みができます。">
+<title>ITエンジニア 求人検索結果 | 求人ボードキャリア</title>
+</head>
+<body>
+<header class="jobs-header">
+  <div class="jobs-header__inner">
+    <a class="jobs-logo" href="/">求人ボードキャリア</a>
+    <nav class="jobs-nav" aria-label="グローバルナビゲーション">
+      <ul>
+        <li><a class="jobs-nav__item" href="/">トップ</a></li>
+        <li><a class="jobs-nav__item jobs-nav__item--active" href="/search" aria-current="page">求人検索</a></li>
+        <li><a class="jobs-nav__item" href="/companies">企業一覧</a></li>
+        <li><a class="jobs-nav__item" href="/scout">スカウト</a></li>
+        <li><a class="jobs-nav__item" href="/mypage">マイページ</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main class="jobs-main">
+  <div class="jobs-hero">
+    <h1 class="jobs-hero__title">ITエンジニアの求人検索結果</h1>
+    <p class="jobs-hero__lead">条件に合う求人が 128 件見つかりました</p>
+    <form class="jobs-search-bar" action="/search" method="get">
+      <input class="jobs-search-bar__keyword" type="text" name="keyword" value="ITエンジニア" placeholder="キーワードで検索">
+      <select class="jobs-search-bar__area" name="area">
+        <option value="tokyo">東京都</option>
+        <option value="osaka">大阪府</option>
+        <option value="aichi">愛知県</option>
+      </select>
+      <button class="jobs-search-bar__submit" type="submit">検索する</button>
+    </form>
+  </div>
+
+  <div class="jobs-layout">
+    <aside class="jobs-filters" aria-label="絞り込み検索">
+      <h2 class="jobs-filters__title">絞り込み検索</h2>
+
+      <fieldset class="jobs-filters__group">
+        <legend>職種</legend>
+        <label><input type="checkbox" name="job_type" value="frontend">フロントエンドエンジニア</label>
+        <label><input type="checkbox" name="job_type" value="backend">バックエンドエンジニア</label>
+        <label><input type="checkbox" name="job_type" value="infra">インフラエンジニア</label>
+        <label><input type="checkbox" name="job_type" value="pm">プロジェクトマネージャー</label>
+      </fieldset>
+
+      <fieldset class="jobs-filters__group">
+        <legend>勤務地</legend>
+        <label><input type="checkbox" name="location" value="tokyo">東京都</label>
+        <label><input type="checkbox" name="location" value="kanagawa">神奈川県</label>
+        <label><input type="checkbox" name="location" value="osaka">大阪府</label>
+        <label><input type="checkbox" name="location" value="fukuoka">福岡県</label>
+      </fieldset>
+
+      <fieldset class="jobs-filters__group">
+        <legend>年収</legend>
+        <label><input type="checkbox" name="salary" value="400">400万円以上</label>
+        <label><input type="checkbox" name="salary" value="600">600万円以上</label>
+        <label><input type="checkbox" name="salary" value="800">800万円以上</label>
+        <label><input type="checkbox" name="salary" value="1000">1000万円以上</label>
+      </fieldset>
+
+      <fieldset class="jobs-filters__group">
+        <legend>雇用形態</legend>
+        <label><input type="checkbox" name="employment" value="fulltime">正社員</label>
+        <label><input type="checkbox" name="employment" value="contract">契約社員</label>
+        <label><input type="checkbox" name="employment" value="parttime">業務委託</label>
+        <label><input type="checkbox" name="employment" value="new">新卒</label>
+      </fieldset>
+
+      <button class="jobs-filters__apply" type="button">この条件で絞り込む</button>
+    </aside>
+
+    <section class="jobs-results" aria-label="求人一覧">
+      <div class="jobs-results__meta">
+        <p class="jobs-results__count">128件中 1〜18件を表示</p>
+        <label class="jobs-results__sort-label">並び替え
+          <select class="jobs-results__sort">
+            <option value="new">新着順</option>
+            <option value="salary">年収の高い順</option>
+          </select>
+        </label>
+      </div>
+
+      <ul class="jobs-list">
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">フロントエンドエンジニア（React/TypeScript）</h3>
+            <p class="jobs-card__company">株式会社サンプルテック</p>
+            <p class="jobs-card__location">サンプル県サンプル区 / フルリモート可</p>
+            <p class="jobs-card__salary">年収 600万円〜900万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">リモートOK</span>
+              <span class="jobs-card__tag">フレックス</span>
+              <span class="jobs-card__tag">経験者優遇</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">バックエンドエンジニア（Go/AWS）</h3>
+            <p class="jobs-card__company">サンプルクラウド株式会社</p>
+            <p class="jobs-card__location">サンプル県サンプル区</p>
+            <p class="jobs-card__salary">年収 550万円〜850万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">週2出社</span>
+              <span class="jobs-card__tag">副業OK</span>
+              <span class="jobs-card__tag">語学力活かせる</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">インフラエンジニア（Kubernetes）</h3>
+            <p class="jobs-card__company">株式会社サンプルインフラ</p>
+            <p class="jobs-card__location">サンプル県サンプル市</p>
+            <p class="jobs-card__salary">年収 500万円〜750万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">土日休み</span>
+              <span class="jobs-card__tag">在宅可</span>
+              <span class="jobs-card__tag">資格支援</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">プロジェクトマネージャー（SIer）</h3>
+            <p class="jobs-card__company">サンプルシステム開発株式会社</p>
+            <p class="jobs-card__location">サンプル県サンプル区</p>
+            <p class="jobs-card__salary">年収 700万円〜1000万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">管理職候補</span>
+              <span class="jobs-card__tag">PMP優遇</span>
+              <span class="jobs-card__tag">賞与年2回</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">データエンジニア（Python/BigQuery）</h3>
+            <p class="jobs-card__company">株式会社サンプルデータ</p>
+            <p class="jobs-card__location">サンプル県サンプル市 / フルリモート可</p>
+            <p class="jobs-card__salary">年収 650万円〜950万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">フルリモート</span>
+              <span class="jobs-card__tag">最新技術</span>
+              <span class="jobs-card__tag">若手活躍</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">モバイルアプリエンジニア（Flutter）</h3>
+            <p class="jobs-card__company">株式会社サンプルモバイル</p>
+            <p class="jobs-card__location">サンプル県サンプル市</p>
+            <p class="jobs-card__salary">年収 480万円〜700万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">私服OK</span>
+              <span class="jobs-card__tag">土日祝休み</span>
+              <span class="jobs-card__tag">未経験相談可</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">QAエンジニア（自動テスト）</h3>
+            <p class="jobs-card__company">株式会社サンプルクオリティ</p>
+            <p class="jobs-card__location">サンプル県サンプル区</p>
+            <p class="jobs-card__salary">年収 500万円〜680万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">フレックス</span>
+              <span class="jobs-card__tag">残業少なめ</span>
+              <span class="jobs-card__tag">研修充実</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">セキュリティエンジニア</h3>
+            <p class="jobs-card__company">株式会社サンプルセーフガード</p>
+            <p class="jobs-card__location">サンプル県サンプル区 / ハイブリッド勤務</p>
+            <p class="jobs-card__salary">年収 700万円〜1100万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">高年収</span>
+              <span class="jobs-card__tag">資格手当</span>
+              <span class="jobs-card__tag">CISSP優遇</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">SRE（サイトリライアビリティエンジニア）</h3>
+            <p class="jobs-card__company">株式会社サンプルスケール</p>
+            <p class="jobs-card__location">サンプル県サンプル市 / フルリモート可</p>
+            <p class="jobs-card__salary">年収 600万円〜900万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">フルリモート</span>
+              <span class="jobs-card__tag">裁量労働制</span>
+              <span class="jobs-card__tag">技術書購入補助</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">社内SE（情報システム部）</h3>
+            <p class="jobs-card__company">株式会社サンプルホールディングス</p>
+            <p class="jobs-card__location">サンプル県サンプル市</p>
+            <p class="jobs-card__salary">年収 450万円〜650万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">転勤なし</span>
+              <span class="jobs-card__tag">住宅手当</span>
+              <span class="jobs-card__tag">育休実績あり</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">機械学習エンジニア（自然言語処理）</h3>
+            <p class="jobs-card__company">株式会社サンプルアルゴリズム</p>
+            <p class="jobs-card__location">サンプル県サンプル区</p>
+            <p class="jobs-card__salary">年収 750万円〜1200万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">研究開発</span>
+              <span class="jobs-card__tag">学会参加支援</span>
+              <span class="jobs-card__tag">博士歓迎</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+        <li class="jobs-card">
+          <div class="jobs-card__body">
+            <h3 class="jobs-card__role">テクニカルサポートエンジニア</h3>
+            <p class="jobs-card__company">株式会社サンプルサポート</p>
+            <p class="jobs-card__location">サンプル県サンプル市</p>
+            <p class="jobs-card__salary">年収 380万円〜550万円</p>
+            <div class="jobs-card__tags">
+              <span class="jobs-card__tag">未経験歓迎</span>
+              <span class="jobs-card__tag">研修3ヶ月</span>
+              <span class="jobs-card__tag">シフト制</span>
+            </div>
+            <button class="jobs-card__apply" type="button">応募する</button>
+          </div>
+        </li>
+      </ul>
+
+      <nav class="jobs-pagination" aria-label="ページネーション">
+        <ul>
+          <li><a href="?page=1" aria-current="page">1</a></li>
+          <li><a href="?page=2">2</a></li>
+          <li><a href="?page=3">3</a></li>
+          <li><a href="?page=4">4</a></li>
+          <li><a href="?page=5">5</a></li>
+          <li><a href="?page=2">次へ</a></li>
+        </ul>
+      </nav>
+    </section>
+  </div>
+</main>
+
+<p id="marker-job-board-listing-page" data-marker="job-board-listing-page">MARKER_JOB_BOARD_LISTING_PAGE</p>
+
+<footer class="jobs-footer">
+  <div class="jobs-footer__columns">
+    <div class="jobs-footer__column">
+      <h4>会社情報</h4>
+      <ul>
+        <li><a href="/about">運営会社</a></li>
+        <li><a href="/careers">採用情報</a></li>
+        <li><a href="/press">プレスリリース</a></li>
+        <li><a href="/terms">利用規約</a></li>
+      </ul>
+    </div>
+    <div class="jobs-footer__column">
+      <h4>求職者の方へ</h4>
+      <ul>
+        <li><a href="/search">求人を探す</a></li>
+        <li><a href="/scout">スカウトサービス</a></li>
+        <li><a href="/resume">履歴書作成</a></li>
+        <li><a href="/faq">よくある質問</a></li>
+      </ul>
+    </div>
+    <div class="jobs-footer__column">
+      <h4>企業の方へ</h4>
+      <ul>
+        <li><a href="/for-companies">求人掲載について</a></li>
+        <li><a href="/pricing">料金プラン</a></li>
+        <li><a href="/contact">お問い合わせ</a></li>
+        <li><a href="/login-company">企業ログイン</a></li>
+      </ul>
+    </div>
+    <div class="jobs-footer__column">
+      <h4>公式SNS</h4>
+      <ul>
+        <li><a href="https://x.com/example">X（旧Twitter）</a></li>
+        <li><a href="https://facebook.com/example">Facebook</a></li>
+        <li><a href="https://note.com/example">note</a></li>
+        <li><a href="https://instagram.com/example">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="jobs-footer__copyright">&copy; 2026 求人ボードキャリア</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Map/Area - Image Map</title>
+</head>
+<body>
+<main>
+<p id="marker-map-area-image-map" data-marker="map-area-image-map">MARKER_MAP_AREA_IMAGE_MAP</p>
+<img src="/img/world-map.png" alt="World map" usemap="#world-map" width="600" height="300">
+<map name="world-map">
+<area shape="rect" coords="10,10,120,80" href="/regions/north-america" alt="North America" target="_self">
+<area shape="rect" coords="140,10,260,80" href="/regions/europe" alt="Europe" target="_self">
+<area shape="circle" coords="400,150,50" href="/regions/asia" alt="Asia" target="_self">
+<area shape="poly" coords="300,200,340,220,320,260,280,240" href="/regions/africa" alt="Africa" target="_self">
+<area shape="default" href="/regions/other" alt="Other regions">
+</map>
+<figure>
+<img src="/img/floor-plan.png" alt="Office floor plan" usemap="#floor-plan">
+<figcaption>Click a room to view details.</figcaption>
+</figure>
+<map name="floor-plan">
+<area shape="rect" coords="0,0,100,100" href="/rooms/lobby" alt="Lobby">
+<area shape="rect" coords="100,0,200,100" href="/rooms/meeting-a" alt="Meeting Room A">
+</map>
+</main>
+</body>
+</html>

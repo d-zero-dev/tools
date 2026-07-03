@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="TypeScriptのジェネリクスで条件付き型を推論する方法についての質問と回答。コミュニティQ&amp;Aサイト。" />
+	<title>TypeScriptで条件付き型からユニオン型を抽出するには？ | DevAnswers</title>
+</head>
+<body>
+	<header class="qa-header">
+		<div class="qa-header__inner">
+			<a class="qa-logo" href="/">DevAnswers</a>
+			<nav class="qa-nav">
+				<ul class="qa-nav__list">
+					<li class="qa-nav__item"><a href="/">ホーム</a></li>
+					<li class="qa-nav__item qa-nav__item--active" aria-current="page"><a href="/questions">質問</a></li>
+					<li class="qa-nav__item"><a href="/tags">タグ</a></li>
+					<li class="qa-nav__item"><a href="/users">ユーザー</a></li>
+					<li class="qa-nav__item"><a href="/jobs">求人</a></li>
+				</ul>
+			</nav>
+			<form class="qa-header__search" role="search">
+				<input type="search" placeholder="検索…" />
+				<button type="submit">検索</button>
+			</form>
+			<div class="qa-header__user">
+				<a class="qa-header__points" href="/u/me">1,204 pt</a>
+				<a class="qa-header__avatar" href="/u/me"><img src="/avatars/me.png" alt="自分のアバター" /></a>
+			</div>
+		</div>
+	</header>
+
+	<main class="qa-main">
+		<div class="qa-layout">
+			<div class="qa-question-column">
+				<nav class="qa-breadcrumb">
+					<ol>
+						<li><a href="/">ホーム</a></li>
+						<li><a href="/tags/typescript">TypeScript</a></li>
+						<li>質問詳細</li>
+					</ol>
+				</nav>
+
+				<section class="qa-question">
+					<h1 class="qa-question__title">TypeScriptで条件付き型からユニオン型を抽出するには？</h1>
+					<div class="qa-question__meta">
+						<span class="qa-question__asked">質問日: 2026-05-12</span>
+						<span class="qa-question__viewed">閲覧数: 3,412</span>
+						<span class="qa-question__modified">編集日: 2026-05-14</span>
+					</div>
+					<ul class="qa-question__tags">
+						<li><a href="/tags/typescript">typescript</a></li>
+						<li><a href="/tags/generics">generics</a></li>
+						<li><a href="/tags/conditional-types">conditional-types</a></li>
+						<li><a href="/tags/type-inference">type-inference</a></li>
+					</ul>
+					<div class="qa-question__body">
+						<div class="qa-vote">
+							<button class="qa-vote__up" type="button" aria-label="賛成票">▲</button>
+							<span class="qa-vote__count">42</span>
+							<button class="qa-vote__down" type="button" aria-label="反対票">▼</button>
+							<button class="qa-vote__bookmark" type="button" aria-label="ブックマーク">☆</button>
+						</div>
+						<div class="qa-question__content">
+							<p>条件付き型のテンプレートリテラル型から <code>infer</code> を使ってユニオン型を抽出したいのですが、うまくいきません。</p>
+							<pre><code>type ExtractParam&lt;T&gt; = T extends `/${infer P}` ? P : never;</code></pre>
+							<p>期待している挙動は以下の通りです。</p>
+							<ul>
+								<li>入力: <code>/users/:id</code></li>
+								<li>出力: <code>:id</code> のユニオン型</li>
+								<li>ネストしたパスにも対応したい</li>
+							</ul>
+							<p>どなたか良い方法をご存知でしたら教えてください。</p>
+						</div>
+					</div>
+					<div class="qa-question__actions">
+						<a class="qa-question__share" href="#">共有</a>
+						<a class="qa-question__edit" href="#">編集</a>
+						<a class="qa-question__flag" href="#">通報</a>
+					</div>
+				</section>
+
+				<section class="qa-comments" aria-label="質問へのコメント">
+					<ul class="qa-comments__list">
+						<li class="qa-comment">
+							<p class="qa-comment__text">再帰的な条件付き型を使うと解決できそうです。</p>
+							<a class="qa-comment__author" href="/u/1001">– taro_dev</a>
+						</li>
+						<li class="qa-comment">
+							<p class="qa-comment__text">TSのバージョンは何を使っていますか？</p>
+							<a class="qa-comment__author" href="/u/1002">– hanako_ts</a>
+						</li>
+					</ul>
+					<a class="qa-comments__add" href="#">コメントを追加</a>
+				</section>
+
+				<section class="qa-answers">
+					<h2 class="qa-answers__heading">6件の回答</h2>
+
+					<article class="qa-answer qa-answer--best">
+						<div class="qa-vote">
+							<button class="qa-vote__up" type="button" aria-label="賛成票">▲</button>
+							<span class="qa-vote__count">87</span>
+							<button class="qa-vote__down" type="button" aria-label="反対票">▼</button>
+						</div>
+						<span class="qa-answer__badge">ベストアンサー</span>
+						<div class="qa-answer__body">
+							<p>再帰的な条件付き型で分割していくのがシンプルです。</p>
+							<pre><code>type Split&lt;S&gt; = S extends `${infer Head}/${infer Rest}` ? Head | Split&lt;Rest&gt; : S;</code></pre>
+						</div>
+						<div class="qa-answer__footer">
+							<span class="qa-answer__answered">回答日: 2026-05-12</span>
+							<div class="qa-answer__author">
+								<img src="/avatars/2001.png" alt="回答者アバター" />
+								<a href="/u/2001">ken_fp</a>
+								<span class="qa-answer__author-rep">12.4k</span>
+							</div>
+						</div>
+					</article>
+
+					<article class="qa-answer">
+						<div class="qa-vote">
+							<button class="qa-vote__up" type="button" aria-label="賛成票">▲</button>
+							<span class="qa-vote__count">31</span>
+							<button class="qa-vote__down" type="button" aria-label="反対票">▼</button>
+						</div>
+						<div class="qa-answer__body">
+							<p>Template Literal Typesのドキュメントも参考になります。</p>
+						</div>
+						<div class="qa-answer__footer">
+							<span class="qa-answer__answered">回答日: 2026-05-12</span>
+							<div class="qa-answer__author">
+								<img src="/avatars/2002.png" alt="回答者アバター" />
+								<a href="/u/2002">mika_w</a>
+								<span class="qa-answer__author-rep">3.2k</span>
+							</div>
+						</div>
+					</article>
+
+					<article class="qa-answer">
+						<div class="qa-vote">
+							<button class="qa-vote__up" type="button" aria-label="賛成票">▲</button>
+							<span class="qa-vote__count">18</span>
+							<button class="qa-vote__down" type="button" aria-label="反対票">▼</button>
+						</div>
+						<div class="qa-answer__body">
+							<p>ユーティリティ型 <code>Split</code> をnpmパッケージとして公開している方もいます。</p>
+						</div>
+						<div class="qa-answer__footer">
+							<span class="qa-answer__answered">回答日: 2026-05-13</span>
+							<div class="qa-answer__author">
+								<img src="/avatars/2003.png" alt="回答者アバター" />
+								<a href="/u/2003">satoshi_q</a>
+								<span class="qa-answer__author-rep">890</span>
+							</div>
+						</div>
+					</article>
+
+					<article class="qa-answer">
+						<div class="qa-vote">
+							<button class="qa-vote__up" type="button" aria-label="賛成票">▲</button>
+							<span class="qa-vote__count">9</span>
+							<button class="qa-vote__down" type="button" aria-label="反対票">▼</button>
+						</div>
+						<div class="qa-answer__body">
+							<p>TS 5.x以降であれば <code>infer</code> の複数箇所指定が可能です。</p>
+						</div>
+						<div class="qa-answer__footer">
+							<span class="qa-answer__answered">回答日: 2026-05-13</span>
+							<div class="qa-answer__author">
+								<img src="/avatars/2004.png" alt="回答者アバター" />
+								<a href="/u/2004">emily_dev</a>
+								<span class="qa-answer__author-rep">5.6k</span>
+							</div>
+						</div>
+					</article>
+
+					<article class="qa-answer">
+						<div class="qa-vote">
+							<button class="qa-vote__up" type="button" aria-label="賛成票">▲</button>
+							<span class="qa-vote__count">4</span>
+							<button class="qa-vote__down" type="button" aria-label="反対票">▼</button>
+						</div>
+						<div class="qa-answer__body">
+							<p>型パズルとして面白い問題ですね、試してみます。</p>
+						</div>
+						<div class="qa-answer__footer">
+							<span class="qa-answer__answered">回答日: 2026-05-14</span>
+							<div class="qa-answer__author">
+								<img src="/avatars/2005.png" alt="回答者アバター" />
+								<a href="/u/2005">nao_c</a>
+								<span class="qa-answer__author-rep">210</span>
+							</div>
+						</div>
+					</article>
+
+					<article class="qa-answer">
+						<div class="qa-vote">
+							<button class="qa-vote__up" type="button" aria-label="賛成票">▲</button>
+							<span class="qa-vote__count">1</span>
+							<button class="qa-vote__down" type="button" aria-label="反対票">▼</button>
+						</div>
+						<div class="qa-answer__body">
+							<p>関連するIssueがTypeScriptリポジトリにありました。</p>
+						</div>
+						<div class="qa-answer__footer">
+							<span class="qa-answer__answered">回答日: 2026-05-15</span>
+							<div class="qa-answer__author">
+								<img src="/avatars/2006.png" alt="回答者アバター" />
+								<a href="/u/2006">yui_ts</a>
+								<span class="qa-answer__author-rep">75</span>
+							</div>
+						</div>
+					</article>
+
+					<form class="qa-answer-form">
+						<h3>回答を投稿</h3>
+						<textarea rows="6" placeholder="回答を入力してください"></textarea>
+						<button type="submit">回答を投稿する</button>
+					</form>
+				</section>
+			</div>
+
+			<aside class="qa-sidebar">
+				<section class="qa-sidebar__related">
+					<h2>関連する質問</h2>
+					<ul class="qa-related-list">
+						<li><a href="/q/1">条件付き型のネストが深くなりすぎる場合の対処法</a></li>
+						<li><a href="/q/2">infer キーワードの動作原理を理解したい</a></li>
+						<li><a href="/q/3">Mapped Typesとテンプレートリテラル型の組み合わせ</a></li>
+						<li><a href="/q/4">再帰的な型定義でスタックオーバーフローを防ぐ</a></li>
+						<li><a href="/q/5">型レベルで文字列を分割するユーティリティ</a></li>
+						<li><a href="/q/6">strictモードでの型推論の違い</a></li>
+					</ul>
+				</section>
+				<section class="qa-sidebar__hot">
+					<h2>ホットな質問</h2>
+					<ul class="qa-hot-list">
+						<li>
+							<a href="/q/7">Reactのuseeffect依存配列の警告を消すべきか</a>
+							<span class="qa-hot-list__votes">120</span>
+						</li>
+						<li>
+							<a href="/q/8">Node.jsのESMとCJSの相互運用問題</a>
+							<span class="qa-hot-list__votes">98</span>
+						</li>
+						<li>
+							<a href="/q/9">Dockerイメージのビルド時間を短縮する方法</a>
+							<span class="qa-hot-list__votes">76</span>
+						</li>
+					</ul>
+				</section>
+			</aside>
+		</div>
+
+		<p id="marker-community-qa-site" data-marker="community-qa-site">MARKER_COMMUNITY_QA_SITE</p>
+	</main>
+
+	<footer class="qa-footer">
+		<div class="qa-footer__columns">
+			<div class="qa-footer__column">
+				<h3>DevAnswersについて</h3>
+				<ul>
+					<li><a href="/about">会社概要</a></li>
+					<li><a href="/press">プレスキット</a></li>
+					<li><a href="/legal/terms">利用規約</a></li>
+					<li><a href="/legal/privacy">プライバシーポリシー</a></li>
+				</ul>
+			</div>
+			<div class="qa-footer__column">
+				<h3>サポート</h3>
+				<ul>
+					<li><a href="/help">ヘルプセンター</a></li>
+					<li><a href="/contact">お問い合わせ</a></li>
+					<li><a href="/guidelines">コミュニティガイドライン</a></li>
+				</ul>
+			</div>
+			<div class="qa-footer__column">
+				<h3>製品</h3>
+				<ul>
+					<li><a href="/teams">DevAnswers Teams</a></li>
+					<li><a href="/api">API</a></li>
+					<li><a href="/jobs">求人掲載</a></li>
+				</ul>
+			</div>
+			<div class="qa-footer__column">
+				<h3>フォロー</h3>
+				<ul>
+					<li><a href="https://twitter.com/devanswers">X (Twitter)</a></li>
+					<li><a href="https://github.com/devanswers">GitHub</a></li>
+					<li><a href="https://linkedin.com/company/devanswers">LinkedIn</a></li>
+				</ul>
+			</div>
+		</div>
+		<p class="qa-footer__copyright">&copy; 2026 DevAnswers, Inc.</p>
+	</footer>
+</body>
+</html>

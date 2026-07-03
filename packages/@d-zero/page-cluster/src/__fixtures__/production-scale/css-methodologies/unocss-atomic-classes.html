@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Unocss Atomic Classes</title>
+</head>
+<body>
+  <div flex="~ col" min="h-screen" bg="gray-50 dark:gray-900">
+    <header flex="~ items-center justify-between" p="4" bg="white dark:gray-800" shadow="sm">
+      <span text="lg" font="bold">Uptime Monitor</span>
+      <div flex="~ gap-2">
+        <button p="x-3 y-1.5" rounded="md" bg="blue-500 hover:blue-600" text="white sm" type="button">New check</button>
+      </div>
+    </header>
+    <main grid="~ cols-2 md:cols-4 gap-4" p="6">
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 1</span>
+          <span class="i-carbon-warning text-amber-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">96%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 91%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 2</span>
+          <span class="i-carbon-checkmark text-green-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">97%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 92%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 3</span>
+          <span class="i-carbon-warning text-amber-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">98%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 93%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 4</span>
+          <span class="i-carbon-checkmark text-green-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">99%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 94%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 5</span>
+          <span class="i-carbon-warning text-amber-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">100%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 95%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 6</span>
+          <span class="i-carbon-checkmark text-green-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">101%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 96%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 7</span>
+          <span class="i-carbon-warning text-amber-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">102%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 97%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 8</span>
+          <span class="i-carbon-checkmark text-green-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">103%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 98%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 9</span>
+          <span class="i-carbon-warning text-amber-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">104%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 99%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 10</span>
+          <span class="i-carbon-checkmark text-green-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">105%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 100%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 11</span>
+          <span class="i-carbon-warning text-amber-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">106%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 101%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 12</span>
+          <span class="i-carbon-checkmark text-green-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">107%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 102%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 13</span>
+          <span class="i-carbon-warning text-amber-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">108%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 103%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 14</span>
+          <span class="i-carbon-checkmark text-green-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">109%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 104%"></div>
+        </div>
+      </div>
+      <div flex="~ col" bg="white dark:gray-800" p="4" rounded="lg" shadow="sm hover:md" class="transition-shadow">
+        <div flex="~ items-center justify-between">
+          <span text="sm gray-500" font="medium">Server 15</span>
+          <span class="i-carbon-warning text-amber-500"></span>
+        </div>
+        <span text="2xl gray-900 dark:white" font="bold" m="t-2">110%</span>
+        <div w="full" h="1" bg="gray-100 dark:gray-700" rounded="full" m="t-2">
+          <div h="1" rounded="full" bg="blue-500" style="width: 105%"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <p id="marker-unocss-atomic-classes" data-marker="unocss-atomic-classes">MARKER_UNOCSS_ATOMIC_CLASSES</p>
+
+</body>
+</html>

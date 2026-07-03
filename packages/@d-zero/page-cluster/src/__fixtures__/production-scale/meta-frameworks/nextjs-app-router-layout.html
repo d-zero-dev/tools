@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ダッシュボード | App Router サンプル</title>
+<link rel="preload" href="/_next/static/chunks/webpack-abc123.js" as="script">
+<link rel="preload" href="/_next/static/chunks/main-app-def456.js" as="script">
+<link rel="preload" href="/_next/static/chunks/app/layout-ghi789.js" as="script">
+<link rel="preload" href="/_next/static/chunks/app/page-jkl012.js" as="script">
+<link rel="stylesheet" href="/_next/static/css/app-mno345.css">
+<link rel="icon" href="/favicon.ico">
+</head>
+<body class="antialiased">
+<!--$-->
+<header class="site-header">
+<nav class="site-nav">
+<div class="logo">
+<a href="/"><span>Acme Cloud</span></a>
+</div>
+<ul class="nav-list">
+<li><a href="/dashboard">ダッシュボード</a></li>
+<li><a href="/projects">プロジェクト</a></li>
+<li><a href="/reports">レポート</a></li>
+<li><a href="/team">チーム</a></li>
+<li><a href="/billing">請求</a></li>
+<li><a href="/settings">設定</a></li>
+</ul>
+<button type="button" class="menu-toggle">メニュー</button>
+</nav>
+</header>
+<!--/$-->
+<div class="app-shell">
+<aside class="app-sidebar">
+<nav class="sidebar-nav">
+<ul>
+<li><a href="/dashboard/overview"><span class="icon">O</span>概要</a></li>
+<li><a href="/dashboard/analytics"><span class="icon">A</span>アナリティクス</a></li>
+<li><a href="/dashboard/tasks"><span class="icon">T</span>タスク</a></li>
+<li><a href="/dashboard/calendar"><span class="icon">C</span>カレンダー</a></li>
+<li><a href="/dashboard/messages"><span class="icon">M</span>メッセージ</a></li>
+<li><a href="/dashboard/files"><span class="icon">F</span>ファイル</a></li>
+<li><a href="/dashboard/integrations"><span class="icon">I</span>連携</a></li>
+<li><a href="/dashboard/logs"><span class="icon">L</span>ログ</a></li>
+</ul>
+</nav>
+</aside>
+<main class="app-main">
+<!--$-->
+<section class="hero">
+<h1>ようこそ、田中様</h1>
+<p>本日のプロジェクト進捗と最新のアクティビティをご確認ください。</p>
+<div class="hero-actions">
+<button type="button" class="btn-primary">新規プロジェクト作成</button>
+<button type="button" class="btn-secondary">レポートを見る</button>
+</div>
+</section>
+<!--/$-->
+<section class="stats-grid">
+<div class="stat-card">
+<h3>進行中のプロジェクト</h3>
+<p class="stat-value">12</p>
+</div>
+<div class="stat-card">
+<h3>完了したタスク</h3>
+<p class="stat-value">248</p>
+</div>
+<div class="stat-card">
+<h3>チームメンバー</h3>
+<p class="stat-value">36</p>
+</div>
+<div class="stat-card">
+<h3>今月の売上</h3>
+<p class="stat-value">¥4,820,000</p>
+</div>
+</section>
+<section class="project-list">
+<h2>最近のプロジェクト</h2>
+<ul class="card-grid">
+<li class="project-card">
+<h3>ウェブサイトリニューアル</h3>
+<p>コーポレートサイトの全面刷新プロジェクトです。</p>
+<a href="/projects/1">詳細を見る</a>
+</li>
+<li class="project-card">
+<h3>モバイルアプリ開発</h3>
+<p>新規モバイルアプリの設計・開発を行っています。</p>
+<a href="/projects/2">詳細を見る</a>
+</li>
+<li class="project-card">
+<h3>マーケティングキャンペーン</h3>
+<p>夏季キャンペーンの企画から実施までを管理します。</p>
+<a href="/projects/3">詳細を見る</a>
+</li>
+<li class="project-card">
+<h3>社内ツール移行</h3>
+<p>レガシーシステムから新ツールへの移行作業です。</p>
+<a href="/projects/4">詳細を見る</a>
+</li>
+<li class="project-card">
+<h3>顧客サポート改善</h3>
+<p>サポート対応フローの見直しと自動化を進めています。</p>
+<a href="/projects/5">詳細を見る</a>
+</li>
+<li class="project-card">
+<h3>データ基盤整備</h3>
+<p>分析基盤の再構築とダッシュボード整備を行います。</p>
+<a href="/projects/6">詳細を見る</a>
+</li>
+</ul>
+</section>
+<section class="activity-feed">
+<h2>最新のアクティビティ</h2>
+<ol class="feed-list">
+<li><span class="feed-time">10:24</span><p>佐藤さんがタスク「デザインレビュー」を完了しました。</p></li>
+<li><span class="feed-time">09:58</span><p>鈴木さんが新しいコメントを追加しました。</p></li>
+<li><span class="feed-time">09:30</span><p>山田さんがファイルをアップロードしました。</p></li>
+<li><span class="feed-time">08:47</span><p>高橋さんがプロジェクトのステータスを更新しました。</p></li>
+<li><span class="feed-time">08:12</span><p>渡辺さんが新しいメンバーを招待しました。</p></li>
+</ol>
+</section>
+<section class="testimonials">
+<h2>チームからの声</h2>
+<blockquote>
+<p>ダッシュボードのおかげでプロジェクトの状況が一目でわかるようになりました。</p>
+<footer>— 開発チームリーダー</footer>
+</blockquote>
+<blockquote>
+<p>タスク管理が非常にスムーズになり、生産性が向上しました。</p>
+<footer>— プロダクトマネージャー</footer>
+</blockquote>
+<blockquote>
+<p>チーム全体の透明性が高まり、コミュニケーションが円滑になりました。</p>
+<footer>— カスタマーサクセス担当</footer>
+</blockquote>
+</section>
+<p id="marker-nextjs-app-router-layout" data-marker="nextjs-app-router-layout">MARKER_NEXTJS_APP_ROUTER_LAYOUT</p>
+</main>
+</div>
+<!--$-->
+<footer class="site-footer">
+<div class="footer-columns">
+<div class="footer-column">
+<h4>プロダクト</h4>
+<ul>
+<li><a href="/features">機能一覧</a></li>
+<li><a href="/pricing">料金プラン</a></li>
+<li><a href="/changelog">更新履歴</a></li>
+</ul>
+</div>
+<div class="footer-column">
+<h4>サポート</h4>
+<ul>
+<li><a href="/help">ヘルプセンター</a></li>
+<li><a href="/contact">お問い合わせ</a></li>
+<li><a href="/status">稼働状況</a></li>
+</ul>
+</div>
+<div class="footer-column">
+<h4>会社情報</h4>
+<ul>
+<li><a href="/about">会社概要</a></li>
+<li><a href="/careers">採用情報</a></li>
+<li><a href="/press">プレスリリース</a></li>
+</ul>
+</div>
+<div class="footer-column">
+<h4>法的情報</h4>
+<ul>
+<li><a href="/terms">利用規約</a></li>
+<li><a href="/privacy">プライバシーポリシー</a></li>
+</ul>
+</div>
+</div>
+<small>&copy; 2026 Acme Cloud, Inc.</small>
+</footer>
+<!--/$-->
+<script src="/_next/static/chunks/webpack-abc123.js" defer=""></script>
+<script src="/_next/static/chunks/main-app-def456.js" defer=""></script>
+<script src="/_next/static/chunks/app/layout-ghi789.js" defer=""></script>
+<script src="/_next/static/chunks/app/page-jkl012.js" defer=""></script>
+<script>self.__next_f=self.__next_f||[];self.__next_f.push([0])</script>
+<script>self.__next_f.push([1,"1:HL[\"/_next/static/css/app-mno345.css\",\"style\"]\n"])</script>
+<script>self.__next_f.push([1,"2:I[\"/_next/static/chunks/app/layout-ghi789.js\",[],\"default\"]\n"])</script>
+<script>self.__next_f.push([1,"3:{\"name\":\"dashboard\",\"count\":12}\n"])</script>
+<script>self.__next_f.push([1,"4:I[\"/_next/static/chunks/app/page-jkl012.js\",[],\"default\"]\n"])</script>
+</body>
+</html>

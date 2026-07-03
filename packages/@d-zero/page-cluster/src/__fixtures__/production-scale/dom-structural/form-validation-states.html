@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Form - Validation States</title>
+</head>
+<body>
+<main>
+<p id="marker-form-validation-states" data-marker="form-validation-states">MARKER_FORM_VALIDATION_STATES</p>
+<form action="/submit" method="post" novalidate>
+<div class="field is-valid">
+<label for="v-name">Name</label>
+<input type="text" id="v-name" name="name" required aria-invalid="false" aria-describedby="v-name-hint">
+<span id="v-name-hint">Looks good.</span>
+</div>
+<div class="field is-invalid">
+<label for="v-email">Email</label>
+<input type="email" id="v-email" name="email" required aria-invalid="true" aria-describedby="v-email-error">
+<span id="v-email-error" role="alert">Please enter a valid email address.</span>
+</div>
+<div class="field">
+<label for="v-zip">Zip Code</label>
+<input type="text" id="v-zip" name="zip" pattern="[0-9]{3}-[0-9]{4}" aria-invalid="false">
+</div>
+<div class="field">
+<label for="v-age">Age</label>
+<input type="number" id="v-age" name="age" min="18" max="99" aria-invalid="false">
+</div>
+<fieldset disabled>
+<legend>Locked Section</legend>
+<div class="field">
+<label for="v-locked">Locked Field</label>
+<input type="text" id="v-locked" name="locked" value="cannot edit" readonly>
+</div>
+</fieldset>
+<button type="submit">Submit</button>
+</form>
+</main>
+</body>
+</html>

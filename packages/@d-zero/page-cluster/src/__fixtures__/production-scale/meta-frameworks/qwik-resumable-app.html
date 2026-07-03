@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja" q:container="paused" q:version="1.5.0" q:render="ssr" q:base="/build/">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>予約管理システム | Qwik Resumable App</title>
+  <meta name="description" content="Qwik のレジューム機能により高速に起動する予約管理アプリケーションです。" />
+  <link rel="stylesheet" href="/build/q-styles.a1b2c3.css" />
+  <link rel="icon" href="/favicon.svg" />
+</head>
+<body>
+  <div id="app-shell" q:key="root-shell">
+    <header q:key="hdr-01" class="app-header">
+      <div class="app-header__brand" q:key="brand-01">
+        <img src="/assets/brand-logo.svg" alt="予約管理システム" width="130" height="36" />
+      </div>
+      <nav class="app-header__nav" q:key="nav-01" aria-label="メインナビゲーション">
+        <ul>
+          <li><a href="/" on:click="./chunk-a1b2c3.js#Nav_navigateHome_onClick">ホーム</a></li>
+          <li><a href="/reservations" on:click="./chunk-b2c3d4.js#Nav_navigateReservations_onClick">予約一覧</a></li>
+          <li><a href="/customers" on:click="./chunk-c3d4e5.js#Nav_navigateCustomers_onClick">顧客管理</a></li>
+          <li><a href="/reports" on:click="./chunk-d4e5f6.js#Nav_navigateReports_onClick">レポート</a></li>
+          <li><a href="/settings" on:click="./chunk-e5f6a7.js#Nav_navigateSettings_onClick">設定</a></li>
+        </ul>
+      </nav>
+      <button type="button" class="app-header__notify" q:key="notify-btn" on:click="./chunk-f6a7b8.js#Header_toggleNotifications_onClick" aria-label="通知を開く">
+        <span class="app-header__notify-badge">3</span>
+      </button>
+    </header>
+    <main class="app-main" q:key="main-01">
+      <section class="dashboard-summary" q:key="summary-01">
+        <h1>本日の予約状況</h1>
+        <div class="dashboard-summary__cards">
+          <div class="summary-card" q:key="card-01">
+            <p class="summary-card__label">本日の予約件数</p>
+            <p class="summary-card__value">42</p>
+          </div>
+          <div class="summary-card" q:key="card-02">
+            <p class="summary-card__label">キャンセル件数</p>
+            <p class="summary-card__value">3</p>
+          </div>
+          <div class="summary-card" q:key="card-03">
+            <p class="summary-card__label">新規顧客数</p>
+            <p class="summary-card__value">7</p>
+          </div>
+          <div class="summary-card" q:key="card-04">
+            <p class="summary-card__label">売上見込み</p>
+            <p class="summary-card__value">￥1,280,000</p>
+          </div>
+        </div>
+      </section>
+      <p id="marker-qwik-resumable-app" data-marker="qwik-resumable-app">MARKER_QWIK_RESUMABLE_APP</p>
+      <section class="counter-widget" q:key="counter-01">
+        <h2>クイックカウンター</h2>
+        <div class="counter-widget__controls">
+          <button type="button" on:click="./chunk-a1b2c3.js#Counter_decrement_onClick" aria-label="減らす">-</button>
+          <span class="counter-widget__value">0</span>
+          <button type="button" on:click="./chunk-a1b2c3.js#Counter_increment_onClick" aria-label="増やす">+</button>
+        </div>
+      </section>
+      <section class="reservation-table" q:key="table-01">
+        <h2>直近の予約一覧</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>予約番号</th>
+              <th>顧客名</th>
+              <th>日時</th>
+              <th>ステータス</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr q:key="row-01">
+              <td>R-1001</td>
+              <td>山田 太郎</td>
+              <td>2026-07-05 10:00</td>
+              <td>確定</td>
+              <td><button type="button" on:click="./chunk-g7h8i9.js#Table_openDetail_onClick">詳細</button></td>
+            </tr>
+            <tr q:key="row-02">
+              <td>R-1002</td>
+              <td>佐藤 花子</td>
+              <td>2026-07-05 11:30</td>
+              <td>確定</td>
+              <td><button type="button" on:click="./chunk-g7h8i9.js#Table_openDetail_onClick">詳細</button></td>
+            </tr>
+            <tr q:key="row-03">
+              <td>R-1003</td>
+              <td>鈴木 一郎</td>
+              <td>2026-07-05 13:00</td>
+              <td>キャンセル</td>
+              <td><button type="button" on:click="./chunk-g7h8i9.js#Table_openDetail_onClick">詳細</button></td>
+            </tr>
+            <tr q:key="row-04">
+              <td>R-1004</td>
+              <td>高橋 美咲</td>
+              <td>2026-07-05 14:30</td>
+              <td>確定</td>
+              <td><button type="button" on:click="./chunk-g7h8i9.js#Table_openDetail_onClick">詳細</button></td>
+            </tr>
+            <tr q:key="row-05">
+              <td>R-1005</td>
+              <td>田中 健太</td>
+              <td>2026-07-05 16:00</td>
+              <td>保留</td>
+              <td><button type="button" on:click="./chunk-g7h8i9.js#Table_openDetail_onClick">詳細</button></td>
+            </tr>
+            <tr q:key="row-06">
+              <td>R-1006</td>
+              <td>伊藤 直美</td>
+              <td>2026-07-05 17:30</td>
+              <td>確定</td>
+              <td><button type="button" on:click="./chunk-g7h8i9.js#Table_openDetail_onClick">詳細</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="recent-customers" q:key="customers-01">
+        <h2>最近登録した顧客</h2>
+        <ul>
+          <li><span>山田 太郎</span><a href="/customers/1" on:click="./chunk-l2m3n4.js#Customers_openDetail_onClick">詳細</a></li>
+          <li><span>佐藤 花子</span><a href="/customers/2" on:click="./chunk-l2m3n4.js#Customers_openDetail_onClick">詳細</a></li>
+          <li><span>鈴木 一郎</span><a href="/customers/3" on:click="./chunk-l2m3n4.js#Customers_openDetail_onClick">詳細</a></li>
+          <li><span>高橋 美咲</span><a href="/customers/4" on:click="./chunk-l2m3n4.js#Customers_openDetail_onClick">詳細</a></li>
+          <li><span>田中 健太</span><a href="/customers/5" on:click="./chunk-l2m3n4.js#Customers_openDetail_onClick">詳細</a></li>
+        </ul>
+      </section>
+      <section class="modal-slot-demo" q:key="slot-demo-01">
+        <div class="card-with-slot">
+          <div q:slot="header" class="card-with-slot__header">
+            <h3>お知らせ</h3>
+          </div>
+          <div q:slot="body" class="card-with-slot__body">
+            <p>システムメンテナンスを2026年7月10日 深夜2時〜4時に実施します。</p>
+          </div>
+          <div q:slot="footer" class="card-with-slot__footer">
+            <button type="button" on:click="./chunk-h8i9j0.js#Modal_dismiss_onClick">閉じる</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="app-footer" q:key="footer-01">
+      <div class="app-footer__links">
+        <a href="/privacy" on:click="./chunk-i9j0k1.js#Footer_navigatePrivacy_onClick">プライバシーポリシー</a>
+        <a href="/terms" on:click="./chunk-j0k1l2.js#Footer_navigateTerms_onClick">利用規約</a>
+        <a href="/contact" on:click="./chunk-k1l2m3.js#Footer_navigateContact_onClick">お問い合わせ</a>
+      </div>
+      <p class="app-footer__copyright">&copy; 2026 Reservation Example System Inc.</p>
+    </footer>
+  </div>
+  <script type="qwik/json">{"ctx":{},"objs":[],"subs":[]}</script>
+  <script type="module">
+    import { qwikLoader } from "/build/core.a1b2c3.mjs";
+    qwikLoader(document);
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Malformed Attribute Quoting</title>
+</head>
+<body>
+<header>
+<p id="marker-malformed-attribute-quoting" data-marker="malformed-attribute-quoting">MARKER_MALFORMED_ATTRIBUTE_QUOTING</p>
+</header>
+<main>
+<div class=unquoted-value id=no-quotes-here>Unquoted attribute values</div>
+<div class='single-quoted'>Single quoted class</div>
+<p title="She said "hi" to everyone">Unescaped quote inside a double-quoted attribute</p>
+<input type=text disabled checked value=hello>
+<a href=/no-quotes/path data-x="<not-a-tag>">Link with unquoted href and angle brackets in an attribute value</a>
+<div class = "spaced-equals" data-y = 'also spaced'>Spaces around the equals sign</div>
+<span data-empty="" data-flag>Empty and valueless attributes</span>
+<div class="mixed'quote"style="color:red>Mismatched quote characters colliding with the next attribute</div>
+</main>
+</body>
+</html>

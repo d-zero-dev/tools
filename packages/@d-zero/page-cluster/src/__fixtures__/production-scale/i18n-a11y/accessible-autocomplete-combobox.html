@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accessible Autocomplete Combobox</title>
+</head>
+<body>
+<header>
+<h1>Search Destinations</h1>
+</header>
+<main>
+<form>
+<label for="destination">Destination</label>
+<div role="combobox" aria-expanded="true" aria-haspopup="listbox" aria-owns="destination-listbox">
+<input type="text" id="destination" aria-autocomplete="list" aria-controls="destination-listbox" aria-activedescendant="option-2">
+<ul role="listbox" id="destination-listbox">
+<li role="option" id="option-1">Tokyo, Japan</li>
+<li role="option" id="option-2" aria-selected="true">Toronto, Canada</li>
+<li role="option" id="option-3">Tunis, Tunisia</li>
+</ul>
+</div>
+<button type="submit">Search</button>
+</form>
+</main>
+<footer>
+<p id="marker-accessible-autocomplete-combobox" data-marker="accessible-autocomplete-combobox">MARKER_ACCESSIBLE_AUTOCOMPLETE_COMBOBOX</p>
+</footer>
+</body>
+</html>

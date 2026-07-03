@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Template and Slot Elements</title>
+</head>
+<body>
+<main>
+<p id="marker-template-and-slot-elements" data-marker="template-and-slot-elements">MARKER_TEMPLATE_AND_SLOT_ELEMENTS</p>
+<template id="row-template">
+<tr>
+<td class="cell-name"></td>
+<td class="cell-value"></td>
+</tr>
+</template>
+<template id="card-template">
+<div class="card">
+<h3></h3>
+<p></p>
+</div>
+</template>
+<table>
+<tbody id="row-target">
+<tr>
+<td>Sample</td>
+<td>Row</td>
+</tr>
+</tbody>
+</table>
+<product-card>
+<template shadowrootmode="open">
+<div class="wrapper">
+<slot name="title">Untitled Product</slot>
+<slot name="price">$0.00</slot>
+<slot>Default description slot.</slot>
+</div>
+</template>
+<span slot="title">Widget</span>
+<span slot="price">$19.99</span>
+<p>A very fine widget indeed.</p>
+</product-card>
+</main>
+</body>
+</html>

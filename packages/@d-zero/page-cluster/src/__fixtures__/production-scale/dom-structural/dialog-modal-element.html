@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dialog Modal Element</title>
+</head>
+<body>
+<main>
+<p id="marker-dialog-modal-element" data-marker="dialog-modal-element">MARKER_DIALOG_MODAL_ELEMENT</p>
+<button type="button" id="open-dialog">Open Dialog</button>
+<dialog id="confirm-dialog">
+<form method="dialog">
+<h2>Confirm Action</h2>
+<p>Are you sure you want to proceed?</p>
+<menu>
+<button type="submit" value="cancel">Cancel</button>
+<button type="submit" value="confirm">Confirm</button>
+</menu>
+</form>
+</dialog>
+<dialog id="info-dialog" open>
+<article>
+<header>
+<h2>Information</h2>
+</header>
+<p>This dialog is currently open by default.</p>
+<footer>
+<button type="button">Close</button>
+</footer>
+</article>
+</dialog>
+</main>
+</body>
+</html>

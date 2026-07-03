@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Navigation with aria-current</title>
+</head>
+<body>
+<header>
+<nav aria-label="Main">
+<ul>
+<li><a href="/" aria-current="page">Home</a></li>
+<li><a href="/about">About</a></li>
+<li><a href="/services">Services</a></li>
+<li><a href="/blog">Blog</a></li>
+<li><a href="/contact">Contact</a></li>
+</ul>
+</nav>
+</header>
+<main>
+<h1>Home</h1>
+<p>This fixture demonstrates a navigation list where exactly one item is marked as the current page using the <code>aria-current="page"</code> attribute, while the other four sibling items carry no such state.</p>
+<nav aria-label="Breadcrumb">
+<ol>
+<li><a href="/" aria-current="false">Home</a></li>
+</ol>
+</nav>
+</main>
+<footer>
+<p id="marker-nav-current-page-aria-current" data-marker="nav-current-page-aria-current">MARKER_NAV_CURRENT_PAGE_ARIA_CURRENT</p>
+</footer>
+</body>
+</html>

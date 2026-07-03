@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mismatched Nesting Tags</title>
+</head>
+<body>
+<header>
+<p id="marker-mismatched-nesting-tags" data-marker="mismatched-nesting-tags">MARKER_MISMATCHED_NESTING_TAGS</p>
+</header>
+<main>
+<p><b><i>Bold and italic text closed in the wrong order</b></i></p>
+<p><span><strong>Nested inline elements closed out of order</span></strong></p>
+<div><section>Section inside div closed in the wrong order<div>trailing text</section></div></div>
+<p><em><u>Underline and emphasis mismatch</em></u></p>
+<p><a href="#one"><b>Link containing bold that closes after the link</a></b></p>
+<table><tbody><tr><td><b>Cell with bold mismatch</td></b></tr></tbody></table>
+<ul><li><strong>List item with strong closed after li<em>plus emphasis</li></strong></em></ul>
+<p><small><sup>Superscript inside small closed backwards</small></sup></p>
+</main>
+</body>
+</html>

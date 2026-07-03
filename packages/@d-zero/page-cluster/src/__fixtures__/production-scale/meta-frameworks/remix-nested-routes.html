@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ダッシュボード | Remix Nested Routes Sample</title>
+  <meta name="description" content="Remixのネストされたルートとaction/loaderパターンを示すサンプルページです。">
+  <link rel="canonical" href="https://example-remix-app.dummy/dashboard/projects/42">
+  <link rel="modulepreload" href="/build/root-A1b2C3.js">
+  <link rel="modulepreload" href="/build/routes/_index-D4e5F6.js">
+  <link rel="modulepreload" href="/build/routes/dashboard-G7h8I9.js">
+  <link rel="modulepreload" href="/build/routes/dashboard.projects-J0k1L2.js">
+  <link rel="modulepreload" href="/build/routes/dashboard.projects.$id-M3n4O5.js">
+  <link rel="stylesheet" href="/build/_assets/root-P6q7R8.css">
+  <link rel="stylesheet" href="/build/_assets/dashboard-S9t0U1.css">
+</head>
+<body>
+  <div id="root">
+    <div class="app-shell">
+      <header class="app-shell__header">
+        <a class="app-shell__logo" href="/">Remix Sample App</a>
+        <nav class="app-shell__nav" aria-label="グローバルナビゲーション">
+          <ul>
+            <li><a href="/dashboard/">ダッシュボード</a></li>
+            <li><a href="/dashboard/projects/">プロジェクト</a></li>
+            <li><a href="/dashboard/settings/">設定</a></li>
+          </ul>
+        </nav>
+        <div class="app-shell__user">
+          <span class="app-shell__user-name">山田 太郎</span>
+          <a class="app-shell__logout" href="/logout/">ログアウト</a>
+        </div>
+      </header>
+
+      <div class="app-shell__body">
+        <aside class="app-shell__sidebar">
+          <h2 class="app-shell__sidebar-title">プロジェクト一覧</h2>
+          <ul class="app-shell__sidebar-list">
+            <li><a href="/dashboard/projects/40">サイトリニューアル</a></li>
+            <li><a href="/dashboard/projects/41">API基盤刷新</a></li>
+            <li><a href="/dashboard/projects/42" aria-current="page">ダッシュボード改修</a></li>
+            <li><a href="/dashboard/projects/43">モバイルアプリ対応</a></li>
+            <li><a href="/dashboard/projects/44">決済基盤の刷新</a></li>
+            <li><a href="/dashboard/projects/45">通知機能の追加</a></li>
+            <li><a href="/dashboard/projects/46">検索機能の改善</a></li>
+            <li><a href="/dashboard/projects/47">管理画面の再設計</a></li>
+            <li><a href="/dashboard/projects/48">アクセシビリティ対応</a></li>
+            <li><a href="/dashboard/projects/49">多言語対応</a></li>
+          </ul>
+        </aside>
+
+        <main class="app-shell__outlet">
+          <nav class="project-detail__breadcrumb" aria-label="パンくずリスト">
+            <ol>
+              <li><a href="/dashboard/">ダッシュボード</a></li>
+              <li><a href="/dashboard/projects/">プロジェクト</a></li>
+              <li>ダッシュボード改修</li>
+            </ol>
+          </nav>
+          <div class="project-detail">
+            <div class="project-detail__notification">
+              <p>このプロジェクトには未読の更新が3件あります。</p>
+              <button type="button">既読にする</button>
+            </div>
+            <h1 class="project-detail__title">ダッシュボード改修</h1>
+            <p class="project-detail__meta">プロジェクトID: 42 / 担当: 開発チームB</p>
+            <p id="marker-remix-nested-routes" data-marker="remix-nested-routes">MARKER_REMIX_NESTED_ROUTES</p>
+
+            <section class="project-detail__section">
+              <h2>進捗サマリー</h2>
+              <div class="project-detail__stats">
+                <div class="project-detail__stat">
+                  <h3>12</h3>
+                  <p>完了タスク</p>
+                </div>
+                <div class="project-detail__stat">
+                  <h3>5</h3>
+                  <p>対応中タスク</p>
+                </div>
+                <div class="project-detail__stat">
+                  <h3>8</h3>
+                  <p>未着手タスク</p>
+                </div>
+                <div class="project-detail__stat">
+                  <h3>72%</h3>
+                  <p>進捗率</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="project-detail__section">
+              <h2>概要</h2>
+              <p>本プロジェクトはRemixのネストされたルーティングを活用し、親レイアウトを維持したまま子ルートのコンテンツのみを切り替える構成を検証するものです。</p>
+            </section>
+
+            <section class="project-detail__section">
+              <h2>タスク一覧</h2>
+              <ul class="project-detail__task-list">
+                <li class="project-detail__task">
+                  <span class="project-detail__task-status project-detail__task-status--done">完了</span>
+                  <span class="project-detail__task-name">loaderによるデータ取得の実装</span>
+                </li>
+                <li class="project-detail__task">
+                  <span class="project-detail__task-status project-detail__task-status--doing">対応中</span>
+                  <span class="project-detail__task-name">actionによるフォーム送信処理の実装</span>
+                </li>
+                <li class="project-detail__task">
+                  <span class="project-detail__task-status project-detail__task-status--todo">未着手</span>
+                  <span class="project-detail__task-name">エラーバウンダリの整備</span>
+                </li>
+                <li class="project-detail__task">
+                  <span class="project-detail__task-status project-detail__task-status--done">完了</span>
+                  <span class="project-detail__task-name">ネストされたレイアウトの実装</span>
+                </li>
+                <li class="project-detail__task">
+                  <span class="project-detail__task-status project-detail__task-status--doing">対応中</span>
+                  <span class="project-detail__task-name">楽観的UIの導入</span>
+                </li>
+                <li class="project-detail__task">
+                  <span class="project-detail__task-status project-detail__task-status--todo">未着手</span>
+                  <span class="project-detail__task-name">アクセシビリティ検証</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="project-detail__section">
+              <h2>ステータス更新</h2>
+              <form method="post" action="/resource/action">
+                <input type="hidden" name="projectId" value="42">
+                <label for="status-select">ステータス</label>
+                <select id="status-select" name="status">
+                  <option value="todo">未着手</option>
+                  <option value="doing" selected>対応中</option>
+                  <option value="done">完了</option>
+                </select>
+                <label for="comment-input">コメント</label>
+                <textarea id="comment-input" name="comment" rows="3"></textarea>
+                <button type="submit">更新する</button>
+              </form>
+            </section>
+
+            <section class="project-detail__section">
+              <h2>担当メンバー</h2>
+              <ul class="project-detail__team-list">
+                <li class="project-detail__team-member">
+                  <img src="https://cdn.example-remix-app.dummy/avatars/user-01.jpg" alt="山田 太郎" width="40" height="40">
+                  <span>山田 太郎（PM）</span>
+                </li>
+                <li class="project-detail__team-member">
+                  <img src="https://cdn.example-remix-app.dummy/avatars/user-02.jpg" alt="佐藤 花子" width="40" height="40">
+                  <span>佐藤 花子（フロントエンド）</span>
+                </li>
+                <li class="project-detail__team-member">
+                  <img src="https://cdn.example-remix-app.dummy/avatars/user-03.jpg" alt="鈴木 一郎" width="40" height="40">
+                  <span>鈴木 一郎（バックエンド）</span>
+                </li>
+                <li class="project-detail__team-member">
+                  <img src="https://cdn.example-remix-app.dummy/avatars/user-04.jpg" alt="田中 美咲" width="40" height="40">
+                  <span>田中 美咲（デザイナー）</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="project-detail__section">
+              <h2>アクティビティ履歴</h2>
+              <ul class="project-detail__activity-list">
+                <li>
+                  <time datetime="2026-06-28">2026-06-28</time>
+                  <p>山田 太郎がタスク「loaderによるデータ取得の実装」を完了しました。</p>
+                </li>
+                <li>
+                  <time datetime="2026-06-27">2026-06-27</time>
+                  <p>佐藤 花子がコメントを追加しました。</p>
+                </li>
+                <li>
+                  <time datetime="2026-06-25">2026-06-25</time>
+                  <p>鈴木 一郎がステータスを「対応中」に変更しました。</p>
+                </li>
+                <li>
+                  <time datetime="2026-06-20">2026-06-20</time>
+                  <p>プロジェクトが作成されました。</p>
+                </li>
+              </ul>
+            </section>
+
+            <section class="project-detail__section">
+              <h2>コメント</h2>
+              <ul class="project-detail__comment-list">
+                <li class="project-detail__comment">
+                  <span class="project-detail__comment-author">山田 太郎</span>
+                  <time datetime="2026-06-28T10:00:00">2026-06-28 10:00</time>
+                  <p>loaderの実装が完了したので、次はactionに着手します。</p>
+                </li>
+                <li class="project-detail__comment">
+                  <span class="project-detail__comment-author">佐藤 花子</span>
+                  <time datetime="2026-06-27T15:30:00">2026-06-27 15:30</time>
+                  <p>エラーバウンダリの設計についてレビューをお願いします。</p>
+                </li>
+                <li class="project-detail__comment">
+                  <span class="project-detail__comment-author">鈴木 一郎</span>
+                  <time datetime="2026-06-25T09:15:00">2026-06-25 09:15</time>
+                  <p>ステータスを更新しました。進捗は順調です。</p>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </main>
+      </div>
+
+      <footer class="app-shell__footer">
+        <p>&copy; 2026 Remix Sample App. All rights reserved.</p>
+      </footer>
+    </div>
+  </div>
+
+  <script>window.__remixContext = {"state":{"loaderData":{"root":{"user":{"name":"山田 太郎"}},"routes/dashboard":{"projects":[{"id":40,"name":"サイトリニューアル"},{"id":41,"name":"API基盤刷新"},{"id":42,"name":"ダッシュボード改修"},{"id":43,"name":"モバイルアプリ対応"}]},"routes/dashboard.projects.$id":{"project":{"id":42,"name":"ダッシュボード改修","owner":"開発チームB"}}},"actionData":null,"errors":null},"future":{"v3_fetcherPersist":true,"v3_relativeSplatPath":true},"routeModules":{"root":{},"routes/dashboard":{},"routes/dashboard.projects":{},"routes/dashboard.projects.$id":{}}};</script>
+  <script type="module" async src="/build/entry.client-V2w3X4.js"></script>
+</body>
+</html>

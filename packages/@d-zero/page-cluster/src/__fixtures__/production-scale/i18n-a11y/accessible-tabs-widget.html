@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accessible Tabs Widget</title>
+</head>
+<body>
+<header>
+<h1>Product Information</h1>
+</header>
+<main>
+<div role="tablist" aria-label="Product details">
+<button role="tab" id="tab-desc" aria-selected="true" aria-controls="panel-desc">Description</button>
+<button role="tab" id="tab-specs" aria-selected="false" aria-controls="panel-specs" tabindex="-1">Specifications</button>
+<button role="tab" id="tab-reviews" aria-selected="false" aria-controls="panel-reviews" tabindex="-1">Reviews</button>
+</div>
+<div role="tabpanel" id="panel-desc" aria-labelledby="tab-desc">
+<p>This premium widget is crafted from high-quality materials designed to last a lifetime.</p>
+</div>
+<div role="tabpanel" id="panel-specs" aria-labelledby="tab-specs" hidden>
+<ul>
+<li>Weight: 250g</li>
+<li>Dimensions: 10x10x5cm</li>
+</ul>
+</div>
+<div role="tabpanel" id="panel-reviews" aria-labelledby="tab-reviews" hidden>
+<p>"Excellent product, highly recommended!" - Verified Buyer</p>
+</div>
+</main>
+<footer>
+<p id="marker-accessible-tabs-widget" data-marker="accessible-tabs-widget">MARKER_ACCESSIBLE_TABS_WIDGET</p>
+</footer>
+</body>
+</html>

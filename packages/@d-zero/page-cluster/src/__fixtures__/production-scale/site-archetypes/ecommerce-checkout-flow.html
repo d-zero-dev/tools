@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ご注文手続き | Shoes Marche</title>
+<meta name="description" content="Shoes Marche のご注文手続きページです。配送先住所の入力とお支払い方法の選択を行い、注文内容をご確認いただけます。">
+</head>
+<body class="checkout-body">
+<header class="checkout-header">
+  <a class="checkout-logo" href="/">Shoes Marche</a>
+  <p class="checkout-secure-note">SSL暗号化通信で保護されています</p>
+  <nav class="checkout-gnav" aria-label="グローバルナビゲーション">
+    <ul class="checkout-gnav-list">
+      <li class="checkout-gnav-item"><a class="checkout-gnav-link" href="/cart">カートに戻る</a></li>
+      <li class="checkout-gnav-item"><a class="checkout-gnav-link checkout-gnav-link--active" href="/checkout" aria-current="page">ご注文手続き</a></li>
+    </ul>
+  </nav>
+</header>
+<main class="checkout-main">
+  <ol class="checkout-step-indicator" aria-label="購入手続きステップ">
+    <li class="checkout-step checkout-step--done">
+      <span class="checkout-step-number">1</span>
+      <span class="checkout-step-label">配送情報</span>
+    </li>
+    <li class="checkout-step checkout-step--current" aria-current="step">
+      <span class="checkout-step-number">2</span>
+      <span class="checkout-step-label">お支払い</span>
+    </li>
+    <li class="checkout-step">
+      <span class="checkout-step-number">3</span>
+      <span class="checkout-step-label">ご注文確認</span>
+    </li>
+  </ol>
+
+  <div class="checkout-layout">
+    <div class="checkout-forms">
+      <section class="checkout-section checkout-section--address">
+        <h2 class="checkout-section-heading">配送先住所</h2>
+        <form class="checkout-address-form" action="/checkout/address" method="post">
+          <div class="checkout-form-row">
+            <label class="checkout-form-label" for="checkout-name">氏名</label>
+            <input class="checkout-form-input" id="checkout-name" type="text" name="name" required>
+          </div>
+          <div class="checkout-form-row">
+            <label class="checkout-form-label" for="checkout-zip">郵便番号</label>
+            <input class="checkout-form-input" id="checkout-zip" type="text" name="zip" required>
+          </div>
+          <div class="checkout-form-row">
+            <label class="checkout-form-label" for="checkout-pref">都道府県</label>
+            <select class="checkout-form-select" id="checkout-pref" name="prefecture" required>
+              <option value="tokyo">東京都</option>
+              <option value="osaka">大阪府</option>
+              <option value="aichi">愛知県</option>
+              <option value="fukuoka">福岡県</option>
+            </select>
+          </div>
+          <div class="checkout-form-row">
+            <label class="checkout-form-label" for="checkout-address1">市区町村・番地</label>
+            <input class="checkout-form-input" id="checkout-address1" type="text" name="address1" required>
+          </div>
+          <div class="checkout-form-row">
+            <label class="checkout-form-label" for="checkout-address2">建物名・部屋番号</label>
+            <input class="checkout-form-input" id="checkout-address2" type="text" name="address2">
+          </div>
+          <div class="checkout-form-row">
+            <label class="checkout-form-label" for="checkout-tel">電話番号</label>
+            <input class="checkout-form-input" id="checkout-tel" type="tel" name="tel" required>
+          </div>
+        </form>
+      </section>
+
+      <section class="checkout-section checkout-section--payment">
+        <h2 class="checkout-section-heading">お支払い方法</h2>
+        <form class="checkout-payment-form" action="/checkout/payment" method="post">
+          <ul class="checkout-payment-list">
+            <li class="checkout-payment-item">
+              <label class="checkout-payment-label">
+                <input class="checkout-payment-radio" type="radio" name="payment" value="credit-card" checked>
+                クレジットカード
+              </label>
+              <div class="checkout-payment-detail">
+                <input class="checkout-form-input" type="text" placeholder="カード番号" aria-label="カード番号">
+                <input class="checkout-form-input" type="text" placeholder="有効期限 MM/YY" aria-label="有効期限">
+                <input class="checkout-form-input" type="text" placeholder="セキュリティコード" aria-label="セキュリティコード">
+              </div>
+            </li>
+            <li class="checkout-payment-item">
+              <label class="checkout-payment-label">
+                <input class="checkout-payment-radio" type="radio" name="payment" value="cash-on-delivery">
+                代金引換
+              </label>
+            </li>
+            <li class="checkout-payment-item">
+              <label class="checkout-payment-label">
+                <input class="checkout-payment-radio" type="radio" name="payment" value="bank-transfer">
+                銀行振込
+              </label>
+            </li>
+            <li class="checkout-payment-item">
+              <label class="checkout-payment-label">
+                <input class="checkout-payment-radio" type="radio" name="payment" value="convenience-store">
+                コンビニ決済
+              </label>
+            </li>
+          </ul>
+        </form>
+      </section>
+
+      <div class="checkout-nav-buttons">
+        <button class="checkout-back-btn" type="button">配送情報に戻る</button>
+        <button class="checkout-next-btn" type="button">ご注文内容の確認へ</button>
+      </div>
+    </div>
+
+    <aside class="checkout-summary" aria-label="注文サマリー">
+      <h2 class="checkout-summary-heading">注文サマリー</h2>
+      <ul class="checkout-order-list">
+          <li class="checkout-order-item">
+            <span class="checkout-order-item-name">Aeroflow RK-2201 ランニングシューズ（ブラック / 24.5cm）</span>
+            <span class="checkout-order-item-qty">数量: 1</span>
+            <span class="checkout-order-item-price">9,800円</span>
+          </li>
+          <li class="checkout-order-item">
+            <span class="checkout-order-item-name">スポーツソックス 3足セット</span>
+            <span class="checkout-order-item-qty">数量: 2</span>
+            <span class="checkout-order-item-price">1,980円</span>
+          </li>
+          <li class="checkout-order-item">
+            <span class="checkout-order-item-name">インソール プレミアム</span>
+            <span class="checkout-order-item-qty">数量: 1</span>
+            <span class="checkout-order-item-price">2,400円</span>
+          </li>
+      </ul>
+      <dl class="checkout-summary-totals">
+        <div class="checkout-summary-row">
+          <dt class="checkout-summary-label">小計</dt>
+          <dd class="checkout-summary-value">16,160円</dd>
+        </div>
+        <div class="checkout-summary-row">
+          <dt class="checkout-summary-label">送料</dt>
+          <dd class="checkout-summary-value">550円</dd>
+        </div>
+        <div class="checkout-summary-row">
+          <dt class="checkout-summary-label">割引</dt>
+          <dd class="checkout-summary-value">-500円</dd>
+        </div>
+        <div class="checkout-summary-row checkout-summary-row--total">
+          <dt class="checkout-summary-label">合計（税込）</dt>
+          <dd class="checkout-summary-value">16,210円</dd>
+        </div>
+      </dl>
+      <form class="checkout-coupon-form" action="/checkout/coupon" method="post">
+        <label class="checkout-coupon-label" for="checkout-coupon">クーポンコード</label>
+        <input class="checkout-coupon-input" id="checkout-coupon" type="text" name="coupon">
+        <button class="checkout-coupon-btn" type="submit">適用</button>
+      </form>
+    </aside>
+  </div>
+
+  <p id="marker-ecommerce-checkout-flow" data-marker="ecommerce-checkout-flow">MARKER_ECOMMERCE_CHECKOUT_FLOW</p>
+</main>
+<footer class="checkout-footer">
+  <div class="checkout-footer-columns">
+    <div class="checkout-footer-col">
+      <h3 class="checkout-footer-col-heading">会社情報</h3>
+      <ul class="checkout-footer-link-list">
+        <li><a href="/about">会社概要</a></li>
+        <li><a href="/news">お知らせ</a></li>
+      </ul>
+    </div>
+    <div class="checkout-footer-col">
+      <h3 class="checkout-footer-col-heading">サポート</h3>
+      <ul class="checkout-footer-link-list">
+        <li><a href="/faq">よくある質問</a></li>
+        <li><a href="/contact">お問い合わせ</a></li>
+        <li><a href="/returns">返品・交換</a></li>
+      </ul>
+    </div>
+    <div class="checkout-footer-col">
+      <h3 class="checkout-footer-col-heading">SNS</h3>
+      <ul class="checkout-footer-link-list">
+        <li><a href="https://twitter.com/example">X (Twitter)</a></li>
+        <li><a href="https://instagram.com/example">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="checkout-copyright">&copy; 2026 Shoes Example Marche Inc.</p>
+</footer>
+</body>
+</html>

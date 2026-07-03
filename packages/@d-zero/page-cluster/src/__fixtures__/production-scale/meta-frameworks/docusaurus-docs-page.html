@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja" dir="ltr" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Docusaurus v3.4.0">
+<title>設定リファレンス | Sample Docs</title>
+<meta name="description" content="Sample Docsの設定オプションに関する完全なリファレンスです。">
+<link rel="icon" href="/img/favicon.ico">
+<link rel="stylesheet" href="/assets/css/styles.abcdef.css">
+<link rel="preload" href="/assets/js/main.123456.js" as="script">
+</head>
+<body class="navigation-with-keyboard">
+<div id="__docusaurus">
+<a href="#__docusaurus_skipToContent_fallback" class="skipToContent_skip">メインコンテンツへスキップ</a>
+<nav class="navbar navbar--fixed-top" aria-label="メイン">
+<div class="navbar__inner">
+<div class="navbar__items">
+<button aria-label="ナビゲーションバーを切り替える" class="navbar__toggle">
+<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M4 7h22M4 15h22M4 23h22"></path></svg>
+</button>
+<a class="navbar__brand" href="/">
+<img src="/img/logo.svg" alt="Sample Docs Logo" class="navbar__logo">
+<b class="navbar__title">Sample Docs</b>
+</a>
+<a class="navbar__item navbar__link" href="/docs/intro">ドキュメント</a>
+<a class="navbar__item navbar__link" href="/api">APIリファレンス</a>
+<a class="navbar__item navbar__link" href="/blog">ブログ</a>
+</div>
+<div class="navbar__items navbar__items--right">
+<div class="navbarSearchContainer">
+<input type="search" id="search_input_react" placeholder="検索" aria-label="検索" class="navbar__search-input">
+</div>
+<a href="https://github.com/example/sample-docs" class="navbar__item navbar__link header-github-link">GitHub</a>
+<button class="clean-btn toggleButton_ready" type="button" title="ダークモード切替" aria-label="ダークモード切替">
+<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 3v1"></path></svg>
+</button>
+</div>
+</div>
+</nav>
+<div class="docsWrapper">
+<button aria-label="トップへスクロール" class="backToTopButton"></button>
+<div class="docPage">
+<aside class="theme-doc-sidebar-container docSidebarContainer">
+<div class="sidebarViewport">
+<nav class="menu thin-scrollbar" aria-label="ドキュメントサイドバー">
+<ul class="theme-doc-sidebar-menu menu__list">
+<li class="theme-doc-sidebar-item-link menu__list-item">
+<a class="menu__link" href="/docs/intro">はじめに</a>
+</li>
+<li class="theme-doc-sidebar-item-category menu__list-item">
+<a class="menu__link menu__link--sublist" href="/docs/getting-started">導入ガイド</a>
+<ul class="menu__list">
+<li class="menu__list-item"><a class="menu__link" href="/docs/getting-started/installation">インストール</a></li>
+<li class="menu__list-item"><a class="menu__link" href="/docs/getting-started/quick-start">クイックスタート</a></li>
+<li class="menu__list-item"><a class="menu__link" href="/docs/getting-started/project-structure">プロジェクト構成</a></li>
+</ul>
+</li>
+<li class="theme-doc-sidebar-item-category menu__list-item">
+<a class="menu__link menu__link--sublist menu__link--active" href="/docs/configuration">設定</a>
+<ul class="menu__list">
+<li class="menu__list-item"><a class="menu__link menu__link--active" href="/docs/configuration/reference">設定リファレンス</a></li>
+<li class="menu__list-item"><a class="menu__link" href="/docs/configuration/environment">環境変数</a></li>
+<li class="menu__list-item"><a class="menu__link" href="/docs/configuration/plugins">プラグイン設定</a></li>
+<li class="menu__list-item"><a class="menu__link" href="/docs/configuration/themes">テーマ設定</a></li>
+</ul>
+</li>
+<li class="theme-doc-sidebar-item-category menu__list-item">
+<a class="menu__link menu__link--sublist" href="/docs/guides">ガイド</a>
+<ul class="menu__list">
+<li class="menu__list-item"><a class="menu__link" href="/docs/guides/deployment">デプロイ</a></li>
+<li class="menu__list-item"><a class="menu__link" href="/docs/guides/versioning">バージョニング</a></li>
+<li class="menu__list-item"><a class="menu__link" href="/docs/guides/i18n">多言語対応</a></li>
+<li class="menu__list-item"><a class="menu__link" href="/docs/guides/search">検索の設定</a></li>
+</ul>
+</li>
+<li class="theme-doc-sidebar-item-link menu__list-item">
+<a class="menu__link" href="/docs/api-overview">API概要</a>
+</li>
+<li class="theme-doc-sidebar-item-link menu__list-item">
+<a class="menu__link" href="/docs/faq">よくある質問</a>
+</li>
+<li class="theme-doc-sidebar-item-link menu__list-item">
+<a class="menu__link" href="/docs/troubleshooting">トラブルシューティング</a>
+</li>
+<li class="theme-doc-sidebar-item-link menu__list-item">
+<a class="menu__link" href="/docs/changelog">変更履歴</a>
+</li>
+<li class="theme-doc-sidebar-item-link menu__list-item">
+<a class="menu__link" href="/docs/migration">マイグレーションガイド</a>
+</li>
+</ul>
+</nav>
+</div>
+</aside>
+<main class="docMainContainer">
+<div class="container padding-top--md padding-bottom--lg">
+<div class="row">
+<div class="col docItemCol">
+<div class="docItemContainer">
+<article>
+<nav class="theme-doc-breadcrumbs" aria-label="パンくずリスト">
+<ul class="breadcrumbs">
+<li class="breadcrumbs__item"><a class="breadcrumbs__link" href="/docs/intro">ドキュメント</a></li>
+<li class="breadcrumbs__item"><a class="breadcrumbs__link" href="/docs/configuration">設定</a></li>
+<li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">設定リファレンス</span></li>
+</ul>
+</nav>
+<div class="theme-doc-version-badge badge badge--secondary">バージョン: 3.4.0</div>
+<div class="theme-doc-markdown markdown">
+<header>
+<h1>設定リファレンス</h1>
+</header>
+<p>このページでは、Sample Docsの設定ファイルで指定できる全オプションについて説明します。</p>
+<div class="alert alert--info">
+<div class="admonitionHeading"><span>備考</span></div>
+<div class="admonitionContent">
+<p>設定ファイルを変更した場合は、開発サーバーの再起動が必要です。</p>
+</div>
+</div>
+<h2 id="basic-options">基本オプション<a class="hash-link" href="#basic-options" aria-label="基本オプションへの直接リンク">#</a></h2>
+<p>以下は最も基本的な設定項目です。プロジェクトのルートに配置する設定ファイルで指定します。</p>
+<div class="theme-code-block">
+<pre><code class="language-typescript">export default {
+  title: 'Sample Docs',
+  tagline: 'ドキュメントサイトのサンプル',
+  url: 'https://docs.example.com',
+  baseUrl: '/',
+  organizationName: 'example',
+  projectName: 'sample-docs',
+};</code></pre>
+</div>
+<h3 id="title">title<a class="hash-link" href="#title" aria-label="titleへの直接リンク">#</a></h3>
+<p>サイトのタイトルを指定します。ブラウザタブやSEOメタデータに使用されます。</p>
+<h3 id="url">url<a class="hash-link" href="#url" aria-label="urlへの直接リンク">#</a></h3>
+<p>サイトの本番URLを指定します。サイトマップ生成などに利用されます。</p>
+<h2 id="plugin-options">プラグインオプション<a class="hash-link" href="#plugin-options" aria-label="プラグインオプションへの直接リンク">#</a></h2>
+<p>プラグインごとに独自の設定を追加できます。以下は検索プラグインの設定例です。</p>
+<div class="theme-code-block">
+<pre><code class="language-typescript">plugins: [
+  [
+    '@sample/plugin-search',
+    {
+      indexBlog: false,
+      indexDocs: true,
+    },
+  ],
+],</code></pre>
+</div>
+<div class="alert alert--warning">
+<div class="admonitionHeading"><span>注意</span></div>
+<div class="admonitionContent">
+<p>プラグインのバージョンはコア本体のバージョンと合わせる必要があります。</p>
+</div>
+</div>
+<h2 id="theme-options">テーマオプション<a class="hash-link" href="#theme-options" aria-label="テーマオプションへの直接リンク">#</a></h2>
+<p>ナビゲーションバーやフッターの構成はテーマ設定で行います。</p>
+<table>
+<thead>
+<tr><th>キー</th><th>型</th><th>説明</th></tr>
+</thead>
+<tbody>
+<tr><td>navbar.title</td><td>string</td><td>ナビゲーションバーのタイトル</td></tr>
+<tr><td>navbar.items</td><td>array</td><td>ナビゲーションリンクの一覧</td></tr>
+<tr><td>footer.style</td><td>string</td><td>フッターのスタイル（darkまたはlight）</td></tr>
+</tbody>
+</table>
+<h2 id="advanced-options">高度なオプション<a class="hash-link" href="#advanced-options" aria-label="高度なオプションへの直接リンク">#</a></h2>
+<p>大規模なドキュメントサイトを構築する際に有用な追加オプションを紹介します。</p>
+<div class="theme-code-block">
+<pre><code class="language-typescript">export default {
+  markdown: {
+    format: 'mdx',
+    mermaid: true,
+  },
+  future: {
+    experimental_faster: true,
+  },
+};</code></pre>
+</div>
+<table>
+<thead>
+<tr><th>キー</th><th>型</th><th>説明</th></tr>
+</thead>
+<tbody>
+<tr><td>markdown.format</td><td>string</td><td>Markdownの解釈形式</td></tr>
+<tr><td>markdown.mermaid</td><td>boolean</td><td>Mermaid図の有効化</td></tr>
+<tr><td>future.experimental_faster</td><td>boolean</td><td>高速ビルドの実験的機能</td></tr>
+</tbody>
+</table>
+<div class="alert alert--info">
+<div class="admonitionHeading"><span>備考</span></div>
+<div class="admonitionContent">
+<p>実験的機能は将来のバージョンで挙動が変更される可能性があります。</p>
+</div>
+</div>
+<h2 id="environment-variables">環境変数<a class="hash-link" href="#environment-variables" aria-label="環境変数への直接リンク">#</a></h2>
+<p>ビルド時に参照される環境変数の一覧です。</p>
+<ul>
+<li><code>DOCS_ENV</code> — 実行環境（development / production）</li>
+<li><code>DOCS_API_BASE</code> — APIリファレンス生成時のベースURL</li>
+<li><code>DOCS_ANALYTICS_ID</code> — アクセス解析用のID</li>
+<li><code>DOCS_ALGOLIA_APP_ID</code> — 検索インデックス用のアプリID</li>
+<li><code>DOCS_ALGOLIA_API_KEY</code> — 検索インデックス用のAPIキー</li>
+</ul>
+<h2 id="faq">よくある質問<a class="hash-link" href="#faq" aria-label="よくある質問への直接リンク">#</a></h2>
+<p>設定に関してよく寄せられる質問をまとめました。</p>
+<h3 id="faq-1">設定変更が反映されない場合は？<a class="hash-link" href="#faq-1" aria-label="設定変更が反映されない場合は？への直接リンク">#</a></h3>
+<p>開発サーバーのキャッシュが原因の場合があります。キャッシュをクリアして再起動してください。</p>
+<h3 id="faq-2">複数の設定ファイルを併用できますか？<a class="hash-link" href="#faq-2" aria-label="複数の設定ファイルを併用できますか？への直接リンク">#</a></h3>
+<p>環境ごとに設定ファイルを分割し、ビルドスクリプト側で切り替える運用が推奨されます。</p>
+<p id="marker-docusaurus-docs-page" data-marker="docusaurus-docs-page">MARKER_DOCUSAURUS_DOCS_PAGE</p>
+</div>
+</article>
+<nav class="pagination-nav" aria-label="ドキュメントページ送り">
+<a class="pagination-nav__link pagination-nav__link--prev" href="/docs/getting-started/project-structure">
+<div class="pagination-nav__sublabel">前へ</div>
+<div class="pagination-nav__label">プロジェクト構成</div>
+</a>
+<a class="pagination-nav__link pagination-nav__link--next" href="/docs/configuration/environment">
+<div class="pagination-nav__sublabel">次へ</div>
+<div class="pagination-nav__label">環境変数</div>
+</a>
+</nav>
+</div>
+</div>
+<div class="col col--3">
+<div class="tableOfContents_wrapper thin-scrollbar">
+<div class="table-of-contents table-of-contents__left-border">
+<ul class="table-of-contents__left-border">
+<li><a href="#basic-options" class="table-of-contents__link">基本オプション</a>
+<ul>
+<li><a href="#title" class="table-of-contents__link">title</a></li>
+<li><a href="#url" class="table-of-contents__link">url</a></li>
+</ul>
+</li>
+<li><a href="#plugin-options" class="table-of-contents__link">プラグインオプション</a></li>
+<li><a href="#theme-options" class="table-of-contents__link">テーマオプション</a></li>
+<li><a href="#advanced-options" class="table-of-contents__link">高度なオプション</a></li>
+<li><a href="#environment-variables" class="table-of-contents__link">環境変数</a></li>
+<li><a href="#faq" class="table-of-contents__link">よくある質問</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<footer class="footer footer--dark">
+<div class="container container-fluid">
+<div class="row footer__links">
+<div class="col footer__col">
+<div class="footer__title">ドキュメント</div>
+<ul class="footer__items">
+<li class="footer__item"><a class="footer__link-item" href="/docs/intro">はじめに</a></li>
+<li class="footer__item"><a class="footer__link-item" href="/docs/configuration">設定</a></li>
+<li class="footer__item"><a class="footer__link-item" href="/docs/guides">ガイド</a></li>
+</ul>
+</div>
+<div class="col footer__col">
+<div class="footer__title">コミュニティ</div>
+<ul class="footer__items">
+<li class="footer__item"><a class="footer__link-item" href="https://twitter.com/example">X (Twitter)</a></li>
+<li class="footer__item"><a class="footer__link-item" href="https://discord.gg/example">Discord</a></li>
+<li class="footer__item"><a class="footer__link-item" href="https://stackoverflow.com/questions/tagged/sample-docs">Stack Overflow</a></li>
+</ul>
+</div>
+<div class="col footer__col">
+<div class="footer__title">その他</div>
+<ul class="footer__items">
+<li class="footer__item"><a class="footer__link-item" href="/blog">ブログ</a></li>
+<li class="footer__item"><a class="footer__link-item" href="https://github.com/example/sample-docs">GitHub</a></li>
+</ul>
+</div>
+</div>
+<div class="footer__bottom text--center">
+<div class="footer__copyright">Copyright &copy; 2026 Sample Docs Project. Built with Docusaurus.</div>
+</div>
+</div>
+</footer>
+</div>
+<script src="/assets/js/runtime~main.abcdef.js"></script>
+<script src="/assets/js/main.123456.js"></script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>認証の設定方法 | CloudFlow Docs</title>
+<meta name="description" content="CloudFlowにおけるAPI認証の設定方法についてのドキュメントです。">
+</head>
+<body class="docs-body">
+<header class="docs-topbar">
+  <a href="/" class="docs-topbar__logo">CloudFlow Docs</a>
+  <nav class="docs-topbar__nav">
+    <ul class="docs-topbar__list">
+      <li class="docs-topbar__item docs-topbar__item--active" aria-current="page"><a href="/docs">ガイド</a></li>
+      <li class="docs-topbar__item"><a href="/api">APIリファレンス</a></li>
+      <li class="docs-topbar__item"><a href="/changelog">更新履歴</a></li>
+    </ul>
+  </nav>
+  <div class="docs-topbar__search">
+    <input type="search" placeholder="ドキュメントを検索..." aria-label="ドキュメント検索">
+  </div>
+</header>
+
+<div class="docs-layout">
+  <aside class="docs-sidebar">
+    <nav class="docs-sidebar__nav" aria-label="ドキュメントナビゲーション">
+      <div class="docs-sidebar__category">
+        <h3 class="docs-sidebar__category-title">はじめに</h3>
+        <ul class="docs-sidebar__list">
+          <li><a href="/docs/introduction">概要</a></li>
+          <li><a href="/docs/quickstart">クイックスタート</a></li>
+          <li><a href="/docs/installation">インストール</a></li>
+        </ul>
+      </div>
+      <div class="docs-sidebar__category">
+        <h3 class="docs-sidebar__category-title">認証</h3>
+        <ul class="docs-sidebar__list">
+          <li class="docs-sidebar__list-item--active"><a href="/docs/auth/setup" aria-current="page">認証の設定方法</a></li>
+          <li><a href="/docs/auth/api-keys">APIキーの管理</a></li>
+          <li><a href="/docs/auth/oauth">OAuth連携</a></li>
+          <li><a href="/docs/auth/sso">SSO / SAML</a></li>
+        </ul>
+      </div>
+      <div class="docs-sidebar__category">
+        <h3 class="docs-sidebar__category-title">基本操作</h3>
+        <ul class="docs-sidebar__list">
+          <li><a href="/docs/tasks">タスクの作成</a></li>
+          <li><a href="/docs/projects">プロジェクト管理</a></li>
+          <li><a href="/docs/workflows">ワークフロー自動化</a></li>
+          <li><a href="/docs/notifications">通知設定</a></li>
+        </ul>
+      </div>
+      <div class="docs-sidebar__category">
+        <h3 class="docs-sidebar__category-title">連携</h3>
+        <ul class="docs-sidebar__list">
+          <li><a href="/docs/integrations/slack">Slack連携</a></li>
+          <li><a href="/docs/integrations/github">GitHub連携</a></li>
+          <li><a href="/docs/integrations/webhooks">Webhook</a></li>
+        </ul>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="docs-content">
+    <nav class="docs-breadcrumb" aria-label="パンくずリスト">
+      <a href="/docs">ガイド</a> / <a href="/docs/auth">認証</a> / <span>設定方法</span>
+    </nav>
+
+    <article class="docs-article">
+      <h1 class="docs-article__title">認証の設定方法</h1>
+      <p class="docs-article__lead">このページでは、CloudFlow APIを利用するための認証設定について説明します。</p>
+
+      <p id="marker-documentation-site-with-sidebar" data-marker="documentation-site-with-sidebar">MARKER_DOCUMENTATION_SITE_WITH_SIDEBAR</p>
+
+      <h2 class="docs-heading-2">概要</h2>
+      <p>CloudFlow APIはAPIキーによるBearer認証を採用しています。すべてのリクエストにはAuthorizationヘッダーが必要です。</p>
+
+      <div class="docs-callout docs-callout--note">
+        <p class="docs-callout__label">Note</p>
+        <p class="docs-callout__body">APIキーは組織の管理画面から発行できます。発行後の再表示はできないため安全に保管してください。</p>
+      </div>
+
+      <h2 class="docs-heading-2">APIキーの発行</h2>
+      <p>管理画面の「設定」→「APIキー」から新規キーを発行します。</p>
+      <h3 class="docs-heading-3">手順</h3>
+      <ol class="docs-ordered-list">
+        <li>管理画面にログインする</li>
+        <li>「設定」メニューを開く</li>
+        <li>「APIキー」タブを選択する</li>
+        <li>「新規発行」ボタンをクリックする</li>
+      </ol>
+
+      <h3 class="docs-heading-3">リクエスト例</h3>
+      <pre class="docs-code-block"><code>curl -X GET https://api.cloudflow.example/v1/tasks \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+
+      <h2 class="docs-heading-2">トークンの有効期限</h2>
+      <p>発行されたAPIキーはデフォルトで無期限です。セキュリティポリシーにより有効期限を設定することも可能です。</p>
+
+      <div class="docs-callout docs-callout--warning">
+        <p class="docs-callout__label">Warning</p>
+        <p class="docs-callout__body">APIキーをクライアントサイドのコードに直接埋め込まないでください。漏洩のリスクがあります。</p>
+      </div>
+
+      <h3 class="docs-heading-3">レスポンス例</h3>
+      <pre class="docs-code-block"><code>{
+  "id": "task_123",
+  "title": "サンプルタスク",
+  "status": "open"
+}</code></pre>
+
+      <h2 class="docs-heading-2">OAuth 2.0によるユーザー認証</h2>
+      <p>サードパーティアプリケーションからのアクセスにはOAuth 2.0フローを利用してください。</p>
+      <h3 class="docs-heading-3">認可コードの取得</h3>
+      <pre class="docs-code-block"><code>GET https://auth.cloudflow.example/oauth/authorize?
+  client_id=CLIENT_ID&
+  redirect_uri=REDIRECT_URI&
+  response_type=code</code></pre>
+
+      <h2 class="docs-heading-2">次のステップ</h2>
+      <p>認証が完了したら、<a href="/docs/tasks">タスクの作成</a>に進んでください。</p>
+    </article>
+  </main>
+
+  <aside class="docs-toc">
+    <p class="docs-toc__title">このページの目次</p>
+    <ul class="docs-toc__list">
+      <li><a href="#overview">概要</a></li>
+      <li><a href="#issue-key">APIキーの発行</a></li>
+      <li><a href="#expiry">トークンの有効期限</a></li>
+      <li><a href="#oauth">OAuth 2.0によるユーザー認証</a></li>
+      <li><a href="#next">次のステップ</a></li>
+    </ul>
+  </aside>
+</div>
+
+<footer class="docs-footer">
+  <div class="docs-footer__columns">
+    <div class="docs-footer__col">
+      <h3>製品</h3>
+      <ul>
+        <li><a href="/features">機能</a></li>
+        <li><a href="/pricing">料金</a></li>
+      </ul>
+    </div>
+    <div class="docs-footer__col">
+      <h3>開発者</h3>
+      <ul>
+        <li><a href="/docs">ドキュメント</a></li>
+        <li><a href="/api">APIリファレンス</a></li>
+      </ul>
+    </div>
+    <div class="docs-footer__col">
+      <h3>会社情報</h3>
+      <ul>
+        <li><a href="/about">会社概要</a></li>
+        <li><a href="/contact">お問い合わせ</a></li>
+      </ul>
+    </div>
+    <div class="docs-footer__col">
+      <h3>SNS</h3>
+      <ul>
+        <li><a href="https://twitter.com/cloudflow">Twitter</a></li>
+        <li><a href="https://github.com/cloudflow">GitHub</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="docs-footer__copyright">&copy; 2026 CloudFlow, Inc.</p>
+</footer>
+</body>
+</html>

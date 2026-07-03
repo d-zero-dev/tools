@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accessible Accordion Widget</title>
+</head>
+<body>
+<header>
+<h1>Frequently Asked Questions</h1>
+</header>
+<main>
+<div class="accordion">
+<h2>
+<button type="button" aria-expanded="true" aria-controls="section1">What is your return policy?</button>
+</h2>
+<div id="section1" role="region">
+<p>You may return any item within 30 days of purchase for a full refund.</p>
+</div>
+<h2>
+<button type="button" aria-expanded="false" aria-controls="section2">How long does shipping take?</button>
+</h2>
+<div id="section2" role="region" hidden>
+<p>Standard shipping takes 5-7 business days. Express shipping is also available.</p>
+</div>
+<h2>
+<button type="button" aria-expanded="false" aria-controls="section3">Do you ship internationally?</button>
+</h2>
+<div id="section3" role="region" hidden>
+<p>Yes, we ship to over 50 countries worldwide.</p>
+</div>
+</div>
+</main>
+<footer>
+<p id="marker-accessible-accordion-widget" data-marker="accessible-accordion-widget">MARKER_ACCESSIBLE_ACCORDION_WIDGET</p>
+</footer>
+</body>
+</html>

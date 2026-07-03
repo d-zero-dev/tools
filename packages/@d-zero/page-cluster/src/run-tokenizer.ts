@@ -144,7 +144,15 @@ export function runTokenizer(html: string, options: ResolvedOptions): string[] {
 				result = contributed;
 				bodyDone = true;
 			} else {
-				topOf(stack).pendingPaths.push(...contributed);
+				// Not `push(...contributed)`: spreading tens of thousands of
+				// arguments into a single call (a realistic count for a flat,
+				// high-fan-out template like a sitemap/listing page — exactly
+				// the shape this package targets) throws `RangeError: Maximum
+				// call stack size exceeded`. A plain loop has no such limit.
+				const target = topOf(stack).pendingPaths;
+				for (const path of contributed) {
+					target.push(path);
+				}
 			}
 		},
 		oncomment(data) {

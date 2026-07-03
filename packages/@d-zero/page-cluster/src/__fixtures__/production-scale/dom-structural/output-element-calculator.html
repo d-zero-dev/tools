@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Output Element - Calculator</title>
+</head>
+<body>
+<main>
+<p id="marker-output-element-calculator" data-marker="output-element-calculator">MARKER_OUTPUT_ELEMENT_CALCULATOR</p>
+<form id="calculator" oninput="result.value = parseInt(a.value || 0) + parseInt(b.value || 0)">
+<fieldset>
+<legend>Simple Adder</legend>
+<div>
+<label for="a">Value A</label>
+<input type="number" id="a" name="a" value="0">
+</div>
+<div>
+<span>+</span>
+</div>
+<div>
+<label for="b">Value B</label>
+<input type="number" id="b" name="b" value="0">
+</div>
+<div>
+<span>=</span>
+<output name="result" for="a b">0</output>
+</div>
+</fieldset>
+</form>
+<form id="tip-calculator">
+<fieldset>
+<legend>Tip Calculator</legend>
+<div>
+<label for="bill">Bill Amount</label>
+<input type="number" id="bill" name="bill">
+</div>
+<div>
+<label for="tip-pct">Tip Percentage</label>
+<input type="range" id="tip-pct" name="tip-pct" min="0" max="30" value="15">
+</div>
+<output name="tip-total" for="bill tip-pct">0.00</output>
+</fieldset>
+</form>
+</main>
+</body>
+</html>

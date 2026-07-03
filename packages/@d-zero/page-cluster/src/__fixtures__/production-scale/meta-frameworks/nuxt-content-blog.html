@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nuxt3のパフォーマンスチューニング入門 | Tech Blog</title>
+<link rel="icon" href="/favicon.ico">
+</head>
+<body>
+<div id="__nuxt">
+<header class="blog-header" data-v-1a2b3c4d>
+<a href="/" class="logo" data-v-1a2b3c4d>Tech Blog</a>
+<nav data-v-1a2b3c4d>
+<a href="/posts" data-v-1a2b3c4d>記事一覧</a>
+<a href="/tags" data-v-1a2b3c4d>タグ</a>
+<a href="/about" data-v-1a2b3c4d>About</a>
+</nav>
+</header>
+<div class="blog-layout">
+<article class="prose" data-v-5e6f7a8b>
+<header class="post-header" data-v-5e6f7a8b>
+<h1 data-v-5e6f7a8b>Nuxt3のパフォーマンスチューニング入門</h1>
+<p class="post-meta" data-v-5e6f7a8b>公開日: 2026年6月20日 / 著者: 開発チーム</p>
+</header>
+<p>Nuxt3では標準でさまざまな最適化機能が用意されていますが、実際のプロダクションでは追加のチューニングが求められる場面が少なくありません。本記事ではよく使われるテクニックを紹介します。</p>
+<h2 id="lazy-hydration"><a class="header-anchor" href="#lazy-hydration">#</a>遅延ハイドレーション</h2>
+<p>すべてのコンポーネントを即座にハイドレートするのではなく、必要になったタイミングでハイドレーションを行うことで初期表示の速度を改善できます。</p>
+<ul>
+<li>ビューポートに入った際にハイドレーションする</li>
+<li>ユーザー操作をトリガーにハイドレーションする</li>
+<li>アイドル時間を利用してハイドレーションする</li>
+</ul>
+<h2 id="image-optimization"><a class="header-anchor" href="#image-optimization">#</a>画像の最適化</h2>
+<p><code>@nuxt/image</code> モジュールを利用すると、画像フォーマットの自動変換やレスポンシブ画像の生成が簡単に行えます。</p>
+<pre class="shiki" style="background-color:#1e1e1e">
+<code>
+<span class="line"><span style="color:#569CD6">export default</span> <span style="color:#569CD6">defineNuxtConfig</span>({</span>
+<span class="line">  <span style="color:#9CDCFE">modules</span>: [<span style="color:#CE9178">'@nuxt/image'</span>],</span>
+<span class="line">  <span style="color:#9CDCFE">image</span>: {</span>
+<span class="line">    <span style="color:#9CDCFE">quality</span>: <span style="color:#B5CEA8">80</span>,</span>
+<span class="line">    <span style="color:#9CDCFE">format</span>: [<span style="color:#CE9178">'webp'</span>]</span>
+<span class="line">  }</span>
+<span class="line">})</span>
+</code>
+</pre>
+<h2 id="server-caching"><a class="header-anchor" href="#server-caching">#</a>サーバーサイドキャッシュ</h2>
+<p>Nitroの組み込みキャッシュ機能を使うことで、APIレスポンスやページ全体をキャッシュし応答速度を大幅に向上させることができます。</p>
+<pre class="shiki" style="background-color:#1e1e1e">
+<code>
+<span class="line"><span style="color:#569CD6">export default</span> <span style="color:#DCDCAA">defineCachedEventHandler</span>(<span style="color:#569CD6">async</span> (event) => {</span>
+<span class="line">  <span style="color:#569CD6">return</span> <span style="color:#569CD6">await</span> <span style="color:#DCDCAA">fetchData</span>()</span>
+<span class="line">}, { <span style="color:#9CDCFE">maxAge</span>: <span style="color:#B5CEA8">60</span> })</span>
+</code>
+</pre>
+<h2 id="bundle-analysis"><a class="header-anchor" href="#bundle-analysis">#</a>バンドルサイズの分析</h2>
+<p>不要な依存関係を洗い出すために、ビルド後のバンドルサイズを定期的に確認することをおすすめします。</p>
+<ol>
+<li>ビルドを実行しレポートを生成する</li>
+<li>大きなチャンクを特定する</li>
+<li>動的インポートに置き換えられる箇所を検討する</li>
+</ol>
+<h2 id="edge-runtime"><a class="header-anchor" href="#edge-runtime">#</a>エッジランタイム対応</h2>
+<p>NitroはCloudflare WorkersやVercel Edge Functionsなどのエッジランタイムにも対応しており、ユーザーに近い場所でリクエストを処理できます。</p>
+<ul>
+<li>デプロイ先ごとに適切なプリセットを選択する</li>
+<li>Node.js専用APIへの依存を避ける</li>
+<li>コールドスタート時間を計測する</li>
+</ul>
+<h2 id="monitoring"><a class="header-anchor" href="#monitoring">#</a>モニタリングとロギング</h2>
+<p>本番運用ではパフォーマンス指標を継続的に監視し、劣化を早期に検知できる体制を整えることが重要です。</p>
+<ul>
+<li>Core Web Vitalsを定期的に計測する</li>
+<li>サーバーサイドのレスポンスタイムを記録する</li>
+<li>エラーログを一元管理する</li>
+</ul>
+<h2 id="conclusion"><a class="header-anchor" href="#conclusion">#</a>まとめ</h2>
+<p>今回紹介したテクニックを組み合わせることで、Nuxt3アプリケーションのパフォーマンスを継続的に改善できます。ぜひ自身のプロジェクトにも取り入れてみてください。</p>
+<div class="post-tags">
+<ul>
+<li><a href="/tags/nuxt3">#nuxt3</a></li>
+<li><a href="/tags/performance">#performance</a></li>
+<li><a href="/tags/nitro">#nitro</a></li>
+<li><a href="/tags/vue">#vue</a></li>
+<li><a href="/tags/frontend">#frontend</a></li>
+</ul>
+</div>
+<div class="share-buttons">
+<a href="https://example.com/share/x">Xでシェア</a>
+<a href="https://example.com/share/facebook">Facebookでシェア</a>
+<a href="https://example.com/share/hatena">はてなブックマーク</a>
+<button type="button">リンクをコピー</button>
+</div>
+<nav class="post-pagination">
+<a href="/posts/nuxt-ssr-basics"><span>前の記事</span><strong>Nuxt3のSSR基礎</strong></a>
+<a href="/posts/nitro-server"><span>次の記事</span><strong>Nitroサーバーエンジン入門</strong></a>
+</nav>
+<p id="marker-nuxt-content-blog" data-marker="nuxt-content-blog">MARKER_NUXT_CONTENT_BLOG</p>
+</article>
+<aside class="post-sidebar">
+<nav class="nuxt-content-toc" data-v-2c3d4e5f>
+<h2 data-v-2c3d4e5f>目次</h2>
+<ul data-v-2c3d4e5f>
+<li data-v-2c3d4e5f><a href="#lazy-hydration" data-v-2c3d4e5f>遅延ハイドレーション</a></li>
+<li data-v-2c3d4e5f><a href="#image-optimization" data-v-2c3d4e5f>画像の最適化</a></li>
+<li data-v-2c3d4e5f><a href="#server-caching" data-v-2c3d4e5f>サーバーサイドキャッシュ</a></li>
+<li data-v-2c3d4e5f><a href="#bundle-analysis" data-v-2c3d4e5f>バンドルサイズの分析</a></li>
+<li data-v-2c3d4e5f><a href="#edge-runtime" data-v-2c3d4e5f>エッジランタイム対応</a></li>
+<li data-v-2c3d4e5f><a href="#monitoring" data-v-2c3d4e5f>モニタリングとロギング</a></li>
+<li data-v-2c3d4e5f><a href="#conclusion" data-v-2c3d4e5f>まとめ</a></li>
+</ul>
+</nav>
+<div class="author-card" data-v-6a7b8c9d>
+<h3 data-v-6a7b8c9d>この記事を書いた人</h3>
+<p data-v-6a7b8c9d>開発チーム所属のフロントエンドエンジニア。Vue/Nuxtエコシステムを中心に情報発信しています。</p>
+</div>
+<div class="related-posts" data-v-6a7b8c9d>
+<h3 data-v-6a7b8c9d>関連記事</h3>
+<ul data-v-6a7b8c9d>
+<li data-v-6a7b8c9d><a href="/posts/nuxt-ssr-basics" data-v-6a7b8c9d>Nuxt3のSSR基礎</a></li>
+<li data-v-6a7b8c9d><a href="/posts/nitro-server" data-v-6a7b8c9d>Nitroサーバーエンジン入門</a></li>
+<li data-v-6a7b8c9d><a href="/posts/vue-composables" data-v-6a7b8c9d>実践Vue Composables</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<section class="comments" data-v-3e4f5a6b>
+<h2 data-v-3e4f5a6b>コメント</h2>
+<ul data-v-3e4f5a6b>
+<li data-v-3e4f5a6b>
+<strong data-v-3e4f5a6b>読者A</strong>
+<p data-v-3e4f5a6b>とても参考になりました。特にキャッシュの部分が実践的でした。</p>
+<button type="button" data-v-3e4f5a6b>返信</button>
+</li>
+<li data-v-3e4f5a6b>
+<strong data-v-3e4f5a6b>読者B</strong>
+<p data-v-3e4f5a6b>画像最適化の設定例がわかりやすかったです。</p>
+<button type="button" data-v-3e4f5a6b>返信</button>
+</li>
+<li data-v-3e4f5a6b>
+<strong data-v-3e4f5a6b>読者C</strong>
+<p data-v-3e4f5a6b>エッジランタイムの話がとても興味深かったです。</p>
+<button type="button" data-v-3e4f5a6b>返信</button>
+</li>
+<li data-v-3e4f5a6b>
+<strong data-v-3e4f5a6b>読者D</strong>
+<p data-v-3e4f5a6b>モニタリングの項目を早速チームに共有しました。</p>
+<button type="button" data-v-3e4f5a6b>返信</button>
+</li>
+<li data-v-3e4f5a6b>
+<strong data-v-3e4f5a6b>読者E</strong>
+<p data-v-3e4f5a6b>続編も期待しています。</p>
+<button type="button" data-v-3e4f5a6b>返信</button>
+</li>
+</ul>
+</section>
+<footer class="blog-footer" data-v-7c8d9e0f>
+<p data-v-7c8d9e0f>&copy; 2026 Tech Blog</p>
+</footer>
+</div>
+<script type="application/json" id="__NUXT_DATA__">[["Reactive",1],{"data":2},{"post":3},{"title":"Nuxt3のパフォーマンスチューニング入門","slug":"nuxt3-performance-tuning"}]</script>
+</body>
+</html>
