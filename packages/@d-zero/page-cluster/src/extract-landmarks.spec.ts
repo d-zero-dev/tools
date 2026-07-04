@@ -210,4 +210,16 @@ describe('extractLandmarks (malformed HTML)', () => {
 		expect(result.header).toBeUndefined();
 		expect(result.remainderHtml).toBe(html);
 	});
+
+	test('a role-bearing element whose tag name contains regex metacharacters does not crash the genuine-close check', () => {
+		// htmlparser2 tolerates tag names outside the normal alphanumeric set
+		// (e.g. an unencoded "(" in markup produces a tag literally named
+		// "div(foo") — an unescaped tag name interpolated into a RegExp can
+		// throw ("Unterminated group") on unbalanced metacharacters like this.
+		const html = '<body><div(foo role="banner">H</div(foo><main>M</main></body>';
+		expect(() => extractLandmarks(html)).not.toThrow();
+		const result = extractLandmarks(html);
+		expect(result.header).toBe('<div(foo role="banner">H</div(foo>');
+		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
+	});
 });

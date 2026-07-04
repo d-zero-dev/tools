@@ -107,6 +107,20 @@ function mergeSpans(
 }
 
 /**
+ * Escapes regex metacharacters in `text` so it can be interpolated into a
+ * `RegExp` literally. Needed because `tagName` reaching {@link isGenuineClose}
+ * is not guaranteed to be a plain HTML tag name: htmlparser2 accepts
+ * characters like `(`/`[` inside a tag name (`<div(foo role="banner">`
+ * parses with tag name `"div(foo"`), which would otherwise either throw
+ * (an unbalanced `(` is an invalid regex) or silently change what the regex
+ * matches.
+ * @param text
+ */
+function escapeRegExp(text: string): string {
+	return text.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Whether `html` actually contains a literal closing tag for `tagName`
  * ending at `endOffset`. htmlparser2 fires `onclosetag` not only for real
  * closing tags but also when it force-closes a still-open ancestor to
@@ -130,7 +144,7 @@ function mergeSpans(
  */
 function isGenuineClose(html: string, endOffset: number, tagName: string): boolean {
 	const windowStart = Math.max(0, endOffset - tagName.length - 3);
-	return new RegExp(`</\\s*${tagName}\\s*>$`, 'i').test(
+	return new RegExp(`</\\s*${escapeRegExp(tagName)}\\s*>$`, 'i').test(
 		html.slice(windowStart, endOffset),
 	);
 }
