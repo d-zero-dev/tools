@@ -31,7 +31,7 @@ tokenize(html, {
 
 ### クラスタリング
 
-クロールしたページ群から最終的なクラスタキーを得るには `resolvePageClusterKeys()` を使う。ブロッキング（URLパス/スタイルシートによる粗い絞り込み）と構造クラスタリング（ブロック内でのcomplete-linkage階層的クラスタリング）を内部で連結し、ブロックを跨いで一意なキーを返す。既定で各ページの`<header>`/`<footer>`/`<nav>`/`<aside>`（タグ名またはARIAランドマークロール）を比較対象から除外し、共通chromeの影響を受けにくくする。
+クロールしたページ群から最終的なクラスタキーを得るには `resolvePageClusterKeys()` を使う。ブロッキング（URLパス/スタイルシートによる粗い絞り込み）と構造クラスタリング（ブロック内でのcomplete-linkage階層的クラスタリング）を内部で連結し、ブロックを跨いで一意なキーを返す。既定で各ページの`<header>`/`<footer>`/`<nav>`/`<aside>`（タグ名またはARIAランドマークロール）を比較対象から除外し、共通chromeの影響を受けにくくする。また、スタイルシート参照が記録されていない「孤児」ページを、同一URLセクションに閉じたスタイルシート・ブロックへ再割当する処理（`reassignOrphanBlockKeys()`）も既定で有効。挙動の詳細・トレードオフは`src/reassign-orphan-block-keys.ts`のJSDocを参照。
 
 ```ts
 import { resolvePageClusterKeys } from '@d-zero/page-cluster/resolve-page-cluster-keys';

@@ -37,6 +37,10 @@
 			"import": "./dist/jaccard-similarity.js",
 			"types": "./dist/jaccard-similarity.d.ts"
 		},
+		"./reassign-orphan-block-keys": {
+			"import": "./dist/reassign-orphan-block-keys.js",
+			"types": "./dist/reassign-orphan-block-keys.d.ts"
+		},
 		"./resolve-blocking-group-keys": {
 			"import": "./dist/resolve-blocking-group-keys.js",
 			"types": "./dist/resolve-blocking-group-keys.d.ts"

@@ -237,4 +237,32 @@ describe('resolvePageClusterKeys', () => {
 		const b = result.at(-1);
 		expect(a).not.toBe(b);
 	});
+
+	test('reassignOrphans (default true) lets a page with no recorded stylesheets rejoin a same-section css: block', () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '3'], stylesheetHrefs: [], html },
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages);
+
+		expect(result[2]).toBe(result[0]);
+	});
+
+	test('reassignOrphans: false falls back to the raw resolveBlockingGroupKeys output, leaving the orphan on its own path: block', () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '3'], stylesheetHrefs: [], html },
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages, { reassignOrphans: false });
+
+		expect(result[2]).not.toBe(result[0]);
+	});
 });

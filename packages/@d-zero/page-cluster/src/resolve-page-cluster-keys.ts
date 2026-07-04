@@ -3,6 +3,7 @@ import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-c
 import type { TokenizeOptions } from './types.js';
 
 import { extractLandmarks } from './extract-landmarks.js';
+import { reassignOrphanBlockKeys } from './reassign-orphan-block-keys.js';
 import { resolveBlockingGroupKeys } from './resolve-blocking-group-keys.js';
 import { resolveStructuralClusterKeys } from './resolve-structural-cluster-keys.js';
 import { tokenize } from './tokenize.js';
@@ -70,6 +71,22 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * the extra `extractLandmarks` pass adds.
 		 */
 		excludeLandmarks?: boolean;
+		/**
+		 * Apply {@link ./reassign-orphan-block-keys.js | reassignOrphanBlockKeys}
+		 * to the blocking keys before clustering, so a page with no recorded
+		 * stylesheets ("orphan" — often a crawl-completeness gap, not evidence
+		 * the page is actually template-less) can rejoin a same-URL-section
+		 * `css:` block instead of being stranded on its weaker `path:` fallback.
+		 * Defaults to `true`. Set to `false` to fall back to the raw
+		 * {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys}
+		 * output — kept available both because this is not yet broadly-
+		 * validated beyond the two real crawls checked so far, and because it
+		 * has a known trade-off documented on
+		 * {@link ./reassign-orphan-block-keys.js | reassignOrphanBlockKeys}
+		 * itself: pooling pages for comparison can change unrelated pages'
+		 * cluster outcomes too, not just the orphan's.
+		 */
+		reassignOrphans?: boolean;
 	};
 
 /**
@@ -99,6 +116,12 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
  * were excluded, and re-merged correctly at `similarityThreshold: 0.6` — re-
  * tune per site after switching this on, the same as `similarityThreshold`
  * itself already needs.
+ *
+ * `reassignOrphans` only ever pools a `path:`-fallback orphan alongside a
+ * same-section `css:` block for `resolveStructuralClusterKeys` to compare —
+ * it never forces a merge itself. An orphan that turns out not to match
+ * anything in that pool (confirmed on real crawl data) correctly surfaces as
+ * its own singleton, the same as it would have without this option.
  * @param pages
  * @param options
  * @example
@@ -121,7 +144,11 @@ export function resolvePageClusterKeys(
 		return new Set(tokenize(html, options).tokens);
 	});
 
-	const blockKeys = resolveBlockingGroupKeys(pages, options);
+	const reassignOrphans = options?.reassignOrphans ?? true;
+	const rawBlockKeys = resolveBlockingGroupKeys(pages, options);
+	const blockKeys = reassignOrphans
+		? reassignOrphanBlockKeys(pages, rawBlockKeys, options?.pathDepth)
+		: rawBlockKeys;
 
 	const indicesByBlockKey = new Map<string, number[]>();
 	for (const [index, blockKey] of blockKeys.entries()) {
