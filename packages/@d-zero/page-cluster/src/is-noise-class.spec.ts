@@ -56,6 +56,21 @@ describe('isNoiseClass', () => {
 		['row_span24', false],
 		['tab_index1a', false],
 		['avatar_size32', false],
+		// Real English words that happen to fit a hash pattern's character-set
+		// shape must survive — regression tests for the over-permissive `sc-`/
+		// `css-`/generic-hex patterns fixed after an audit found them matching
+		// real class names in production-scale usage.
+		['sc-header', false],
+		['sc-active', false],
+		['sc-container', false],
+		['css-editor', false],
+		['css-toolbar', false],
+		['section-facade', false],
+		['section-decade', false],
+		// A genuine styled-components hash longer than 10 characters must
+		// still be caught — regression test for an accidental length cap
+		// introduced alongside the `sc-header`-style false-positive fix above.
+		['sc-aB3xQ9zR7kM2', true],
 	])('%s -> %s', (className, expected) => {
 		expect(isNoiseClass(className, DEFAULT_NOISE_CLASS_PATTERNS)).toBe(expected);
 	});

@@ -1,10 +1,17 @@
-import type { Frame, OpaqueRegion, OpaqueTagName, ResolvedOptions } from './types.js';
+import type {
+	Frame,
+	OpaqueRegion,
+	OpaqueTagName,
+	ResolvedOptions,
+	TokenizeResult,
+} from './types.js';
 
 import { Parser } from 'htmlparser2';
 
 import { createFrame } from './create-frame.js';
 import { formatBracket } from './format-bracket.js';
 import { hashContent } from './hash-content.js';
+import { parseClassList } from './parse-class-list.js';
 import { resolveClosedFrame } from './resolve-closed-frame.js';
 
 const OPAQUE_TAGS = new Set<OpaqueTagName>(['script', 'style', 'noscript', 'svg']);
@@ -54,14 +61,20 @@ function topOf(stack: readonly Frame[]): Frame {
  * so only `svg`/`noscript` need active suppression of their nested
  * open/close events; `depth` guards against those two self-nesting
  * (`<svg><svg>...`).
+ *
+ * The `<body>` tag's own `class` is deliberately excluded when building its
+ * frame's `segment` (always plain `"body"`, never `"body.xxx"`) — see
+ * `TokenizeResult`'s JSDoc for why — and captured separately into
+ * `bodyClassList` instead of being discarded outright.
  * @param html
  * @param options
  */
-export function runTokenizer(html: string, options: ResolvedOptions): string[] {
+export function runTokenizer(html: string, options: ResolvedOptions): TokenizeResult {
 	const stack: Frame[] = [];
 	let opaque: OpaqueRegion | null = null;
 	let bodyDone = false;
 	let result: string[] = [];
+	let bodyClassList: string[] = [];
 	// Counts <body> open tags ignored because a body was already open (a
 	// stray/duplicated body from broken SSR/templating). Browsers create no
 	// node for these, so neither the open nor its matching close tag should
@@ -80,7 +93,8 @@ export function runTokenizer(html: string, options: ResolvedOptions): string[] {
 
 			if (stack.length === 0) {
 				if (name === 'body' && !bodyDone) {
-					stack.push(createFrame(name, attribs, options));
+					bodyClassList = parseClassList(attribs.class, options.filterNoiseClasses);
+					stack.push(createFrame(name, { ...attribs, class: '' }, options));
 				}
 				// Ignore everything else outside <body> (head, a second top-level <html>/<body>, ...).
 				return;
@@ -165,5 +179,5 @@ export function runTokenizer(html: string, options: ResolvedOptions): string[] {
 
 	parser.parseComplete(html);
 
-	return result;
+	return { tokens: result, bodyClassList };
 }
