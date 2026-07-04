@@ -1,4 +1,6 @@
+import { computeDocumentFrequency } from './compute-document-frequency.js';
 import { jaccardSimilarity } from './jaccard-similarity.js';
+import { splitTokensByFrequency } from './split-tokens-by-frequency.js';
 
 /**
  * @see resolveStructuralClusterKeys
@@ -30,12 +32,80 @@ const DEFAULT_SIMILARITY_THRESHOLD = 0.8;
 const BOUNDARY_EPSILON = 1e-9;
 
 /**
+ * Below this many pages, `computeDocumentFrequency`/`splitTokensByFrequency`
+ * (the default 90% cutoff) degenerate rather than usefully separate chrome
+ * from content — see `deriveComparisonSets` for the failure mode. Derived
+ * from `splitTokensByFrequency`'s own cutoff: a token missing from exactly
+ * one page out of `n` still counts as chrome only if
+ * `(n - 1) / n >= 0.9`, i.e. `n >= 10`. Below that, this function falls back
+ * to comparing `tokenSets` directly, unfiltered.
+ */
+const MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT = 10;
+
+/**
+ * Narrows each page's token set to its page-specific content before
+ * clustering, so pages that only share site-wide chrome (header/nav/footer)
+ * don't read as more similar than they structurally are, and so genuine
+ * layout matches aren't swamped by chrome noise at loose thresholds — see
+ * `splitTokensByFrequency`'s JSDoc for the two failure modes this fixes.
+ * Confirmed on real crawl data (a corporate site using a freeform CMS block
+ * editor for its content area): without this, two pages built from the same
+ * article template but a different mix of content blocks could score *lower*
+ * on raw Jaccard than two pages built from genuinely different templates
+ * that happen to share more chrome relative to their (smaller) content area.
+ *
+ * Skipped entirely below `MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT` pages: at the
+ * default 90% cutoff, `splitTokensByFrequency` requires a token to appear on
+ * literally every page to count as chrome once `n < 10` (see that constant's
+ * JSDoc for the derivation). At `n = 2` this is a total degenerate case, not
+ * just an imprecise one — `content(A) = A \ B` and `content(B) = B \ A` are
+ * disjoint *by construction* for any two sets, so
+ * `jaccardSimilarity(content(A), content(B))` is always `0` unless `A` and
+ * `B` are identical, regardless of how similar they actually are (confirmed:
+ * two pages sharing 999 of 1000 tokens, differing in exactly one each, go
+ * from a raw similarity of `0.998` to a content-only similarity of `0`).
+ * Falling back to unfiltered `tokenSets` below the floor accepts chrome
+ * dilution for small blocks rather than this much sharper failure.
+ *
+ * A page whose *entire* token set narrows away (every one of its tokens
+ * clears the chrome cutoff) falls back to its own raw tokens rather than the
+ * empty result: `jaccardSimilarity` treats two empty sets as similarity `1`
+ * (by design, for two genuinely-empty `<body>`s — see its JSDoc), but two
+ * different* all-chrome pages narrowing to empty for unrelated reasons
+ * (e.g. one page is only a header+footer, another is only a nav) would
+ * otherwise be forced into the same cluster by that shortcut regardless of
+ * whether their actual structure matches. Falling back only when narrowing
+ * collapsed a page to nothing — not for every page — keeps the normal case
+ * (a page with at least one page-specific token) unaffected.
+ * @param tokenSets
+ */
+function deriveComparisonSets(
+	tokenSets: readonly ReadonlySet<string>[],
+): readonly ReadonlySet<string>[] {
+	if (tokenSets.length < MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT) {
+		return tokenSets;
+	}
+
+	const corpusFrequency = computeDocumentFrequency(tokenSets);
+	return tokenSets.map((tokens) => {
+		const { contentTokens } = splitTokensByFrequency(tokens, corpusFrequency);
+		return contentTokens.size === 0 && tokens.size > 0 ? tokens : contentTokens;
+	});
+}
+
+/**
  * Reads `values[index]`, throwing instead of returning `undefined`. Every
  * call site here indexes within bounds it just established itself (loop
  * ranges, or an index freshly returned by the same array's own scan), so the
  * thrown branch is unreachable in practice; it exists to satisfy
  * `noUncheckedIndexedAccess` without a non-null assertion (same rationale as
  * `readDpValue` in `array-edit-distance.ts`, generalized to any array-like).
+ * Deliberately not exported and shared with `resolve-page-cluster-keys.ts`'s
+ * own copy: this file's `export`s are its intended public API surface (the
+ * main function and its options type), and every other internal helper here
+ * (`find`, `clusterByCompleteLinkage`, `deriveComparisonSets`) is likewise
+ * kept unexported — sharing just this one helper across files would carve an
+ * exception into that boundary for a ~7-line generic utility.
  * @param values
  * @param index
  */
@@ -68,8 +138,11 @@ function find(parent: Int32Array, index: number): number {
 }
 
 /**
- * Complete-linkage hierarchical clustering of `tokenSets`, cut at
- * `threshold`, computed via the NN-chain algorithm (Murtagh, F., 1983, "A
+ * Complete-linkage hierarchical clustering of `tokenSets` (whatever sets the
+ * caller wants compared — `resolveStructuralClusterKeys` passes
+ * `deriveComparisonSets`'s output, not necessarily the raw per-page token
+ * sets), cut at `threshold`, computed via the NN-chain algorithm (Murtagh,
+ * F., 1983, "A
  * Survey of Recent Advances in Hierarchical Clustering Algorithms," The
  * Computer Journal 26(4)). NN-chain produces the exact same dendrogram as
  * naively re-scanning every live cluster pair for the best merge at each
@@ -221,6 +294,12 @@ function clusterByCompleteLinkage(
  * exact complete-linkage clustering in O(n²), so there is no accuracy being
  * traded away by not approximating, and no evidence yet that O(n²) is a
  * real bottleneck at the block sizes this function actually sees.
+ *
+ * Before comparing, each page's token set is narrowed to its page-specific
+ * content via `splitTokensByFrequency` (see `deriveComparisonSets`) once
+ * `tokenSets.length` is large enough for that to be statistically meaningful
+ * — below that floor, chrome dilution is accepted as the lesser failure and
+ * comparison falls back to the raw sets.
  * @param tokenSets
  * @param options
  * @example
@@ -249,7 +328,8 @@ export function resolveStructuralClusterKeys(
 		return [];
 	}
 
-	const roots = clusterByCompleteLinkage(tokenSets, similarityThreshold);
+	const comparisonSets = deriveComparisonSets(tokenSets);
+	const roots = clusterByCompleteLinkage(comparisonSets, similarityThreshold);
 
 	const rootToLabel = new Map<number, string>();
 	return roots.map((root) => {

@@ -35,7 +35,7 @@ describe('tokenize (fixtures)', () => {
 			'body>main.product-list>.grid>.card>h3',
 			'body>main.product-list>.grid>.card>p.price',
 		];
-		expect(tokenize(readFixture('product-grid.html'))).toStrictEqual([
+		expect(tokenize(readFixture('product-grid.html')).tokens).toStrictEqual([
 			...cardLeaves,
 			...cardLeaves,
 			...cardLeaves,
@@ -43,7 +43,7 @@ describe('tokenize (fixtures)', () => {
 	});
 
 	test('blog article: visible text is ignored entirely; mixed leaf/non-leaf paragraphs', () => {
-		expect(tokenize(readFixture('blog-article.html'))).toStrictEqual([
+		expect(tokenize(readFixture('blog-article.html')).tokens).toStrictEqual([
 			'body>article>h1',
 			'body>article>p',
 			'body>article>p>a',
@@ -51,7 +51,7 @@ describe('tokenize (fixtures)', () => {
 	});
 
 	test('nav header: a `current` state class on one sibling does not collapse or corrupt the others', () => {
-		expect(tokenize(readFixture('nav-header.html'))).toStrictEqual([
+		expect(tokenize(readFixture('nav-header.html')).tokens).toStrictEqual([
 			'body>header>nav.main-nav>ul>li>a',
 			'body>header>nav.main-nav>ul>li.current>a',
 			'body>header>nav.main-nav>ul>li>a',
@@ -59,7 +59,7 @@ describe('tokenize (fixtures)', () => {
 	});
 
 	test('form: input/button `type` is preserved as structural signal', () => {
-		expect(tokenize(readFixture('form.html'))).toStrictEqual([
+		expect(tokenize(readFixture('form.html')).tokens).toStrictEqual([
 			'body>form>input[type=text]',
 			'body>form>input[type=checkbox]',
 			'body>form>input[type=radio]',
@@ -69,7 +69,7 @@ describe('tokenize (fixtures)', () => {
 	});
 
 	test('svg sprite: each svg is one opaque leaf; role is preserved; self-nesting does not truncate early', () => {
-		const raw = tokenize(readFixture('svg-sprite.html'));
+		const raw = tokenize(readFixture('svg-sprite.html')).tokens;
 		expect(raw).toHaveLength(3);
 		expect(stripShas(raw)).toStrictEqual([
 			'body>.icons>svg[sha=X]',
@@ -86,7 +86,7 @@ describe('tokenize (fixtures)', () => {
 	});
 
 	test('script + ld+json: type is preserved on opaque elements alongside the content hash', () => {
-		const raw = tokenize(readFixture('script-ld-json.html'));
+		const raw = tokenize(readFixture('script-ld-json.html')).tokens;
 		expect(stripShas(raw)).toStrictEqual([
 			'body>.page>script[sha=X,type=application/ld+json]',
 			'body>.page>script[sha=X]',
@@ -94,26 +94,71 @@ describe('tokenize (fixtures)', () => {
 	});
 
 	test('noisy classes: default filtering collapses auto-generated-class wrappers via folding', () => {
-		expect(tokenize(readFixture('noisy-classes.html'))).toStrictEqual(['body>span']);
+		expect(tokenize(readFixture('noisy-classes.html')).tokens).toStrictEqual([
+			'body>span',
+		]);
 	});
 
 	test('noisy classes: disabling the filter keeps every class and prevents folding', () => {
 		expect(
-			tokenize(readFixture('noisy-classes.html'), { filterNoiseClasses: false }),
+			tokenize(readFixture('noisy-classes.html'), { filterNoiseClasses: false }).tokens,
 		).toStrictEqual(['body>.sc-a1b2c3>.css-4d5e6f>._g7h8i9']);
+	});
+});
+
+describe('tokenize (body class is metadata, not a path segment)', () => {
+	test('a class on <body> is excluded from every leaf path', () => {
+		const result = tokenize('<body class="law-page"><header>x</header></body>');
+		expect(result.tokens).toStrictEqual(['body>header']);
+	});
+
+	test('a class on <body> is returned separately as bodyClassList', () => {
+		const result = tokenize('<body class="law-page"><header>x</header></body>');
+		expect(result.bodyClassList).toStrictEqual(['law-page']);
+	});
+
+	test('two pages differing only in body class produce identical tokens', () => {
+		const a = tokenize(
+			'<body class="law-page"><header>x</header><footer>y</footer></body>',
+		);
+		const b = tokenize(
+			'<body class="humanities-page"><header>x</header><footer>y</footer></body>',
+		);
+		expect(a.tokens).toStrictEqual(b.tokens);
+		expect(a.bodyClassList).not.toStrictEqual(b.bodyClassList);
+	});
+
+	test('a <body> with no class returns an empty bodyClassList', () => {
+		expect(tokenize('<body><header>x</header></body>').bodyClassList).toStrictEqual([]);
+	});
+
+	test('multiple body classes are deduplicated and sorted, same as any other element', () => {
+		const result = tokenize('<body class="beta beta alpha"></body>');
+		expect(result.bodyClassList).toStrictEqual(['alpha', 'beta']);
+	});
+
+	test('noise-class filtering applies to bodyClassList the same as it applies to path segments', () => {
+		const result = tokenize('<body class="sc-a1b2c3 real-page"></body>');
+		expect(result.bodyClassList).toStrictEqual(['real-page']);
+	});
+
+	test('no <body> at all returns an empty bodyClassList', () => {
+		expect(
+			tokenize('<html><head><title>x</title></head></html>').bodyClassList,
+		).toStrictEqual([]);
 	});
 });
 
 describe('tokenize (stress cases)', () => {
 	test('50 levels of class-less wrapper divs all fold away', () => {
 		const html = `<body>${'<div>'.repeat(50)}<span>x</span>${'</div>'.repeat(50)}</body>`;
-		expect(tokenize(html)).toStrictEqual(['body>span']);
+		expect(tokenize(html).tokens).toStrictEqual(['body>span']);
 	});
 
 	test('1000 identical siblings are all emitted, uncompressed, without pathological slowness', () => {
 		const html = `<body><ul>${'<li></li>'.repeat(1000)}</ul></body>`;
 		const start = performance.now();
-		const result = tokenize(html);
+		const result = tokenize(html).tokens;
 		const elapsedMs = performance.now() - start;
 
 		expect(result).toHaveLength(1000);
@@ -134,7 +179,7 @@ describe('tokenize (stress cases)', () => {
 		let result: string[] = [];
 		const start = performance.now();
 		expect(() => {
-			result = tokenize(html);
+			result = tokenize(html).tokens;
 		}).not.toThrow();
 		const elapsedMs = performance.now() - start;
 
@@ -148,38 +193,40 @@ describe('tokenize (stress cases)', () => {
 
 describe('tokenize (malformed HTML)', () => {
 	test('unclosed <li> siblings are recovered via implicit closing', () => {
-		expect(tokenize('<body><ul><li>A<li>B</ul></body>')).toStrictEqual([
+		expect(tokenize('<body><ul><li>A<li>B</ul></body>').tokens).toStrictEqual([
 			'body>ul>li',
 			'body>ul>li',
 		]);
 	});
 
 	test('a document truncated mid-tag is force-closed at end of input', () => {
-		expect(tokenize('<body><div><span>a')).toStrictEqual(['body>span']);
+		expect(tokenize('<body><div><span>a').tokens).toStrictEqual(['body>span']);
 	});
 
 	test('no <body> at all returns an empty array', () => {
-		expect(tokenize('<html><head><title>x</title></head></html>')).toStrictEqual([]);
+		expect(tokenize('<html><head><title>x</title></head></html>').tokens).toStrictEqual(
+			[],
+		);
 	});
 
 	test('empty input returns an empty array', () => {
-		expect(tokenize('')).toStrictEqual([]);
+		expect(tokenize('').tokens).toStrictEqual([]);
 	});
 
 	test('an empty <body> is itself a leaf', () => {
-		expect(tokenize('<body></body>')).toStrictEqual(['body']);
+		expect(tokenize('<body></body>').tokens).toStrictEqual(['body']);
 	});
 
 	test('a second top-level <body> in malformed markup is ignored', () => {
-		expect(tokenize('<body><div>1</div></body><body><div>2</div></body>')).toStrictEqual([
-			'body>div',
-		]);
+		expect(
+			tokenize('<body><div>1</div></body><body><div>2</div></body>').tokens,
+		).toStrictEqual(['body>div']);
 	});
 
 	test('a <body> tag nested inside real body content is ignored, but its content is not', () => {
-		expect(tokenize('<body><div><body><span>x</span></body></div></body>')).toStrictEqual(
-			['body>span'],
-		);
+		expect(
+			tokenize('<body><div><body><span>x</span></body></div></body>').tokens,
+		).toStrictEqual(['body>span']);
 	});
 
 	test('a comment as the only content of an otherwise-childless element is not silently dropped', () => {
@@ -187,12 +234,14 @@ describe('tokenize (malformed HTML)', () => {
 		expect(
 			tokenize('<body><div><!-- only comment --></div></body>', {
 				includeComments: true,
-			}),
+			}).tokens,
 		).toStrictEqual([`body>div>comment[sha=${sha}]`]);
 	});
 
 	test('comments are ignored by default, even when the input contains one', () => {
-		expect(tokenize('<body><!-- c --><div>x</div></body>')).toStrictEqual(['body>div']);
+		expect(tokenize('<body><!-- c --><div>x</div></body>').tokens).toStrictEqual([
+			'body>div',
+		]);
 	});
 
 	test('an enabled comment is interleaved with real siblings in document order', () => {
@@ -200,7 +249,7 @@ describe('tokenize (malformed HTML)', () => {
 		expect(
 			tokenize('<body><span>a</span><!-- c --><span>b</span></body>', {
 				includeComments: true,
-			}),
+			}).tokens,
 		).toStrictEqual(['body>span', `body>comment[sha=${sha}]`, 'body>span']);
 	});
 });
@@ -208,6 +257,6 @@ describe('tokenize (malformed HTML)', () => {
 describe('tokenize (attribute notation variance)', () => {
 	test('uppercase tags/attributes and unquoted values are normalized the same as lowercase/quoted ones', () => {
 		const html = '<BODY><DIV CLASS="Card"  ROLE=button><SPAN>x</SPAN></DIV></BODY>';
-		expect(tokenize(html)).toStrictEqual(['body>.Card[role=button]>span']);
+		expect(tokenize(html).tokens).toStrictEqual(['body>.Card[role=button]>span']);
 	});
 });

@@ -1,4 +1,22 @@
 /**
+ * Result of {@link ../tokenize.js | tokenize}. `bodyClassList` is kept
+ * separate from `tokens` rather than folded into the root of every leaf
+ * path: CMS `body_class()` conventions (WordPress, Drupal, ...) commonly
+ * inject a per-page-category label onto `<body>` (e.g. `law-page`,
+ * `humanities-page`), and a caller that mixed it into every path would find
+ * that a single such label corrupts *every* token for that page, since it's
+ * the common prefix of every root-to-leaf path — collapsing near-duplicate
+ * pages to zero similarity even when their descendant structure is
+ * otherwise identical. Moving it out preserves the information (a caller
+ * that genuinely needs body-class-driven grouping still has it) without
+ * letting it poison structural comparison by default.
+ */
+export type TokenizeResult = {
+	tokens: string[];
+	bodyClassList: string[];
+};
+
+/**
  * Options for {@link ../tokenize.js | tokenize}.
  */
 export type TokenizeOptions = {

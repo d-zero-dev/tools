@@ -1,15 +1,20 @@
-import type { TokenizeOptions } from './types.js';
+import type { TokenizeOptions, TokenizeResult } from './types.js';
 
 import { resolveOptions } from './resolve-options.js';
 import { runTokenizer } from './run-tokenizer.js';
 
-export type { TokenizeOptions } from './types.js';
+export type { TokenizeOptions, TokenizeResult } from './types.js';
 
 /**
  * Tokenizes the structural skeleton of an HTML document's `<body>` for
  * duplicate/near-duplicate page detection at crawl scale. This is the first
- * building block of `@d-zero/page-cluster`; MinHash/LSH-based clustering on
- * top of these tokens is added in a later package version.
+ * building block of `@d-zero/page-cluster`; clustering on top of these
+ * tokens is layered on by
+ * {@link ./resolve-structural-cluster-keys.js | resolveStructuralClusterKeys}
+ * (exact O(n²) complete-linkage via NN-chain) and orchestrated across blocks
+ * by {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeys} —
+ * MinHash/LSH-based approximation was considered and rejected: see
+ * `resolveStructuralClusterKeys`'s JSDoc for why.
  *
  * Only `<body>` is tokenized. `<head>` (title/meta/link/OGP/...) is ignored
  * entirely: `@d-zero/beholder` already extracts it comprehensively, but from
@@ -43,14 +48,18 @@ export type { TokenizeOptions } from './types.js';
  * needs, since compression is coupled to how the caller will read counts
  * back out again — folding that guess into this package's contract can't be
  * un-shipped later.
+ *
+ * `<body>`'s own `class` is excluded from every leaf path and returned
+ * separately as `bodyClassList` — see {@link ./types.js | TokenizeResult}'s
+ * JSDoc for why.
  * @param html
  * @param options
  * @example
  * ```ts
  * tokenize('<body><div class="card"><ul><li>A</li><li>B</li></ul></div></body>');
- * // ["body>.card>ul>li", "body>.card>ul>li"]
+ * // { tokens: ["body>.card>ul>li", "body>.card>ul>li"], bodyClassList: [] }
  * ```
  */
-export function tokenize(html: string, options?: TokenizeOptions): string[] {
+export function tokenize(html: string, options?: TokenizeOptions): TokenizeResult {
 	return runTokenizer(html, resolveOptions(options));
 }

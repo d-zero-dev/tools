@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
+import { computeDocumentFrequency } from './compute-document-frequency.js';
 import { jaccardSimilarity } from './jaccard-similarity.js';
 import { resolveStructuralClusterKeys } from './resolve-structural-cluster-keys.js';
+import { splitTokensByFrequency } from './split-tokens-by-frequency.js';
 
 /**
  * Naive, obviously-correct reference implementation of threshold-cut
@@ -129,6 +131,35 @@ function randomTokenSets(
 		const tokens = vocabulary.filter(() => random() < 0.5);
 		return new Set(tokens);
 	});
+}
+
+/**
+ * Same as `randomTokenSets`, plus `chromeSize` tokens present on every page
+ * unconditionally. Plain `randomTokenSets` cannot exercise
+ * `deriveComparisonSets`'s frequency-split narrowing: at 50% independent
+ * inclusion probability, a token's expected document frequency is only 50%,
+ * nowhere near the 90% cutoff, so across every (seed, vocabulary, threshold)
+ * combination the differential test below used, the empirically observed
+ * maximum document frequency never once reached the cutoff — the "above the
+ * floor" test was silently exercising the exact same no-op narrowing as the
+ * "below the floor" one. Prepending guaranteed-100%-frequency tokens ensures
+ * `deriveComparisonSets` actually narrows something on every run, while the
+ * random vocabulary on top still gives the property test real variation.
+ * @param seed
+ * @param count
+ * @param vocabularySize
+ * @param chromeSize
+ */
+function randomTokenSetsWithChrome(
+	seed: number,
+	count: number,
+	vocabularySize: number,
+	chromeSize: number,
+): Set<string>[] {
+	const chrome = Array.from({ length: chromeSize }, (_, index) => `chrome-${index}`);
+	return randomTokenSets(seed, count, vocabularySize).map(
+		(tokens) => new Set([...chrome, ...tokens]),
+	);
 }
 
 describe('resolveStructuralClusterKeys', () => {
@@ -279,4 +310,149 @@ describe('resolveStructuralClusterKeys', () => {
 			expect(samePartition(actual, expected)).toBe(true);
 		},
 	);
+
+	const propertyTestCasesAboveFrequencySplitFloor = [1, 2, 3, 4, 5].flatMap((seed) =>
+		[6, 10].flatMap((vocabularySize) =>
+			[0.3, 0.5, 0.8].map(
+				(threshold) => [seed, vocabularySize, threshold] as [number, number, number],
+			),
+		),
+	);
+
+	test.each(propertyTestCasesAboveFrequencySplitFloor)(
+		'matches a brute-force reference computed on the same content-only sets, above the frequency-split floor (seed %s, vocabulary %s, threshold %s)',
+		(seed, vocabularySize, threshold) => {
+			// 12 pages clears MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT (10), so
+			// resolveStructuralClusterKeys narrows to content-only tokens before
+			// clustering. The reference must apply the exact same narrowing
+			// (reusing computeDocumentFrequency/splitTokensByFrequency directly,
+			// not reimplementing them) so this test isolates NN-chain's
+			// correctness from the narrowing step, which is already covered by
+			// compute-document-frequency.spec.ts/split-tokens-by-frequency.spec.ts.
+			// 4 guaranteed-100%-frequency chrome tokens ensure narrowing actually
+			// removes something on every run (plain randomTokenSets' 50%
+			// per-token inclusion probability never reaches the 90% cutoff on
+			// its own — see randomTokenSetsWithChrome's JSDoc).
+			const tokenSets = randomTokenSetsWithChrome(seed, 12, vocabularySize, 4);
+
+			const actual = resolveStructuralClusterKeys(tokenSets, {
+				similarityThreshold: threshold,
+			});
+
+			const corpusFrequency = computeDocumentFrequency(tokenSets);
+			const comparisonSets = tokenSets.map((tokens) => {
+				// Mirrors resolveStructuralClusterKeys' own raw-token fallback for
+				// a page that narrows to nothing (see deriveComparisonSets):
+				// confirmed empirically that at least one of these random inputs
+				// (seed 3, vocabulary 6) actually produces an all-chrome page with
+				// zero non-chrome tokens, so this fallback isn't a hypothetical —
+				// omitting it here would silently test a different narrowing than
+				// production applies.
+				const { contentTokens } = splitTokensByFrequency(tokens, corpusFrequency);
+				return contentTokens.size === 0 && tokens.size > 0 ? tokens : contentTokens;
+			});
+			const expected = bruteForceCompleteLinkage(comparisonSets, threshold);
+
+			expect(samePartition(actual, expected)).toBe(true);
+		},
+	);
+
+	test('chrome shared by every page in a >=10-page block no longer inflates similarity between two pages that share nothing else', () => {
+		// 8 chrome tokens shared by all 10 pages; A and B each add exactly one
+		// page-specific token. Raw Jaccard(A,B) = 8/10 = 0.8, which would meet
+		// the default threshold. After narrowing to content-only tokens (chrome
+		// is present on 10/10 = 100% of pages, well above the 90% cutoff), A and
+		// B share nothing (their content is disjoint by construction), so they
+		// must not merge.
+		const chrome = Array.from({ length: 8 }, (_, index) => `chrome-${index}`);
+		const a = new Set([...chrome, 'diff-a']);
+		const b = new Set([...chrome, 'diff-b']);
+		const fillers = Array.from(
+			{ length: 8 },
+			(_, index) => new Set([...chrome, `filler-${index}`]),
+		);
+
+		expect(jaccardSimilarity(a, b)).toBeCloseTo(0.8);
+
+		const result = resolveStructuralClusterKeys([a, b, ...fillers]);
+		expect(result[0]).not.toBe(result[1]);
+	});
+
+	test('a genuinely empty page (raw token set itself empty) is unaffected by the raw-token fallback, and still merges with another empty page', () => {
+		// The raw-fallback condition is `contentTokens.size === 0 && tokens.size
+		// > 0`: a page whose *raw* set is already empty (not narrowed-to-empty)
+		// must keep comparing as empty, matching jaccardSimilarity's documented
+		// "two empty bodies are identical" behavior — not fall back to an
+		// (also empty) "raw" set that would behave identically anyway, but
+		// exercising the boundary explicitly guards against the condition ever
+		// being loosened to `tokens.size >= 0`.
+		const empty1 = new Set();
+		const empty2 = new Set();
+		const chrome = Array.from({ length: 8 }, (_, index) => `chrome-${index}`);
+		const fillers = Array.from(
+			{ length: 8 },
+			(_, index) => new Set([...chrome, `filler-${index}`]),
+		);
+
+		const result = resolveStructuralClusterKeys([empty1, empty2, ...fillers]);
+		expect(result[0]).toBe(result[1]);
+	});
+
+	test('two dissimilar pages that each narrow to an empty content set do not get force-merged by jaccardSimilarity(∅,∅)=1 (regression test)', () => {
+		// 8 chrome tokens shared by 9/10 pages (chrome-0/1 by fillers+A, chrome-2/3
+		// by fillers+B, all clearing the 90% cutoff). A and B each consist
+		// *entirely* of two of those chrome tokens — no page-specific content —
+		// so both narrow to an empty contentTokens set. Without the raw-token
+		// fallback in deriveComparisonSets, jaccardSimilarity(∅, ∅) returns 1
+		// (its documented behavior for two genuinely-empty bodies), forcing A
+		// and B into the same cluster even though their raw token sets (and
+		// thus actual structure) share nothing: jaccardSimilarity(a, b) = 0.
+		const a = new Set(['chrome-0', 'chrome-1']);
+		const b = new Set(['chrome-2', 'chrome-3']);
+		const fillers = Array.from(
+			{ length: 8 },
+			(_, index) =>
+				new Set(['chrome-0', 'chrome-1', 'chrome-2', 'chrome-3', `filler-${index}`]),
+		);
+
+		expect(jaccardSimilarity(a, b)).toBe(0);
+
+		const result = resolveStructuralClusterKeys([a, b, ...fillers]);
+		expect(result[0]).not.toBe(result[1]);
+	});
+
+	test('below the 10-page floor, the same chrome-sharing pair merges via raw Jaccard (documented fallback)', () => {
+		// Identical construction to the test above but only 9 pages total, so
+		// MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT is not reached and
+		// resolveStructuralClusterKeys falls back to comparing raw token sets:
+		// chrome dilution is accepted rather than risking the small-n
+		// degenerate case (see the next test).
+		const chrome = Array.from({ length: 8 }, (_, index) => `chrome-${index}`);
+		const a = new Set([...chrome, 'diff-a']);
+		const b = new Set([...chrome, 'diff-b']);
+		const fillers = Array.from(
+			{ length: 7 },
+			(_, index) => new Set([...chrome, `filler-${index}`]),
+		);
+
+		const result = resolveStructuralClusterKeys([a, b, ...fillers]);
+		expect(result[0]).toBe(result[1]);
+	});
+
+	test('a near-duplicate pair (n=2) still merges, rather than degenerating to zero similarity (regression test)', () => {
+		// Without the frequency-split floor, splitTokensByFrequency at n=2
+		// would classify only the 18 tokens shared by *both* pages as chrome,
+		// leaving each page's one unique token as "content" — and
+		// content(A) = A\B, content(B) = B\A are disjoint for any two sets, so
+		// jaccardSimilarity(content(A), content(B)) would always be 0 unless
+		// A and B are identical, regardless of how similar they actually are.
+		// Raw Jaccard here is 18/20 = 0.9, comfortably above the default
+		// threshold — this must still merge.
+		const shared = Array.from({ length: 18 }, (_, index) => `shared-${index}`);
+		const a = new Set([...shared, 'unique-a']);
+		const b = new Set([...shared, 'unique-b']);
+
+		const result = resolveStructuralClusterKeys([a, b]);
+		expect(result[0]).toBe(result[1]);
+	});
 });

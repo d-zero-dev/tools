@@ -48,16 +48,27 @@ const DEFAULT_MIN_CSS_GROUP_SIZE = 2;
  * scheme, canopy clustering, ensemble blocking) combines independent
  * blocking predicates with OR to generate *candidate pairs* for a later
  * similarity/classification pass. This function instead commits each page to
- * exactly one final key with no later refinement step, so OR-merging the two
- * signals (via union-find over shared keys) doesn't apply here: a union of
+ * exactly one final key: `resolve-page-cluster-keys.js`'s
+ * `resolvePageClusterKeys` *does* run a later refinement step
+ * (`resolveStructuralClusterKeys`) on top of whichever key a page lands on,
+ * but only within that one key's candidate pool — it has no way to pull in
+ * a page that this function routed to a different key. So this function's
+ * per-page choice is still effectively final for blocking purposes: a page
+ * assigned to the wrong key here never re-enters the correct key's pool
+ * downstream. A true OR-merge (letting a page carry both the stylesheet and
+ * path candidates, deferring to the refinement step to reconcile overlapping
+ * results across them) would close that gap, but is deliberately deferred —
+ * it needs the same literature-plus-real-data validation cycle this
+ * package's linkage-criterion and NN-chain choices already went through, not
+ * a change bundled in alongside unrelated fixes. Until then, a
+ * priority-with-fallback decision — try the strong signal, fall back to the
+ * weak one — is the applicable pattern here, not OR-merge: a union of
  * equivalence relations can only ever coarsen a partition, never split it,
  * but the whole point of preferring the stylesheet signal is that it *splits*
  * pages a URL-path-only grouping would otherwise lump together (confirmed
  * against real crawl data: a single page embedded under an otherwise-uniform
  * URL section, but loading a completely different stylesheet set, is exactly
- * the case a path-only key misses and a stylesheet key catches). A
- * priority-with-fallback decision — try the strong signal, fall back to the
- * weak one — is the applicable pattern here, not OR-merge.
+ * the case a path-only key misses and a stylesheet key catches).
  *
  * Before comparing stylesheet sets, this reuses
  * {@link ./compute-document-frequency.js | computeDocumentFrequency} and
