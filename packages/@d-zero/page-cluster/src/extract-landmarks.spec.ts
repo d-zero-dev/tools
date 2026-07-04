@@ -222,4 +222,17 @@ describe('extractLandmarks (malformed HTML)', () => {
 		expect(result.header).toBe('<div(foo role="banner">H</div(foo>');
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
 	});
+
+	test('a discarded malformed candidate falls back to another well-formed candidate of the same type', () => {
+		// The shallow, would-be-winning header is unclosed (malformed) and
+		// discarded; a deeper, well-formed header is still picked up rather
+		// than the type being left absent entirely.
+		const html =
+			'<body><header>Outer malformed<main><header>Inner OK</header></main></body>';
+		const result = extractLandmarks(html);
+		expect(result.header).toBe('<header>Inner OK</header>');
+		expect(result.remainderHtml).toBe(
+			'<body><header>Outer malformed<main></main></body>',
+		);
+	});
 });

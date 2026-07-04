@@ -17,8 +17,10 @@ export type LandmarkType = 'header' | 'footer' | 'nav' | 'aside';
  * Result of {@link ./extract-landmarks.js | extractLandmarks}. Each landmark
  * field holds the raw HTML of the single chosen instance of that region (see
  * `extractLandmarks`'s JSDoc for the "shallowest wins" selection rule);
- * absent if the page has none. `remainderHtml` is the original HTML with
- * every chosen region's markup excised, meant to be fed straight into
+ * absent if the page has none — or if the only candidate(s) found were
+ * malformed markup `extractLandmarks` declined to trust (see its JSDoc's
+ * note on discarded candidates). `remainderHtml` is the original HTML
+ * with every chosen region's markup excised, meant to be fed straight into
  * {@link ./tokenize.js | tokenize} as the page's content-only signal.
  */
 export type ExtractLandmarksResult = {
@@ -183,6 +185,15 @@ function isGenuineClose(html: string, endOffset: number, tagName: string): boole
  * disappears from the surviving paths, shortening them by one level. This
  * is inherent to "delete the matched span, use whatever's left" and is not
  * treated as a bug.
+ *
+ * A candidate whose closing tag can't be confirmed as genuine (an unclosed
+ * or self-closed-with-`/>` landmark tag — see `isGenuineClose`) is discarded
+ * rather than trusted: safety against corrupting `remainderHtml` outweighs
+ * completeness of landmark detection for malformed markup. That type then
+ * falls back to another well-formed candidate of the same type if one
+ * exists (regardless of its depth relative to the discarded one), or is
+ * left absent if none do — instead of the page's real content being
+ * silently deleted.
  * @param html
  * @example
  * ```ts
