@@ -1,28 +1,13 @@
-import type {
-	Frame,
-	OpaqueRegion,
-	OpaqueTagName,
-	ResolvedOptions,
-	TokenizeResult,
-} from './types.js';
+import type { Frame, OpaqueRegion, ResolvedOptions, TokenizeResult } from './types.js';
 
 import { Parser } from 'htmlparser2';
 
 import { createFrame } from './create-frame.js';
 import { formatBracket } from './format-bracket.js';
 import { hashContent } from './hash-content.js';
+import { isOpaqueTagName } from './opaque-tags.js';
 import { parseClassList } from './parse-class-list.js';
 import { resolveClosedFrame } from './resolve-closed-frame.js';
-
-const OPAQUE_TAGS = new Set<OpaqueTagName>(['script', 'style', 'noscript', 'svg']);
-
-/**
- *
- * @param name
- */
-function isOpaqueTagName(name: string): name is OpaqueTagName {
-	return OPAQUE_TAGS.has(name as OpaqueTagName);
-}
 
 /**
  * The innermost open frame. Every call site only reaches this after checking

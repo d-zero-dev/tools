@@ -29,6 +29,10 @@
 			"import": "./dist/derive-stylesheet-group-key.js",
 			"types": "./dist/derive-stylesheet-group-key.d.ts"
 		},
+		"./extract-landmarks": {
+			"import": "./dist/extract-landmarks.js",
+			"types": "./dist/extract-landmarks.d.ts"
+		},
 		"./jaccard-similarity": {
 			"import": "./dist/jaccard-similarity.js",
 			"types": "./dist/jaccard-similarity.d.ts"
@@ -36,6 +40,10 @@
 		"./resolve-blocking-group-keys": {
 			"import": "./dist/resolve-blocking-group-keys.js",
 			"types": "./dist/resolve-blocking-group-keys.d.ts"
+		},
+		"./resolve-landmark-variant-keys": {
+			"import": "./dist/resolve-landmark-variant-keys.js",
+			"types": "./dist/resolve-landmark-variant-keys.d.ts"
 		},
 		"./resolve-page-cluster-keys": {
 			"import": "./dist/resolve-page-cluster-keys.js",

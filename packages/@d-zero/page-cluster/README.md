@@ -31,17 +31,31 @@ tokenize(html, {
 
 ### クラスタリング
 
-クロールしたページ群から最終的なクラスタキーを得るには `resolvePageClusterKeys()` を使う。ブロッキング（URLパス/スタイルシートによる粗い絞り込み）と構造クラスタリング（ブロック内でのcomplete-linkage階層的クラスタリング）を内部で連結し、ブロックを跨いで一意なキーを返す。
+クロールしたページ群から最終的なクラスタキーを得るには `resolvePageClusterKeys()` を使う。ブロッキング（URLパス/スタイルシートによる粗い絞り込み）と構造クラスタリング（ブロック内でのcomplete-linkage階層的クラスタリング）を内部で連結し、ブロックを跨いで一意なキーを返す。既定で各ページの`<header>`/`<footer>`/`<nav>`/`<aside>`（タグ名またはARIAランドマークロール）を比較対象から除外し、共通chromeの影響を受けにくくする。
 
 ```ts
-import { resolvePageClusterKeys, tokenize } from '@d-zero/page-cluster';
+import { resolvePageClusterKeys } from '@d-zero/page-cluster/resolve-page-cluster-keys';
 
 const keys = resolvePageClusterKeys(
 	pages.map((page) => ({
 		paths: page.urlPathSegments,
 		stylesheetHrefs: page.stylesheetHrefs,
-		tokens: new Set(tokenize(page.html).tokens),
+		html: page.html,
 	})),
 );
 // pagesと同じ順序・同じ長さ。同じキーのページが同一テンプレートと判定されたページ群
+```
+
+### ランドマークバリアント分類
+
+「同一テンプレートか」ではなく「このページはどのヘッダー/フッター/ナビ/サイドナビを持っているか」というメタプロパティを個別に知りたい場合は `resolveLandmarkVariantKeys()` を使う。`resolvePageClusterKeys()` とは独立した戻り値で、両者の合成は呼び出し側の責務。
+
+```ts
+import { resolveLandmarkVariantKeys } from '@d-zero/page-cluster/resolve-landmark-variant-keys';
+
+const headerVariantKeys = resolveLandmarkVariantKeys(
+	pages.map((page) => page.html),
+	'header',
+);
+// pagesと同じ順序・同じ長さ。同じキーのページが同じヘッダーデザインを持つページ群
 ```
