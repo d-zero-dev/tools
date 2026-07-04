@@ -139,6 +139,48 @@ describe('resolvePageClusterKeys', () => {
 		expect(result[0]).toBe(result[1]);
 	});
 
+	test('excludeLandmarks: true at the default threshold can split pages that raw comparison would have merged (the interaction documented on the excludeLandmarks option)', () => {
+		// Mirrors the exact shape of the real-crawl-data finding cited in
+		// excludeLandmarks's JSDoc: a large shared header (8 distinct nodes)
+		// inflates raw-HTML similarity above the default 0.8 threshold, but
+		// once the header is excluded, only the content remains — 3 shared
+		// content nodes vs 1 page-specific one each, Jaccard 3/5 = 0.6 — which
+		// the default threshold now rejects. This pins that this is a real,
+		// reproducible trade-off of the option, not merely an anecdote.
+		const sharedHeader = `<header>${Array.from({ length: 8 }, (_, i) => `<div class="nav-${i}"></div>`).join('')}</header>`;
+		const sharedContent = Array.from(
+			{ length: 3 },
+			(_, i) => `<div class="content-shared-${i}"></div>`,
+		).join('');
+		const pageA = {
+			paths: ['dept-a', 'page1'],
+			stylesheetHrefs: [],
+			html: `<body>${sharedHeader}<main>${sharedContent}<div class="content-a"></div></main></body>`,
+		};
+		const pageB = {
+			paths: ['dept-a', 'page2'],
+			stylesheetHrefs: [],
+			html: `<body>${sharedHeader}<main>${sharedContent}<div class="content-b"></div></main></body>`,
+		};
+
+		const withRawTokens = resolvePageClusterKeys([pageA, pageB], {
+			excludeLandmarks: false,
+		});
+		expect(withRawTokens[0]).toBe(withRawTokens[1]);
+
+		const withLandmarksExcludedDefaultThreshold = resolvePageClusterKeys([pageA, pageB]);
+		expect(withLandmarksExcludedDefaultThreshold[0]).not.toBe(
+			withLandmarksExcludedDefaultThreshold[1],
+		);
+
+		const withLandmarksExcludedLowerThreshold = resolvePageClusterKeys([pageA, pageB], {
+			similarityThreshold: 0.6,
+		});
+		expect(withLandmarksExcludedLowerThreshold[0]).toBe(
+			withLandmarksExcludedLowerThreshold[1],
+		);
+	});
+
 	test('excludeLandmarks: false falls back to comparing raw, unstripped HTML', () => {
 		const withDifferentHeaders = resolvePageClusterKeys(
 			[
