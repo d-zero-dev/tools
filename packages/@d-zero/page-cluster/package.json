@@ -33,6 +33,10 @@
 			"import": "./dist/extract-landmarks.js",
 			"types": "./dist/extract-landmarks.d.ts"
 		},
+		"./filter-first-party-stylesheet-hrefs": {
+			"import": "./dist/filter-first-party-stylesheet-hrefs.js",
+			"types": "./dist/filter-first-party-stylesheet-hrefs.d.ts"
+		},
 		"./jaccard-similarity": {
 			"import": "./dist/jaccard-similarity.js",
 			"types": "./dist/jaccard-similarity.d.ts"
@@ -40,6 +44,10 @@
 		"./reassign-orphan-block-keys": {
 			"import": "./dist/reassign-orphan-block-keys.js",
 			"types": "./dist/reassign-orphan-block-keys.d.ts"
+		},
+		"./remove-content-blocks": {
+			"import": "./dist/remove-content-blocks.js",
+			"types": "./dist/remove-content-blocks.d.ts"
 		},
 		"./resolve-blocking-group-keys": {
 			"import": "./dist/resolve-blocking-group-keys.js",

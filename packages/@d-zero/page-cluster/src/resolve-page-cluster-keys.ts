@@ -3,7 +3,9 @@ import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-c
 import type { TokenizeOptions } from './types.js';
 
 import { extractLandmarks } from './extract-landmarks.js';
+import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
 import { reassignOrphanBlockKeys } from './reassign-orphan-block-keys.js';
+import { removeContentBlocks } from './remove-content-blocks.js';
 import { resolveBlockingGroupKeys } from './resolve-blocking-group-keys.js';
 import { resolveStructuralClusterKeys } from './resolve-structural-cluster-keys.js';
 import { tokenize } from './tokenize.js';
@@ -87,6 +89,35 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * cluster outcomes too, not just the orphan's.
 		 */
 		reassignOrphans?: boolean;
+		/**
+		 * Apply {@link ./remove-content-blocks.js | removeContentBlocks} to each
+		 * page's landmark-excised remainder before tokenizing, so a freeform
+		 * block-editor content area's page-to-page variation (which specific
+		 * mix of blocks an author used) never reaches the structural-similarity
+		 * comparison. No default — unlike `excludeLandmarks`/`reassignOrphans`,
+		 * this needs the caller's own block-editor attribute name (see
+		 * `removeContentBlocks`'s `blockAttribute` option), which this package
+		 * cannot guess. Omit to skip this step entirely.
+		 */
+		contentBlockAttribute?: string;
+		/**
+		 * Apply {@link ./filter-first-party-stylesheet-hrefs.js |
+		 * filterFirstPartyStylesheetHrefs} to `pages` before computing blocking
+		 * keys, so a page's incidental third-party embeds (e.g. a video
+		 * player's own stylesheet, extra web-font requests pulled in by a
+		 * widget) never get mistaken for a template-identifying signal by
+		 * {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys}.
+		 * Defaults to `true`. Set to `false` to block on every page's full,
+		 * unfiltered `stylesheetHrefs` — kept available for the same reason
+		 * `excludeLandmarks`'s escape hatch is: a real but not yet broadly-
+		 * validated behavioral change (confirmed so far on one real crawl).
+		 *
+		 * Inherits `filterFirstPartyStylesheetHrefs`'s "roughly homogeneous
+		 * batch" precondition (see that function's own JSDoc): `pages` should
+		 * be one site or one section, the same expectation
+		 * `resolveBlockingGroupKeys` already places on its own input.
+		 */
+		restrictStylesheetsToFirstParty?: boolean;
 	};
 
 /**
@@ -122,6 +153,14 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
  * it never forces a merge itself. An orphan that turns out not to match
  * anything in that pool (confirmed on real crawl data) correctly surfaces as
  * its own singleton, the same as it would have without this option.
+ *
+ * `restrictStylesheetsToFirstParty` runs before `reassignOrphans`: a page
+ * whose only stylesheet reference was third-party becomes an orphan (no
+ * first-party stylesheet left) *because of* the filtering, and is then
+ * itself eligible for orphan reassignment — this is intentional, not an
+ * ordering accident, since the underlying reason both options exist is the
+ * same (a page's blocking key should reflect its template, not incidental
+ * third-party embeds or missing crawl data).
  * @param pages
  * @param options
  * @example
@@ -139,15 +178,29 @@ export function resolvePageClusterKeys(
 	options?: ResolvePageClusterKeysOptions,
 ): string[] {
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
+	const contentBlockAttribute = options?.contentBlockAttribute;
 	const contentTokenSets = pages.map((page) => {
-		const html = excludeLandmarks ? extractLandmarks(page.html).remainderHtml : page.html;
+		const landmarksExcised = excludeLandmarks
+			? extractLandmarks(page.html).remainderHtml
+			: page.html;
+		const html =
+			contentBlockAttribute === undefined
+				? landmarksExcised
+				: removeContentBlocks(landmarksExcised, { blockAttribute: contentBlockAttribute })
+						.remainderHtml;
 		return new Set(tokenize(html, options).tokens);
 	});
 
+	const restrictStylesheetsToFirstParty =
+		options?.restrictStylesheetsToFirstParty ?? true;
+	const blockingPages = restrictStylesheetsToFirstParty
+		? filterFirstPartyStylesheetHrefs(pages)
+		: pages;
+
 	const reassignOrphans = options?.reassignOrphans ?? true;
-	const rawBlockKeys = resolveBlockingGroupKeys(pages, options);
+	const rawBlockKeys = resolveBlockingGroupKeys(blockingPages, options);
 	const blockKeys = reassignOrphans
-		? reassignOrphanBlockKeys(pages, rawBlockKeys, options?.pathDepth)
+		? reassignOrphanBlockKeys(blockingPages, rawBlockKeys, options?.pathDepth)
 		: rawBlockKeys;
 
 	const indicesByBlockKey = new Map<string, number[]>();

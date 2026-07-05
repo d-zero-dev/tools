@@ -1,5 +1,7 @@
 import { Parser } from 'htmlparser2';
 
+import { excise } from './excise.js';
+import { isGenuineClose } from './is-genuine-close.js';
 import { isOpaqueTagName } from './opaque-tags.js';
 
 /**
@@ -82,73 +84,6 @@ function matchLandmarkTypes(tagName: string, role: string | undefined): Landmark
 		types.push(byRole);
 	}
 	return types;
-}
-
-/**
- * Merges a set of (possibly overlapping or nested) `[start, end)` spans into
- * the smallest equivalent set of disjoint spans, sorted by start offset.
- * Landmark spans commonly nest in real markup (a site nav living inside the
- * header, e.g. `<header><nav>...</nav></header>`) — merging first means the
- * later excision pass never has to reason about overlap.
- * @param spans
- */
-function mergeSpans(
-	spans: readonly { start: number; end: number }[],
-): { start: number; end: number }[] {
-	const sorted = [...spans].toSorted((a, b) => a.start - b.start);
-	const merged: { start: number; end: number }[] = [];
-	for (const span of sorted) {
-		const last = merged.at(-1);
-		if (last && span.start <= last.end) {
-			last.end = Math.max(last.end, span.end);
-		} else {
-			merged.push({ ...span });
-		}
-	}
-	return merged;
-}
-
-/**
- * Escapes regex metacharacters in `text` so it can be interpolated into a
- * `RegExp` literally. Needed because `tagName` reaching {@link isGenuineClose}
- * is not guaranteed to be a plain HTML tag name: htmlparser2 accepts
- * characters like `(`/`[` inside a tag name (`<div(foo role="banner">`
- * parses with tag name `"div(foo"`), which would otherwise either throw
- * (an unbalanced `(` is an invalid regex) or silently change what the regex
- * matches.
- * @param text
- */
-function escapeRegExp(text: string): string {
-	return text.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
- * Whether `html` actually contains a literal closing tag for `tagName`
- * ending at `endOffset`. htmlparser2 fires `onclosetag` not only for real
- * closing tags but also when it force-closes a still-open ancestor to
- * resolve a mismatch (e.g. `<header>H<main>...</main></body>` with no
- * `</header>` ever written) — and in that forced case it reports the
- * force-closed element's `endIndex` as wherever the *other*, unrelated
- * closing tag that triggered the cascade happens to sit, not any position
- * derived from `<header>` itself (confirmed by direct htmlparser2 event
- * tracing: both the synthetic `header` close and the real `body` close
- * report the identical `endIndex`, because there is no real `</header>` in
- * the source for htmlparser2 to anchor a distinct position to). Trusting
- * that offset would slice a candidate spanning all the way to wherever the
- * unrelated tag ends, silently swallowing real content into
- * `remainderHtml`'s missing half. Checking that the text immediately
- * preceding `endOffset` actually spells the expected closing tag catches
- * exactly this: a genuine close always ends with it; a forced one ends with
- * whatever unrelated tag forced it instead.
- * @param html
- * @param endOffset
- * @param tagName
- */
-function isGenuineClose(html: string, endOffset: number, tagName: string): boolean {
-	const windowStart = Math.max(0, endOffset - tagName.length - 3);
-	return new RegExp(`</\\s*${escapeRegExp(tagName)}\\s*>$`, 'i').test(
-		html.slice(windowStart, endOffset),
-	);
 }
 
 /**
@@ -334,17 +269,7 @@ export function extractLandmarks(html: string): ExtractLandmarksResult {
 		winnerSpans.push({ start: winner.startOffset, end: winner.endOffset });
 	}
 
-	if (winnerSpans.length > 0) {
-		const merged = mergeSpans(winnerSpans);
-		let remainder = '';
-		let cursor = 0;
-		for (const span of merged) {
-			remainder += html.slice(cursor, span.start);
-			cursor = span.end;
-		}
-		remainder += html.slice(cursor);
-		result.remainderHtml = remainder;
-	}
+	result.remainderHtml = excise(html, winnerSpans);
 
 	return result;
 }

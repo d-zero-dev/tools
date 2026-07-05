@@ -31,7 +31,9 @@ tokenize(html, {
 
 ### クラスタリング
 
-クロールしたページ群から最終的なクラスタキーを得るには `resolvePageClusterKeys()` を使う。ブロッキング（URLパス/スタイルシートによる粗い絞り込み）と構造クラスタリング（ブロック内でのcomplete-linkage階層的クラスタリング）を内部で連結し、ブロックを跨いで一意なキーを返す。既定で各ページの`<header>`/`<footer>`/`<nav>`/`<aside>`（タグ名またはARIAランドマークロール）を比較対象から除外し、共通chromeの影響を受けにくくする。また、スタイルシート参照が記録されていない「孤児」ページを、同一URLセクションに閉じたスタイルシート・ブロックへ再割当する処理（`reassignOrphanBlockKeys()`）も既定で有効。挙動の詳細・トレードオフは`src/reassign-orphan-block-keys.ts`のJSDocを参照。
+クロールしたページ群から最終的なクラスタキーを得るには `resolvePageClusterKeys()` を使う。ブロッキング（URLパス/スタイルシートによる粗い絞り込み）と構造クラスタリング（ブロック内でのcomplete-linkage階層的クラスタリング）を内部で連結し、ブロックを跨いで一意なキーを返す。既定で各ページの`<header>`/`<footer>`/`<nav>`/`<aside>`（タグ名またはARIAランドマークロール）を比較対象から除外し、共通chromeの影響を受けにくくする。また、スタイルシート参照が記録されていない「孤児」ページを、同一URLセクションに閉じたスタイルシート・ブロックへ再割当する処理（`reassignOrphanBlockKeys()`）や、埋め込みコンテンツが引き込むサードパーティCSS参照をブロッキング判定から除外する処理（`filterFirstPartyStylesheetHrefs()`）も既定で有効。挙動の詳細・トレードオフはそれぞれのJSDocを参照。
+
+自由編集ブロックエディタ（CMSが各コンテンツブロックに固有のdata属性を付与するタイプ）を使うサイトでは、`contentBlockAttribute` オプションでその属性名を指定すると、ページごとに異なるブロック構成が構造比較のノイズになるのを防げる（既定は未指定＝無効、サイトごとの属性名を推測できないため）。詳細は `removeContentBlocks()` のJSDocを参照。
 
 ```ts
 import { resolvePageClusterKeys } from '@d-zero/page-cluster/resolve-page-cluster-keys';
@@ -42,6 +44,7 @@ const keys = resolvePageClusterKeys(
 		stylesheetHrefs: page.stylesheetHrefs,
 		html: page.html,
 	})),
+	{ contentBlockAttribute: 'data-bgb' }, // 使っているCMSのブロック属性名に合わせて指定
 );
 // pagesと同じ順序・同じ長さ。同じキーのページが同一テンプレートと判定されたページ群
 ```

@@ -265,4 +265,104 @@ describe('resolvePageClusterKeys', () => {
 
 		expect(result[2]).not.toBe(result[0]);
 	});
+
+	test('contentBlockAttribute removes freeform content-block markup before comparison, letting pages with a different mix of blocks still match', () => {
+		const pageA = {
+			paths: ['dept-a', '1'],
+			stylesheetHrefs: [],
+			html: '<body><article class="detail"><div data-block="title"><h2 class="t">Title</h2></div><div data-block="image"><img class="i" src="x"></div></article></body>',
+		};
+		const pageB = {
+			paths: ['dept-a', '2'],
+			stylesheetHrefs: [],
+			html: '<body><article class="detail"><div data-block="quote"><blockquote class="q">Q</blockquote></div></article></body>',
+		};
+
+		const withoutRemoval = resolvePageClusterKeys([pageA, pageB]);
+		expect(withoutRemoval[0]).not.toBe(withoutRemoval[1]);
+
+		const withRemoval = resolvePageClusterKeys([pageA, pageB], {
+			contentBlockAttribute: 'data-block',
+		});
+		expect(withRemoval[0]).toBe(withRemoval[1]);
+	});
+
+	test('omitting contentBlockAttribute (the default) skips content-block removal entirely', () => {
+		const pageA = {
+			paths: ['dept-a', '1'],
+			stylesheetHrefs: [],
+			html: '<body><article class="detail"><div data-block="title"><h2 class="t">Title</h2></div></article></body>',
+		};
+		const pageB = {
+			paths: ['dept-a', '2'],
+			stylesheetHrefs: [],
+			html: '<body><article class="detail"><div data-block="quote"><blockquote class="q">Q</blockquote></div></article></body>',
+		};
+
+		const result = resolvePageClusterKeys([pageA, pageB]);
+
+		expect(result[0]).not.toBe(result[1]);
+	});
+
+	test("a page whose only stylesheet was third-party becomes an orphan via restrictStylesheetsToFirstParty and is then reassigned by reassignOrphans into its section's css: block", () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{
+				paths: ['news', '3'],
+				stylesheetHrefs: ['https://fonts.googleapis.com/css?family=x'],
+				html,
+			},
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages);
+
+		expect(result[2]).toBe(result[0]);
+	});
+
+	test('restrictStylesheetsToFirstParty (default true) prevents an incidental third-party stylesheet reference from splitting an otherwise-matching page into its own block', () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{
+				paths: ['news', '3'],
+				stylesheetHrefs: [
+					'https://example.com/a.css',
+					'https://fonts.googleapis.com/css?family=x',
+				],
+				html,
+			},
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages);
+
+		expect(result[2]).toBe(result[0]);
+	});
+
+	test('restrictStylesheetsToFirstParty: false blocks on every stylesheet href unfiltered, letting the third-party reference split the page away', () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{
+				paths: ['news', '3'],
+				stylesheetHrefs: [
+					'https://example.com/a.css',
+					'https://fonts.googleapis.com/css?family=x',
+				],
+				html,
+			},
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages, {
+			restrictStylesheetsToFirstParty: false,
+		});
+
+		expect(result[2]).not.toBe(result[0]);
+	});
 });
