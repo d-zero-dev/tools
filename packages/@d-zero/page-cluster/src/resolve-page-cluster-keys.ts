@@ -2,6 +2,8 @@ import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-k
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
 import type { TokenizeOptions } from './types.js';
 
+import { capContentDepth } from './cap-content-depth.js';
+import { detectContentDepthCap } from './detect-content-depth-cap.js';
 import { extractLandmarks } from './extract-landmarks.js';
 import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
 import { reassignOrphanBlockKeys } from './reassign-orphan-block-keys.js';
@@ -118,6 +120,40 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * `resolveBlockingGroupKeys` already places on its own input.
 		 */
 		restrictStylesheetsToFirstParty?: boolean;
+		/**
+		 * Apply {@link ./detect-content-depth-cap.js | detectContentDepthCap}
+		 * once across all of `pages` (after `excludeLandmarks`/
+		 * `contentBlockAttribute`, before tokenizing) to find how many levels
+		 * of nesting inside `<main>`/`role="main"` to keep, then
+		 * {@link ./cap-content-depth.js | capContentDepth} each page at that
+		 * depth — a `contentBlockAttribute`-style fix for freeform-content
+		 * noise that needs no site-specific attribute name, since `<main>` is
+		 * an HTML5/ARIA standard. Defaults to `false`: unlike
+		 * `contentBlockAttribute` (which does nothing unless a matching
+		 * attribute is actually present), this discards real content whenever
+		 * a page has a `<main>`/`role="main"` at all, so it's opt-in until
+		 * validated on more than the two real corpora checked so far.
+		 *
+		 * Composes with `contentBlockAttribute` rather than replacing it: both
+		 * can be set at once — `removeContentBlocks` runs first, then
+		 * `capContentDepth` on what's left — for a site whose CMS marks *some*
+		 * blocks with a known attribute but still has other, unmarked
+		 * freeform depth the attribute alone doesn't catch.
+		 *
+		 * Confirmed on real crawl data this can outperform
+		 * `contentBlockAttribute` on its own, not just stand in for it when the
+		 * attribute is unknown: on a 302-page corpus, `autoCapMainDepth` alone
+		 * produced 20 final clusters versus 27 for
+		 * `contentBlockAttribute: 'data-bgb'` together with
+		 * `restrictStylesheetsToFirstParty` — the site's known CMS attribute
+		 * doesn't mark every source of freeform depth, but the `<main>`
+		 * boundary catches all of it uniformly. On a real 8,936-page whole-site
+		 * corpus, it cut final cluster count from 1,972 to 283, at a real cost
+		 * of ~5m50s versus ~16s without it (see
+		 * `detectContentDepthCap`'s JSDoc for why: it reruns structural
+		 * clustering once per candidate depth to find the cap).
+		 */
+		autoCapMainDepth?: boolean;
 	};
 
 /**
@@ -179,16 +215,28 @@ export function resolvePageClusterKeys(
 ): string[] {
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
 	const contentBlockAttribute = options?.contentBlockAttribute;
-	const contentTokenSets = pages.map((page) => {
+	const preparedHtml = pages.map((page) => {
 		const landmarksExcised = excludeLandmarks
 			? extractLandmarks(page.html).remainderHtml
 			: page.html;
-		const html =
-			contentBlockAttribute === undefined
-				? landmarksExcised
-				: removeContentBlocks(landmarksExcised, { blockAttribute: contentBlockAttribute })
+		return contentBlockAttribute === undefined
+			? landmarksExcised
+			: removeContentBlocks(landmarksExcised, { blockAttribute: contentBlockAttribute })
+					.remainderHtml;
+	});
+
+	const autoCapMainDepth = options?.autoCapMainDepth ?? false;
+	const maxMainDepth = autoCapMainDepth
+		? detectContentDepthCap(preparedHtml, options)
+		: undefined;
+
+	const contentTokenSets = preparedHtml.map((html) => {
+		const capped =
+			maxMainDepth === undefined
+				? html
+				: capContentDepth(html, { landmark: 'main', maxDepth: maxMainDepth })
 						.remainderHtml;
-		return new Set(tokenize(html, options).tokens);
+		return new Set(tokenize(capped, options).tokens);
 	});
 
 	const restrictStylesheetsToFirstParty =

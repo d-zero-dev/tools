@@ -17,6 +17,10 @@
 			"import": "./dist/array-edit-distance.js",
 			"types": "./dist/array-edit-distance.d.ts"
 		},
+		"./cap-content-depth": {
+			"import": "./dist/cap-content-depth.js",
+			"types": "./dist/cap-content-depth.d.ts"
+		},
 		"./compute-document-frequency": {
 			"import": "./dist/compute-document-frequency.js",
 			"types": "./dist/compute-document-frequency.d.ts"
@@ -28,6 +32,10 @@
 		"./derive-stylesheet-group-key": {
 			"import": "./dist/derive-stylesheet-group-key.js",
 			"types": "./dist/derive-stylesheet-group-key.d.ts"
+		},
+		"./detect-content-depth-cap": {
+			"import": "./dist/detect-content-depth-cap.js",
+			"types": "./dist/detect-content-depth-cap.d.ts"
 		},
 		"./extract-landmarks": {
 			"import": "./dist/extract-landmarks.js",

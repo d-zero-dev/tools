@@ -1,8 +1,5 @@
-import { Parser } from 'htmlparser2';
-
 import { excise } from './excise.js';
-import { isGenuineClose } from './is-genuine-close.js';
-import { isOpaqueTagName } from './opaque-tags.js';
+import { findShallowestElements } from './find-shallowest-elements.js';
 
 /**
  * The four structural regions this module knows how to carve out of a page.
@@ -45,19 +42,6 @@ const ROLE_TO_TYPE: Readonly<Record<string, LandmarkType>> = {
 	contentinfo: 'footer',
 	navigation: 'nav',
 	complementary: 'aside',
-};
-
-type Frame = {
-	tagName: string;
-	matchedTypes: readonly LandmarkType[];
-	startOffset: number;
-};
-
-type Candidate = {
-	type: LandmarkType;
-	depth: number;
-	startOffset: number;
-	endOffset: number;
 };
 
 /**
@@ -141,132 +125,14 @@ function matchLandmarkTypes(tagName: string, role: string | undefined): Landmark
  * ```
  */
 export function extractLandmarks(html: string): ExtractLandmarksResult {
-	const stack: Frame[] = [];
-	const candidates: Candidate[] = [];
-	// Only the *same* tag name nested inside itself (`<svg><svg>...`) counts
-	// as self-nesting; a different opaque tag opening/closing while already
-	// inside one (e.g. `<svg><script>...</script></svg>`, valid SVG
-	// scripting) fires its own open/close events but must not perturb this
-	// counter — same rationale and shape as `OpaqueRegion` in
-	// `run-tokenizer.ts`.
-	let opaque: { tagName: string; depth: number } | null = null;
-	let bodyDone = false;
-	let ignoredBodyOpens = 0;
-
-	const parser = new Parser(
-		{
-			onopentag(name, attribs) {
-				if (opaque) {
-					if (name === opaque.tagName) {
-						opaque.depth++;
-					}
-					return;
-				}
-
-				if (stack.length === 0) {
-					if (name === 'body' && !bodyDone) {
-						// <body role="banner"> is a real (if unusual) way to mark
-						// the whole page as its own header landmark; matched the
-						// same way any other role-bearing element is, rather than
-						// hardcoding matchedTypes to [] as if body could never
-						// carry a landmark role itself.
-						stack.push({
-							tagName: name,
-							matchedTypes: matchLandmarkTypes(name, attribs.role || undefined),
-							startOffset: parser.startIndex,
-						});
-					}
-					// Ignore everything else outside <body> (head, a second
-					// top-level <body>, ...) — same as run-tokenizer.ts.
-					return;
-				}
-
-				if (name === 'body') {
-					ignoredBodyOpens++;
-					return;
-				}
-
-				if (isOpaqueTagName(name)) {
-					opaque = { tagName: name, depth: 1 };
-					return;
-				}
-
-				stack.push({
-					tagName: name,
-					matchedTypes: matchLandmarkTypes(name, attribs.role || undefined),
-					startOffset: parser.startIndex,
-				});
-			},
-			onclosetag(name) {
-				if (opaque) {
-					if (name === opaque.tagName) {
-						opaque.depth--;
-						if (opaque.depth === 0) {
-							opaque = null;
-						}
-					}
-					return;
-				}
-
-				if (name === 'body' && ignoredBodyOpens > 0) {
-					ignoredBodyOpens--;
-					return;
-				}
-
-				if (stack.length === 0) {
-					return;
-				}
-
-				const frame = stack.pop();
-				if (!frame) {
-					return;
-				}
-				const depth = stack.length;
-				const endOffset = parser.endIndex + 1;
-				// Discard rather than trust a candidate whose close was forced by
-				// an unrelated tag (see isGenuineClose) — safety against
-				// corrupting remainderHtml outweighs completeness of landmark
-				// detection for malformed markup.
-				if (
-					frame.matchedTypes.length > 0 &&
-					isGenuineClose(html, endOffset, frame.tagName)
-				) {
-					for (const type of frame.matchedTypes) {
-						candidates.push({ type, depth, startOffset: frame.startOffset, endOffset });
-					}
-				}
-				if (stack.length === 0) {
-					bodyDone = true;
-				}
-			},
-		},
-		{ decodeEntities: false },
-	);
-	parser.end(html);
+	const matches = findShallowestElements(html, matchLandmarkTypes);
 
 	const result: ExtractLandmarksResult = { remainderHtml: html };
 	const winnerSpans: { start: number; end: number }[] = [];
 
-	for (const type of ['header', 'footer', 'nav', 'aside'] as const) {
-		const typeCandidates = candidates.filter((c) => c.type === type);
-		if (typeCandidates.length === 0) {
-			continue;
-		}
-		let winner = typeCandidates[0];
-		for (const candidate of typeCandidates) {
-			if (
-				winner === undefined ||
-				candidate.depth < winner.depth ||
-				(candidate.depth === winner.depth && candidate.startOffset < winner.startOffset)
-			) {
-				winner = candidate;
-			}
-		}
-		if (!winner) {
-			continue;
-		}
-		result[type] = html.slice(winner.startOffset, winner.endOffset);
-		winnerSpans.push({ start: winner.startOffset, end: winner.endOffset });
+	for (const match of matches) {
+		result[match.type] = html.slice(match.startOffset, match.endOffset);
+		winnerSpans.push({ start: match.startOffset, end: match.endOffset });
 	}
 
 	result.remainderHtml = excise(html, winnerSpans);

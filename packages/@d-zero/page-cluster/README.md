@@ -35,6 +35,8 @@ tokenize(html, {
 
 自由編集ブロックエディタ（CMSが各コンテンツブロックに固有のdata属性を付与するタイプ）を使うサイトでは、`contentBlockAttribute` オプションでその属性名を指定すると、ページごとに異なるブロック構成が構造比較のノイズになるのを防げる（既定は未指定＝無効、サイトごとの属性名を推測できないため）。詳細は `removeContentBlocks()` のJSDocを参照。
 
+CMSのブロック属性名が分からない・サイトごとに違う場合は `autoCapMainDepth: true` を使う。`<main>`/`role="main"`という標準タグを起点に、構造クラスタ数が急増する直前の深さを実データから自動検出して打ち切るため、サイト固有の設定が一切不要（既定はfalse。実データ検証では`contentBlockAttribute`より良い結果になる場合もあった一方、計算コストが実測で約20倍になる）。詳細は `detectContentDepthCap()` のJSDocを参照。
+
 ```ts
 import { resolvePageClusterKeys } from '@d-zero/page-cluster/resolve-page-cluster-keys';
 

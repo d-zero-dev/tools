@@ -365,4 +365,30 @@ describe('resolvePageClusterKeys', () => {
 
 		expect(result[2]).not.toBe(result[0]);
 	});
+
+	test('autoCapMainDepth: true merges pages whose only difference is content nested deep inside <main>, requiring no site-specific configuration', () => {
+		// Identical structure up to depth 3 inside <main>; a page-unique class
+		// at depth 4 fragments every page apart unless that depth is capped.
+		const pages = Array.from({ length: 20 }, (_, i) => ({
+			paths: ['dept-a', `${i}`],
+			stylesheetHrefs: [],
+			html: `<body><main><section><article><div><span class="unique-${i}">content</span></div></article></section></main></body>`,
+		}));
+
+		const withCap = resolvePageClusterKeys(pages, { autoCapMainDepth: true });
+
+		expect(new Set(withCap).size).toBe(1);
+	});
+
+	test('autoCapMainDepth (default false) leaves deep <main> content untouched, so the same pages stay fragmented', () => {
+		const pages = Array.from({ length: 20 }, (_, i) => ({
+			paths: ['dept-a', `${i}`],
+			stylesheetHrefs: [],
+			html: `<body><main><section><article><div><span class="unique-${i}">content</span></div></article></section></main></body>`,
+		}));
+
+		const withoutCap = resolvePageClusterKeys(pages);
+
+		expect(new Set(withoutCap).size).toBeGreaterThan(1);
+	});
 });
