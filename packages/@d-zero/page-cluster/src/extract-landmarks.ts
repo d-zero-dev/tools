@@ -1,6 +1,5 @@
-import { Parser } from 'htmlparser2';
-
-import { isOpaqueTagName } from './opaque-tags.js';
+import { excise } from './excise.js';
+import { findShallowestElements } from './find-shallowest-elements.js';
 
 /**
  * The four structural regions this module knows how to carve out of a page.
@@ -45,19 +44,6 @@ const ROLE_TO_TYPE: Readonly<Record<string, LandmarkType>> = {
 	complementary: 'aside',
 };
 
-type Frame = {
-	tagName: string;
-	matchedTypes: readonly LandmarkType[];
-	startOffset: number;
-};
-
-type Candidate = {
-	type: LandmarkType;
-	depth: number;
-	startOffset: number;
-	endOffset: number;
-};
-
 /**
  * Determines which landmark type(s) an element matches by tag name or
  * `role`. Deliberately returns every match rather than the first: a
@@ -82,73 +68,6 @@ function matchLandmarkTypes(tagName: string, role: string | undefined): Landmark
 		types.push(byRole);
 	}
 	return types;
-}
-
-/**
- * Merges a set of (possibly overlapping or nested) `[start, end)` spans into
- * the smallest equivalent set of disjoint spans, sorted by start offset.
- * Landmark spans commonly nest in real markup (a site nav living inside the
- * header, e.g. `<header><nav>...</nav></header>`) — merging first means the
- * later excision pass never has to reason about overlap.
- * @param spans
- */
-function mergeSpans(
-	spans: readonly { start: number; end: number }[],
-): { start: number; end: number }[] {
-	const sorted = [...spans].toSorted((a, b) => a.start - b.start);
-	const merged: { start: number; end: number }[] = [];
-	for (const span of sorted) {
-		const last = merged.at(-1);
-		if (last && span.start <= last.end) {
-			last.end = Math.max(last.end, span.end);
-		} else {
-			merged.push({ ...span });
-		}
-	}
-	return merged;
-}
-
-/**
- * Escapes regex metacharacters in `text` so it can be interpolated into a
- * `RegExp` literally. Needed because `tagName` reaching {@link isGenuineClose}
- * is not guaranteed to be a plain HTML tag name: htmlparser2 accepts
- * characters like `(`/`[` inside a tag name (`<div(foo role="banner">`
- * parses with tag name `"div(foo"`), which would otherwise either throw
- * (an unbalanced `(` is an invalid regex) or silently change what the regex
- * matches.
- * @param text
- */
-function escapeRegExp(text: string): string {
-	return text.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
- * Whether `html` actually contains a literal closing tag for `tagName`
- * ending at `endOffset`. htmlparser2 fires `onclosetag` not only for real
- * closing tags but also when it force-closes a still-open ancestor to
- * resolve a mismatch (e.g. `<header>H<main>...</main></body>` with no
- * `</header>` ever written) — and in that forced case it reports the
- * force-closed element's `endIndex` as wherever the *other*, unrelated
- * closing tag that triggered the cascade happens to sit, not any position
- * derived from `<header>` itself (confirmed by direct htmlparser2 event
- * tracing: both the synthetic `header` close and the real `body` close
- * report the identical `endIndex`, because there is no real `</header>` in
- * the source for htmlparser2 to anchor a distinct position to). Trusting
- * that offset would slice a candidate spanning all the way to wherever the
- * unrelated tag ends, silently swallowing real content into
- * `remainderHtml`'s missing half. Checking that the text immediately
- * preceding `endOffset` actually spells the expected closing tag catches
- * exactly this: a genuine close always ends with it; a forced one ends with
- * whatever unrelated tag forced it instead.
- * @param html
- * @param endOffset
- * @param tagName
- */
-function isGenuineClose(html: string, endOffset: number, tagName: string): boolean {
-	const windowStart = Math.max(0, endOffset - tagName.length - 3);
-	return new RegExp(`</\\s*${escapeRegExp(tagName)}\\s*>$`, 'i').test(
-		html.slice(windowStart, endOffset),
-	);
 }
 
 /**
@@ -206,145 +125,17 @@ function isGenuineClose(html: string, endOffset: number, tagName: string): boole
  * ```
  */
 export function extractLandmarks(html: string): ExtractLandmarksResult {
-	const stack: Frame[] = [];
-	const candidates: Candidate[] = [];
-	// Only the *same* tag name nested inside itself (`<svg><svg>...`) counts
-	// as self-nesting; a different opaque tag opening/closing while already
-	// inside one (e.g. `<svg><script>...</script></svg>`, valid SVG
-	// scripting) fires its own open/close events but must not perturb this
-	// counter — same rationale and shape as `OpaqueRegion` in
-	// `run-tokenizer.ts`.
-	let opaque: { tagName: string; depth: number } | null = null;
-	let bodyDone = false;
-	let ignoredBodyOpens = 0;
-
-	const parser = new Parser(
-		{
-			onopentag(name, attribs) {
-				if (opaque) {
-					if (name === opaque.tagName) {
-						opaque.depth++;
-					}
-					return;
-				}
-
-				if (stack.length === 0) {
-					if (name === 'body' && !bodyDone) {
-						// <body role="banner"> is a real (if unusual) way to mark
-						// the whole page as its own header landmark; matched the
-						// same way any other role-bearing element is, rather than
-						// hardcoding matchedTypes to [] as if body could never
-						// carry a landmark role itself.
-						stack.push({
-							tagName: name,
-							matchedTypes: matchLandmarkTypes(name, attribs.role || undefined),
-							startOffset: parser.startIndex,
-						});
-					}
-					// Ignore everything else outside <body> (head, a second
-					// top-level <body>, ...) — same as run-tokenizer.ts.
-					return;
-				}
-
-				if (name === 'body') {
-					ignoredBodyOpens++;
-					return;
-				}
-
-				if (isOpaqueTagName(name)) {
-					opaque = { tagName: name, depth: 1 };
-					return;
-				}
-
-				stack.push({
-					tagName: name,
-					matchedTypes: matchLandmarkTypes(name, attribs.role || undefined),
-					startOffset: parser.startIndex,
-				});
-			},
-			onclosetag(name) {
-				if (opaque) {
-					if (name === opaque.tagName) {
-						opaque.depth--;
-						if (opaque.depth === 0) {
-							opaque = null;
-						}
-					}
-					return;
-				}
-
-				if (name === 'body' && ignoredBodyOpens > 0) {
-					ignoredBodyOpens--;
-					return;
-				}
-
-				if (stack.length === 0) {
-					return;
-				}
-
-				const frame = stack.pop();
-				if (!frame) {
-					return;
-				}
-				const depth = stack.length;
-				const endOffset = parser.endIndex + 1;
-				// Discard rather than trust a candidate whose close was forced by
-				// an unrelated tag (see isGenuineClose) — safety against
-				// corrupting remainderHtml outweighs completeness of landmark
-				// detection for malformed markup.
-				if (
-					frame.matchedTypes.length > 0 &&
-					isGenuineClose(html, endOffset, frame.tagName)
-				) {
-					for (const type of frame.matchedTypes) {
-						candidates.push({ type, depth, startOffset: frame.startOffset, endOffset });
-					}
-				}
-				if (stack.length === 0) {
-					bodyDone = true;
-				}
-			},
-		},
-		{ decodeEntities: false },
-	);
-	parser.end(html);
+	const matches = findShallowestElements(html, matchLandmarkTypes);
 
 	const result: ExtractLandmarksResult = { remainderHtml: html };
 	const winnerSpans: { start: number; end: number }[] = [];
 
-	for (const type of ['header', 'footer', 'nav', 'aside'] as const) {
-		const typeCandidates = candidates.filter((c) => c.type === type);
-		if (typeCandidates.length === 0) {
-			continue;
-		}
-		let winner = typeCandidates[0];
-		for (const candidate of typeCandidates) {
-			if (
-				winner === undefined ||
-				candidate.depth < winner.depth ||
-				(candidate.depth === winner.depth && candidate.startOffset < winner.startOffset)
-			) {
-				winner = candidate;
-			}
-		}
-		if (!winner) {
-			continue;
-		}
-		result[type] = html.slice(winner.startOffset, winner.endOffset);
-		winnerSpans.push({ start: winner.startOffset, end: winner.endOffset });
+	for (const match of matches) {
+		result[match.type] = html.slice(match.startOffset, match.endOffset);
+		winnerSpans.push({ start: match.startOffset, end: match.endOffset });
 	}
 
-	if (winnerSpans.length > 0) {
-		const merged = mergeSpans(winnerSpans);
-		let remainder = '';
-		let cursor = 0;
-		for (const span of merged) {
-			remainder += html.slice(cursor, span.start);
-			cursor = span.end;
-		}
-		remainder += html.slice(cursor);
-		result.remainderHtml = remainder;
-	}
+	result.remainderHtml = excise(html, winnerSpans);
 
 	return result;
 }

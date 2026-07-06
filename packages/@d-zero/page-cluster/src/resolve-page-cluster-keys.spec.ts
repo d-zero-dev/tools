@@ -237,4 +237,205 @@ describe('resolvePageClusterKeys', () => {
 		const b = result.at(-1);
 		expect(a).not.toBe(b);
 	});
+
+	test('reassignOrphans (default true) lets a page with no recorded stylesheets rejoin a same-section css: block', () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '3'], stylesheetHrefs: [], html },
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages);
+
+		expect(result[2]).toBe(result[0]);
+	});
+
+	test('reassignOrphans: false falls back to the raw resolveBlockingGroupKeys output, leaving the orphan on its own path: block', () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '3'], stylesheetHrefs: [], html },
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages, { reassignOrphans: false });
+
+		expect(result[2]).not.toBe(result[0]);
+	});
+
+	test('contentBlockAttribute removes freeform content-block markup before comparison, letting pages with a different mix of blocks still match', () => {
+		const pageA = {
+			paths: ['dept-a', '1'],
+			stylesheetHrefs: [],
+			html: '<body><article class="detail"><div data-block="title"><h2 class="t">Title</h2></div><div data-block="image"><img class="i" src="x"></div></article></body>',
+		};
+		const pageB = {
+			paths: ['dept-a', '2'],
+			stylesheetHrefs: [],
+			html: '<body><article class="detail"><div data-block="quote"><blockquote class="q">Q</blockquote></div></article></body>',
+		};
+
+		const withoutRemoval = resolvePageClusterKeys([pageA, pageB]);
+		expect(withoutRemoval[0]).not.toBe(withoutRemoval[1]);
+
+		const withRemoval = resolvePageClusterKeys([pageA, pageB], {
+			contentBlockAttribute: 'data-block',
+		});
+		expect(withRemoval[0]).toBe(withRemoval[1]);
+	});
+
+	test('omitting contentBlockAttribute (the default) skips content-block removal entirely', () => {
+		const pageA = {
+			paths: ['dept-a', '1'],
+			stylesheetHrefs: [],
+			html: '<body><article class="detail"><div data-block="title"><h2 class="t">Title</h2></div></article></body>',
+		};
+		const pageB = {
+			paths: ['dept-a', '2'],
+			stylesheetHrefs: [],
+			html: '<body><article class="detail"><div data-block="quote"><blockquote class="q">Q</blockquote></div></article></body>',
+		};
+
+		const result = resolvePageClusterKeys([pageA, pageB]);
+
+		expect(result[0]).not.toBe(result[1]);
+	});
+
+	test("a page whose only stylesheet was third-party becomes an orphan via restrictStylesheetsToFirstParty and is then reassigned by reassignOrphans into its section's css: block", () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{
+				paths: ['news', '3'],
+				stylesheetHrefs: ['https://fonts.googleapis.com/css?family=x'],
+				html,
+			},
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages);
+
+		expect(result[2]).toBe(result[0]);
+	});
+
+	test('restrictStylesheetsToFirstParty (default true) prevents an incidental third-party stylesheet reference from splitting an otherwise-matching page into its own block', () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{
+				paths: ['news', '3'],
+				stylesheetHrefs: [
+					'https://example.com/a.css',
+					'https://fonts.googleapis.com/css?family=x',
+				],
+				html,
+			},
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages);
+
+		expect(result[2]).toBe(result[0]);
+	});
+
+	test('restrictStylesheetsToFirstParty: false blocks on every stylesheet href unfiltered, letting the third-party reference split the page away', () => {
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const pages = [
+			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{
+				paths: ['news', '3'],
+				stylesheetHrefs: [
+					'https://example.com/a.css',
+					'https://fonts.googleapis.com/css?family=x',
+				],
+				html,
+			},
+			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+		];
+
+		const result = resolvePageClusterKeys(pages, {
+			restrictStylesheetsToFirstParty: false,
+		});
+
+		expect(result[2]).not.toBe(result[0]);
+	});
+
+	test('autoCapMainDepth: true merges pages whose only difference is content nested deep inside <main>, requiring no site-specific configuration', () => {
+		// Identical structure up to depth 3 inside <main>; a page-unique class
+		// at depth 4 fragments every page apart unless that depth is capped.
+		const pages = Array.from({ length: 20 }, (_, i) => ({
+			paths: ['dept-a', `${i}`],
+			stylesheetHrefs: [],
+			html: `<body><main><section><article><div><span class="unique-${i}">content</span></div></article></section></main></body>`,
+		}));
+
+		const withCap = resolvePageClusterKeys(pages, { autoCapMainDepth: true });
+
+		expect(new Set(withCap).size).toBe(1);
+	});
+
+	test('autoCapMainDepth (default false) leaves deep <main> content untouched, so the same pages stay fragmented', () => {
+		const pages = Array.from({ length: 20 }, (_, i) => ({
+			paths: ['dept-a', `${i}`],
+			stylesheetHrefs: [],
+			html: `<body><main><section><article><div><span class="unique-${i}">content</span></div></article></section></main></body>`,
+		}));
+
+		const withoutCap = resolvePageClusterKeys(pages);
+
+		expect(new Set(withoutCap).size).toBeGreaterThan(1);
+	});
+
+	test("autoCapMainDepth detects each block's own knee separately, so a small block is not left under-capped by a larger, differently-shaped block", () => {
+		// Block "dept-a" (40 pages, dominates a corpus-wide sweep): identical
+		// up to depth 3, page-unique content at depth 4 -> its own knee is 3.
+		const deptA = Array.from({ length: 40 }, (_, i) => ({
+			paths: ['dept-a', `${i}`],
+			stylesheetHrefs: [],
+			html: `<body><main><section><article><div><span class="unique-a-${i}">c</span></div></article></section></main></body>`,
+		}));
+		// Block "dept-b" (6 pages): identical up to depth 1, page-unique
+		// content at depth 2 -> its own knee is 1, much shallower than
+		// dept-a's. A single depth derived once across the whole corpus (the
+		// pre-per-block design) would be dominated by dept-a's larger,
+		// deeper-diverging shape and cap dept-b too deep, letting dept-b's
+		// own noise (which starts right at depth 2) leak straight through
+		// uncapped.
+		const deptB = Array.from({ length: 6 }, (_, i) => ({
+			paths: ['dept-b', `${i}`],
+			stylesheetHrefs: [],
+			html: `<body><main><article><span class="unique-b-${i}">c</span></article></main></body>`,
+		}));
+
+		const keys = resolvePageClusterKeys([...deptA, ...deptB], { autoCapMainDepth: true });
+		const deptAKeys = keys.slice(0, deptA.length);
+		const deptBKeys = keys.slice(deptA.length);
+
+		expect(new Set(deptAKeys).size).toBe(1);
+		expect(new Set(deptBKeys).size).toBe(1);
+	});
+
+	test('autoCapMainDepth validates its own options eagerly, even for an empty page list with no blocks to run the per-block sweep on', () => {
+		expect(() =>
+			resolvePageClusterKeys([], { autoCapMainDepth: true, candidateDepths: [3, 1] }),
+		).toThrow(RangeError);
+	});
+
+	test('autoCapMainDepth skips the knee-detection sweep for a singleton block, but still returns that page as its own cluster', () => {
+		const pages = [
+			{
+				paths: ['solo'],
+				stylesheetHrefs: [],
+				html: '<body><main><div>only page</div></main></body>',
+			},
+		];
+
+		expect(resolvePageClusterKeys(pages, { autoCapMainDepth: true })).toHaveLength(1);
+	});
 });
