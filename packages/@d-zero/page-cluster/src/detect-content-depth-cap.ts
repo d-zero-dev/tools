@@ -36,6 +36,50 @@ export type DetectContentDepthCapOptions = TokenizeOptions &
 	};
 
 /**
+ * Validates the `candidateDepths`/`minKneeRatio` parts of
+ * {@link DetectContentDepthCapOptions} without running the sweep itself.
+ * {@link detectContentDepthCap} always calls this on its own, so a direct
+ * caller never needs to; it's exported only so a caller that invokes
+ * `detectContentDepthCap` conditionally (e.g. once per block, skipped
+ * entirely for blocks too small to matter — see
+ * {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeys}'s
+ * `autoCapMainDepth`) can still fail fast on a bad option even when that
+ * per-call skip means the sweep itself might never run for a given input
+ * (e.g. an empty page list has no blocks at all).
+ * @param options
+ * @example
+ * ```ts
+ * // Fails fast on a bad option even though nothing here would otherwise
+ * // call detectContentDepthCap yet (e.g. blocks haven't been computed).
+ * validateDetectContentDepthCapOptions({ minKneeRatio: 1 }); // throws RangeError
+ * ```
+ */
+export function validateDetectContentDepthCapOptions(
+	options?: DetectContentDepthCapOptions,
+): void {
+	const candidateDepths = options?.candidateDepths ?? [1, 2, 3, 4, 5, 6, 8, 10];
+	const minKneeRatio = options?.minKneeRatio ?? 1.5;
+
+	if (candidateDepths.length === 0) {
+		throw new RangeError('detectContentDepthCap: candidateDepths must not be empty');
+	}
+	let previousDepth = -Infinity;
+	for (const depth of candidateDepths) {
+		if (depth <= previousDepth) {
+			throw new RangeError(
+				`detectContentDepthCap: candidateDepths must be in strictly ascending order, got ${JSON.stringify(candidateDepths)}`,
+			);
+		}
+		previousDepth = depth;
+	}
+	if (!(Number.isFinite(minKneeRatio) && minKneeRatio > 1)) {
+		throw new RangeError(
+			`detectContentDepthCap: minKneeRatio must be a finite number greater than 1, got ${minKneeRatio}`,
+		);
+	}
+}
+
+/**
  * Finds the depth just before {@link ./cap-content-depth.js | capContentDepth}
  * ("`maxDepth`") would start throwing away real structural signal, by trying
  * each of `options.candidateDepths` in turn and looking for the first big
@@ -71,16 +115,23 @@ export type DetectContentDepthCapOptions = TokenizeOptions &
  * This calls {@link ./resolve-structural-cluster-keys.js |
  * resolveStructuralClusterKeys} once per candidate depth (each an O(n²)
  * comparison over `htmlList`), so cost scales with both `htmlList.length`
- * and `candidateDepths.length`. Measured on a real 4,085-page single-section
- * corpus: ~4s per candidate depth, ~30s total for the default 8 depths.
- * Measured via {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeys}'s
- * `autoCapMainDepth` option on a real 8,936-page whole-site corpus (this
- * function runs once, globally, across all of it before blocking): ~5m50s
- * total, versus ~16s for the same corpus without `autoCapMainDepth` —
- * cutting that corpus's final cluster count from 1,972 to 283. Sampling
- * `htmlList` down before calling this (accepting a less precise knee
- * estimate) is the natural next step if this cost becomes a problem, but
- * isn't implemented here without real evidence it's needed.
+ * and `candidateDepths.length`. Measured standalone on a real 4,085-page
+ * single-block corpus: ~4s per candidate depth, ~30s total for the default 8
+ * depths. {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeys}'s
+ * `autoCapMainDepth` option calls this once *per block* rather than once
+ * globally (different blocks can have different knees — see that option's
+ * own JSDoc for why this matters, not just for cost) — measured end to end on
+ * a real 8,936-page whole-site corpus (32 blocks, largest ~4,082 pages):
+ * ~119s total with `autoCapMainDepth` versus ~18s without it, cutting that
+ * corpus's final cluster count from 1,972 to 134. Partitioning the O(n²) cost
+ * across blocks rather than paying it once over the whole corpus is itself
+ * why this got *cheaper* than an earlier global-sweep design that measured
+ * ~5m50s for the same corpus (the sum of each block's `memberCount²` is far
+ * below `htmlList.length²` once a corpus splits into more than a couple of
+ * blocks). Sampling a single block's `htmlList` down before calling this
+ * (accepting a less precise knee estimate) is the natural next step if one
+ * particular block's cost becomes a problem, but isn't implemented here
+ * without real evidence it's needed.
  * @param htmlList
  * @param options
  * @example
@@ -95,27 +146,10 @@ export function detectContentDepthCap(
 	htmlList: readonly string[],
 	options?: DetectContentDepthCapOptions,
 ): number {
+	validateDetectContentDepthCapOptions(options);
 	const landmark = options?.landmark ?? 'main';
 	const candidateDepths = options?.candidateDepths ?? [1, 2, 3, 4, 5, 6, 8, 10];
 	const minKneeRatio = options?.minKneeRatio ?? 1.5;
-
-	if (candidateDepths.length === 0) {
-		throw new RangeError('detectContentDepthCap: candidateDepths must not be empty');
-	}
-	let previousDepth = -Infinity;
-	for (const depth of candidateDepths) {
-		if (depth <= previousDepth) {
-			throw new RangeError(
-				`detectContentDepthCap: candidateDepths must be in strictly ascending order, got ${JSON.stringify(candidateDepths)}`,
-			);
-		}
-		previousDepth = depth;
-	}
-	if (!(Number.isFinite(minKneeRatio) && minKneeRatio > 1)) {
-		throw new RangeError(
-			`detectContentDepthCap: minKneeRatio must be a finite number greater than 1, got ${minKneeRatio}`,
-		);
-	}
 
 	const clusterCounts = candidateDepths.map((maxDepth) => {
 		const tokenSets = htmlList.map((html) => {

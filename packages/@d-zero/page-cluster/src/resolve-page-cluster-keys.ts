@@ -3,7 +3,10 @@ import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-c
 import type { TokenizeOptions } from './types.js';
 
 import { capContentDepth } from './cap-content-depth.js';
-import { detectContentDepthCap } from './detect-content-depth-cap.js';
+import {
+	detectContentDepthCap,
+	validateDetectContentDepthCapOptions,
+} from './detect-content-depth-cap.js';
 import { extractLandmarks } from './extract-landmarks.js';
 import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
 import { reassignOrphanBlockKeys } from './reassign-orphan-block-keys.js';
@@ -122,17 +125,46 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		restrictStylesheetsToFirstParty?: boolean;
 		/**
 		 * Apply {@link ./detect-content-depth-cap.js | detectContentDepthCap}
-		 * once across all of `pages` (after `excludeLandmarks`/
-		 * `contentBlockAttribute`, before tokenizing) to find how many levels
-		 * of nesting inside `<main>`/`role="main"` to keep, then
-		 * {@link ./cap-content-depth.js | capContentDepth} each page at that
-		 * depth — a `contentBlockAttribute`-style fix for freeform-content
-		 * noise that needs no site-specific attribute name, since `<main>` is
-		 * an HTML5/ARIA standard. Defaults to `false`: unlike
-		 * `contentBlockAttribute` (which does nothing unless a matching
-		 * attribute is actually present), this discards real content whenever
-		 * a page has a `<main>`/`role="main"` at all, so it's opt-in until
-		 * validated on more than the two real corpora checked so far.
+		 * separately *within each block* (after `excludeLandmarks`/
+		 * `contentBlockAttribute`, after blocking, before that block's own
+		 * tokenizing) to find how many levels of nesting inside
+		 * `<main>`/`role="main"` to keep, then
+		 * {@link ./cap-content-depth.js | capContentDepth} each of that
+		 * block's pages at that depth — a `contentBlockAttribute`-style fix
+		 * for freeform-content noise that needs no site-specific attribute
+		 * name, since `<main>` is an HTML5/ARIA standard. Defaults to
+		 * `false`: unlike `contentBlockAttribute` (which does nothing unless
+		 * a matching attribute is actually present), this discards real
+		 * content whenever a page has a `<main>`/`role="main"` at all, so
+		 * it's opt-in until validated on more than the two real corpora
+		 * checked so far.
+		 *
+		 * Per-block rather than once across the whole corpus: different
+		 * blocks (different templates/sections) can have genuinely different
+		 * "skeleton depths." Confirmed on real crawl data: an 814-page block
+		 * whose own knee sits at depth 2 stayed at 189 clusters (barely moved
+		 * from 224 uncapped) when capped at depth 3 — the knee derived from
+		 * the *whole* 8,936-page corpus, dominated by two much larger blocks
+		 * whose own knee is 3. Re-deriving the knee for that block alone
+		 * brings it down to 46. A block too small for its knee-detection
+		 * sweep to find a reliable jump just falls through to
+		 * `detectContentDepthCap`'s own no-knee fallback (the largest
+		 * candidate depth, effectively "don't cap") — the same safe default
+		 * it already has for any input, now reached per-block instead of
+		 * corpus-wide. Skipped entirely (no cap) for a block of exactly 1
+		 * page — nothing to compare it against, so a knee sweep there could
+		 * only ever confirm what's already true.
+		 *
+		 * Trade-off of going per-block: a corpus-wide sweep's cluster-count
+		 * ratios are diluted by thousands of ordinary pages, so one
+		 * incidental outlier (e.g. a single page with an extra wrapper `div`
+		 * from a stray widget) barely moves them. A small block's sweep has
+		 * no such dilution — a similar outlier among only a handful of pages
+		 * can itself clear `minKneeRatio` and produce a too-shallow cap for
+		 * that block. Not yet observed on either real corpus checked so far
+		 * (both corpora's small blocks happened to be uniform enough that
+		 * this didn't come up), so no size-based guard is added speculatively;
+		 * revisit if real data surfaces it.
 		 *
 		 * Composes with `contentBlockAttribute` rather than replacing it: both
 		 * can be set at once — `removeContentBlocks` runs first, then
@@ -147,11 +179,9 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * `contentBlockAttribute: 'data-bgb'` together with
 		 * `restrictStylesheetsToFirstParty` — the site's known CMS attribute
 		 * doesn't mark every source of freeform depth, but the `<main>`
-		 * boundary catches all of it uniformly. On a real 8,936-page whole-site
-		 * corpus, it cut final cluster count from 1,972 to 283, at a real cost
-		 * of ~5m50s versus ~16s without it (see
-		 * `detectContentDepthCap`'s JSDoc for why: it reruns structural
-		 * clustering once per candidate depth to find the cap).
+		 * boundary catches all of it uniformly. See `detectContentDepthCap`'s
+		 * JSDoc for the real cost/accuracy numbers this per-block sweep
+		 * measures on the same two corpora.
 		 */
 		autoCapMainDepth?: boolean;
 	};
@@ -225,20 +255,6 @@ export function resolvePageClusterKeys(
 					.remainderHtml;
 	});
 
-	const autoCapMainDepth = options?.autoCapMainDepth ?? false;
-	const maxMainDepth = autoCapMainDepth
-		? detectContentDepthCap(preparedHtml, options)
-		: undefined;
-
-	const contentTokenSets = preparedHtml.map((html) => {
-		const capped =
-			maxMainDepth === undefined
-				? html
-				: capContentDepth(html, { landmark: 'main', maxDepth: maxMainDepth })
-						.remainderHtml;
-		return new Set(tokenize(capped, options).tokens);
-	});
-
 	const restrictStylesheetsToFirstParty =
 		options?.restrictStylesheetsToFirstParty ?? true;
 	const blockingPages = restrictStylesheetsToFirstParty
@@ -261,9 +277,36 @@ export function resolvePageClusterKeys(
 		}
 	}
 
+	const autoCapMainDepth = options?.autoCapMainDepth ?? false;
+	if (autoCapMainDepth) {
+		// Validated here, eagerly, because it's otherwise only reached from
+		// inside the per-block loop below — which never runs at all for an
+		// empty `pages` (no blocks), silently skipping a bad option instead
+		// of failing fast the way a direct `detectContentDepthCap` call
+		// always does.
+		validateDetectContentDepthCapOptions(options);
+	}
+
 	const finalKeys: string[] = Array.from({ length: pages.length });
 	for (const [blockKey, indices] of indicesByBlockKey) {
-		const blockTokenSets = indices.map((index) => requireIndex(contentTokenSets, index));
+		const blockPreparedHtml = indices.map((index) => requireIndex(preparedHtml, index));
+		// A block of 1 can never produce more than one cluster regardless of
+		// how it's tokenized — nothing to compare it against — so detecting a
+		// knee and capping for it would only spend a full multi-depth sweep
+		// (see detectContentDepthCap's own cost notes) to arrive back at the
+		// same single-cluster result. Skipped rather than swept.
+		const maxMainDepth =
+			autoCapMainDepth && blockPreparedHtml.length > 1
+				? detectContentDepthCap(blockPreparedHtml, options)
+				: undefined;
+		const blockTokenSets = blockPreparedHtml.map((html) => {
+			const capped =
+				maxMainDepth === undefined
+					? html
+					: capContentDepth(html, { landmark: 'main', maxDepth: maxMainDepth })
+							.remainderHtml;
+			return new Set(tokenize(capped, options).tokens);
+		});
 		const localLabels = resolveStructuralClusterKeys(blockTokenSets, options);
 
 		for (const [position, index] of indices.entries()) {

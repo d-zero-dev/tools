@@ -391,4 +391,51 @@ describe('resolvePageClusterKeys', () => {
 
 		expect(new Set(withoutCap).size).toBeGreaterThan(1);
 	});
+
+	test("autoCapMainDepth detects each block's own knee separately, so a small block is not left under-capped by a larger, differently-shaped block", () => {
+		// Block "dept-a" (40 pages, dominates a corpus-wide sweep): identical
+		// up to depth 3, page-unique content at depth 4 -> its own knee is 3.
+		const deptA = Array.from({ length: 40 }, (_, i) => ({
+			paths: ['dept-a', `${i}`],
+			stylesheetHrefs: [],
+			html: `<body><main><section><article><div><span class="unique-a-${i}">c</span></div></article></section></main></body>`,
+		}));
+		// Block "dept-b" (6 pages): identical up to depth 1, page-unique
+		// content at depth 2 -> its own knee is 1, much shallower than
+		// dept-a's. A single depth derived once across the whole corpus (the
+		// pre-per-block design) would be dominated by dept-a's larger,
+		// deeper-diverging shape and cap dept-b too deep, letting dept-b's
+		// own noise (which starts right at depth 2) leak straight through
+		// uncapped.
+		const deptB = Array.from({ length: 6 }, (_, i) => ({
+			paths: ['dept-b', `${i}`],
+			stylesheetHrefs: [],
+			html: `<body><main><article><span class="unique-b-${i}">c</span></article></main></body>`,
+		}));
+
+		const keys = resolvePageClusterKeys([...deptA, ...deptB], { autoCapMainDepth: true });
+		const deptAKeys = keys.slice(0, deptA.length);
+		const deptBKeys = keys.slice(deptA.length);
+
+		expect(new Set(deptAKeys).size).toBe(1);
+		expect(new Set(deptBKeys).size).toBe(1);
+	});
+
+	test('autoCapMainDepth validates its own options eagerly, even for an empty page list with no blocks to run the per-block sweep on', () => {
+		expect(() =>
+			resolvePageClusterKeys([], { autoCapMainDepth: true, candidateDepths: [3, 1] }),
+		).toThrow(RangeError);
+	});
+
+	test('autoCapMainDepth skips the knee-detection sweep for a singleton block, but still returns that page as its own cluster', () => {
+		const pages = [
+			{
+				paths: ['solo'],
+				stylesheetHrefs: [],
+				html: '<body><main><div>only page</div></main></body>',
+			},
+		];
+
+		expect(resolvePageClusterKeys(pages, { autoCapMainDepth: true })).toHaveLength(1);
+	});
 });
