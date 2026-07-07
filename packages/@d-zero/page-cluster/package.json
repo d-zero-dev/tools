@@ -49,6 +49,10 @@
 			"import": "./dist/jaccard-similarity.js",
 			"types": "./dist/jaccard-similarity.d.ts"
 		},
+		"./merge-landmark-affined-clusters": {
+			"import": "./dist/merge-landmark-affined-clusters.js",
+			"types": "./dist/merge-landmark-affined-clusters.d.ts"
+		},
 		"./reassign-orphan-block-keys": {
 			"import": "./dist/reassign-orphan-block-keys.js",
 			"types": "./dist/reassign-orphan-block-keys.d.ts"
