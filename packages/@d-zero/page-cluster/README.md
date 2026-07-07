@@ -37,6 +37,8 @@ tokenize(html, {
 
 CMSのブロック属性名が分からない・サイトごとに違う場合は `autoCapMainDepth: true` を使う。`<main>`/`role="main"`という標準タグを起点に、構造クラスタ数が急増する直前の深さをブロックごとに実データから自動検出して打ち切るため、サイト固有の設定が一切不要（既定はfalse。実データ検証では`contentBlockAttribute`より良い結果になる場合もあった一方、計算コストが実測で数倍〜1桁台後半になる。倍率はコーパスのブロック構成に依存する）。詳細は `detectContentDepthCap()` のJSDocを参照。
 
+header/footer/nav/asideが一致するページ同士をさらに合流させたい場合は `mergeRareLandmarkClusters: true` を使う。ただし単純な一致判定は実データで過剰融合を招くことが分かっているため（header/footer/navは99%以上のページに存在し判別力を持たない）、コーパス全体で希少なランドマークバリアントが一致した場合に限り、より緩いコンテンツ類似度閾値（`landmarkGateSimilarityThreshold`）での合流を許可する（既定はfalse。実データでの検証は未実施で、合成フィクスチャでの単体・回帰テストのみ）。詳細・コスト特性は `mergeLandmarkAffinedClusters()` のJSDocを参照。
+
 ```ts
 import { resolvePageClusterKeys } from '@d-zero/page-cluster/resolve-page-cluster-keys';
 
