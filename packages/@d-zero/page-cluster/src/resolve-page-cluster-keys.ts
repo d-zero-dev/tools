@@ -1,3 +1,4 @@
+import type { ExtractLandmarksResult } from './extract-landmarks.js';
 import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-keys.js';
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
 import type { TokenizeOptions } from './types.js';
@@ -9,6 +10,10 @@ import {
 } from './detect-content-depth-cap.js';
 import { extractLandmarks } from './extract-landmarks.js';
 import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
+import {
+	mergeLandmarkAffinedClusters,
+	validateMergeLandmarkAffinedClustersOptions,
+} from './merge-landmark-affined-clusters.js';
 import { reassignOrphanBlockKeys } from './reassign-orphan-block-keys.js';
 import { removeContentBlocks } from './remove-content-blocks.js';
 import { resolveBlockingGroupKeys } from './resolve-blocking-group-keys.js';
@@ -35,6 +40,25 @@ function requireIndex<T>(values: ArrayLike<T>, index: number): T {
 		throw new Error('resolvePageClusterKeys: index out of bounds');
 	}
 	return value;
+}
+
+/**
+ * Narrows `landmarks` from `readonly ExtractLandmarksResult[] | undefined` to
+ * defined, throwing instead of asserting non-null. Always defined in
+ * practice at every call site below: both call sites are only reached when
+ * `excludeLandmarks || mergeRareLandmarkClusters` is true, exactly the
+ * condition under which `landmarks` is populated. Exists only to satisfy the
+ * type checker without a non-null assertion (same rationale as
+ * `requireIndex` above).
+ * @param landmarks
+ */
+function requireLandmarks(
+	landmarks: readonly ExtractLandmarksResult[] | undefined,
+): readonly ExtractLandmarksResult[] {
+	if (landmarks === undefined) {
+		throw new Error('resolvePageClusterKeys: landmarks were not computed');
+	}
+	return landmarks;
 }
 
 /**
@@ -184,6 +208,26 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * measures on the same two corpora.
 		 */
 		autoCapMainDepth?: boolean;
+		/**
+		 * Re-key two or more otherwise-distinct clusters onto one shared key
+		 * when every landmark type present on their pages is both identical
+		 * and rare corpus-wide — see
+		 * {@link ./merge-landmark-affined-clusters.js | mergeLandmarkAffinedClusters}'s
+		 * JSDoc for the exact rule, the withdrawn earlier prototype this
+		 * reimplements, and why "rare" (not merely "identical") is required.
+		 * Defaults to `false`.
+		 *
+		 * Kept `false` by default: unlike `autoCapMainDepth`/
+		 * `restrictStylesheetsToFirstParty`, this has not been run against
+		 * real crawl data at all as of this change — only synthetic-fixture
+		 * unit/regression tests. See `mergeLandmarkAffinedClusters`'s JSDoc
+		 * for its cost profile before enabling this on a large corpus.
+		 */
+		mergeRareLandmarkClusters?: boolean;
+		/** Forwarded to {@link ./merge-landmark-affined-clusters.js | mergeLandmarkAffinedClusters} as-is. */
+		landmarkRarityThreshold?: number;
+		/** Forwarded to {@link ./merge-landmark-affined-clusters.js | mergeLandmarkAffinedClusters} as-is. */
+		landmarkGateSimilarityThreshold?: number;
 	};
 
 /**
@@ -244,10 +288,28 @@ export function resolvePageClusterKeys(
 	options?: ResolvePageClusterKeysOptions,
 ): string[] {
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
+	const mergeRareLandmarkClusters = options?.mergeRareLandmarkClusters ?? false;
+	if (mergeRareLandmarkClusters) {
+		// Eager, same rationale as autoCapMainDepth's own eager validation
+		// below: this option's own validation is otherwise only reached from
+		// mergeLandmarkAffinedClusters's call at the very end of this
+		// function, which never runs at all for an empty `pages`.
+		validateMergeLandmarkAffinedClustersOptions(options);
+	}
+
+	// extractLandmarks parses the whole page once; excludeLandmarks needs
+	// remainderHtml and mergeRareLandmarkClusters needs the four landmark
+	// fields, so this computes it once up front whenever either is needed,
+	// rather than each option branch parsing independently.
+	const landmarks: readonly ExtractLandmarksResult[] | undefined =
+		excludeLandmarks || mergeRareLandmarkClusters
+			? pages.map((page) => extractLandmarks(page.html))
+			: undefined;
+
 	const contentBlockAttribute = options?.contentBlockAttribute;
-	const preparedHtml = pages.map((page) => {
+	const preparedHtml = pages.map((page, index) => {
 		const landmarksExcised = excludeLandmarks
-			? extractLandmarks(page.html).remainderHtml
+			? requireIndex(requireLandmarks(landmarks), index).remainderHtml
 			: page.html;
 		return contentBlockAttribute === undefined
 			? landmarksExcised
@@ -314,5 +376,30 @@ export function resolvePageClusterKeys(
 		}
 	}
 
-	return finalKeys;
+	if (!mergeRareLandmarkClusters) {
+		return finalKeys;
+	}
+	// Deliberately not a reuse of blockTokenSets (this function's own
+	// primary-clustering token sets): those follow excludeLandmarks (raw
+	// HTML, landmarks included, when false) and resolveStructuralClusterKeys
+	// narrows them further via its internal deriveComparisonSets once a
+	// block reaches 10+ pages. mergeLandmarkAffinedClusters's secondary
+	// content-similarity gate is meant to be independent corroboration
+	// alongside the landmark match already used to select these pages — if
+	// it reused landmark-inclusive tokens, a bulky shared rare header's own
+	// tokens could inflate two otherwise-unrelated pages' similarity past
+	// the gate, and if it reused the frequency-narrowed set, the gate would
+	// silently test different content than its own JSDoc describes. Always
+	// tokenizing each page's landmark-excised remainderHtml here keeps the
+	// gate's evidence independent of both.
+	const resolvedLandmarks = requireLandmarks(landmarks);
+	const mergeGateContentTokenSets = resolvedLandmarks.map(
+		(entry) => new Set(tokenize(entry.remainderHtml, options).tokens),
+	);
+	return mergeLandmarkAffinedClusters(
+		finalKeys,
+		resolvedLandmarks,
+		mergeGateContentTokenSets,
+		options,
+	);
 }
