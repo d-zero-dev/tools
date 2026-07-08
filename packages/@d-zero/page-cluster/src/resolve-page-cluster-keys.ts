@@ -74,6 +74,18 @@ export type PageClusterSignals = {
 	paths: readonly string[];
 	stylesheetHrefs: readonly string[];
 	html: string;
+	/**
+	 * This page's own URL host (hostname, optionally `:port` — same shape as
+	 * `new URL(pageUrl).host`), forwarded to
+	 * {@link ./filter-first-party-stylesheet-hrefs.js | filterFirstPartyStylesheetHrefs}
+	 * so it can judge that page's `stylesheetHrefs` by direct comparison
+	 * instead of inferring a batch-wide dominant host. Optional: omit if the
+	 * caller doesn't have each page's URL on hand, at the cost of that
+	 * function's dominant-host fallback and its known limitations (see its
+	 * own JSDoc) — most crawlers already have this since they fetched the
+	 * page from that URL, so providing it is the expected default.
+	 */
+	host?: string;
 };
 
 /**
@@ -145,6 +157,13 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * batch" precondition (see that function's own JSDoc): `pages` should
 		 * be one site or one section, the same expectation
 		 * `resolveBlockingGroupKeys` already places on its own input.
+		 *
+		 * Provide each page's `host` (see `PageClusterSignals`) so this filter
+		 * can compare directly instead of inferring a batch-wide dominant
+		 * host — the inferred fallback can pick the wrong host on a tie (e.g.
+		 * a page loading its own first-party stylesheet plus the same
+		 * sitewide webfont request as every other page, tying "referenced by
+		 * 100% of pages" between the real first party and that third party).
 		 */
 		restrictStylesheetsToFirstParty?: boolean;
 		/**

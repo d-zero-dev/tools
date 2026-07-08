@@ -366,6 +366,68 @@ describe('resolvePageClusterKeys', () => {
 		expect(result[2]).not.toBe(result[0]);
 	});
 
+	test("providing each page's host avoids a dominant-host tie mistakenly keeping a sitewide third party over the real first party (regression test for a real crawl finding)", () => {
+		// 10 pages: every page loads *some* fonts.googleapis.com stylesheet
+		// plus its own first-party one, tying the third-party host and the
+		// first-party host at "referenced by 10/10 pages" — the exact shape
+		// confirmed on a real 302-page crawl. dept-a/dept-b share one
+		// identical googleapis query string (their only distinguishing
+		// signal if that third party wins the tie); the 8 filler pages each
+		// use a *different* googleapis query string (so it never looks like
+		// a shared template signal on its own) and their own unique
+		// first-party stylesheet.
+		//
+		// Without `host`, the tie-break keeps googleapis.com (inserted first
+		// below), so dept-a/dept-b's real, distinguishing first-party
+		// stylesheets (a.css vs b.css) are dropped and their identical
+		// surviving googleapis href wrongly becomes a shared css: block.
+		// With `host` supplied, each page's real first-party stylesheet
+		// survives instead, correctly keeping dept-a and dept-b apart.
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const targetPages = [
+			{
+				paths: ['dept-a', '1'],
+				host: 'example.com',
+				stylesheetHrefs: [
+					'https://fonts.googleapis.com/css?family=shared',
+					'https://example.com/a.css',
+				],
+				html,
+			},
+			{
+				paths: ['dept-b', '1'],
+				host: 'example.com',
+				stylesheetHrefs: [
+					'https://fonts.googleapis.com/css?family=shared',
+					'https://example.com/b.css',
+				],
+				html,
+			},
+		];
+		const fillerPages = Array.from({ length: 8 }, (_, i) => ({
+			paths: [`filler-${i}`],
+			host: 'example.com',
+			stylesheetHrefs: [
+				`https://fonts.googleapis.com/css?family=filler-${i}`,
+				`https://example.com/filler-${i}.css`,
+			],
+			html,
+		}));
+		const pages = [...targetPages, ...fillerPages];
+
+		const withHost = resolvePageClusterKeys(pages);
+		expect(withHost[0]).not.toBe(withHost[1]);
+
+		const withoutHost = resolvePageClusterKeys(
+			pages.map(({ paths, stylesheetHrefs, html: pageHtml }) => ({
+				paths,
+				stylesheetHrefs,
+				html: pageHtml,
+			})),
+		);
+		expect(withoutHost[0]).toBe(withoutHost[1]);
+	});
+
 	test('autoCapMainDepth: true merges pages whose only difference is content nested deep inside <main>, requiring no site-specific configuration', () => {
 		// Identical structure up to depth 3 inside <main>; a page-unique class
 		// at depth 4 fragments every page apart unless that depth is capped.
