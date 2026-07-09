@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/puppeteer-dealer",
-	"version": "0.7.17",
+	"version": "0.7.18",
 	"description": "Puppeteer handles each page",
 	"author": "D-ZERO",
 	"license": "MIT",
