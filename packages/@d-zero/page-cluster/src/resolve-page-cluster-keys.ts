@@ -1,15 +1,28 @@
 import type { ExtractLandmarksResult } from './extract-landmarks.js';
+import type { CrossBlockUnit } from './merge-cross-block-clusters.js';
 import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-keys.js';
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
 import type { TokenizeOptions } from './types.js';
 
+import { assignContainedClusters } from './assign-contained-clusters.js';
+import { autoCutThreshold } from './auto-cut-threshold.js';
 import { capContentDepth } from './cap-content-depth.js';
+import { collapseAnonymousDivs } from './collapse-anonymous-divs.js';
+import {
+	completeLinkageDendrogram,
+	labelsAtThreshold,
+} from './complete-linkage-dendrogram.js';
+import {
+	deriveComparisonSets,
+	MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT,
+} from './derive-comparison-sets.js';
 import {
 	detectContentDepthCap,
 	validateDetectContentDepthCapOptions,
 } from './detect-content-depth-cap.js';
 import { extractLandmarks } from './extract-landmarks.js';
 import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
+import { mergeCrossBlockClusters } from './merge-cross-block-clusters.js';
 import {
 	mergeLandmarkAffinedClusters,
 	validateMergeLandmarkAffinedClustersOptions,
@@ -17,7 +30,6 @@ import {
 import { reassignOrphanBlockKeys } from './reassign-orphan-block-keys.js';
 import { removeContentBlocks } from './remove-content-blocks.js';
 import { resolveBlockingGroupKeys } from './resolve-blocking-group-keys.js';
-import { resolveStructuralClusterKeys } from './resolve-structural-cluster-keys.js';
 import { tokenize } from './tokenize.js';
 
 /**
@@ -40,25 +52,6 @@ function requireIndex<T>(values: ArrayLike<T>, index: number): T {
 		throw new Error('resolvePageClusterKeys: index out of bounds');
 	}
 	return value;
-}
-
-/**
- * Narrows `landmarks` from `readonly ExtractLandmarksResult[] | undefined` to
- * defined, throwing instead of asserting non-null. Always defined in
- * practice at every call site below: both call sites are only reached when
- * `excludeLandmarks || mergeRareLandmarkClusters` is true, exactly the
- * condition under which `landmarks` is populated. Exists only to satisfy the
- * type checker without a non-null assertion (same rationale as
- * `requireIndex` above).
- * @param landmarks
- */
-function requireLandmarks(
-	landmarks: readonly ExtractLandmarksResult[] | undefined,
-): readonly ExtractLandmarksResult[] {
-	if (landmarks === undefined) {
-		throw new Error('resolvePageClusterKeys: landmarks were not computed');
-	}
-	return landmarks;
 }
 
 /**
@@ -175,12 +168,14 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * {@link ./cap-content-depth.js | capContentDepth} each of that
 		 * block's pages at that depth — a `contentBlockAttribute`-style fix
 		 * for freeform-content noise that needs no site-specific attribute
-		 * name, since `<main>` is an HTML5/ARIA standard. Defaults to
-		 * `false`: unlike `contentBlockAttribute` (which does nothing unless
-		 * a matching attribute is actually present), this discards real
-		 * content whenever a page has a `<main>`/`role="main"` at all, so
-		 * it's opt-in until validated on more than the two real corpora
-		 * checked so far.
+		 * name, since `<main>` is an HTML5/ARIA standard. Defaults to `true`
+		 * (changed from the previous default of `false` — callers that relied
+		 * on the old opt-in behavior must now pass `autoCapMainDepth: false`
+		 * explicitly). Validated on two real crawl corpora (302 pages and
+		 * 8,936 pages) as correct for most sites. The self-tuning cross-block
+		 * Stage B that runs after Stage A assumes this cap is enabled; running
+		 * without it (`false`) still works but produces uncapped tokens that
+		 * Stage B has not been validated against.
 		 *
 		 * Per-block rather than once across the whole corpus: different
 		 * blocks (different templates/sections) can have genuinely different
@@ -252,19 +247,48 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 /**
  * Connects the two stages this package otherwise leaves for the caller to
  * wire together: {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys}
- * (coarse blocking by URL path or stylesheet set) and
- * {@link ./resolve-structural-cluster-keys.js | resolveStructuralClusterKeys}
- * (exact structural clustering *within* one block). Returns one final key
- * per page, in the same order as `pages`, unique across the whole input —
- * not just within a block.
+ * (coarse blocking by URL path or stylesheet set) and structural clustering
+ * within each block. Returns one final key per page, in the same order as
+ * `pages`, unique across the whole input — not just within a block.
  *
- * `resolveStructuralClusterKeys` numbers its clusters `cluster:0`,
- * `cluster:1`, ... independently every time it's called, so two different
- * blocks' `cluster:0` are unrelated but identically named. Composing the
- * block key and the per-block cluster label via `JSON.stringify` (rather
- * than plain string concatenation, e.g. a `::` separator) rules out
- * collisions regardless of what either half happens to contain, without
- * depending on `resolveStructuralClusterKeys`'s label format never changing.
+ * **Stage A (per block):** Runs the complete-linkage dendrogram
+ * ({@link ./complete-linkage-dendrogram.js | completeLinkageDendrogram})
+ * and selects a threshold automatically via
+ * {@link ./auto-cut-threshold.js | autoCutThreshold} (largest merge-height
+ * gap, clamped to `similarityThreshold` so the default is never tightened,
+ * only loosened). **`similarityThreshold` is an upper bound here, not a
+ * per-pair hard floor** — the auto-cut can select a lower value when a
+ * natural cluster boundary exists below `similarityThreshold`. To enforce a
+ * strict minimum Jaccard per page-pair, use
+ * {@link ./resolve-structural-cluster-keys.js | resolveStructuralClusterKeys}
+ * directly (it skips auto-cut). For blocks large enough for frequency-based
+ * comparison (`>= MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT`), each cluster's
+ * token union (with anonymous `div` wrappers collapsed via
+ * {@link ./collapse-anonymous-divs.js | collapseAnonymousDivs}) passes
+ * through
+ * {@link ./assign-contained-clusters.js | assignContainedClusters}
+ * (containment ≥ 0.9) to absorb clusters caused by conditional rendering
+ * (missing optional section, paginator absent). See
+ * `assignContainedClusters`'s JSDoc for why this is directed assignment
+ * rather than union-find.
+ *
+ * **Stage B (cross-block, always):** After all blocks are processed,
+ * {@link ./merge-cross-block-clusters.js | mergeCrossBlockClusters}
+ * iteratively merges units across block boundaries — breaking through the
+ * URL-path and stylesheet-set walls that Stage A cannot cross. Uses quorum
+ * cores (80% of member pages' corpus-distinctive tokens) with three merge
+ * mechanisms: complete-linkage at the fixed threshold (0.8), containment,
+ * and shape-Jaccard (class-name-stripped skeleton similarity ≥ 0.9 for
+ * multi-page units only). When those find nothing, falls back to an L2
+ * multiset-containment signature anchored at `<main>` with shell
+ * (header+nav+footer) corroboration. Converges to a fixed point in ≤ 10
+ * rounds (real crawl data: 2–5 rounds).
+ *
+ * Cluster keys are composed from the block key and the local per-block
+ * label via `JSON.stringify` (rather than string concatenation) to avoid
+ * collisions regardless of what either half contains. Stage B preserves
+ * the root unit's existing key, so merged clusters receive a key from one
+ * of their constituent blocks, not a newly invented one.
  *
  * `excludeLandmarks` and `similarityThreshold` interact: removing shared
  * chrome makes every remaining comparison stricter (there's no more
@@ -278,10 +302,9 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
  * itself already needs.
  *
  * `reassignOrphans` only ever pools a `path:`-fallback orphan alongside a
- * same-section `css:` block for `resolveStructuralClusterKeys` to compare —
- * it never forces a merge itself. An orphan that turns out not to match
- * anything in that pool (confirmed on real crawl data) correctly surfaces as
- * its own singleton, the same as it would have without this option.
+ * same-section `css:` block for comparison — it never forces a merge itself.
+ * An orphan that turns out not to match anything in that pool (confirmed on
+ * real crawl data) correctly surfaces as its own singleton.
  *
  * `restrictStylesheetsToFirstParty` runs before `reassignOrphans`: a page
  * whose only stylesheet reference was third-party becomes an orphan (no
@@ -316,19 +339,26 @@ export function resolvePageClusterKeys(
 		validateMergeLandmarkAffinedClustersOptions(options);
 	}
 
-	// extractLandmarks parses the whole page once; excludeLandmarks needs
-	// remainderHtml and mergeRareLandmarkClusters needs the four landmark
-	// fields, so this computes it once up front whenever either is needed,
-	// rather than each option branch parsing independently.
-	const landmarks: readonly ExtractLandmarksResult[] | undefined =
-		excludeLandmarks || mergeRareLandmarkClusters
-			? pages.map((page) => extractLandmarks(page.html))
-			: undefined;
+	const similarityThreshold = options?.similarityThreshold ?? 0.8;
+	if (!(similarityThreshold >= 0 && similarityThreshold <= 1)) {
+		throw new RangeError(
+			`resolvePageClusterKeys: similarityThreshold must be between 0 and 1, got ${similarityThreshold}`,
+		);
+	}
+
+	// Always computed: landmark fields are needed by Stage B's shell
+	// corroboration regardless of excludeLandmarks/mergeRareLandmarkClusters,
+	// and remainderHtml is needed whenever excludeLandmarks is true.
+	// extractLandmarks parses the whole page once; computing it upfront avoids
+	// parsing the same page twice for the two options that each need it.
+	const landmarks: readonly ExtractLandmarksResult[] = pages.map((page) =>
+		extractLandmarks(page.html),
+	);
 
 	const contentBlockAttribute = options?.contentBlockAttribute;
 	const preparedHtml = pages.map((page, index) => {
 		const landmarksExcised = excludeLandmarks
-			? requireIndex(requireLandmarks(landmarks), index).remainderHtml
+			? requireIndex(landmarks, index).remainderHtml
 			: page.html;
 		return contentBlockAttribute === undefined
 			? landmarksExcised
@@ -358,7 +388,7 @@ export function resolvePageClusterKeys(
 		}
 	}
 
-	const autoCapMainDepth = options?.autoCapMainDepth ?? false;
+	const autoCapMainDepth = options?.autoCapMainDepth ?? true;
 	if (autoCapMainDepth) {
 		// Validated here, eagerly, because it's otherwise only reached from
 		// inside the per-block loop below — which never runs at all for an
@@ -369,6 +399,8 @@ export function resolvePageClusterKeys(
 	}
 
 	const finalKeys: string[] = Array.from({ length: pages.length });
+	const crossBlockUnits: CrossBlockUnit[] = [];
+
 	for (const [blockKey, indices] of indicesByBlockKey) {
 		const blockPreparedHtml = indices.map((index) => requireIndex(preparedHtml, index));
 		// A block of 1 can never produce more than one cluster regardless of
@@ -380,7 +412,7 @@ export function resolvePageClusterKeys(
 			autoCapMainDepth && blockPreparedHtml.length > 1
 				? detectContentDepthCap(blockPreparedHtml, options)
 				: undefined;
-		const blockTokenSets = blockPreparedHtml.map((html) => {
+		const blockTokenSets: ReadonlySet<string>[] = blockPreparedHtml.map((html) => {
 			const capped =
 				maxMainDepth === undefined
 					? html
@@ -388,10 +420,93 @@ export function resolvePageClusterKeys(
 							.remainderHtml;
 			return new Set(tokenize(capped, options).tokens);
 		});
-		const localLabels = resolveStructuralClusterKeys(blockTokenSets, options);
 
-		for (const [position, index] of indices.entries()) {
-			finalKeys[index] = JSON.stringify([blockKey, requireIndex(localLabels, position)]);
+		// Stage A: dendrogram + auto-cut + optional containment assignment
+		const blockSize = blockTokenSets.length;
+		const comparisonSets = deriveComparisonSets(blockTokenSets);
+		const merges = completeLinkageDendrogram(comparisonSets);
+		const cut = autoCutThreshold(
+			merges.map((m) => m.height),
+			similarityThreshold,
+		);
+		let roots = labelsAtThreshold(blockSize, merges, cut);
+
+		// Containment assignment only for blocks large enough to have had
+		// frequency-based comparison sets (same MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT
+		// threshold as deriveComparisonSets): below that floor, comparison sets
+		// equal raw token sets, and containment on full token sets causes chrome-
+		// dominated pages (index page whose HTML includes every nav variant) to
+		// spuriously absorb unrelated clusters.
+		if (blockSize >= MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT) {
+			const clusterTokens = new Map<number, Set<string>>();
+			const clusterPageCount = new Map<number, number>();
+			for (let i = 0; i < blockSize; i++) {
+				const r = requireIndex(roots, i);
+				let tokens = clusterTokens.get(r);
+				if (!tokens) {
+					tokens = new Set();
+					clusterTokens.set(r, tokens);
+				}
+				for (const t of requireIndex(comparisonSets, i))
+					tokens.add(collapseAnonymousDivs(t));
+				clusterPageCount.set(r, (clusterPageCount.get(r) ?? 0) + 1);
+			}
+			const entries = [...clusterTokens.entries()].map(([id, tokens]) => ({
+				id,
+				tokens: tokens as ReadonlySet<string>,
+				pageCount: clusterPageCount.get(id) ?? 0,
+			}));
+			const contResult = assignContainedClusters(entries);
+			roots = roots.map((r) => contResult.get(r) ?? r);
+		}
+
+		// Assign string cluster labels in first-seen order
+		const rootToLabel = new Map<number, string>();
+		const localLabels = roots.map((root) => {
+			let label = rootToLabel.get(root);
+			if (label === undefined) {
+				label = `cluster:${rootToLabel.size}`;
+				rootToLabel.set(root, label);
+			}
+			return label;
+		});
+
+		for (const [position, pageIndex] of indices.entries()) {
+			finalKeys[pageIndex] = JSON.stringify([
+				blockKey,
+				requireIndex(localLabels, position),
+			]);
+		}
+
+		// Gather CrossBlockUnit entries for Stage B
+		const unitKeyToPositions = new Map<string, number[]>();
+		for (const [position, pageIndex] of indices.entries()) {
+			const unitKey = finalKeys[pageIndex]!;
+			let positions = unitKeyToPositions.get(unitKey);
+			if (!positions) {
+				positions = [];
+				unitKeyToPositions.set(unitKey, positions);
+			}
+			positions.push(position);
+		}
+		for (const [unitKey, positions] of unitKeyToPositions) {
+			crossBlockUnits.push({
+				key: unitKey,
+				memberTokenSets: positions.map((pos) => requireIndex(blockTokenSets, pos)),
+				memberLandmarks: positions.map((pos) =>
+					requireIndex(landmarks, requireIndex(indices, pos)),
+				),
+			});
+		}
+	}
+
+	// Stage B: cross-block merge — always runs regardless of options
+	const stageBResult = mergeCrossBlockClusters(crossBlockUnits, options);
+	for (let i = 0; i < finalKeys.length; i++) {
+		const currentKey = finalKeys[i]!;
+		const rootKey = stageBResult.get(currentKey);
+		if (rootKey !== undefined && rootKey !== currentKey) {
+			finalKeys[i] = rootKey;
 		}
 	}
 
@@ -400,24 +515,23 @@ export function resolvePageClusterKeys(
 	}
 	// Deliberately not a reuse of blockTokenSets (this function's own
 	// primary-clustering token sets): those follow excludeLandmarks (raw
-	// HTML, landmarks included, when false) and resolveStructuralClusterKeys
-	// narrows them further via its internal deriveComparisonSets once a
-	// block reaches 10+ pages. mergeLandmarkAffinedClusters's secondary
-	// content-similarity gate is meant to be independent corroboration
-	// alongside the landmark match already used to select these pages — if
-	// it reused landmark-inclusive tokens, a bulky shared rare header's own
-	// tokens could inflate two otherwise-unrelated pages' similarity past
-	// the gate, and if it reused the frequency-narrowed set, the gate would
-	// silently test different content than its own JSDoc describes. Always
-	// tokenizing each page's landmark-excised remainderHtml here keeps the
-	// gate's evidence independent of both.
-	const resolvedLandmarks = requireLandmarks(landmarks);
-	const mergeGateContentTokenSets = resolvedLandmarks.map(
+	// HTML, landmarks included, when false) and the Stage A frequency
+	// narrowing can further filter them for large blocks.
+	// mergeLandmarkAffinedClusters's secondary content-similarity gate is
+	// meant to be independent corroboration alongside the landmark match
+	// already used to select these pages — if it reused landmark-inclusive
+	// tokens, a bulky shared rare header's own tokens could inflate two
+	// otherwise-unrelated pages' similarity past the gate, and if it reused
+	// the frequency-narrowed set, the gate would silently test different
+	// content than its own JSDoc describes. Always tokenizing each page's
+	// landmark-excised remainderHtml here keeps the gate's evidence
+	// independent of both.
+	const mergeGateContentTokenSets = landmarks.map(
 		(entry) => new Set(tokenize(entry.remainderHtml, options).tokens),
 	);
 	return mergeLandmarkAffinedClusters(
 		finalKeys,
-		resolvedLandmarks,
+		landmarks,
 		mergeGateContentTokenSets,
 		options,
 	);

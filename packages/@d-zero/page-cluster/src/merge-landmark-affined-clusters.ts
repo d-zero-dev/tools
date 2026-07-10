@@ -278,8 +278,7 @@ function mergeSmallClustersByCompleteLinkage(
 }
 
 type LandmarkStatus =
-	| { exists: false }
-	| { exists: true; rare: boolean; variantLabel: string };
+	{ exists: false } | { exists: true; rare: boolean; variantLabel: string };
 
 /**
  * For one landmark type, determines each page's corpus-wide variant identity
