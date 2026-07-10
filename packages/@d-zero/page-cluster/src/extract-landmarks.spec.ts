@@ -34,6 +34,36 @@ describe('extractLandmarks (basic extraction)', () => {
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
 	});
 
+	test('a <search> element is extracted as the search landmark', () => {
+		const result = extractLandmarks(
+			'<body><search><input type="search"/></search><main>M</main></body>',
+		);
+		expect(result.search).toBe('<search><input type="search"/></search>');
+		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
+	});
+
+	test('role=form is extracted as the form landmark (bare <form> without role is not)', () => {
+		const withRole = extractLandmarks(
+			'<body><form role="form"><input/></form><main>M</main></body>',
+		);
+		expect(withRole.form).toBe('<form role="form"><input/></form>');
+		expect(withRole.remainderHtml).toBe('<body><main>M</main></body>');
+
+		const bareForm = extractLandmarks('<body><form><input/></form><main>M</main></body>');
+		expect(bareForm.form).toBeUndefined();
+		expect(bareForm.remainderHtml).toBe(
+			'<body><form><input/></form><main>M</main></body>',
+		);
+	});
+
+	test('role=search on a <form> is extracted as the search landmark', () => {
+		const result = extractLandmarks(
+			'<body><form role="search"><input/></form><main>M</main></body>',
+		);
+		expect(result.search).toBe('<form role="search"><input/></form>');
+		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
+	});
+
 	test('a page with no landmarks returns all fields absent and an unchanged remainderHtml', () => {
 		const html = '<body><main>only content</main></body>';
 		expect(extractLandmarks(html)).toStrictEqual({ remainderHtml: html });

@@ -190,13 +190,21 @@ function l2Contained(xSig: Map<string, number>, ySig: Map<string, number>): bool
 function shellTokenSet(landmarks: ExtractLandmarksResult): ReadonlySet<string> {
 	const headerHtml = landmarks.header ?? '';
 	const navHtml = landmarks.nav ?? '';
+	const asideHtml = landmarks.aside ?? '';
 	const footerHtml = landmarks.footer ?? '';
+	const formHtml = landmarks.form ?? '';
+	const searchHtml = landmarks.search ?? '';
 	// Guard: if no landmark content exists, return empty rather than tokenizing
 	// `<body></body>` which produces `['body']` — a non-empty set that would
 	// make jaccardSimilarity({body},{body}) = 1 and spuriously pass the shell
 	// corroboration check for any two pages with no landmarks at all.
-	if (!headerHtml && !navHtml && !footerHtml) return new Set();
-	return new Set(tokenize(`<body>${headerHtml}${navHtml}${footerHtml}</body>`).tokens);
+	if (!headerHtml && !navHtml && !asideHtml && !footerHtml && !formHtml && !searchHtml)
+		return new Set();
+	return new Set(
+		tokenize(
+			`<body>${headerHtml}${navHtml}${asideHtml}${footerHtml}${formHtml}${searchHtml}</body>`,
+		).tokens,
+	);
 }
 
 /**

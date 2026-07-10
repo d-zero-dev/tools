@@ -2,15 +2,20 @@ import { excise } from './excise.js';
 import { findShallowestElements } from './find-shallowest-elements.js';
 
 /**
- * The four structural regions this module knows how to carve out of a page.
+ * The six structural regions this module knows how to carve out of a page.
  * Chosen to match both the HTML5 sectioning-element vocabulary and the
  * corresponding ARIA landmark roles, since real sites use either or both
  * (confirmed on two real crawl archives, ~9,200 pages combined: `<header>`/
  * `<footer>`/`<nav>` present on 99%+ of pages; ARIA roles present on ~53% of
  * one of the two sites, layered on top of the tags rather than replacing
  * them).
+ *
+ * `form` is matched only via `role="form"` (not bare `<form>` tags, which
+ * have no implicit landmark role under HTML-AAM unless given an accessible
+ * name). `search` is matched via both the `<search>` element (WHATWG
+ * landmark shorthand) and `role="search"`.
  */
-export type LandmarkType = 'header' | 'footer' | 'nav' | 'aside';
+export type LandmarkType = 'header' | 'footer' | 'nav' | 'aside' | 'form' | 'search';
 
 /**
  * Result of {@link ./extract-landmarks.js | extractLandmarks}. Each landmark
@@ -27,6 +32,8 @@ export type ExtractLandmarksResult = {
 	footer?: string;
 	nav?: string;
 	aside?: string;
+	form?: string;
+	search?: string;
 	remainderHtml: string;
 };
 
@@ -35,6 +42,7 @@ const TAG_TO_TYPE: Readonly<Record<string, LandmarkType>> = {
 	footer: 'footer',
 	nav: 'nav',
 	aside: 'aside',
+	search: 'search',
 };
 
 const ROLE_TO_TYPE: Readonly<Record<string, LandmarkType>> = {
@@ -42,6 +50,8 @@ const ROLE_TO_TYPE: Readonly<Record<string, LandmarkType>> = {
 	contentinfo: 'footer',
 	navigation: 'nav',
 	complementary: 'aside',
+	form: 'form',
+	search: 'search',
 };
 
 /**
