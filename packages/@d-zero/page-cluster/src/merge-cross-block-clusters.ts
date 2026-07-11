@@ -1,6 +1,7 @@
 import type { ExtractLandmarksResult } from './extract-landmarks.js';
 
 import { assignContainedClusters } from './assign-contained-clusters.js';
+import { autoCutThreshold } from './auto-cut-threshold.js';
 import { collapseAnonymousDivs } from './collapse-anonymous-divs.js';
 import {
 	completeLinkageDendrogram,
@@ -8,9 +9,9 @@ import {
 } from './complete-linkage-dendrogram.js';
 import { computeDocumentFrequency } from './compute-document-frequency.js';
 import { jaccardSimilarity } from './jaccard-similarity.js';
+import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
 import { shapeToken } from './shape-token.js';
 import { splitTokensByFrequency } from './split-tokens-by-frequency.js';
-import { tokenize } from './tokenize.js';
 
 /**
  * One cluster (post-Stage-A) entering cross-block comparison.
@@ -40,6 +41,12 @@ const CROSS_BLOCK_THRESHOLD = 0.8;
  * common distinctive token produces jaccard 1.0 with everything — confirmed
  * on real crawl data. Full union is shell-dominated: 298 pages collapsed into
  * 4 clusters — also confirmed. 80% quorum avoids both failure modes.
+ *
+ * Also reused as the fallback clamp for {@link ./auto-cut-threshold.js |
+ * autoCutThreshold} when running on the per-landmark-instance frequency
+ * distribution in {@link ./merge-cross-block-clusters.js | shellQuorum}. The
+ * clamp only ever *loosens* the cut relative to this floor (never tightens),
+ * and only fires in the degenerate cases the JSDoc there describes.
  */
 const QUORUM_FRACTION = 0.8;
 
@@ -184,52 +191,99 @@ function l2Contained(xSig: Map<string, number>, ySig: Map<string, number>): bool
 }
 
 /**
+ * Discovers a unit's shell tokens by auto-cutting the per-*token* page-
+ * frequency histogram of every landmark instance's tokens. This is the same
+ * max-gap primitive used for Stage A merge-height cutoffs, applied
+ * recursively at the landmark-token layer.
  *
- * @param landmarks
- */
-function shellTokenSet(landmarks: ExtractLandmarksResult): ReadonlySet<string> {
-	const headerHtml = landmarks.header ?? '';
-	const navHtml = landmarks.nav ?? '';
-	const asideHtml = landmarks.aside ?? '';
-	const footerHtml = landmarks.footer ?? '';
-	const formHtml = landmarks.form ?? '';
-	const searchHtml = landmarks.search ?? '';
-	// Guard: if no landmark content exists, return empty rather than tokenizing
-	// `<body></body>` which produces `['body']` — a non-empty set that would
-	// make jaccardSimilarity({body},{body}) = 1 and spuriously pass the shell
-	// corroboration check for any two pages with no landmarks at all.
-	if (!headerHtml && !navHtml && !asideHtml && !footerHtml && !formHtml && !searchHtml)
-		return new Set();
-	return new Set(
-		tokenize(
-			`<body>${headerHtml}${navHtml}${asideHtml}${footerHtml}${formHtml}${searchHtml}</body>`,
-		).tokens,
-	);
-}
-
-/**
+ * ## Why per-token and not per-signature
  *
+ * An earlier iteration ran the histogram at the level of full landmark-
+ * instance signatures (canonicalized token sets). That failed on a real,
+ * common pattern: a shared site chrome whose markup carries a per-page
+ * distinguishing element (a breadcrumb, a page-title element with a page-
+ * specific class, a "current" state). All pages have most of the same
+ * tokens, but every page's full signature is distinct because tokens embed
+ * class names. Per-signature counting saw 5 signatures at freq 0.2 each,
+ * autoCutThreshold on the flat distribution returned the clamp, and the
+ * shell collapsed to empty even though every page shared the core header
+ * skeleton. Per-token counting handles the same case correctly — the shared
+ * skeleton tokens each hit freq 1.0.
+ *
+ * ## The histogram
+ *
+ * For every member page, all its landmark instances are tokenized and
+ * unioned into a single per-page token set (order-agnostic, deduped: a
+ * token appearing in two of the page's landmarks still counts once for
+ * that page). The corpus histogram is then "how many pages contain each
+ * token". Tokens that appear on nearly every page are the unit's chrome;
+ * tokens that appear on only a handful are page-specific content that
+ * happens to be tagged as a landmark.
+ *
+ * ## Why auto-cut instead of a hard-coded quorum
+ *
+ * A fixed 80% quorum (this file's earlier implementation) baked one
+ * threshold in for every unit. Real corpora don't obey a universal cutoff:
+ * a section-local landmark token that appears on 60% of a unit's pages is
+ * the section's chrome under any reasonable reading, but 80% quorum
+ * discards it. Auto-cut looks at the *shape* of the frequency distribution
+ * and picks the widest gap between adjacent frequencies — if the
+ * distribution is `{1.00, 1.00, 0.65, 0.03, 0.02}`, the gap between 0.65
+ * and 0.03 (0.62) dwarfs everything else and the cut lands mid-gap around
+ * 0.34, correctly grouping the 0.65 tokens with the site-wide 1.00 ones as
+ * "chrome for this unit". If instead the distribution is flat, the clamp
+ * to {@link QUORUM_FRACTION} keeps the threshold from being tighter than
+ * the fallback default.
+ *
+ * ## Fallbacks
+ *
+ * A single distinct token (`heights.length < 2`) or a perfectly flat
+ * distribution (`maxGap === 0`) returns the {@link QUORUM_FRACTION} clamp
+ * verbatim — exactly the same 80%-quorum behavior as before. So degenerate
+ * cases degrade to the old contract; only richer distributions get the
+ * auto-cut benefit.
+ *
+ * A page with no landmarks contributes an empty set, deliberately, so the
+ * shell-corroboration jaccard between two landmark-less pages is 0 rather
+ * than 1 (which it would be if we handed back a `<body></body>`-derived
+ * `{body}` fallback set to both sides).
  * @param memberLandmarks
  */
 function shellQuorum(
 	memberLandmarks: readonly ExtractLandmarksResult[],
 ): ReadonlySet<string> {
-	const n = memberLandmarks.length;
-	if (n === 0) return new Set();
+	const pageCount = memberLandmarks.length;
+	if (pageCount === 0) return new Set();
 
-	const minCount = Math.ceil(QUORUM_FRACTION * n);
-	const tokenCount = new Map<string, number>();
-	for (const lm of memberLandmarks) {
-		for (const token of shellTokenSet(lm)) {
-			tokenCount.set(token, (tokenCount.get(token) ?? 0) + 1);
+	const perPageInstances = computePerPageLandmarkInstances(memberLandmarks);
+	// Union all instance token sets per page (dedupe within page: a token
+	// present on both header and footer of the same page still counts once
+	// for that page's contribution).
+	const tokenPageCount = new Map<string, number>();
+	for (const instances of perPageInstances) {
+		const perPageUnion = new Set<string>();
+		for (const inst of instances) {
+			for (const token of inst.tokens) perPageUnion.add(token);
+		}
+		for (const token of perPageUnion) {
+			tokenPageCount.set(token, (tokenPageCount.get(token) ?? 0) + 1);
 		}
 	}
 
-	const quorum = new Set<string>();
-	for (const [token, count] of tokenCount) {
-		if (count >= minCount) quorum.add(token);
+	if (tokenPageCount.size === 0) return new Set();
+
+	const frequencies: number[] = [];
+	for (const count of tokenPageCount.values()) {
+		frequencies.push(count / pageCount);
 	}
-	return quorum;
+
+	const cut = autoCutThreshold(frequencies, QUORUM_FRACTION);
+
+	const shell = new Set<string>();
+	for (const [token, count] of tokenPageCount) {
+		if (count / pageCount >= cut) shell.add(token);
+	}
+	return shell;
 }
 
 // ---------------------------------------------------------------------------

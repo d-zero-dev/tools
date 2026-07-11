@@ -27,6 +27,7 @@ import {
 	mergeLandmarkAffinedClusters,
 	validateMergeLandmarkAffinedClustersOptions,
 } from './merge-landmark-affined-clusters.js';
+import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
 import { reassignOrphanBlockKeys } from './reassign-orphan-block-keys.js';
 import { removeContentBlocks } from './remove-content-blocks.js';
 import { resolveBlockingGroupKeys } from './resolve-blocking-group-keys.js';
@@ -52,6 +53,110 @@ function requireIndex<T>(values: ArrayLike<T>, index: number): T {
 		throw new Error('resolvePageClusterKeys: index out of bounds');
 	}
 	return value;
+}
+
+/**
+ * Reinjects each page's *local* (non-corpus-wide) landmark-instance tokens
+ * into its block token set for Stage A clustering, restoring exactly the
+ * structural signal that landmark excision removed for those pages while
+ * keeping global chrome removed (the whole point of `excludeLandmarks`).
+ *
+ * ## Why token-level reinjection instead of one opaque pseudo-token
+ *
+ * An earlier iteration returned a single opaque token per local signature.
+ * That failed on real data: adding one distinctive token to a 100+-token
+ * page's set produces jaccard ~0.99 between "with-local-landmark" and
+ * "without-local-landmark" siblings, so Stage A's 0.8-clamped auto-cut
+ * silently merged them anyway. Reinjecting the landmark's actual tokens
+ * (typically 4–20 per landmark) restores the full structural weight of
+ * the distinction. A real mid-sized crawl corpus's section subtree with
+ * a shared section-local `<nav>` now splits correctly from siblings
+ * without one, since the reinjected local-nav tokens push jaccard below
+ * the cut.
+ *
+ * ## The corpus-level auto-cut
+ *
+ * Every page's landmark instances are canonicalized to a signature (via
+ * {@link ./canonicalize-token-set.js | canonicalizeTokenSet}); the corpus-
+ * wide histogram of "how many pages carry this signature" is fed to
+ * {@link ./auto-cut-threshold.js | autoCutThreshold} — the same primitive
+ * used at every other layer of this pipeline for merge-height cutoffs. The
+ * clamp caps the auto-cut at 0.8 so it never picks a threshold *above* the
+ * conservative default. A signature at or above the cut is global chrome —
+ * appears on effectively every page, so its tokens carry no discriminatory
+ * signal and are left excised. A signature below the cut is local chrome
+ * for the pages that carry it, and its tokens are reinjected into those
+ * pages' block token sets. Same technique as the per-unit shellQuorum in
+ * {@link ./merge-cross-block-clusters.js | mergeCrossBlockClusters}, one
+ * layer up.
+ *
+ * ## The `count >= 2` gate
+ *
+ * A signature present on exactly one page is per-page variation, not
+ * shared local chrome — no "these pages have the same local chrome, those
+ * pages don't" grouping can be built from a singleton, and admitting
+ * singleton signatures would reinject each per-page-unique landmark into
+ * exactly one page's token set, causing spurious per-page cluster
+ * fragmentation across the corpus (confirmed against a 2-page fixture
+ * where two pages carry byte-different `<header>`s produced identical
+ * clusters as expected; without the gate, each would carry its own
+ * reinjected tokens and split).
+ * @param landmarks
+ * @param tokenizeOptions
+ */
+function computeLocalLandmarkTokens(
+	landmarks: readonly ExtractLandmarksResult[],
+	tokenizeOptions: TokenizeOptions | undefined,
+): ReadonlySet<string>[] {
+	const pageCount = landmarks.length;
+	if (pageCount === 0) return [];
+
+	const perPageInstances = computePerPageLandmarkInstances(landmarks, tokenizeOptions);
+
+	// Corpus-wide histogram: signature → { count, tokens }. tokens is the
+	// token set of any one occurrence of the signature (all occurrences are
+	// equal by construction).
+	const corpusHistogram = new Map<
+		string,
+		{ count: number; tokens: ReadonlySet<string> }
+	>();
+	for (const instances of perPageInstances) {
+		for (const inst of instances) {
+			const entry = corpusHistogram.get(inst.signature);
+			if (entry) {
+				entry.count++;
+			} else {
+				corpusHistogram.set(inst.signature, { count: 1, tokens: inst.tokens });
+			}
+		}
+	}
+	if (corpusHistogram.size === 0) return landmarks.map(() => new Set<string>());
+
+	const frequencies: number[] = [];
+	for (const entry of corpusHistogram.values()) {
+		frequencies.push(entry.count / pageCount);
+	}
+	const cut = autoCutThreshold(frequencies, 0.8);
+
+	// Signatures whose tokens we'll reinject: below cut, non-singleton.
+	const localSignatures = new Set<string>();
+	for (const [sig, entry] of corpusHistogram) {
+		if (entry.count >= 2 && entry.count / pageCount < cut) {
+			localSignatures.add(sig);
+		}
+	}
+	if (localSignatures.size === 0) {
+		return landmarks.map(() => new Set<string>());
+	}
+
+	return perPageInstances.map((instances) => {
+		const out = new Set<string>();
+		for (const inst of instances) {
+			if (!localSignatures.has(inst.signature)) continue;
+			for (const token of inst.tokens) out.add(token);
+		}
+		return out;
+	});
 }
 
 /**
@@ -355,6 +460,17 @@ export function resolvePageClusterKeys(
 		extractLandmarks(page.html),
 	);
 
+	// Corpus-level chrome discovery: identify which landmark-instance
+	// signatures are *local* (below the auto-cut on the corpus-wide
+	// frequency histogram) and inject a compact pseudo-token per local
+	// signature into each page's block token set. Pages that share a local
+	// landmark then share a distinctive token unavailable to the pages that
+	// lack it — giving Stage A the structural signal it needs to split
+	// section-local template variants (e.g. a URL subsection carrying a
+	// section-local nav absent from its block siblings) that would
+	// otherwise merge together after landmark tokens are excised.
+	const localLandmarkTokensByPage = computeLocalLandmarkTokens(landmarks, options);
+
 	const contentBlockAttribute = options?.contentBlockAttribute;
 	const preparedHtml = pages.map((page, index) => {
 		const landmarksExcised = excludeLandmarks
@@ -412,14 +528,25 @@ export function resolvePageClusterKeys(
 			autoCapMainDepth && blockPreparedHtml.length > 1
 				? detectContentDepthCap(blockPreparedHtml, options)
 				: undefined;
-		const blockTokenSets: ReadonlySet<string>[] = blockPreparedHtml.map((html) => {
-			const capped =
-				maxMainDepth === undefined
-					? html
-					: capContentDepth(html, { landmark: 'main', maxDepth: maxMainDepth })
-							.remainderHtml;
-			return new Set(tokenize(capped, options).tokens);
-		});
+		const blockTokenSets: ReadonlySet<string>[] = blockPreparedHtml.map(
+			(html, position) => {
+				const capped =
+					maxMainDepth === undefined
+						? html
+						: capContentDepth(html, { landmark: 'main', maxDepth: maxMainDepth })
+								.remainderHtml;
+				const tokens = new Set(tokenize(capped, options).tokens);
+				// Reinject each page's local-landmark tokens (see
+				// computeLocalLandmarkTokens's JSDoc). Empty set when the
+				// corpus-level auto-cut finds no local chrome — a no-op
+				// for corpora where every landmark is site-wide.
+				const pageIndex = requireIndex(indices, position);
+				for (const token of requireIndex(localLandmarkTokensByPage, pageIndex)) {
+					tokens.add(token);
+				}
+				return tokens;
+			},
+		);
 
 		// Stage A: dendrogram + auto-cut + optional containment assignment
 		const blockSize = blockTokenSets.length;

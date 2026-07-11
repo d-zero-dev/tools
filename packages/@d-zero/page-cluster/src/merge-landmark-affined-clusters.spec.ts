@@ -1,3 +1,5 @@
+import type { ExtractLandmarksResult } from './extract-landmarks.js';
+
 import { describe, expect, test } from 'vitest';
 
 import {
@@ -20,6 +22,35 @@ function landmark(tag: 'aside' | 'footer' | 'header' | 'nav', variant: string): 
 	return `<${tag}><i class="variant-${variant}"></i></${tag}>`;
 }
 
+/**
+ * Wraps single-string landmark HTML into the array-shape
+ * {@link ./extract-landmarks.js | ExtractLandmarksResult} the pipeline now
+ * expects, filling unused types with empty arrays.
+ * @param overrides
+ * @param overrides.header
+ * @param overrides.footer
+ * @param overrides.nav
+ * @param overrides.aside
+ */
+function page(
+	overrides: {
+		header?: string;
+		footer?: string;
+		nav?: string;
+		aside?: string;
+	} = {},
+): ExtractLandmarksResult {
+	return {
+		header: overrides.header ? [overrides.header] : [],
+		footer: overrides.footer ? [overrides.footer] : [],
+		nav: overrides.nav ? [overrides.nav] : [],
+		aside: overrides.aside ? [overrides.aside] : [],
+		form: [],
+		search: [],
+		remainderHtml: '',
+	};
+}
+
 describe('mergeLandmarkAffinedClusters', () => {
 	test('an empty input returns an empty array', () => {
 		expect(mergeLandmarkAffinedClusters([], [], [])).toEqual([]);
@@ -32,9 +63,9 @@ describe('mergeLandmarkAffinedClusters', () => {
 		const result = mergeLandmarkAffinedClusters(
 			['["css:a", "cluster:0"]', '["css:b", "cluster:0"]', 'path:other'],
 			[
-				{ header: '<header><i class="mark-a"></i></header>', remainderHtml: '' },
-				{ header: '<header><i class="mark-a"></i></header>', remainderHtml: '' },
-				{ header: '<header><b class="mark-b"></b></header>', remainderHtml: '' },
+				page({ header: '<header><i class="mark-a"></i></header>' }),
+				page({ header: '<header><i class="mark-a"></i></header>' }),
+				page({ header: '<header><b class="mark-b"></b></header>' }),
 			],
 			[new Set(['a', 'b']), new Set(['a', 'c']), new Set(['z'])],
 			{ landmarkRarityThreshold: 0.7, landmarkGateSimilarityThreshold: 0.3 },
@@ -52,7 +83,7 @@ describe('mergeLandmarkAffinedClusters', () => {
 		// qualified. This pins that a landmark used by literally every
 		// compared page (ratio 1.0) can never be "rare" — the check is a
 		// strict `<`, so even the loosest legal threshold (1) rejects it.
-		const sharedHeader = { header: landmark('header', 'shared'), remainderHtml: '' };
+		const sharedHeader = page({ header: landmark('header', 'shared') });
 		const identicalContent = new Set(['a', 'b', 'c']);
 
 		const result = mergeLandmarkAffinedClusters(
@@ -74,8 +105,8 @@ describe('mergeLandmarkAffinedClusters', () => {
 		// the primary similarityThreshold (0.8) but above the default
 		// landmarkGateSimilarityThreshold (0.6): shared = 13 tokens, unique
 		// 4/3 tokens -> intersection 13, union 20, jaccard = 0.65.
-		const rareHeader = { header: landmark('header', 'rare'), remainderHtml: '' };
-		const commonHeader = { header: landmark('header', 'common'), remainderHtml: '' };
+		const rareHeader = page({ header: landmark('header', 'rare') });
+		const commonHeader = page({ header: landmark('header', 'common') });
 		const shared = Array.from({ length: 13 }, (_, i) => `shared-${i}`);
 		const contentA = new Set([...shared, 'a1', 'a2', 'a3', 'a4']);
 		const contentB = new Set([...shared, 'b1', 'b2', 'b3']);
@@ -125,12 +156,11 @@ describe('mergeLandmarkAffinedClusters', () => {
 			const shared = Array.from({ length: 9 }, (_, i) => `<i class="s-${i}"></i>`).join(
 				'',
 			);
-			return {
+			return page({
 				header: `<header>${shared}<i class="only-${suffix}"></i></header>`,
-				remainderHtml: '',
-			};
+			});
 		}
-		const commonHeader = { header: landmark('header', 'common'), remainderHtml: '' };
+		const commonHeader = page({ header: landmark('header', 'common') });
 		const pages = [
 			{
 				clusterKey: 'clusterA',
@@ -170,11 +200,10 @@ describe('mergeLandmarkAffinedClusters', () => {
 		const commonFooter = landmark('footer', 'common');
 		const pages = Array.from({ length: 10 }, (_, i) => ({
 			clusterKey: i < 2 ? `cluster-${i}` : `filler-${i}`,
-			landmark: {
+			landmark: page({
 				header: i < 2 ? rareHeader : landmark('header', `filler-${i}`),
 				footer: commonFooter,
-				remainderHtml: '',
-			},
+			}),
 			content: new Set(['shared-a', 'shared-b', 'shared-c']),
 		}));
 
@@ -198,18 +227,18 @@ describe('mergeLandmarkAffinedClusters', () => {
 			if (i === 0) {
 				return {
 					clusterKey: 'clusterA',
-					landmark: { header: rareHeader, nav: rareNav, remainderHtml: '' },
+					landmark: page({ header: rareHeader, nav: rareNav }),
 				};
 			}
 			if (i === 1) {
 				return {
 					clusterKey: 'clusterB',
-					landmark: { header: rareHeader, remainderHtml: '' },
+					landmark: page({ header: rareHeader }),
 				};
 			}
 			return {
 				clusterKey: `filler-${i}`,
-				landmark: { header: landmark('header', `filler-${i}`), remainderHtml: '' },
+				landmark: page({ header: landmark('header', `filler-${i}`) }),
 			};
 		});
 
@@ -224,7 +253,7 @@ describe('mergeLandmarkAffinedClusters', () => {
 	});
 
 	test('a page with no landmarks at all contributes no evidence and is never merged, even when its content is identical to another such page', () => {
-		const noLandmarks = { remainderHtml: '' };
+		const noLandmarks = page();
 		const identicalContent = new Set(['x']);
 
 		const result = mergeLandmarkAffinedClusters(
@@ -243,8 +272,8 @@ describe('mergeLandmarkAffinedClusters', () => {
 		// one rare header (3/10 = 0.3, rare at the 0.5 threshold used here);
 		// 7 filler pages share a different, common header (7/10 = 0.7, not
 		// rare at 0.5) so they contribute no competing evidence.
-		const rareHeader = { header: landmark('header', 'rare'), remainderHtml: '' };
-		const commonHeader = { header: landmark('header', 'common'), remainderHtml: '' };
+		const rareHeader = page({ header: landmark('header', 'rare') });
+		const commonHeader = page({ header: landmark('header', 'common') });
 		const pages = [
 			{ clusterKey: 'clusterA', landmark: rareHeader, content: new Set(['a', 'b']) },
 			{ clusterKey: 'clusterB', landmark: rareHeader, content: new Set(['a', 'b', 'c']) },
@@ -268,13 +297,13 @@ describe('mergeLandmarkAffinedClusters', () => {
 	});
 
 	test('a signature group whose pages already share one cluster key is left unchanged (no-op)', () => {
-		const rareHeader = { header: landmark('header', 'rare'), remainderHtml: '' };
+		const rareHeader = page({ header: landmark('header', 'rare') });
 		const pages = [
 			{ clusterKey: 'sameCluster', landmark: rareHeader, content: new Set(['a']) },
 			{ clusterKey: 'sameCluster', landmark: rareHeader, content: new Set(['b']) },
 			...Array.from({ length: 18 }, (_, i) => ({
 				clusterKey: `filler-${i}`,
-				landmark: { header: landmark('header', `filler-${i}`), remainderHtml: '' },
+				landmark: page({ header: landmark('header', `filler-${i}`) }),
 				content: new Set(['z']),
 			})),
 		];
@@ -297,8 +326,8 @@ describe('mergeLandmarkAffinedClusters', () => {
 		// disjoint from everything else. A correct implementation merges
 		// only the two evidence pages — not clusterA/clusterB's remaining 8
 		// pages, which never supplied any evidence at all.
-		const rareHeader = { header: landmark('header', 'rare'), remainderHtml: '' };
-		const otherHeader = { header: landmark('header', 'other'), remainderHtml: '' };
+		const rareHeader = page({ header: landmark('header', 'rare') });
+		const otherHeader = page({ header: landmark('header', 'other') });
 
 		const clusterAPages = Array.from({ length: 5 }, (_, i) => ({
 			clusterKey: 'clusterA',
@@ -341,7 +370,7 @@ describe('mergeLandmarkAffinedClusters', () => {
 		expect(() =>
 			mergeLandmarkAffinedClusters(
 				['clusterA', 'clusterB'],
-				[{ remainderHtml: '' }, { remainderHtml: '' }],
+				[page(), page()],
 				[new Set(['a']), new Set(['a'])],
 				{ landmarkGateSimilarityThreshold: Number.NaN },
 			),
@@ -349,11 +378,10 @@ describe('mergeLandmarkAffinedClusters', () => {
 	});
 
 	test('landmarkRarityThreshold controls the cutoff: a 6%-frequency variant is not rare at the default 5% but is at 10%', () => {
-		const rareHeader = { header: landmark('header', 'six-percent'), remainderHtml: '' };
-		const commonHeader = {
+		const rareHeader = page({ header: landmark('header', 'six-percent') });
+		const commonHeader = page({
 			header: landmark('header', 'ninety-four-percent'),
-			remainderHtml: '',
-		};
+		});
 		const shared = Array.from({ length: 13 }, (_, i) => `shared-${i}`);
 		const contentA = new Set([...shared, 'a1', 'a2', 'a3', 'a4']);
 		const contentB = new Set([...shared, 'b1', 'b2', 'b3']);

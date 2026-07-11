@@ -703,3 +703,95 @@ describe('resolvePageClusterKeys', () => {
 		expect(result[0]).not.toBe(result[1]);
 	});
 });
+
+describe('resolvePageClusterKeys (local-landmark pseudo-token injection)', () => {
+	test('pages that share a section-local landmark cluster separately from block siblings that lack it', () => {
+		// Regression scenario mirroring the real-crawl section-local nav
+		// case documented in the extract-landmarks JSDoc: a subset of pages
+		// in one block carries an in-<main> section-local <nav> that the
+		// other pages in the same block don't. Under excludeLandmarks: true
+		// (default) the local nav is excised from remainderHtml, so
+		// without pseudo-token injection Stage A would see identical
+		// content across all pages and merge them. With injection, the
+		// shared local-nav signature contributes a distinct pseudo-token
+		// to the section pages, splitting them off.
+		const withLocalNav = Array.from({ length: 4 }, (_, i) => ({
+			paths: ['articles', `with-${i}`],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main>' +
+				'<nav class="section-local-nav"><a>Section</a></nav>' +
+				'<article><h1>title</h1><p>body</p></article>' +
+				'</main>' +
+				'</body>',
+		}));
+		const withoutLocalNav = Array.from({ length: 6 }, (_, i) => ({
+			paths: ['articles', `without-${i}`],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main><article><h1>title</h1><p>body</p></article></main>' +
+				'</body>',
+		}));
+		const result = resolvePageClusterKeys([...withLocalNav, ...withoutLocalNav]);
+		// All four with-nav pages share a cluster key; all six without-nav
+		// pages share a different cluster key.
+		const withKey = result[0]!;
+		const withoutKey = result[4]!;
+		expect(withKey).not.toBe(withoutKey);
+		for (let i = 0; i < 4; i++) expect(result[i]).toBe(withKey);
+		for (let i = 4; i < 10; i++) expect(result[i]).toBe(withoutKey);
+	});
+
+	test('a singleton local landmark on one page does not fragment the block via pseudo-token injection', () => {
+		// The `count >= 2` gate in computeLocalLandmarkPseudoTokens keeps
+		// per-page unique landmark signatures from injecting a distinctive
+		// token that would spuriously split the outlier off its siblings.
+		// This is deliberate: real crawls include one-off editorial widgets
+		// that shouldn't reshape clustering.
+		const outlier = {
+			paths: ['articles', 'outlier'],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main><nav class="one-off-widget">unique</nav>' +
+				'<article><h1>title</h1><p>body</p></article></main>' +
+				'</body>',
+		};
+		const siblings = Array.from({ length: 9 }, (_, i) => ({
+			paths: ['articles', `s-${i}`],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main><article><h1>title</h1><p>body</p></article></main>' +
+				'</body>',
+		}));
+		const result = resolvePageClusterKeys([outlier, ...siblings]);
+		expect(result[0]).toBe(result[1]);
+	});
+
+	test('a global chrome signature (auto-cut cluster) does not inject a pseudo-token', () => {
+		// Every page shares the same site-wide <header>. That signature's
+		// corpus frequency is 1.0, at or above autoCutThreshold's clamp of
+		// 0.8, so it's classified as global chrome and no pseudo-token is
+		// emitted. Two content-equivalent pages therefore end up in one
+		// cluster (no spurious per-page or per-block pseudo-token
+		// discrimination from the shared chrome).
+		const pages = Array.from({ length: 6 }, (_, i) => ({
+			paths: ['articles', `p-${i}`],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main><article><p>body</p></article></main>' +
+				'</body>',
+		}));
+		const result = resolvePageClusterKeys(pages);
+		for (let i = 1; i < 6; i++) expect(result[i]).toBe(result[0]);
+	});
+});
