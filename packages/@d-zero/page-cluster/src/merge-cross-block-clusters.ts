@@ -1,4 +1,4 @@
-import type { ExtractLandmarksResult } from './extract-landmarks.js';
+import type { PerPageLandmarkInstance } from './per-page-landmark-signatures.js';
 
 import { assignContainedClusters } from './assign-contained-clusters.js';
 import { autoCutThreshold } from './auto-cut-threshold.js';
@@ -9,17 +9,28 @@ import {
 } from './complete-linkage-dendrogram.js';
 import { computeDocumentFrequency } from './compute-document-frequency.js';
 import { jaccardSimilarity } from './jaccard-similarity.js';
-import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
+import { reservoirSample } from './reservoir-sample.js';
 import { shapeToken } from './shape-token.js';
 import { splitTokensByFrequency } from './split-tokens-by-frequency.js';
 
 /**
  * One cluster (post-Stage-A) entering cross-block comparison.
+ *
+ * ## Why `memberLandmarkInstances` rather than raw `ExtractLandmarksResult[]`
+ *
+ * Stage B never reads the full `ExtractLandmarksResult` — it only needs each
+ * member page's landmark instances (per-type, per-signature, per-token-set)
+ * for `shellQuorum`'s per-token page-frequency histogram. Callers pre-run
+ * {@link ./per-page-landmark-signatures.js | computePerPageLandmarkInstances}
+ * once at unit creation and hand Stage B the compact instance list instead
+ * of the ~10× larger raw landmark HTML strings. This is the single largest
+ * memory reduction the streaming path relies on: the difference between a
+ * 176k-page corpus fitting in an 8 GB heap and exhausting a 12 GB heap.
  */
 export type CrossBlockUnit = {
 	readonly key: string;
 	readonly memberTokenSets: readonly ReadonlySet<string>[];
-	readonly memberLandmarks: readonly ExtractLandmarksResult[];
+	readonly memberLandmarkInstances: readonly (readonly PerPageLandmarkInstance[])[];
 };
 
 /**
@@ -247,15 +258,14 @@ function l2Contained(xSig: Map<string, number>, ySig: Map<string, number>): bool
  * shell-corroboration jaccard between two landmark-less pages is 0 rather
  * than 1 (which it would be if we handed back a `<body></body>`-derived
  * `{body}` fallback set to both sides).
- * @param memberLandmarks
+ * @param perPageInstances
  */
 function shellQuorum(
-	memberLandmarks: readonly ExtractLandmarksResult[],
+	perPageInstances: readonly (readonly PerPageLandmarkInstance[])[],
 ): ReadonlySet<string> {
-	const pageCount = memberLandmarks.length;
+	const pageCount = perPageInstances.length;
 	if (pageCount === 0) return new Set();
 
-	const perPageInstances = computePerPageLandmarkInstances(memberLandmarks);
 	// Union all instance token sets per page (dedupe within page: a token
 	// present on both header and footer of the same page still counts once
 	// for that page's contribution).
@@ -316,28 +326,42 @@ function shellQuorum(
  * @param units Post-Stage-A clusters.
  * @param options Forwarded `similarityThreshold` (defaults to 0.8).
  * @param options.similarityThreshold
+ * @param options.capMembers
  */
 export function mergeCrossBlockClusters(
 	units: readonly CrossBlockUnit[],
-	options?: { similarityThreshold?: number },
+	options?: {
+		similarityThreshold?: number;
+		/**
+		 * Opt-in post-merge cap on a group's retained member count. When
+		 * set, each merged group is reservoir-sampled back down to this
+		 * cap after every merge so a chain of merges cannot balloon past
+		 * the per-unit cap Stage A applied at creation. Callers on the
+		 * streaming path pass the same value as `capMembers` used in
+		 * Stage A; the in-memory path omits it so validated corpora keep
+		 * full-membership merge behavior unchanged.
+		 */
+		capMembers?: number;
+	},
 ): Map<string, string> {
 	if (units.length <= 1) {
 		return new Map(units.map((u) => [u.key, u.key]));
 	}
 
 	const threshold = options?.similarityThreshold ?? CROSS_BLOCK_THRESHOLD;
+	const capMembers = options?.capMembers;
 
 	// Mutable group state: rootKey → combined member arrays
 	type GroupMembers = {
 		tokenSets: ReadonlySet<string>[];
-		landmarks: ExtractLandmarksResult[];
+		landmarkInstances: (readonly PerPageLandmarkInstance[])[];
 	};
 
 	const groups = new Map<string, GroupMembers>();
 	for (const unit of units) {
 		groups.set(unit.key, {
 			tokenSets: [...unit.memberTokenSets],
-			landmarks: [...unit.memberLandmarks],
+			landmarkInstances: [...unit.memberLandmarkInstances],
 		});
 	}
 
@@ -355,8 +379,23 @@ export function mergeCrossBlockClusters(
 			const rootG = groups.get(root);
 			if (!absorbedG || !rootG) continue;
 
-			rootG.tokenSets = [...rootG.tokenSets, ...absorbedG.tokenSets];
-			rootG.landmarks = [...rootG.landmarks, ...absorbedG.landmarks];
+			const mergedTokenSets = [...rootG.tokenSets, ...absorbedG.tokenSets];
+			const mergedLandmarkInstances = [
+				...rootG.landmarkInstances,
+				...absorbedG.landmarkInstances,
+			];
+			// Only down-sample when the caller explicitly opts in (streaming
+			// path). Same-index sampling keeps memberTokenSets[i] and
+			// landmarkInstances[i] parallel.
+			if (capMembers !== undefined && mergedTokenSets.length > capMembers) {
+				const indices = mergedTokenSets.map((_, i) => i);
+				const kept = reservoirSample(indices, capMembers, root);
+				rootG.tokenSets = kept.map((i) => mergedTokenSets[i]!);
+				rootG.landmarkInstances = kept.map((i) => mergedLandmarkInstances[i]!);
+			} else {
+				rootG.tokenSets = mergedTokenSets;
+				rootG.landmarkInstances = mergedLandmarkInstances;
+			}
 			groups.delete(absorbed);
 
 			for (const [origKey, cur] of keyToRoot) {
@@ -517,7 +556,7 @@ export function mergeCrossBlockClusters(
 
 		const getShell = (key: string): ReadonlySet<string> => {
 			if (!shellCache.has(key)) {
-				shellCache.set(key, shellQuorum(groups.get(key)?.landmarks ?? []));
+				shellCache.set(key, shellQuorum(groups.get(key)?.landmarkInstances ?? []));
 			}
 			return shellCache.get(key) ?? new Set();
 		};
