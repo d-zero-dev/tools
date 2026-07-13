@@ -53,6 +53,47 @@ describe('filterFirstPartyStylesheetHrefs', () => {
 		expect(result[1]?.stylesheetHrefs).toEqual([]);
 	});
 
+	test('a page-supplied host resolves a tie the dominant-host fallback would get wrong (regression test for the real crawl finding)', () => {
+		// Every page loads both its own first-party stylesheet and the same
+		// sitewide third-party webfont — tying "referenced by 100% of pages"
+		// between the real first party and the third party. Without `host`,
+		// the fallback's tie-break is arbitrary (see the test above); with
+		// `host` supplied, the third party is dropped correctly regardless of
+		// which host the batch-wide count would have favored.
+		const result = filterFirstPartyStylesheetHrefs([
+			{
+				host: 'example.com',
+				stylesheetHrefs: [
+					'https://fonts.googleapis.com/css?family=x',
+					'https://example.com/a.css',
+				],
+			},
+			{
+				host: 'example.com',
+				stylesheetHrefs: [
+					'https://fonts.googleapis.com/css?family=x',
+					'https://example.com/b.css',
+				],
+			},
+		]);
+		expect(result[0]?.stylesheetHrefs).toEqual(['https://example.com/a.css']);
+		expect(result[1]?.stylesheetHrefs).toEqual(['https://example.com/b.css']);
+	});
+
+	test('a page without a supplied host still falls back to dominant-host inference, unaffected by other pages that do supply one', () => {
+		const result = filterFirstPartyStylesheetHrefs([
+			{ host: 'example.com', stylesheetHrefs: ['https://example.com/a.css'] },
+			{
+				stylesheetHrefs: [
+					'https://example.com/a.css',
+					'https://fonts.googleapis.com/css',
+				],
+			},
+		]);
+		expect(result[0]?.stylesheetHrefs).toEqual(['https://example.com/a.css']);
+		expect(result[1]?.stylesheetHrefs).toEqual(['https://example.com/a.css']);
+	});
+
 	test('unparsable hrefs are dropped and never treated as an origin', () => {
 		const result = filterFirstPartyStylesheetHrefs([
 			{ stylesheetHrefs: ['https://example.com/a.css', 'not a url'] },
