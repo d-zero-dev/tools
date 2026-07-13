@@ -31,11 +31,13 @@ tokenize(html, {
 
 ### クラスタリング
 
-クロールしたページ群から最終的なクラスタキーを得るには `resolvePageClusterKeys()` を使う。ブロッキング（URLパス/スタイルシートによる粗い絞り込み）と構造クラスタリング（ブロック内でのcomplete-linkage階層的クラスタリング）を内部で連結し、ブロックを跨いで一意なキーを返す。既定で各ページの`<header>`/`<footer>`/`<nav>`/`<aside>`（タグ名またはARIAランドマークロール）を比較対象から除外し、共通chromeの影響を受けにくくする。また、スタイルシート参照が記録されていない「孤児」ページを、同一URLセクションに閉じたスタイルシート・ブロックへ再割当する処理（`reassignOrphanBlockKeys()`）や、埋め込みコンテンツが引き込むサードパーティCSS参照をブロッキング判定から除外する処理（`filterFirstPartyStylesheetHrefs()`）も既定で有効。挙動の詳細・トレードオフはそれぞれのJSDocを参照。
+クロールしたページ群から最終的なクラスタキーを得るには `resolvePageClusterKeys()` を使う。ブロッキング（URLパス/スタイルシートによる粗い絞り込み）と構造クラスタリング（ブロック内でのcomplete-linkage階層的クラスタリング）を内部で連結し、ブロックを跨いで一意なキーを返す。既定で各ページのランドマーク要素（`<header>`/`<footer>`/`<nav>`/`<aside>`/`<search>`および`role="form"`/`role="search"`。タグ名またはARIAランドマークロールで判定）を比較対象から除外し、共通chromeの影響を受けにくくする。また、スタイルシート参照が記録されていない「孤児」ページを、同一URLセクションに閉じたスタイルシート・ブロックへ再割当する処理（`reassignOrphanBlockKeys()`）や、埋め込みコンテンツが引き込むサードパーティCSS参照をブロッキング判定から除外する処理（`filterFirstPartyStylesheetHrefs()`）も既定で有効。挙動の詳細・トレードオフはそれぞれのJSDocを参照。
 
 自由編集ブロックエディタ（CMSが各コンテンツブロックに固有のdata属性を付与するタイプ）を使うサイトでは、`contentBlockAttribute` オプションでその属性名を指定すると、ページごとに異なるブロック構成が構造比較のノイズになるのを防げる（既定は未指定＝無効、サイトごとの属性名を推測できないため）。詳細は `removeContentBlocks()` のJSDocを参照。
 
-CMSのブロック属性名が分からない・サイトごとに違う場合は `autoCapMainDepth: true` を使う。`<main>`/`role="main"`という標準タグを起点に、構造クラスタ数が急増する直前の深さをブロックごとに実データから自動検出して打ち切るため、サイト固有の設定が一切不要（既定はfalse。実データ検証では`contentBlockAttribute`より良い結果になる場合もあった一方、計算コストが実測で数倍〜1桁台後半になる。倍率はコーパスのブロック構成に依存する）。詳細は `detectContentDepthCap()` のJSDocを参照。
+CMSのブロック属性名が分からない・サイトごとに違う場合、`autoCapMainDepth` を使う。`<main>`/`role="main"`という標準タグを起点に、構造クラスタ数が急増する直前の深さをブロックごとに実データから自動検出して打ち切るため、サイト固有の設定が一切不要（既定はtrue。無効にするには `autoCapMainDepth: false` を渡す。実データ検証では`contentBlockAttribute`より良い結果になる場合もあった。計算コストは実測で数倍〜1桁台後半。倍率はコーパスのブロック構成に依存する）。詳細は `detectContentDepthCap()` のJSDocを参照。
+
+ブロッキング後の各ブロックを個別に処理する Stage A に加え、`resolvePageClusterKeys()` はすべてのブロックを処理した後、ブロック境界を越えた Stage B（クロスブロック統合）を常時実行する。URLパス・スタイルシート集合が異なるだけで構造的に同一テンプレートと判定できるユニットを、クォーラムコア（メンバーページの80%以上が持つコーパス識別トークン）ベースの complete-linkage・包含・シェイプ類似度（クラス名剥きトークン）とL2シグネチャ比較（シェル裏付き）を組み合わせて不動点まで反復的に統合する（実コーパスで2〜5ラウンド収束）。詳細は `mergeCrossBlockClusters()` のJSDocを参照。
 
 header/footer/nav/asideが一致するページ同士をさらに合流させたい場合は `mergeRareLandmarkClusters: true` を使う。ただし単純な一致判定は実データで過剰融合を招くことが分かっているため（header/footer/navは99%以上のページに存在し判別力を持たない）、コーパス全体で希少なランドマークバリアントが一致した場合に限り、より緩いコンテンツ類似度閾値（`landmarkGateSimilarityThreshold`）での合流を許可する（既定はfalse。実データでの検証は未実施で、合成フィクスチャでの単体・回帰テストのみ）。詳細・コスト特性は `mergeLandmarkAffinedClusters()` のJSDocを参照。
 

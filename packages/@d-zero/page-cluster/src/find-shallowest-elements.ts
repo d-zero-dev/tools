@@ -4,12 +4,32 @@ import { isGenuineClose } from './is-genuine-close.js';
 import { isOpaqueTagName } from './opaque-tags.js';
 
 /**
+ * One genuinely-closed match for type `T`, carrying the depth used for
+ * shallowest-wins selection and the element's whole-element and inner-content
+ * spans. `depth` is 0 for `<body>` itself, 1 for a direct child, and so on.
+ *
+ * Returned by {@link ./find-shallowest-elements.js | findMatchingElements},
+ * which is the "collect every candidate" primitive shared by every landmark-
+ * scanning use site. Callers that want a single winner per type consume the
+ * matches through {@link ./find-shallowest-elements.js | findShallowestElements}
+ * (which drops `depth` since it's an internal selection artifact once the
+ * shallowest has been chosen).
+ */
+export type MatchingElement<T extends string> = {
+	type: T;
+	depth: number;
+	startOffset: number;
+	endOffset: number;
+	contentStart: number;
+	contentEnd: number;
+};
+
+/**
  * One winning element for type `T`: the shallowest (fewest ancestors since
  * `<body>`) genuinely-closed match, ties broken by document order. Both the
  * whole-element span (`startOffset`/`endOffset`) and the inner-content span
  * (`contentStart`/`contentEnd`, excluding the element's own opening/closing
- * tags) are always computed — {@link ./extract-landmarks.js | extractLandmarks}
- * only needs the former, {@link ./cap-content-depth.js | capContentDepth}
+ * tags) are always computed — {@link ./cap-content-depth.js | capContentDepth}
  * only needs the latter, and computing both is cheap enough (two
  * `indexOf`/`lastIndexOf` calls) that carrying the unused half costs nothing
  * a caller need worry about.
@@ -28,41 +48,36 @@ type Frame<T extends string> = {
 	startOffset: number;
 };
 
-type Candidate<T extends string> = {
-	type: T;
-	depth: number;
-	startOffset: number;
-	endOffset: number;
-	contentStart: number;
-	contentEnd: number;
-};
-
 /**
- * Shared walk behind {@link ./extract-landmarks.js | extractLandmarks} (which
- * matches four landmark types per element in one pass) and
- * {@link ./cap-content-depth.js | capContentDepth} (which matches a single
- * landmark). Both need the identical "shallowest genuinely-closed match
- * wins" search — same `<body>`-scoping, same opaque-tag skip, same malformed-
- * markup discard via {@link ./is-genuine-close.js | isGenuineClose} — so a
- * fix to one (e.g. the body-scoping edge case already fixed once in
- * `extractLandmarks`) can't silently fail to apply to the other.
+ * The shared HTML walk behind every landmark-scanning use site: collects
+ * every genuinely-closed match for every requested type, without picking a
+ * winner. {@link ./find-shallowest-elements.js | findShallowestElements}
+ * layers shallowest-per-type selection on top of this; extractLandmarks
+ * consumes the full list so downstream data-driven frequency filters can
+ * decide which matches are chrome vs content instead of a hard-coded depth
+ * rule making that call up here.
  *
  * Only the first `<body>` is in scope, and nothing inside an opaque tag
  * (`script`/`style`/`noscript`/`svg`) is searched — see
  * `extractLandmarks`/`capContentDepth`'s own JSDoc for why.
+ *
+ * Results are sorted by `startOffset` ascending (document order of the
+ * opening tag), which is what extractLandmarks needs both for document-order
+ * concatenation and for the outer-before-inner sweep used to filter out
+ * nested landmarks so they aren't double-counted in shell tokens.
  * @param html
  * @param matchTypes Given an element's tag name and `role` attribute (already
  * normalized: an empty/absent `role` arrives as `undefined`), returns every
  * type `T` that element matches. Returning more than one lets a single
- * element (e.g. `<header role="navigation">`) win more than one type at
+ * element (e.g. `<header role="navigation">`) match more than one type at
  * once.
  */
-export function findShallowestElements<T extends string>(
+export function findMatchingElements<T extends string>(
 	html: string,
 	matchTypes: (tagName: string, role: string | undefined) => readonly T[],
-): ShallowestElementMatch<T>[] {
+): MatchingElement<T>[] {
 	const stack: Frame<T>[] = [];
-	const candidates: Candidate<T>[] = [];
+	const matches: MatchingElement<T>[] = [];
 	let opaque: { tagName: string; depth: number } | null = null;
 	let bodyDone = false;
 	let ignoredBodyOpens = 0;
@@ -122,7 +137,7 @@ export function findShallowestElements<T extends string>(
 					const contentStart = html.indexOf('>', frame.startOffset) + 1;
 					const contentEnd = html.lastIndexOf('<', endOffset - 1);
 					for (const type of frame.matchedTypes) {
-						candidates.push({
+						matches.push({
 							type,
 							depth,
 							startOffset: frame.startOffset,
@@ -139,21 +154,41 @@ export function findShallowestElements<T extends string>(
 	);
 	parser.end(html);
 
-	const winners = new Map<T, Candidate<T>>();
-	for (const candidate of candidates) {
-		const current = winners.get(candidate.type);
+	// Close-tag order is post-order (inner before outer); flip to
+	// startOffset-ascending so callers get document-order-of-opening.
+	matches.sort((a, b) => a.startOffset - b.startOffset);
+	return matches;
+}
+
+/**
+ * Picks the single shallowest (fewest ancestors since `<body>`) match per
+ * type from {@link ./find-shallowest-elements.js | findMatchingElements},
+ * ties broken by document order. Used by
+ * {@link ./cap-content-depth.js | capContentDepth} to locate the one `<main>`
+ * element per page (HTML spec discourages multiple `<main>`s, so shallowest-
+ * wins is semantically correct for that use).
+ *
+ * `depth` is dropped from the returned shape because it's an internal
+ * selection artifact that no consumer of the winner needs.
+ * @param html
+ * @param matchTypes
+ */
+export function findShallowestElements<T extends string>(
+	html: string,
+	matchTypes: (tagName: string, role: string | undefined) => readonly T[],
+): ShallowestElementMatch<T>[] {
+	const matches = findMatchingElements(html, matchTypes);
+	const winners = new Map<T, MatchingElement<T>>();
+	for (const match of matches) {
+		const current = winners.get(match.type);
 		if (
 			current === undefined ||
-			candidate.depth < current.depth ||
-			(candidate.depth === current.depth && candidate.startOffset < current.startOffset)
+			match.depth < current.depth ||
+			(match.depth === current.depth && match.startOffset < current.startOffset)
 		) {
-			winners.set(candidate.type, candidate);
+			winners.set(match.type, match);
 		}
 	}
-	// `depth` (Candidate's own tie-break field) is deliberately not part of
-	// ShallowestElementMatch: it's an internal selection detail, not
-	// something either caller (extractLandmarks, capContentDepth) uses once
-	// the winner is chosen.
 	return [...winners.values()].map(
 		({ type, startOffset, endOffset, contentStart, contentEnd }) => ({
 			type,

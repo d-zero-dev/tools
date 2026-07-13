@@ -81,6 +81,9 @@ test/fixture/.__*
 # Print Result Directory
 .print
 
+# page-cluster dogfooding scratch (results, throwaway scripts)
+.page-cluster
+
 # Secret Test Files
 ___*
 

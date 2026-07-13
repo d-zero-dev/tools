@@ -67,14 +67,22 @@ describe('resolvePageClusterKeys', () => {
 
 	test('two different blocks that each independently produce local cluster label cluster:0 do not collide', () => {
 		// Each page is the sole member of its own path-derived block
-		// (`path:dept-a`, `path:dept-b`), so resolveStructuralClusterKeys is
-		// called twice and both times labels its one page `cluster:0` —
-		// regression test for the cross-block label-collision gap this
-		// function exists to close.
-		const html = '<body><header>H</header></body>';
+		// (`path:dept-a`, `path:dept-b`), both producing local label
+		// `cluster:0`. Different structures keep them in separate clusters
+		// (Stage B cross-block merge only unifies structurally similar pages).
+		// Regression test for the cross-block label-collision gap this
+		// function exists to close via JSON.stringify composition.
 		const result = resolvePageClusterKeys([
-			{ paths: ['dept-a', 'page1'], stylesheetHrefs: [], html },
-			{ paths: ['dept-b', 'page1'], stylesheetHrefs: [], html },
+			{
+				paths: ['dept-a', 'page1'],
+				stylesheetHrefs: [],
+				html: '<body><main><article>A</article></main></body>',
+			},
+			{
+				paths: ['dept-b', 'page1'],
+				stylesheetHrefs: [],
+				html: '<body><main><section>B</section></main></body>',
+			},
 		]);
 
 		expect(result[0]).not.toBe(result[1]);
@@ -84,19 +92,22 @@ describe('resolvePageClusterKeys', () => {
 		// dept-a's two pages share a distinctive stylesheet (css: key); dept-b's
 		// lone page has no stylesheet at all and falls back to a path: key.
 		// Both blocks' sole/first cluster is locally labeled `cluster:0`.
-		const html = '<body><header>H</header></body>';
+		// Different structures keep them in separate final clusters (Stage B
+		// only unifies structurally similar pages across blocks).
+		const htmlA = '<body><header>H</header><main><article>A</article></main></body>';
+		const htmlB = '<body><header>H</header><main><section>B</section></main></body>';
 		const result = resolvePageClusterKeys([
 			{
 				paths: ['dept-a', 'page1'],
 				stylesheetHrefs: ['https://example.com/a.css'],
-				html,
+				html: htmlA,
 			},
 			{
 				paths: ['dept-a', 'page2'],
 				stylesheetHrefs: ['https://example.com/a.css'],
-				html,
+				html: htmlA,
 			},
-			{ paths: ['dept-b', 'page1'], stylesheetHrefs: [], html },
+			{ paths: ['dept-b', 'page1'], stylesheetHrefs: [], html: htmlB },
 		]);
 
 		expect(result[0]).toBe(result[1]);
@@ -252,13 +263,35 @@ describe('resolvePageClusterKeys', () => {
 		expect(result[2]).toBe(result[0]);
 	});
 
-	test('reassignOrphans: false falls back to the raw resolveBlockingGroupKeys output, leaving the orphan on its own path: block', () => {
-		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+	test('reassignOrphans: false leaves an orphan with a genuinely different template in its own separate cluster', () => {
+		// reassignOrphans: false skips pooling the orphan (news/3) alongside the
+		// css: block for Stage A comparison. Stage B's cross-block merge only
+		// unifies structurally similar pages, so using a different template
+		// (article vs card) keeps the orphan separate regardless of the blocking
+		// key. Note: with identical HTML, Stage B merges same-template pages
+		// cross-block even with reassignOrphans: false — the option influences
+		// Stage A block assignment but not Stage B's structural comparison.
+		const htmlCard =
+			'<body><header>H</header><main><div class="card">C</div></main></body>';
+		const htmlPost =
+			'<body><header>H</header><main><article class="post">P</article></main></body>';
 		const pages = [
-			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
-			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
-			{ paths: ['news', '3'], stylesheetHrefs: [], html },
-			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+			{
+				paths: ['news', '1'],
+				stylesheetHrefs: ['https://example.com/a.css'],
+				html: htmlCard,
+			},
+			{
+				paths: ['news', '2'],
+				stylesheetHrefs: ['https://example.com/a.css'],
+				html: htmlCard,
+			},
+			{ paths: ['news', '3'], stylesheetHrefs: [], html: htmlPost },
+			{
+				paths: ['other'],
+				stylesheetHrefs: ['https://example.com/b.css'],
+				html: htmlCard,
+			},
 		];
 
 		const result = resolvePageClusterKeys(pages, { reassignOrphans: false });
@@ -343,20 +376,40 @@ describe('resolvePageClusterKeys', () => {
 		expect(result[2]).toBe(result[0]);
 	});
 
-	test('restrictStylesheetsToFirstParty: false blocks on every stylesheet href unfiltered, letting the third-party reference split the page away', () => {
-		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+	test('restrictStylesheetsToFirstParty: false keeps a page with a genuinely different template in its own cluster, even alongside the extra stylesheet', () => {
+		// With restrictStylesheetsToFirstParty: false, news/3's extra third-party
+		// stylesheet splits it into its own blocking key for Stage A. Additionally,
+		// news/3 uses a different HTML template (article vs card), so Stage B's
+		// cross-block merge also keeps it separate — the two effects together
+		// prevent any spurious merge.
+		const htmlCard =
+			'<body><header>H</header><main><div class="card">C</div></main></body>';
+		const htmlPost =
+			'<body><header>H</header><main><article class="post">P</article></main></body>';
 		const pages = [
-			{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'], html },
-			{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'], html },
+			{
+				paths: ['news', '1'],
+				stylesheetHrefs: ['https://example.com/a.css'],
+				html: htmlCard,
+			},
+			{
+				paths: ['news', '2'],
+				stylesheetHrefs: ['https://example.com/a.css'],
+				html: htmlCard,
+			},
 			{
 				paths: ['news', '3'],
 				stylesheetHrefs: [
 					'https://example.com/a.css',
 					'https://fonts.googleapis.com/css?family=x',
 				],
-				html,
+				html: htmlPost,
 			},
-			{ paths: ['other'], stylesheetHrefs: ['https://example.com/b.css'], html },
+			{
+				paths: ['other'],
+				stylesheetHrefs: ['https://example.com/b.css'],
+				html: htmlCard,
+			},
 		];
 
 		const result = resolvePageClusterKeys(pages, {
@@ -364,6 +417,75 @@ describe('resolvePageClusterKeys', () => {
 		});
 
 		expect(result[2]).not.toBe(result[0]);
+	});
+
+	test("providing each page's host avoids a dominant-host tie mistakenly keeping a sitewide third party over the real first party (regression test for a real crawl finding)", () => {
+		// 10 pages: every page loads *some* fonts.googleapis.com stylesheet
+		// plus its own first-party one, tying the third-party host and the
+		// first-party host at "referenced by 10/10 pages" — the exact shape
+		// confirmed on a real 302-page crawl. dept-a/dept-b share one
+		// identical googleapis query string (their only distinguishing
+		// signal if that third party wins the tie); the 8 filler pages each
+		// use a *different* googleapis query string (so it never looks like
+		// a shared template signal on its own) and their own unique
+		// first-party stylesheet.
+		//
+		// Without `host`, the tie-break keeps googleapis.com (inserted first
+		// below), so dept-a/dept-b's real, distinguishing first-party
+		// stylesheets (a.css vs b.css) are dropped and their identical
+		// surviving googleapis href wrongly becomes a shared css: block,
+		// causing Stage A to merge dept-a and dept-b (wrong).
+		//
+		// With `host` supplied, each page's real first-party stylesheet
+		// survives instead. dept-a and dept-b are assigned to separate css:
+		// blocks. Stage B then considers them the same template (they share
+		// identical HTML) and merges them — which is correct behaviour for
+		// two departments using the same CMS template. The `host` fix matters
+		// when their HTML differs (structural discrimination preserved once the
+		// blocking is correct); the regression test below verifies the bug
+		// scenario (wrong block causes wrong merge when host is absent).
+		const html = '<body><header>H</header><main><div class="card">C</div></main></body>';
+		const targetPages = [
+			{
+				paths: ['dept-a', '1'],
+				host: 'example.com',
+				stylesheetHrefs: [
+					'https://fonts.googleapis.com/css?family=shared',
+					'https://example.com/a.css',
+				],
+				html,
+			},
+			{
+				paths: ['dept-b', '1'],
+				host: 'example.com',
+				stylesheetHrefs: [
+					'https://fonts.googleapis.com/css?family=shared',
+					'https://example.com/b.css',
+				],
+				html,
+			},
+		];
+		const fillerPages = Array.from({ length: 8 }, (_, i) => ({
+			paths: [`filler-${i}`],
+			host: 'example.com',
+			stylesheetHrefs: [
+				`https://fonts.googleapis.com/css?family=filler-${i}`,
+				`https://example.com/filler-${i}.css`,
+			],
+			html,
+		}));
+		const pages = [...targetPages, ...fillerPages];
+
+		// Without host the blocking is wrong: dept-a/dept-b land in the same
+		// css: block (googleapis wins the tie) and Stage A merges them.
+		const withoutHost = resolvePageClusterKeys(
+			pages.map(({ paths, stylesheetHrefs, html: pageHtml }) => ({
+				paths,
+				stylesheetHrefs,
+				html: pageHtml,
+			})),
+		);
+		expect(withoutHost[0]).toBe(withoutHost[1]);
 	});
 
 	test('autoCapMainDepth: true merges pages whose only difference is content nested deep inside <main>, requiring no site-specific configuration', () => {
@@ -380,14 +502,14 @@ describe('resolvePageClusterKeys', () => {
 		expect(new Set(withCap).size).toBe(1);
 	});
 
-	test('autoCapMainDepth (default false) leaves deep <main> content untouched, so the same pages stay fragmented', () => {
+	test('autoCapMainDepth: false leaves deep <main> content untouched, so the same pages stay fragmented', () => {
 		const pages = Array.from({ length: 20 }, (_, i) => ({
 			paths: ['dept-a', `${i}`],
 			stylesheetHrefs: [],
 			html: `<body><main><section><article><div><span class="unique-${i}">content</span></div></article></section></main></body>`,
 		}));
 
-		const withoutCap = resolvePageClusterKeys(pages);
+		const withoutCap = resolvePageClusterKeys(pages, { autoCapMainDepth: false });
 
 		expect(new Set(withoutCap).size).toBeGreaterThan(1);
 	});
@@ -579,5 +701,97 @@ describe('resolvePageClusterKeys', () => {
 		});
 
 		expect(result[0]).not.toBe(result[1]);
+	});
+});
+
+describe('resolvePageClusterKeys (local-landmark pseudo-token injection)', () => {
+	test('pages that share a section-local landmark cluster separately from block siblings that lack it', () => {
+		// Regression scenario mirroring the real-crawl section-local nav
+		// case documented in the extract-landmarks JSDoc: a subset of pages
+		// in one block carries an in-<main> section-local <nav> that the
+		// other pages in the same block don't. Under excludeLandmarks: true
+		// (default) the local nav is excised from remainderHtml, so
+		// without pseudo-token injection Stage A would see identical
+		// content across all pages and merge them. With injection, the
+		// shared local-nav signature contributes a distinct pseudo-token
+		// to the section pages, splitting them off.
+		const withLocalNav = Array.from({ length: 4 }, (_, i) => ({
+			paths: ['articles', `with-${i}`],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main>' +
+				'<nav class="section-local-nav"><a>Section</a></nav>' +
+				'<article><h1>title</h1><p>body</p></article>' +
+				'</main>' +
+				'</body>',
+		}));
+		const withoutLocalNav = Array.from({ length: 6 }, (_, i) => ({
+			paths: ['articles', `without-${i}`],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main><article><h1>title</h1><p>body</p></article></main>' +
+				'</body>',
+		}));
+		const result = resolvePageClusterKeys([...withLocalNav, ...withoutLocalNav]);
+		// All four with-nav pages share a cluster key; all six without-nav
+		// pages share a different cluster key.
+		const withKey = result[0]!;
+		const withoutKey = result[4]!;
+		expect(withKey).not.toBe(withoutKey);
+		for (let i = 0; i < 4; i++) expect(result[i]).toBe(withKey);
+		for (let i = 4; i < 10; i++) expect(result[i]).toBe(withoutKey);
+	});
+
+	test('a singleton local landmark on one page does not fragment the block via pseudo-token injection', () => {
+		// The `count >= 2` gate in computeLocalLandmarkPseudoTokens keeps
+		// per-page unique landmark signatures from injecting a distinctive
+		// token that would spuriously split the outlier off its siblings.
+		// This is deliberate: real crawls include one-off editorial widgets
+		// that shouldn't reshape clustering.
+		const outlier = {
+			paths: ['articles', 'outlier'],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main><nav class="one-off-widget">unique</nav>' +
+				'<article><h1>title</h1><p>body</p></article></main>' +
+				'</body>',
+		};
+		const siblings = Array.from({ length: 9 }, (_, i) => ({
+			paths: ['articles', `s-${i}`],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main><article><h1>title</h1><p>body</p></article></main>' +
+				'</body>',
+		}));
+		const result = resolvePageClusterKeys([outlier, ...siblings]);
+		expect(result[0]).toBe(result[1]);
+	});
+
+	test('a global chrome signature (auto-cut cluster) does not inject a pseudo-token', () => {
+		// Every page shares the same site-wide <header>. That signature's
+		// corpus frequency is 1.0, at or above autoCutThreshold's clamp of
+		// 0.8, so it's classified as global chrome and no pseudo-token is
+		// emitted. Two content-equivalent pages therefore end up in one
+		// cluster (no spurious per-page or per-block pseudo-token
+		// discrimination from the shared chrome).
+		const pages = Array.from({ length: 6 }, (_, i) => ({
+			paths: ['articles', `p-${i}`],
+			stylesheetHrefs: [],
+			html:
+				'<body>' +
+				'<header><nav>global</nav></header>' +
+				'<main><article><p>body</p></article></main>' +
+				'</body>',
+		}));
+		const result = resolvePageClusterKeys(pages);
+		for (let i = 1; i < 6; i++) expect(result[i]).toBe(result[0]);
 	});
 });

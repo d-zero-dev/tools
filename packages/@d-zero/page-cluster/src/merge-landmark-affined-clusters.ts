@@ -1,8 +1,9 @@
 import type { ExtractLandmarksResult, LandmarkType } from './extract-landmarks.js';
 import type { TokenizeOptions } from './types.js';
 
+import { canonicalizeTokenSet } from './canonicalize-token-set.js';
 import { jaccardSimilarity } from './jaccard-similarity.js';
-import { tokenize } from './tokenize.js';
+import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
 
 /**
  * The four landmark types checked, in the fixed order every signature string
@@ -175,30 +176,6 @@ export function validateMergeLandmarkAffinedClustersOptions(
 }
 
 /**
- * Canonicalizes a token set into a string that is identical for two sets iff
- * their members are identical — sorted so the (undefined) `Set` iteration
- * order can never make two structurally-equal sets hash differently. Used
- * only to bucket byte-for-byte-identical landmark token sets before
- * clustering (see `computeLandmarkStatus`'s JSDoc); not a general-purpose
- * set-hashing utility.
- *
- * `JSON.stringify` of the sorted array, not a plain joined string: a token
- * itself can contain a space (`format-bracket.ts` splices an element's raw
- * `role`/`type` attribute value in verbatim, e.g. `role="a b"` produces the
- * literal token `header[role=a b]`), so a delimiter-joined string would let
- * two genuinely different sets — e.g. `{"a b", "c"}` and `{"a", "b", "c"}` —
- * collide on the identical joined string `"a b c"`. `JSON.stringify` escapes
- * each array element as its own quoted string, so no element's content can
- * ever be mistaken for the array's own structural delimiters. Matches this
- * file's own `landmark-merge:` key construction (`JSON.stringify(sortedKeys)`),
- * which relies on the same collision-safety for the same reason.
- * @param tokens
- */
-function canonicalizeTokenSet(tokens: ReadonlySet<string>): string {
-	return JSON.stringify([...tokens].toSorted());
-}
-
-/**
  * Finds the representative (root) of `index`'s set, compressing every
  * traversed link. Independent copy of
  * `resolve-structural-cluster-keys.ts`'s own `find`, by the same convention
@@ -278,8 +255,7 @@ function mergeSmallClustersByCompleteLinkage(
 }
 
 type LandmarkStatus =
-	| { exists: false }
-	| { exists: true; rare: boolean; variantLabel: string };
+	{ exists: false } | { exists: true; rare: boolean; variantLabel: string };
 
 /**
  * For one landmark type, determines each page's corpus-wide variant identity
@@ -339,12 +315,42 @@ function computeLandmarkStatus(
 	options: MergeLandmarkAffinedClustersOptions | undefined,
 ): LandmarkStatus[] {
 	const pageCount = landmarks.length;
-	const tokenSets: (ReadonlySet<string> | undefined)[] = landmarks.map((entry) => {
-		const region = entry[type];
-		return region === undefined
-			? undefined
-			: new Set(tokenize(`<body>${region}</body>`, options).tokens);
-	});
+	// Per page: canonical instance = the instance whose token-set signature
+	// is most common across the corpus, ties broken by document order. This
+	// picks the site-wide chrome instance out of the page's landmark array
+	// automatically — the shared site header repeats byte-identically across
+	// pages and dominates the corpus histogram, while article-specific
+	// `<header>`s vary per page and each carry frequency 1. Choosing the
+	// most-common instance is the data-driven analogue of the old shallowest-
+	// wins rule this file's callers relied on for O(1) bucket collapse via
+	// `canonicalizeTokenSet`, without reintroducing a depth heuristic and
+	// without letting per-page variation explode the bucket count (the
+	// concrete risk documented in this package's tuning JSDoc as ~19s/640MB
+	// on a large real corpus if we bucketed a page's whole array).
+	const perPageInstances = computePerPageLandmarkInstances(landmarks, options);
+	const corpusInstanceCount = new Map<string, number>();
+	for (const instances of perPageInstances) {
+		for (const inst of instances) {
+			if (inst.type !== type) continue;
+			corpusInstanceCount.set(
+				inst.signature,
+				(corpusInstanceCount.get(inst.signature) ?? 0) + 1,
+			);
+		}
+	}
+	const tokenSets: (ReadonlySet<string> | undefined)[] = perPageInstances.map(
+		(instances) => {
+			let best: { tokens: ReadonlySet<string>; count: number } | undefined;
+			for (const inst of instances) {
+				if (inst.type !== type) continue;
+				const count = corpusInstanceCount.get(inst.signature) ?? 0;
+				if (best === undefined || count > best.count) {
+					best = { tokens: inst.tokens, count };
+				}
+			}
+			return best?.tokens;
+		},
+	);
 
 	const bucketIndexByKey = new Map<string, number>();
 	const bucketRepresentatives: ReadonlySet<string>[] = [];
