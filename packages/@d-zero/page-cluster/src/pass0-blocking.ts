@@ -90,9 +90,15 @@ export function resolveBlockKeys(
 
 	const rawBlockKeys = resolveBlockingGroupKeys(blockingPages, options);
 	const reassignOrphans = options?.reassignOrphans ?? true;
-	return reassignOrphans
-		? reassignOrphanBlockKeys(blockingPages, rawBlockKeys, options?.pathDepth)
-		: rawBlockKeys;
+	if (!reassignOrphans) return rawBlockKeys;
+	// Orphan reassignment always uses a numeric `pathDepth`. When the caller
+	// asked for `'auto'`, fall back to the historical default 1 here — a
+	// future PR that wires the auto-cut depth through can compute it once
+	// and pass it as a number to both `resolveBlockingGroupKeys` and this
+	// call to keep them consistent.
+	const numericPathDepth =
+		typeof options?.pathDepth === 'number' ? options.pathDepth : undefined;
+	return reassignOrphanBlockKeys(blockingPages, rawBlockKeys, numericPathDepth);
 }
 
 /**

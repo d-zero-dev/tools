@@ -488,7 +488,7 @@ describe('resolvePageClusterKeys', () => {
 		expect(withoutHost[0]).toBe(withoutHost[1]);
 	});
 
-	test('autoCapMainDepth: true merges pages whose only difference is content nested deep inside <main>, requiring no site-specific configuration', () => {
+	test('the always-on <main> depth cap merges pages whose only difference is content nested deep inside <main>, requiring no site-specific configuration', () => {
 		// Identical structure up to depth 3 inside <main>; a page-unique class
 		// at depth 4 fragments every page apart unless that depth is capped.
 		const pages = Array.from({ length: 20 }, (_, i) => ({
@@ -497,24 +497,10 @@ describe('resolvePageClusterKeys', () => {
 			html: `<body><main><section><article><div><span class="unique-${i}">content</span></div></article></section></main></body>`,
 		}));
 
-		const withCap = resolvePageClusterKeys(pages, { autoCapMainDepth: true });
-
-		expect(new Set(withCap).size).toBe(1);
+		expect(new Set(resolvePageClusterKeys(pages)).size).toBe(1);
 	});
 
-	test('autoCapMainDepth: false leaves deep <main> content untouched, so the same pages stay fragmented', () => {
-		const pages = Array.from({ length: 20 }, (_, i) => ({
-			paths: ['dept-a', `${i}`],
-			stylesheetHrefs: [],
-			html: `<body><main><section><article><div><span class="unique-${i}">content</span></div></article></section></main></body>`,
-		}));
-
-		const withoutCap = resolvePageClusterKeys(pages, { autoCapMainDepth: false });
-
-		expect(new Set(withoutCap).size).toBeGreaterThan(1);
-	});
-
-	test("autoCapMainDepth detects each block's own knee separately, so a small block is not left under-capped by a larger, differently-shaped block", () => {
+	test("the always-on <main> depth cap detects each block's own knee separately, so a small block is not left under-capped by a larger, differently-shaped block", () => {
 		// Block "dept-a" (40 pages, dominates a corpus-wide sweep): identical
 		// up to depth 3, page-unique content at depth 4 -> its own knee is 3.
 		const deptA = Array.from({ length: 40 }, (_, i) => ({
@@ -535,7 +521,7 @@ describe('resolvePageClusterKeys', () => {
 			html: `<body><main><article><span class="unique-b-${i}">c</span></article></main></body>`,
 		}));
 
-		const keys = resolvePageClusterKeys([...deptA, ...deptB], { autoCapMainDepth: true });
+		const keys = resolvePageClusterKeys([...deptA, ...deptB]);
 		const deptAKeys = keys.slice(0, deptA.length);
 		const deptBKeys = keys.slice(deptA.length);
 
@@ -543,13 +529,13 @@ describe('resolvePageClusterKeys', () => {
 		expect(new Set(deptBKeys).size).toBe(1);
 	});
 
-	test('autoCapMainDepth validates its own options eagerly, even for an empty page list with no blocks to run the per-block sweep on', () => {
-		expect(() =>
-			resolvePageClusterKeys([], { autoCapMainDepth: true, candidateDepths: [3, 1] }),
-		).toThrow(RangeError);
+	test('the always-on <main> depth cap validates its own options eagerly, even for an empty page list with no blocks to run the per-block sweep on', () => {
+		expect(() => resolvePageClusterKeys([], { candidateDepths: [3, 1] })).toThrow(
+			RangeError,
+		);
 	});
 
-	test('autoCapMainDepth skips the knee-detection sweep for a singleton block, but still returns that page as its own cluster', () => {
+	test('the always-on <main> depth cap skips the knee-detection sweep for a singleton block, but still returns that page as its own cluster', () => {
 		const pages = [
 			{
 				paths: ['solo'],
@@ -558,149 +544,7 @@ describe('resolvePageClusterKeys', () => {
 			},
 		];
 
-		expect(resolvePageClusterKeys(pages, { autoCapMainDepth: true })).toHaveLength(1);
-	});
-
-	test('mergeRareLandmarkClusters (default false) leaves two different blocks unmerged even when they share a rare header', () => {
-		// tokenize() discards visible text, so the two header variants below
-		// are distinguished by a child element's class, not by text.
-		const rareHeader = '<header><i class="mark-rare"></i></header>';
-		const commonHeader = '<header><i class="mark-common"></i></header>';
-		const sharedMainOpen =
-			'<main><div class="s1"></div><div class="s2"></div><div class="s3"></div>';
-		const pageA = {
-			paths: ['dept-a', '1'],
-			stylesheetHrefs: [],
-			html: `<body>${rareHeader}${sharedMainOpen}<div class="a1"></div></main></body>`,
-		};
-		const pageB = {
-			paths: ['dept-b', '1'],
-			stylesheetHrefs: [],
-			html: `<body>${rareHeader}${sharedMainOpen}<div class="b1"></div></main></body>`,
-		};
-		const fillers = Array.from({ length: 8 }, (_, i) => ({
-			paths: ['dept-c', `${i}`],
-			stylesheetHrefs: [],
-			html: `<body>${commonHeader}<main><div class="filler-${i}"></div></main></body>`,
-		}));
-
-		const result = resolvePageClusterKeys([pageA, pageB, ...fillers]);
-
-		expect(result[0]).not.toBe(result[1]);
-	});
-
-	test('mergeRareLandmarkClusters: true bridges two different blocks once their shared header is rare and their content clears the looser gate threshold', () => {
-		// tokenize() discards visible text, so the two header variants below
-		// are distinguished by a child element's class, not by text.
-		const rareHeader = '<header><i class="mark-rare"></i></header>';
-		const commonHeader = '<header><i class="mark-common"></i></header>';
-		const sharedMainOpen =
-			'<main><div class="s1"></div><div class="s2"></div><div class="s3"></div>';
-		const pageA = {
-			paths: ['dept-a', '1'],
-			stylesheetHrefs: [],
-			html: `<body>${rareHeader}${sharedMainOpen}<div class="a1"></div></main></body>`,
-		};
-		const pageB = {
-			paths: ['dept-b', '1'],
-			stylesheetHrefs: [],
-			html: `<body>${rareHeader}${sharedMainOpen}<div class="b1"></div></main></body>`,
-		};
-		const fillers = Array.from({ length: 8 }, (_, i) => ({
-			paths: ['dept-c', `${i}`],
-			stylesheetHrefs: [],
-			html: `<body>${commonHeader}<main><div class="filler-${i}"></div></main></body>`,
-		}));
-		const pages = [pageA, pageB, ...fillers];
-
-		const withoutMerge = resolvePageClusterKeys(pages);
-		expect(withoutMerge[0]).not.toBe(withoutMerge[1]);
-
-		const withMerge = resolvePageClusterKeys(pages, {
-			mergeRareLandmarkClusters: true,
-			landmarkRarityThreshold: 0.25,
-			landmarkGateSimilarityThreshold: 0.5,
-		});
-		expect(withMerge[0]).toBe(withMerge[1]);
-		expect(withMerge[0]).toMatch(/^landmark-merge:/);
-	});
-
-	test('mergeRareLandmarkClusters validates its own options eagerly, even for an empty page list with no blocks to run the merge step on', () => {
-		expect(() =>
-			resolvePageClusterKeys([], {
-				mergeRareLandmarkClusters: true,
-				landmarkRarityThreshold: -1,
-			}),
-		).toThrow(RangeError);
-	});
-
-	test('mergeRareLandmarkClusters still works when excludeLandmarks: false (extractLandmarks is computed independently for the gate)', () => {
-		// tokenize() discards visible text, so the two header variants below
-		// are distinguished by a child element's class, not by text.
-		const rareHeader = '<header><i class="mark-rare"></i></header>';
-		const commonHeader = '<header><i class="mark-common"></i></header>';
-		const pageA = {
-			paths: ['dept-a', '1'],
-			stylesheetHrefs: [],
-			html: `<body>${rareHeader}<main><div class="x"></div></main></body>`,
-		};
-		const pageB = {
-			paths: ['dept-b', '1'],
-			stylesheetHrefs: [],
-			html: `<body>${rareHeader}<main><div class="x"></div></main></body>`,
-		};
-		const fillers = Array.from({ length: 8 }, (_, i) => ({
-			paths: ['dept-c', `${i}`],
-			stylesheetHrefs: [],
-			html: `<body>${commonHeader}<main><div class="filler-${i}"></div></main></body>`,
-		}));
-
-		const result = resolvePageClusterKeys([pageA, pageB, ...fillers], {
-			excludeLandmarks: false,
-			mergeRareLandmarkClusters: true,
-			landmarkRarityThreshold: 0.25,
-			landmarkGateSimilarityThreshold: 0.5,
-		});
-
-		expect(result[0]).toBe(result[1]);
-	});
-
-	test("mergeRareLandmarkClusters does not let a shared landmark's own markup count as body-content evidence, even when excludeLandmarks: false (regression test for gate independence)", () => {
-		// A bulky 8-element rare header, identical on both pages, plus main
-		// content that is completely disjoint between the two pages. With
-		// excludeLandmarks: false, the *primary* clustering tokenizes raw
-		// HTML (header included) — but the merge gate must still judge
-		// similarity on landmark-excised content only. If the header's own
-		// tokens leaked into that judgment, shared header (8) vs disjoint
-		// content (2 + 2) would score 8/12 ≈ 0.667, clearing the 0.5 gate
-		// used here; on landmark-excised content alone the two pages share
-		// nothing (0/4 = 0), so they must not merge.
-		const rareHeader = `<header>${Array.from({ length: 8 }, (_, i) => `<i class="mark-${i}"></i>`).join('')}</header>`;
-		const commonHeader = '<header><i class="mark-common"></i></header>';
-		const pageA = {
-			paths: ['dept-a', '1'],
-			stylesheetHrefs: [],
-			html: `<body>${rareHeader}<main><div class="only-in-a-1"></div><div class="only-in-a-2"></div></main></body>`,
-		};
-		const pageB = {
-			paths: ['dept-b', '1'],
-			stylesheetHrefs: [],
-			html: `<body>${rareHeader}<main><div class="only-in-b-1"></div><div class="only-in-b-2"></div></main></body>`,
-		};
-		const fillers = Array.from({ length: 8 }, (_, i) => ({
-			paths: ['dept-c', `${i}`],
-			stylesheetHrefs: [],
-			html: `<body>${commonHeader}<main><div class="filler-${i}"></div></main></body>`,
-		}));
-
-		const result = resolvePageClusterKeys([pageA, pageB, ...fillers], {
-			excludeLandmarks: false,
-			mergeRareLandmarkClusters: true,
-			landmarkRarityThreshold: 0.25,
-			landmarkGateSimilarityThreshold: 0.5,
-		});
-
-		expect(result[0]).not.toBe(result[1]);
+		expect(resolvePageClusterKeys(pages)).toHaveLength(1);
 	});
 });
 

@@ -10,9 +10,7 @@
  *
  * Shared by any pipeline stage that needs two token sets with the exact
  * same members to hash to the same key — e.g.
- * {@link ./merge-landmark-affined-clusters.js | mergeLandmarkAffinedClusters}'s
- * O(1) exact-equality bucketing before complete-linkage clustering,
- * and {@link ./merge-cross-block-clusters.js | mergeCrossBlockClusters}'s
+ * {@link ./merge-cross-block-clusters.js | mergeCrossBlockClusters}'s
  * per-landmark-instance frequency histogram construction.
  * @param tokens
  */

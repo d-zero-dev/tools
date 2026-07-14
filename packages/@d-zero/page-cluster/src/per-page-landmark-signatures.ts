@@ -37,8 +37,6 @@ export type PerPageLandmarkInstance = {
  * index. Shared by:
  * - {@link ./merge-cross-block-clusters.js | shellQuorum} — for cross-block
  *   shell corroboration
- * - {@link ./merge-landmark-affined-clusters.js | computeLandmarkStatus} —
- *   for picking each page's canonical instance per landmark type
  * - {@link ./resolve-page-cluster-keys.js | computeLocalLandmarkPseudoTokens}
  *   — for injecting local-chrome pseudo-tokens into Stage A block token
  *   sets

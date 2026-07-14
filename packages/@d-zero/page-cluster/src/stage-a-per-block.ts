@@ -65,7 +65,6 @@ export const MAX_MEMBERS_PER_UNIT = 100;
  */
 export type StageAPerBlockOptions = TokenizeOptions & {
 	readonly similarityThreshold?: number;
-	readonly autoCapMainDepth?: boolean;
 	readonly minKneeRatio?: number;
 	readonly maxCandidateDepth?: number;
 	/**
@@ -160,16 +159,13 @@ export function stageAPerBlock(
 	const { blockKey, memberIndices, preparedHtml, landmarks, localLandmarkTokensByPage } =
 		input;
 	const similarityThreshold = options?.similarityThreshold ?? 0.8;
-	const autoCapMainDepth = options?.autoCapMainDepth ?? true;
 
 	// A block of 1 can never produce more than one cluster regardless of how
 	// it's tokenized — nothing to compare it against — so detecting a knee
 	// and capping for it would only spend a full multi-depth sweep to arrive
 	// back at the same single-cluster result. Skipped rather than swept.
 	const maxMainDepth =
-		autoCapMainDepth && preparedHtml.length > 1
-			? detectContentDepthCap(preparedHtml, options)
-			: undefined;
+		preparedHtml.length > 1 ? detectContentDepthCap(preparedHtml, options) : undefined;
 	const blockTokenSets: ReadonlySet<string>[] = preparedHtml.map((html, position) => {
 		const capped =
 			maxMainDepth === undefined

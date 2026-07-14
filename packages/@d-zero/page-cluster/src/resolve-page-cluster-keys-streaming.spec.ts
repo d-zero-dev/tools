@@ -3,7 +3,6 @@ import type { PageClusterSignals } from './resolve-page-cluster-keys.js';
 import { describe, expect, test } from 'vitest';
 
 import {
-	CORPUS_INLINE_THRESHOLD,
 	resolvePageClusterKeys,
 	resolvePageClusterKeysFromArray,
 	resolvePageClusterKeysInMemory,
@@ -85,29 +84,6 @@ describe('resolvePageClusterKeys (async factory)', () => {
 		// Small corpus takes the in-memory path, which invokes the factory
 		// exactly twice (once for blocking signals, once for full pages).
 		expect(calls).toBe(2);
-	});
-
-	test('mergeRareLandmarkClusters is rejected in streaming mode', async () => {
-		const pages: PageClusterSignals[] = Array.from(
-			{ length: CORPUS_INLINE_THRESHOLD + 1 },
-			(_, i) => ({
-				paths: ['x', String(i)],
-				stylesheetHrefs: [],
-				html: `<body><section>${i}</section></body>`,
-			}),
-		);
-		await expect(
-			resolvePageClusterKeys(() => pages, { mergeRareLandmarkClusters: true }),
-		).rejects.toThrow(/mergeRareLandmarkClusters is not supported in streaming mode/);
-	});
-
-	test('mergeRareLandmarkClusters is allowed when the small-corpus path is taken', async () => {
-		const pages = buildTinyCorpus();
-		// Should not throw — small corpus routes to resolvePageClusterKeysInMemory
-		// which accepts mergeRareLandmarkClusters.
-		await expect(
-			resolvePageClusterKeys(() => pages, { mergeRareLandmarkClusters: true }),
-		).resolves.toBeInstanceOf(Array);
 	});
 });
 
