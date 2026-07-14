@@ -15,6 +15,12 @@ export type LanesOptions = {
 	readonly fps?: FPS;
 	readonly indent?: string;
 	readonly sort?: SortFunc;
+	/**
+	 * 出力先ストリーム。省略時は `process.stdout`。
+	 * stdout を別用途に使う CLI (例: JSONL 出力を stdout に流す page-cluster)
+	 * が進捗表示だけを stderr に振り分けたいときに指定する。
+	 */
+	readonly stream?: NodeJS.WritableStream;
 	readonly verbose?: boolean;
 };
 
@@ -34,6 +40,7 @@ export class Lanes {
 		this.#display = new Display({
 			animations: options?.animations,
 			fps: options?.fps,
+			stream: options?.stream,
 			verbose: options?.verbose,
 		});
 		this.#indent = options?.indent ?? this.#indent;
