@@ -49,3 +49,6 @@ jobs:
           fi
       - name: Publish
         run: npx lerna publish from-package --dist-tag ${{ steps.dist-tag.outputs.tag }} --yes
+      - name: Publish (retry on transient sigstore 409)
+        if: failure()
+        run: npx lerna publish from-package --dist-tag ${{ steps.dist-tag.outputs.tag }} --yes
