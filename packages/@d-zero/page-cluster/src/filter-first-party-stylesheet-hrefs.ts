@@ -16,8 +16,11 @@ function tryGetHost(href: string): string | undefined {
 
 /**
  * Narrows every page's `stylesheetHrefs` down to just the hrefs whose host
- * matches the single most common host across the whole batch (the site's own
- * first-party domain), dropping every other host.
+ * matches that page's own `host` field (direct comparison), when the caller
+ * provides it. Falls back to the single most common host across the whole
+ * batch (the site's own first-party domain, inferred rather than given) for
+ * any page that omits `host` — see this function's own JSDoc further down
+ * for that fallback's known limitations.
  *
  * Confirmed on real crawl data (302 pages): a handful of articles embedding
  * a YouTube video pulled in `youtube.com`'s own player stylesheet plus a
@@ -36,20 +39,37 @@ function tryGetHost(href: string): string | undefined {
  * first-party hrefs before blocking removes that false signal at the
  * source, rather than trying to recognize its effects downstream.
  *
- * Determining "first-party" from the batch's own href distribution (rather
- * than, say, comparing each href's host against each page's own URL) means
- * this needs no extra per-page input beyond what
- * {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys} already
- * takes — but it inherits that same function's "roughly homogeneous batch"
- * precondition (see `computeDocumentFrequency`'s own JSDoc): a batch that
- * mixes pages from more than one site in one call has no single genuine
- * first-party host to find, and this function has no way to detect that
- * it's been handed one — it will still confidently pick *a* dominant host
- * (whichever site contributes more stylesheet-bearing pages) and silently
- * strip every other site's real first-party hrefs. Splitting a
- * multi-site/section batch into homogeneous groups before calling this is
- * the caller's responsibility, same as it already is for
- * `resolveBlockingGroupKeys`.
+ * `host`, when provided, is compared directly against each of that page's
+ * own stylesheet hrefs — no batch-wide inference involved, so this path
+ * cannot mistake a third party for the first party regardless of how many
+ * pages happen to also embed it. Added after a real crawl (302 pages) hit
+ * the dominant-host fallback's tie case: every single page loaded both its
+ * own first-party stylesheet *and* the same `fonts.googleapis.com` webfont
+ * request (a common sitewide pattern, not a rare misconfiguration), so both
+ * hosts tied at "referenced by 100% of pages" and the fallback's `>`-only
+ * tie-break (see below) picked whichever host happened to be counted first
+ * — silently the wrong one on that crawl. A caller that already knows each
+ * page's own host (e.g. it has the page's URL on hand, as most crawlers do)
+ * should always provide it; the inferred fallback exists only for callers
+ * that don't have that information available.
+ *
+ * The dominant-host fallback (used per-page whenever that page omits `host`)
+ * determines "first-party" from the batch's own href distribution instead
+ * — comparing each href's host against each page's own URL wasn't possible
+ * for callers that only ever had `stylesheetHrefs` on hand, not full page
+ * URLs (this is still true for anything built directly on
+ * {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys}'s
+ * `PageBlockingSignals`, which never carried a host field until this
+ * `host` option was added). It inherits `resolveBlockingGroupKeys`'s own
+ * "roughly homogeneous batch" precondition (see `computeDocumentFrequency`'s
+ * own JSDoc): a batch that mixes pages from more than one site in one call
+ * has no single genuine first-party host to find, and this function has no
+ * way to detect that it's been handed one — it will still confidently pick
+ * a* dominant host (whichever site contributes more stylesheet-bearing
+ * pages) and silently strip every other site's real first-party hrefs.
+ * Splitting a multi-site/section batch into homogeneous groups before
+ * calling this (or simply providing `host` per page) is the caller's
+ * responsibility, same as it already is for `resolveBlockingGroupKeys`.
  *
  * The dominant host is picked by how many *pages* reference it at least
  * once, not by how many stylesheet `<link>` tags reference it — a page
@@ -61,19 +81,23 @@ function tryGetHost(href: string): string | undefined {
  * unresolved protocol-relative URL) is still one site, not two competing
  * "hosts" splitting its own vote.
  *
- * The trade-off: a site that legitimately serves its own stylesheets from
- * more than one first-party host (e.g. a CDN subdomain alongside the main
- * domain) will have its non-dominant host's hrefs dropped too, same as any
- * genuinely-third-party host — not yet observed on real data, but a known
- * limitation of picking a single dominant host rather than a set.
+ * The fallback's remaining trade-offs: a site that legitimately serves its
+ * own stylesheets from more than one first-party host (e.g. a CDN subdomain
+ * alongside the main domain) will have its non-dominant host's hrefs
+ * dropped too, same as any genuinely-third-party host; and a tie between
+ * two equally-common hosts silently keeps whichever was counted first
+ * (confirmed above to include real, common sitewide third parties, not
+ * just a theoretical edge case) — both are avoided entirely by providing
+ * `host`.
  *
- * A batch where no page has any stylesheet href at all (or none of the
- * hrefs are parseable absolute URLs) has no host to detect; every page's
- * `stylesheetHrefs` is returned unchanged in that case, matching this
+ * A page with neither a provided `host` nor any batch-wide dominant host to
+ * fall back on (no page in the batch has any parseable stylesheet href at
+ * all) has its `stylesheetHrefs` returned unchanged, matching this
  * function's job of narrowing signal, not fabricating it.
  * @param pages
  * @example
  * ```ts
+ * // Without `host`: falls back to dominant-host inference (ties possible).
  * filterFirstPartyStylesheetHrefs([
  * 	{ stylesheetHrefs: ['https://example.com/a.css', 'https://example.com/b.css'] },
  * 	{ stylesheetHrefs: ['https://example.com/a.css', 'https://fonts.googleapis.com/css?family=x'] },
@@ -82,10 +106,19 @@ function tryGetHost(href: string): string | undefined {
  * // 	{ stylesheetHrefs: ['https://example.com/a.css', 'https://example.com/b.css'] },
  * // 	{ stylesheetHrefs: ['https://example.com/a.css'] }, // fonts.googleapis.com dropped
  * // ]
+ *
+ * // With `host`: direct per-page comparison, immune to ties.
+ * filterFirstPartyStylesheetHrefs([
+ * 	{
+ * 		host: 'example.com',
+ * 		stylesheetHrefs: ['https://example.com/a.css', 'https://fonts.googleapis.com/css?family=x'],
+ * 	},
+ * ]);
+ * // [{ host: 'example.com', stylesheetHrefs: ['https://example.com/a.css'] }]
  * ```
  */
 export function filterFirstPartyStylesheetHrefs<
-	T extends { stylesheetHrefs: readonly string[] },
+	T extends { stylesheetHrefs: readonly string[]; host?: string },
 >(pages: readonly T[]): T[] {
 	const pageHrefHosts = pages.map((page) => ({
 		page,
@@ -113,14 +146,19 @@ export function filterFirstPartyStylesheetHrefs<
 		}
 	}
 
-	if (dominantHost === undefined) {
-		return [...pages];
-	}
-
-	return pageHrefHosts.map(({ page, hrefHosts }) => ({
-		...page,
-		stylesheetHrefs: hrefHosts
-			.filter(({ host }) => host === dominantHost)
-			.map(({ href }) => href),
-	}));
+	return pageHrefHosts.map(({ page, hrefHosts }) => {
+		// A page that supplies its own host is judged against that host
+		// alone, bypassing the batch-wide dominant-host inference (and its
+		// tie-breaking pitfall) entirely — see this function's own JSDoc.
+		const expectedHost = page.host ?? dominantHost;
+		if (expectedHost === undefined) {
+			return { ...page };
+		}
+		return {
+			...page,
+			stylesheetHrefs: hrefHosts
+				.filter(({ host }) => host === expectedHost)
+				.map(({ href }) => href),
+		};
+	});
 }

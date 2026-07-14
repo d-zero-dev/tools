@@ -3,8 +3,8 @@ import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-c
 import type { TokenizeOptions } from './types.js';
 
 import { extractLandmarks } from './extract-landmarks.js';
+import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
 import { resolveStructuralClusterKeys } from './resolve-structural-cluster-keys.js';
-import { tokenize } from './tokenize.js';
 
 /**
  * @see resolveLandmarkVariantKeys
@@ -22,27 +22,42 @@ export type ResolveLandmarkVariantKeysOptions = TokenizeOptions &
  * `resolvePageClusterKeys` and combine the results themselves; this function
  * does not know about, or merge with, the other one's output.
  *
- * Each call re-runs {@link ./extract-landmarks.js | extractLandmarks} over
- * the entire `htmlList`, keeping only the one field matching `landmarkType`
- * and discarding the other three it also computed. Calling this once per
- * `landmarkType` (as the paragraph above suggests, for a caller that wants
- * more than one) therefore re-parses every page once per type requested. A
- * caller for whom that cost is material should call `extractLandmarks`
- * itself once per page, read all four fields off the single result, and feed
- * each field's token sets to
- * {@link ./resolve-structural-cluster-keys.js | resolveStructuralClusterKeys}
- * directly (with the same empty-set sentinel for a missing field) instead of
- * calling this function multiple times.
+ * ## Per-page canonical instance selection
  *
- * A page with no match for `landmarkType` (per
- * {@link ./extract-landmarks.js | extractLandmarks}) compares as an empty
- * token set. `jaccardSimilarity`'s documented treatment of two empty sets as
- * similarity `1` (see its JSDoc) means every landmark-less page lands in the
- * same "has no such landmark" group with no extra branching needed here, and
- * unambiguously in a different group from every page that does have one
- * (`jaccardSimilarity(∅, nonEmpty)` is always `0`). A landmark that exists
- * but is empty (e.g. `<header></header>`) never collides with this sentinel:
- * `tokenize` still emits at least the element's own segment for it.
+ * A page can now have any number of landmark instances of the requested
+ * type (see {@link ./extract-landmarks.js | extractLandmarks} for why the
+ * old shallowest-wins rule was removed). For "which variant does this page
+ * have", the canonical instance is the one whose token-set signature is
+ * most common across the corpus, ties broken by document order. This picks
+ * the site-wide chrome instance automatically — the shared site header
+ * dominates the corpus histogram — while article-specific `<header>`s that
+ * vary per page carry frequency 1 and are never selected. Choosing this way
+ * is the data-driven analogue of the old shallowest-wins rule, without
+ * fragmenting variant keys into singletons (a real regression risk of a
+ * naive "union every instance's tokens" approach: 10 pages that each carry
+ * both a site header and a per-article header would every one produce a
+ * distinct union token set, collapsing every page into its own variant key).
+ *
+ * A page with no matching landmark compares as an empty token set.
+ * `jaccardSimilarity`'s documented treatment of two empty sets as
+ * similarity `1` (see its JSDoc) means every landmark-less page lands in
+ * the same "has no such landmark" group with no extra branching needed
+ * here, and unambiguously in a different group from every page that does
+ * have one (`jaccardSimilarity(∅, nonEmpty)` is always `0`). A landmark
+ * that exists but tokenizes to an empty set never collides with this
+ * sentinel because `tokenize` skips it (see `computePerPageLandmarkInstances`).
+ *
+ * ## Cost
+ *
+ * Each call re-runs `extractLandmarks` over the entire `htmlList`, keeping
+ * only the one field matching `landmarkType`. Calling this once per
+ * `landmarkType` (as callers wanting more than one design signal do)
+ * re-parses every page once per type requested. A caller for whom that cost
+ * is material should call `extractLandmarks` itself once per page, read all
+ * fields off the single result, and feed each field's canonical-instance
+ * tokens to
+ * {@link ./resolve-structural-cluster-keys.js | resolveStructuralClusterKeys}
+ * directly instead.
  *
  * Does not block by URL path or stylesheet first (unlike
  * `resolvePageClusterKeys`): the same header design is normally reused
@@ -57,6 +72,7 @@ export type ResolveLandmarkVariantKeysOptions = TokenizeOptions &
  * @param options
  * @example
  * ```ts
+ * // Header variants
  * resolveLandmarkVariantKeys(
  * 	[
  * 		'<body><header><nav>A</nav></header></body>',
@@ -68,6 +84,11 @@ export type ResolveLandmarkVariantKeysOptions = TokenizeOptions &
  * // pages 0 and 1 (structurally identical header) share a key; page 2 (a
  * // different header structure) gets its own — text content alone (e.g.
  * // the "A" vs "B" text) would not, since tokenize() discards visible text.
+ *
+ * // Same idea works for the other landmark types:
+ * resolveLandmarkVariantKeys(htmlList, 'nav');
+ * resolveLandmarkVariantKeys(htmlList, 'footer');
+ * resolveLandmarkVariantKeys(htmlList, 'aside');
  * ```
  */
 export function resolveLandmarkVariantKeys(
@@ -75,12 +96,36 @@ export function resolveLandmarkVariantKeys(
 	landmarkType: LandmarkType,
 	options?: ResolveLandmarkVariantKeysOptions,
 ): string[] {
-	const tokenSets = htmlList.map((html) => {
-		const region = extractLandmarks(html)[landmarkType];
-		if (region === undefined) {
-			return new Set<string>();
+	const landmarks = htmlList.map((html) => extractLandmarks(html));
+	const perPageInstances = computePerPageLandmarkInstances(landmarks, options);
+
+	// Corpus-wide instance-signature histogram (restricted to the requested
+	// landmark type). Used to pick each page's canonical instance —
+	// see this function's JSDoc for why "most common" beats "union of all".
+	const corpusInstanceCount = new Map<string, number>();
+	for (const instances of perPageInstances) {
+		const seenTypedSignatures = new Set<string>();
+		for (const inst of instances) {
+			if (inst.type !== landmarkType) continue;
+			if (seenTypedSignatures.has(inst.signature)) continue;
+			seenTypedSignatures.add(inst.signature);
+			corpusInstanceCount.set(
+				inst.signature,
+				(corpusInstanceCount.get(inst.signature) ?? 0) + 1,
+			);
 		}
-		return new Set(tokenize(`<body>${region}</body>`, options).tokens);
+	}
+
+	const tokenSets = perPageInstances.map((instances) => {
+		let best: { tokens: ReadonlySet<string>; count: number } | undefined;
+		for (const inst of instances) {
+			if (inst.type !== landmarkType) continue;
+			const count = corpusInstanceCount.get(inst.signature) ?? 0;
+			if (best === undefined || count > best.count) {
+				best = { tokens: inst.tokens, count };
+			}
+		}
+		return best?.tokens ?? new Set<string>();
 	});
 
 	return resolveStructuralClusterKeys(tokenSets, options);

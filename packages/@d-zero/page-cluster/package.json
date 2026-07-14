@@ -13,57 +13,9 @@
 			"import": "./dist/tokenize.js",
 			"types": "./dist/tokenize.d.ts"
 		},
-		"./array-edit-distance": {
-			"import": "./dist/array-edit-distance.js",
-			"types": "./dist/array-edit-distance.d.ts"
-		},
-		"./cap-content-depth": {
-			"import": "./dist/cap-content-depth.js",
-			"types": "./dist/cap-content-depth.d.ts"
-		},
-		"./compute-document-frequency": {
-			"import": "./dist/compute-document-frequency.js",
-			"types": "./dist/compute-document-frequency.d.ts"
-		},
-		"./derive-path-group-key": {
-			"import": "./dist/derive-path-group-key.js",
-			"types": "./dist/derive-path-group-key.d.ts"
-		},
-		"./derive-stylesheet-group-key": {
-			"import": "./dist/derive-stylesheet-group-key.js",
-			"types": "./dist/derive-stylesheet-group-key.d.ts"
-		},
-		"./detect-content-depth-cap": {
-			"import": "./dist/detect-content-depth-cap.js",
-			"types": "./dist/detect-content-depth-cap.d.ts"
-		},
 		"./extract-landmarks": {
 			"import": "./dist/extract-landmarks.js",
 			"types": "./dist/extract-landmarks.d.ts"
-		},
-		"./filter-first-party-stylesheet-hrefs": {
-			"import": "./dist/filter-first-party-stylesheet-hrefs.js",
-			"types": "./dist/filter-first-party-stylesheet-hrefs.d.ts"
-		},
-		"./jaccard-similarity": {
-			"import": "./dist/jaccard-similarity.js",
-			"types": "./dist/jaccard-similarity.d.ts"
-		},
-		"./merge-landmark-affined-clusters": {
-			"import": "./dist/merge-landmark-affined-clusters.js",
-			"types": "./dist/merge-landmark-affined-clusters.d.ts"
-		},
-		"./reassign-orphan-block-keys": {
-			"import": "./dist/reassign-orphan-block-keys.js",
-			"types": "./dist/reassign-orphan-block-keys.d.ts"
-		},
-		"./remove-content-blocks": {
-			"import": "./dist/remove-content-blocks.js",
-			"types": "./dist/remove-content-blocks.d.ts"
-		},
-		"./resolve-blocking-group-keys": {
-			"import": "./dist/resolve-blocking-group-keys.js",
-			"types": "./dist/resolve-blocking-group-keys.d.ts"
 		},
 		"./resolve-landmark-variant-keys": {
 			"import": "./dist/resolve-landmark-variant-keys.js",
@@ -72,16 +24,9 @@
 		"./resolve-page-cluster-keys": {
 			"import": "./dist/resolve-page-cluster-keys.js",
 			"types": "./dist/resolve-page-cluster-keys.d.ts"
-		},
-		"./resolve-structural-cluster-keys": {
-			"import": "./dist/resolve-structural-cluster-keys.js",
-			"types": "./dist/resolve-structural-cluster-keys.d.ts"
-		},
-		"./split-tokens-by-frequency": {
-			"import": "./dist/split-tokens-by-frequency.js",
-			"types": "./dist/split-tokens-by-frequency.d.ts"
 		}
 	},
+	"bin": "./dist/cli.js",
 	"files": [
 		"dist"
 	],
@@ -91,6 +36,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
+		"@d-zero/dealer": "1.9.4",
 		"@d-zero/shared": "0.22.2",
 		"htmlparser2": "12.0.0"
 	},

@@ -20,6 +20,14 @@ interface Options {
 	animations?: Animations;
 	fps?: FPS;
 	verbose?: boolean;
+	/**
+	 * 出力先のストリーム。省略時は `process.stdout`。
+	 * `process.stderr` のような別ストリームを指定すると、フレーム描画・verbose
+	 * 出力・resize ハンドラ・カラム幅取得のすべてがそのストリームに向く。
+	 * page-cluster CLI のように stdout を別用途 (JSONL 出力) に使うツールが
+	 * stderr へ進捗を出すために追加された。
+	 */
+	stream?: NodeJS.WritableStream;
 }
 
 export class Display {
@@ -33,6 +41,7 @@ export class Display {
 	#sigintHandler: (() => void) | null = null;
 	#stack: string[] | null = null;
 	readonly #startTime = Date.now();
+	#stream: NodeJS.WritableStream;
 	#timer: ReturnType<typeof setTimeout> | null = null;
 	#verbose: boolean;
 
@@ -46,9 +55,12 @@ export class Display {
 		this.#frameInterval = 1000 / fps;
 
 		this.#verbose = options?.verbose ?? false;
+		this.#stream = options?.stream ?? process.stdout;
 
 		this.#resizeHandler = () => this.#resize();
-		process.stdout.on('resize', this.#resizeHandler);
+		// resize は TTY WriteStream でしか発火しないが、Writable (EventEmitter)
+		// なら .on 自体は存在するので runtime エラーにはならない。
+		(this.#stream as NodeJS.EventEmitter).on?.('resize', this.#resizeHandler);
 
 		if (!this.#verbose) {
 			this.#sigintHandler = () => {
@@ -78,7 +90,7 @@ export class Display {
 		}
 
 		if (this.#resizeHandler) {
-			process.stdout.off('resize', this.#resizeHandler);
+			(this.#stream as NodeJS.EventEmitter).off?.('resize', this.#resizeHandler);
 			this.#resizeHandler = null;
 		}
 
@@ -105,7 +117,7 @@ export class Display {
 
 		if (this.#verbose) {
 			for (const log of logs) {
-				process.stdout.write(this.#text(log, false) + '\n');
+				this.#stream.write(this.#text(log, false) + '\n');
 			}
 			return;
 		}
@@ -166,7 +178,8 @@ export class Display {
 		text = this.#countDown(text);
 		text = text.replaceAll(/\r?\n/g, ' ');
 		if (trim) {
-			text = text.slice(0, process.stdout.columns);
+			const columns = (this.#stream as { columns?: number }).columns;
+			text = text.slice(0, columns);
 		}
 		return `${RESET}${text}${RESET}`;
 	}
@@ -189,7 +202,7 @@ export class Display {
 		}
 		output += content;
 
-		process.stdout.write(output);
+		this.#stream.write(output);
 		this.#lastWroteLineNum = this.#stack.length;
 	}
 }

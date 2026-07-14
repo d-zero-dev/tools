@@ -58,6 +58,12 @@ export type { TokenizeOptions, TokenizeResult } from './types.js';
  * ```ts
  * tokenize('<body><div class="card"><ul><li>A</li><li>B</li></ul></div></body>');
  * // { tokens: ["body>.card>ul>li", "body>.card>ul>li"], bodyClassList: [] }
+ *
+ * // Disable the built-in hash-noise class filter to keep every class name.
+ * tokenize('<body><div class="c-abc123"><p>x</p></div></body>', {
+ *   filterNoiseClasses: false,
+ * });
+ * // { tokens: ["body>.c-abc123>p"], bodyClassList: [] }
  * ```
  */
 export function tokenize(html: string, options?: TokenizeOptions): TokenizeResult {

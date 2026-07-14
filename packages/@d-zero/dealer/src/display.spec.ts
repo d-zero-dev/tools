@@ -1,6 +1,27 @@
+import { Writable } from 'node:stream';
+
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { Display } from './display.js';
+
+/**
+ * `Writable` stub for stream-option tests. Collects every chunk into an
+ * in-memory buffer and exposes the concatenated string so assertions can
+ * grep for expected fragments.
+ */
+function makeStreamCollector(): {
+	readonly stream: NodeJS.WritableStream;
+	read(): string;
+} {
+	const chunks: Buffer[] = [];
+	const stream = new Writable({
+		write(chunk: Buffer | string, _encoding, cb) {
+			chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+			cb();
+		},
+	});
+	return { stream, read: () => Buffer.concat(chunks).toString('utf8') };
+}
 
 let stdoutWriteSpy: ReturnType<typeof vi.spyOn>;
 
@@ -215,5 +236,38 @@ describe('Display.write() after close()', () => {
 		display.write('late message');
 
 		expect(stdoutWriteSpy).not.toHaveBeenCalled();
+	});
+});
+
+describe('Display stream option', () => {
+	test('verbose writes go to the provided stream, not process.stdout', () => {
+		const collector = makeStreamCollector();
+		const display = new Display({ stream: collector.stream, verbose: true });
+		display.write('hello via stream');
+		display.close();
+
+		expect(collector.read()).toContain('hello via stream');
+		// stdoutWriteSpy is the process.stdout guard — no accidental leak
+		expect(stdoutWriteSpy).not.toHaveBeenCalled();
+	});
+
+	test('non-verbose frame paints go to the provided stream', () => {
+		const collector = makeStreamCollector();
+		const display = new Display({ stream: collector.stream });
+		display.write('frame via stream');
+		display.close();
+
+		expect(collector.read()).toContain('frame via stream');
+		expect(stdoutWriteSpy).not.toHaveBeenCalled();
+	});
+
+	test('default stream stays process.stdout (regression guard)', () => {
+		const display = new Display({ verbose: true });
+		display.write('default stdout');
+		display.close();
+
+		// Default routing must remain process.stdout so callers who don't pass
+		// stream (dealer/deal.ts) keep their pre-refactor behavior verbatim
+		expect(stdoutWriteSpy).toHaveBeenCalled();
 	});
 });

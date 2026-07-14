@@ -1,4 +1,5 @@
 import { computeDocumentFrequency } from './compute-document-frequency.js';
+import { derivePathClusterKeys } from './derive-path-cluster-keys.js';
 import { derivePathGroupKey } from './derive-path-group-key.js';
 import { deriveStylesheetGroupKey } from './derive-stylesheet-group-key.js';
 import { splitTokensByFrequency } from './split-tokens-by-frequency.js';
@@ -18,8 +19,14 @@ export type PageBlockingSignals = {
  * @see resolveBlockingGroupKeys
  */
 export type ResolveBlockingGroupKeysOptions = {
-	/** Forwarded to `derivePathGroupKey` as-is. */
-	pathDepth?: number;
+	/**
+	 * Forwarded to `derivePathGroupKey` when a number, which is the historical
+	 * default. Set to `'auto'` to instead run
+	 * {@link ./derive-path-cluster-keys.js | derivePathClusterKeys} on the
+	 * corpus and let it pick the depth data-driven — see that function's
+	 * JSDoc for the algorithm and its opt-in staging rationale.
+	 */
+	pathDepth?: number | 'auto';
 	/**
 	 * Minimum number of pages that must share a stylesheet-derived key before
 	 * it's trusted as real evidence, rather than a coincidence. Must be at
@@ -126,7 +133,7 @@ export function resolveBlockingGroupKeys(
 	pages: readonly PageBlockingSignals[],
 	options?: ResolveBlockingGroupKeysOptions,
 ): string[] {
-	const pathDepth = options?.pathDepth;
+	const pathDepthOption = options?.pathDepth;
 	const minCssGroupSize = options?.minCssGroupSize ?? DEFAULT_MIN_CSS_GROUP_SIZE;
 	const hrefCommonThreshold = options?.hrefCommonThreshold;
 
@@ -137,13 +144,25 @@ export function resolveBlockingGroupKeys(
 	}
 	// Eagerly delegate pathDepth/hrefCommonThreshold validation to the
 	// functions that own it, instead of only discovering an invalid option
-	// once some page's data happens to reach that branch below.
-	derivePathGroupKey([], pathDepth);
+	// once some page's data happens to reach that branch below. `'auto'`
+	// skips validation here because it doesn't reach derivePathGroupKey's
+	// number-only signature until per-page fallback below.
+	if (pathDepthOption !== 'auto') {
+		derivePathGroupKey([], pathDepthOption);
+	}
 	splitTokensByFrequency(
 		new Set(),
 		{ documentFrequency: new Map(), pageCount: 0 },
 		hrefCommonThreshold,
 	);
+
+	// Resolve `pathDepth: 'auto'` to a data-driven per-page key list once,
+	// before the per-page loop below, so the auto-cut sweep is amortized
+	// over the whole call rather than repeated per page.
+	const perPagePathKeys =
+		pathDepthOption === 'auto'
+			? derivePathClusterKeys(pages.map((page) => page.paths)).keys
+			: null;
 
 	const hrefSets = pages.map((page) => new Set(page.stylesheetHrefs));
 	// Pages with no stylesheets at all must not count toward the denominator:
@@ -173,6 +192,10 @@ export function resolveBlockingGroupKeys(
 		if (cssKey !== undefined && (cssKeyCounts.get(cssKey) ?? 0) >= minCssGroupSize) {
 			return `css:${cssKey}`;
 		}
-		return `path:${derivePathGroupKey(page.paths, pathDepth)}`;
+		const pathKey =
+			perPagePathKeys === null
+				? derivePathGroupKey(page.paths, pathDepthOption as number | undefined)
+				: (perPagePathKeys[index] ?? '');
+		return `path:${pathKey}`;
 	});
 }
