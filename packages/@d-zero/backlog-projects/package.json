@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/backlog-projects",
-	"version": "0.6.13",
+	"version": "0.6.14",
 	"description": "A manipulating Backlog projects library",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -26,7 +26,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/dealer": "1.10.0",
+		"@d-zero/dealer": "1.10.1",
 		"@d-zero/notion": "2.0.23",
 		"@d-zero/shared": "0.22.2",
 		"ansi-colors": "4.1.3",

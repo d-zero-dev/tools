@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/a11y-check-scenarios",
-	"version": "0.4.46",
+	"version": "0.4.47",
 	"description": "Accessibility Checker Scenario Collection",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -23,7 +23,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/a11y-check-core": "0.7.10",
+		"@d-zero/a11y-check-core": "0.7.11",
 		"@d-zero/shared": "0.22.2",
 		"ansi-colors": "4.1.3"
 	},
