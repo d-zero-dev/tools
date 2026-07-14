@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.9.4...@d-zero/dealer@1.10.0) (2026-07-14)
+
+### Features
+
+- **dealer:** add stream option to Display and Lanes ([9f64725](https://github.com/d-zero-dev/tools/commit/9f647252e6ed35063af5dd1b7cfef611514aa139))
+
 ## [1.9.4](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.9.3...@d-zero/dealer@1.9.4) (2026-07-02)
 
 **Note:** Version bump only for package @d-zero/dealer

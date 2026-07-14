@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/page-cluster",
-	"version": "0.1.0",
+	"version": "0.3.0",
 	"description": "Tokenizes an HTML document's body into a structural signature for duplicate/near-duplicate page detection at crawl scale",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -36,7 +36,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/dealer": "1.9.4",
+		"@d-zero/dealer": "1.10.0",
 		"@d-zero/shared": "0.22.2",
 		"htmlparser2": "12.0.0"
 	},

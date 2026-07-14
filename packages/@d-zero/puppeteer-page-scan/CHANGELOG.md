@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.4](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.6.3...@d-zero/puppeteer-page-scan@4.6.4) (2026-07-09)
+
+**Note:** Version bump only for package @d-zero/puppeteer-page-scan
+
 ## [4.6.3](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.6.2...@d-zero/puppeteer-page-scan@4.6.3) (2026-07-02)
 
 **Note:** Version bump only for package @d-zero/puppeteer-page-scan

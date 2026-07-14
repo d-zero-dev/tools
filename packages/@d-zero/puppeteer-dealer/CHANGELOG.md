@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.19](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.7.18...@d-zero/puppeteer-dealer@0.7.19) (2026-07-14)
+
+**Note:** Version bump only for package @d-zero/puppeteer-dealer
+
+## [0.7.18](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.7.17...@d-zero/puppeteer-dealer@0.7.18) (2026-07-09)
+
+**Note:** Version bump only for package @d-zero/puppeteer-dealer
+
 ## [0.7.17](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.7.16...@d-zero/puppeteer-dealer@0.7.17) (2026-07-02)
 
 **Note:** Version bump only for package @d-zero/puppeteer-dealer
