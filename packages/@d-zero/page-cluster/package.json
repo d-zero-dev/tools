@@ -1,7 +1,7 @@
 {
 	"name": "@d-zero/page-cluster",
 	"version": "0.3.0",
-	"description": "Tokenizes an HTML document's body into a structural signature for duplicate/near-duplicate page detection at crawl scale",
+	"description": "Clusters crawled HTML pages by DOM-structure similarity — assigns the same key to pages sharing a template, ignoring text content. CLI-first, with library APIs.",
 	"author": "D-ZERO",
 	"license": "MIT",
 	"publishConfig": {
