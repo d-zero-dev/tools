@@ -52,14 +52,27 @@ page-cluster --content-block-attribute data-bgb < pages.jsonl > clusters.jsonl
 
 ### 進捗
 
-処理中は stderr に `[page-cluster] ...` 形式で進捗を出す。stdout の JSONL 出力は影響を受けない。
+処理中は stderr に進捗を出す。stdout の JSONL 出力は影響を受けない。
+
+**対話端末 (TTY)**: `%earth%` アニメ付きの単一ヘッダー行が in-place に書き換わり、現在のフェーズ・進捗・経過時間を表示する。
 
 ```
-[page-cluster] pass0: 10000 pages read
-[page-cluster] pass1: block 12/47 complete
-[page-cluster] pass1b: 30000/70000 pages assigned
-[page-cluster] stage-b: merging 47 unit(s)
+🌏 page-cluster — clustering 12/47 blocks (elapsed 23s)
 ```
+
+**非TTY (パイプ・ファイルリダイレクト・CI)**: `[page-cluster] ...` 形式の行を追記する。`pass0:` / `pass1:` / `pass1b:` / `stage-b:` の phase トークンを含むので `grep` / `awk` 互換。
+
+```
+[page-cluster] reading input pages...
+[page-cluster] read 10000 pages, clustering...
+[page-cluster] pass0: 10000 pages read
+[page-cluster] pass1: clustered block 12/47
+[page-cluster] pass1b: 30000/70000 pages assigned
+[page-cluster] stage-b: merging 47 units
+[page-cluster] done — 10000 pages in 47 clusters (elapsed 87s)
+```
+
+silence したい場合は `2>/dev/null`。ログに残したい場合は `2> progress.log`。
 
 ## API (brief)
 

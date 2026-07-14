@@ -2,7 +2,8 @@
 // Wire the `page-cluster` executable to the library's factory-based
 // `resolvePageClusterKeys`. Reads JSONL from stdin (one page per line),
 // writes JSONL to stdout (one cluster assignment per line, in input order),
-// and streams progress to stderr.
+// and streams progress to stderr via `@d-zero/dealer`'s `Lanes` — in-place
+// animated header on a TTY, appended `[page-cluster] …` lines otherwise.
 
 import type {
 	PageClusterSignals,
@@ -11,6 +12,8 @@ import type {
 } from './resolve-page-cluster-keys.js';
 
 import process from 'node:process';
+
+import { Lanes } from '@d-zero/dealer';
 
 import { resolvePageClusterKeys } from './resolve-page-cluster-keys.js';
 
@@ -48,10 +51,28 @@ Options:
   --version                          Print the package version and exit.
 
 Progress:
-  Emitted to stderr as \`[page-cluster] <event>\` lines while the run is in
-  progress. Piping stderr to /dev/null silences them; the JSONL output on
-  stdout is unaffected.
+  Emitted to stderr while the run is in progress. On an interactive
+  terminal, an in-place animated header shows the current phase and
+  elapsed time. When stderr is not a TTY (redirected to a file, piped, or
+  under CI), each phase transition is appended as a \`[page-cluster] …\`
+  line so \`grep\` / \`awk\` stay trivial. Silence progress with
+  \`2>/dev/null\`; the JSONL output on stdout is unaffected either way.
 `;
+
+/**
+ * Log id used for the single-lane `lanes.update()` call under verbose mode.
+ * Lanes was originally designed for one line per parallel worker; here we
+ * only ever have one narrative line, so a fixed id is enough.
+ */
+const LANE_ID = 0;
+
+/**
+ * Prefix rendered ahead of every verbose progress line. Set on `lanes.header`
+ * at CLI init so that `lanes.update(LANE_ID, …)` under Lanes' verbose mode
+ * emits `[page-cluster] <line>` rather than the `undefined <line>` string
+ * it would produce with an unset header (see `dealer/lanes.ts:104`).
+ */
+const VERBOSE_HEADER = '[page-cluster]';
 
 /**
  * Parses `process.argv`-style arguments (already sliced past `node script`)
@@ -100,29 +121,6 @@ export function parseArgs(argv: readonly string[]): CliArgs {
 }
 
 /**
- * Renders a {@link ./resolve-page-cluster-keys.js | ProgressEvent} as a
- * single stderr line. Format is intentionally line-oriented and
- * self-descriptive so that piping to `grep` / `awk` stays trivial.
- * @param event
- */
-function formatProgress(event: ProgressEvent): string {
-	switch (event.phase) {
-		case 'pass0-signals': {
-			return `[page-cluster] pass0: ${event.pagesSeen} pages read\n`;
-		}
-		case 'pass1-block-complete': {
-			return `[page-cluster] pass1: block ${event.blocksProcessed}/${event.totalBlocks} complete\n`;
-		}
-		case 'pass1b-assign': {
-			return `[page-cluster] pass1b: ${event.pagesAssigned}/${event.pagesToAssign} pages assigned\n`;
-		}
-		case 'stage-b-start': {
-			return `[page-cluster] stage-b: merging ${event.unitCount} unit(s)\n`;
-		}
-	}
-}
-
-/**
  * Streams `stdin` and yields per-line JSON-parsed page objects (plus the
  * original line's `id`, preserved for the output row). Chunk-boundary
  * splitting is done by hand rather than via `readline` because certain
@@ -155,13 +153,11 @@ async function* readJsonlPages(
 				entry = JSON.parse(line) as typeof entry;
 			} catch (error) {
 				throw new Error(
-					`page-cluster: failed to parse JSONL line ${lineNo}: ${(error as Error).message}`,
+					`failed to parse JSONL line ${lineNo}: ${(error as Error).message}`,
 				);
 			}
 			if (typeof entry.html !== 'string') {
-				throw new TypeError(
-					`page-cluster: JSONL line ${lineNo} is missing a string \`html\` field`,
-				);
+				throw new TypeError(`JSONL line ${lineNo} is missing a string \`html\` field`);
 			}
 			yield {
 				id: entry.id,
@@ -187,13 +183,11 @@ async function* readJsonlPages(
 			entry = JSON.parse(leftover) as typeof entry;
 		} catch (error) {
 			throw new Error(
-				`page-cluster: failed to parse final JSONL line ${lineNo}: ${(error as Error).message}`,
+				`failed to parse final JSONL line ${lineNo}: ${(error as Error).message}`,
 			);
 		}
 		if (typeof entry.html !== 'string') {
-			throw new TypeError(
-				`page-cluster: JSONL line ${lineNo} is missing a string \`html\` field`,
-			);
+			throw new TypeError(`JSONL line ${lineNo} is missing a string \`html\` field`);
 		}
 		yield {
 			id: entry.id,
@@ -204,6 +198,128 @@ async function* readJsonlPages(
 				host: entry.host,
 			},
 		};
+	}
+}
+
+/**
+ * TTY / verbose text pair for one progress moment. `renderProgress` picks
+ * one arm depending on `useTty`. Keeping the two strings together at the
+ * call site avoids threading a `useTty` flag into every message-shaping
+ * helper.
+ */
+type ProgressLine = { readonly tty: string; readonly verbose: string };
+
+/**
+ * Renders the current lane message via TTY header or verbose-appended line
+ * depending on the `useTty` mode. Wraps both `lanes.header()` and
+ * `lanes.update(LANE_ID, …)` because — as documented in `dealer/lanes.ts` —
+ * `header()` under verbose is a state-only setter that produces no output,
+ * so verbose runs must go through `update()` to actually emit a line.
+ * @param lanes
+ * @param useTty
+ * @param line
+ */
+function renderProgress(lanes: Lanes, useTty: boolean, line: ProgressLine): void {
+	if (useTty) {
+		lanes.header(line.tty);
+	} else {
+		lanes.update(LANE_ID, line.verbose);
+	}
+}
+
+/**
+ * Human-facing wording for the "reading input pages" moment (before stdin
+ * is fully consumed). Verbose lines omit the `[page-cluster]` prefix — it
+ * is applied once via `VERBOSE_HEADER` when Lanes constructs each verbose
+ * line.
+ */
+const READING_INPUT: ProgressLine = {
+	tty: '%earth% page-cluster — reading input...',
+	verbose: 'reading input pages...',
+};
+
+/**
+ * Progress line emitted after stdin is fully consumed, before the async
+ * factory-based `resolvePageClusterKeys` starts producing events.
+ * @param pageCount
+ */
+function readingDoneLine(pageCount: number): ProgressLine {
+	return {
+		tty: `%earth% page-cluster — read ${pageCount} pages, clustering...`,
+		verbose: `read ${pageCount} pages, clustering...`,
+	};
+}
+
+/**
+ * Final summary line rendered right before `lanes.close()`.
+ * @param pageCount
+ * @param clusterCount
+ * @param elapsedSec
+ */
+function doneLine(
+	pageCount: number,
+	clusterCount: number,
+	elapsedSec: number,
+): ProgressLine {
+	const body = `${pageCount} pages in ${clusterCount} clusters (elapsed ${elapsedSec}s)`;
+	return {
+		tty: `page-cluster — done: ${body}`,
+		verbose: `done — ${body}`,
+	};
+}
+
+/**
+ * Fatal-error line rendered via Lanes rather than a direct
+ * `stderr.write` — the interactive Display's `close()` runs a
+ * CURSOR_UP + ERASE_DOWN repaint that would wipe any raw stderr write
+ * emitted before it, silently swallowing the diagnostic in TTY mode.
+ * Sending the error through Lanes puts it into the final repainted
+ * frame, so it survives `close()`.
+ * @param message
+ */
+function errorLine(message: string): ProgressLine {
+	return {
+		tty: `page-cluster: ${message}`,
+		verbose: `error: ${message}`,
+	};
+}
+
+/**
+ * Maps a library `ProgressEvent` to a human-facing `ProgressLine`. The
+ * verbose arm keeps the historical `pass0:` / `pass1:` / `pass1b:` /
+ * `stage-b:` phase tokens so callers who grep stderr by phase name (a
+ * pattern the earlier `formatProgress` documented) stay compatible; TTY
+ * lines use natural-language wording since interactive users read the
+ * header, not grep.
+ * @param event
+ * @param elapsedSec
+ */
+function formatProgressLine(event: ProgressEvent, elapsedSec: number): ProgressLine {
+	switch (event.phase) {
+		case 'pass0-signals': {
+			return {
+				tty: `%earth% page-cluster — reading signals: ${event.pagesSeen} pages (elapsed ${elapsedSec}s)`,
+				verbose: `pass0: ${event.pagesSeen} pages read`,
+			};
+		}
+		case 'pass1-block-complete': {
+			return {
+				tty: `%earth% page-cluster — clustering ${event.blocksProcessed}/${event.totalBlocks} blocks (elapsed ${elapsedSec}s)`,
+				verbose: `pass1: clustered block ${event.blocksProcessed}/${event.totalBlocks}`,
+			};
+		}
+		case 'pass1b-assign': {
+			return {
+				tty: `%earth% page-cluster — assigning pages: ${event.pagesAssigned}/${event.pagesToAssign} (elapsed ${elapsedSec}s)`,
+				verbose: `pass1b: ${event.pagesAssigned}/${event.pagesToAssign} pages assigned`,
+			};
+		}
+		case 'stage-b-start': {
+			return {
+				tty: `%earth% page-cluster — merging ${event.unitCount} units (elapsed ${elapsedSec}s)`,
+				verbose: `stage-b: merging ${event.unitCount} units`,
+			};
+		}
 	}
 }
 
@@ -243,39 +359,73 @@ export async function runCli(options: {
 		return 2;
 	}
 
-	// Load every JSONL line into memory once so the ids array stays parallel
-	// to the pages array — the streaming driver reads its factory twice, and
-	// stdin is a one-shot pipe.
-	const ids: (string | number | undefined)[] = [];
-	const pages: PageClusterSignals[] = [];
+	// TTY detection: `NodeJS.WritableStream` doesn't expose `isTTY`, but the
+	// concrete `WriteStream` (and the in-memory `Writable` collectors tests
+	// pass in) does — reading it defensively lets both real usage and
+	// unit-test doubles work without a separate `--no-progress` flag.
+	const useTty = (options.stderr as { isTTY?: boolean }).isTTY === true;
+	const lanes = new Lanes({ stream: options.stderr, verbose: !useTty });
+	// Verbose Lanes prepends `#header` to every `update()` line. Without
+	// this seed call the header would be undefined and each progress line
+	// would begin with the literal string `undefined ` — bug caught by
+	// code-review high effort. TTY mode overwrites the header per event
+	// so the seed value is only surfaced verbatim under verbose.
+	if (!useTty) {
+		lanes.header(VERBOSE_HEADER);
+	}
+	const startTime = Date.now();
+	const elapsed = () => Math.max(0, Math.round((Date.now() - startTime) / 1000));
+
+	// Every early return past this point must run through the finally block
+	// so `lanes.close()` releases the display's setTimeout timer — without
+	// it a `return 1` on a stdin parse error would leave the process
+	// hanging on the timer's next tick.
 	try {
-		for await (const { id, page } of readJsonlPages(options.stdin)) {
-			ids.push(id);
-			pages.push(page);
+		renderProgress(lanes, useTty, READING_INPUT);
+
+		// Load every JSONL line into memory once so the ids array stays
+		// parallel to the pages array — the streaming driver reads its
+		// factory twice, and stdin is a one-shot pipe.
+		const ids: (string | number | undefined)[] = [];
+		const pages: PageClusterSignals[] = [];
+		try {
+			for await (const { id, page } of readJsonlPages(options.stdin)) {
+				ids.push(id);
+				pages.push(page);
+			}
+		} catch (error) {
+			renderProgress(lanes, useTty, errorLine((error as Error).message));
+			return 1;
 		}
-	} catch (error) {
-		options.stderr.write(`${(error as Error).message}\n`);
-		return 1;
-	}
 
-	const resolveOptions: ResolvePageClusterKeysOptions = {
-		contentBlockAttribute: args.contentBlockAttribute,
-		onProgress: (event) => options.stderr.write(formatProgress(event)),
-	};
-	let keys: string[];
-	try {
-		keys = await resolvePageClusterKeys(() => pages, resolveOptions);
-	} catch (error) {
-		options.stderr.write(`page-cluster: ${(error as Error).message}\n`);
-		return 1;
-	}
+		renderProgress(lanes, useTty, readingDoneLine(pages.length));
 
-	for (const [index, key] of keys.entries()) {
-		options.stdout.write(
-			`${JSON.stringify({ id: ids[index] ?? index, clusterKey: key })}\n`,
-		);
+		const resolveOptions: ResolvePageClusterKeysOptions = {
+			contentBlockAttribute: args.contentBlockAttribute,
+			onProgress: (event) => {
+				renderProgress(lanes, useTty, formatProgressLine(event, elapsed()));
+			},
+		};
+		let keys: string[];
+		try {
+			keys = await resolvePageClusterKeys(() => pages, resolveOptions);
+		} catch (error) {
+			renderProgress(lanes, useTty, errorLine((error as Error).message));
+			return 1;
+		}
+
+		const clusterCount = new Set(keys).size;
+		renderProgress(lanes, useTty, doneLine(pages.length, clusterCount, elapsed()));
+
+		for (const [index, key] of keys.entries()) {
+			options.stdout.write(
+				`${JSON.stringify({ id: ids[index] ?? index, clusterKey: key })}\n`,
+			);
+		}
+		return 0;
+	} finally {
+		lanes.close();
 	}
-	return 0;
 }
 
 /**

@@ -301,19 +301,28 @@ export type PageClusterSignals = {
  * progress on multi-minute jobs — the CLI wires this straight to stderr.
  *
  * The event is a discriminated union on `phase`:
- * - `pass0-signals`: reading blocking signals (paths / stylesheetHrefs /
- *   host) from the factory. Fires every ~1,000 pages during Pass 0.
- * - `pass1-block-complete`: one block's Stage A finished. Fires once per
- *   block, with the block's key and a running count of how many blocks
- *   have completed so far.
- 
- * - `pass1b-assign`: streaming assignment of non-sample pages is in
- *   progress (large-corpus path only). Fires every ~1,000 pages of Pass 1b.
- * - `stage-b-start`: cross-block merge has begun. Fires once per call.
+ * - `pass0-signals`: streaming path only. Reading blocking signals (paths /
+ *   stylesheetHrefs / host) from the factory. Fires every ~1,000 pages
+ *   during Pass 0.
+ * - `pass1-block-complete`: one block's Stage A finished. Fires on **both**
+ *   the small-corpus path (`≤ CORPUS_INLINE_THRESHOLD`, once per block in
+ *   `indicesByBlockKey` iteration order) and the streaming path (once per
+ *   block as its reservoir fills). The event carries the block's key and a
+ *   running count of how many blocks have completed so far.
+ * - `pass1b-assign`: streaming path only. Streaming assignment of
+ *   non-sample pages is in progress. Fires every ~1,000 pages of Pass 1b.
+ *   Conceptually absent on the small-corpus path — every page is a "sample"
+ *   there.
+ * - `stage-b-start`: cross-block merge has begun. Fires once per call on
+ *   both paths.
  *
  * Stage B does not currently emit per-round events — a future extension
  * that passes a callback down into `mergeCrossBlockClusters` can add them
  * without breaking the existing shape.
+ *
+ * The **sync** `resolvePageClusterKeysInMemory` never emits any progress
+ * (it has no way to yield to a caller mid-block anyway). Only the async
+ * factory-based entry point participates in `onProgress`.
  */
 export type ProgressEvent =
 	| { readonly phase: 'pass0-signals'; readonly pagesSeen: number }
@@ -344,8 +353,13 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * Optional observability hook — invoked at every progress event
 		 * documented on {@link ./resolve-page-cluster-keys.js | ProgressEvent}.
 		 * Fires only on the async factory-based `resolvePageClusterKeys`;
-		 * the in-memory `resolvePageClusterKeysInMemory` path leaves this
-		 * untouched.
+		 * the sync `resolvePageClusterKeysInMemory` never emits events.
+		 * On the async path, passing this option promotes the small-corpus
+		 * branch (`≤ CORPUS_INLINE_THRESHOLD`) from delegating to the
+		 * sync helper to running a per-block async loop that emits
+		 * `pass1-block-complete` and `stage-b-start`. Omitting `onProgress`
+		 * keeps the small-corpus branch on the pre-refactor sync path with
+		 * zero yield overhead.
 		 */
 		onProgress?: (event: ProgressEvent) => void;
 	};
@@ -508,6 +522,117 @@ export function resolvePageClusterKeysInMemory(
 }
 
 /**
+ * Async twin of {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeysInMemory}
+ * that emits `pass1-block-complete` (per block) and `stage-b-start`
+ * `ProgressEvent`s and yields control back to the event loop between
+ * blocks with `setImmediate`, so the async factory-based
+ * `resolvePageClusterKeys` can expose live progress on small corpora
+ * (`≤ CORPUS_INLINE_THRESHOLD`) without blocking the caller's UI thread.
+ *
+ * Semantic equivalence with `resolvePageClusterKeysInMemory` is preserved
+ * exactly: same corpus-wide chrome discovery, same per-block Stage A, same
+ * un-capped Stage B across the entire crossBlockUnits array. `finalKeys`
+ * returned here must be byte-for-byte identical to what the sync path
+ * would have produced for the same `pages` input — spec-enforced by
+ * `resolve-page-cluster-keys-streaming.spec.ts`.
+ *
+ * The sync `resolvePageClusterKeysInMemory` is deliberately left in place
+ * as its own implementation rather than being folded into a shared helper.
+ * The intentional duplication guarantees that library callers who pass no
+ * `onProgress` incur zero behavioral difference from the pre-refactor code
+ * (see the `onProgress === undefined` short-circuit in
+ * {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeys}).
+ * @param pages
+ * @param onProgress
+ * @param options
+ */
+async function resolveSmallCorpusWithProgress(
+	pages: readonly PageClusterSignals[],
+	onProgress: (event: ProgressEvent) => void,
+	options?: ResolvePageClusterKeysOptions,
+): Promise<string[]> {
+	const excludeLandmarks = options?.excludeLandmarks ?? true;
+
+	const similarityThreshold = options?.similarityThreshold ?? 0.8;
+	if (!(similarityThreshold >= 0 && similarityThreshold <= 1)) {
+		throw new RangeError(
+			`resolvePageClusterKeys: similarityThreshold must be between 0 and 1, got ${similarityThreshold}`,
+		);
+	}
+
+	const landmarks: readonly ExtractLandmarksResult[] = pages.map((page) =>
+		extractLandmarks(page.html),
+	);
+	const localLandmarkTokensByPage = computeLocalLandmarkTokens(landmarks, options);
+
+	const contentBlockAttribute = options?.contentBlockAttribute;
+	const preparedHtml = pages.map((page, index) => {
+		const landmarksExcised = excludeLandmarks
+			? landmarks[index]!.remainderHtml
+			: page.html;
+		return contentBlockAttribute === undefined
+			? landmarksExcised
+			: removeContentBlocks(landmarksExcised, { blockAttribute: contentBlockAttribute })
+					.remainderHtml;
+	});
+
+	const restrictStylesheetsToFirstParty =
+		options?.restrictStylesheetsToFirstParty ?? true;
+	const blockingPages = restrictStylesheetsToFirstParty
+		? filterFirstPartyStylesheetHrefs(pages)
+		: pages;
+
+	const blockKeys = resolveBlockKeys(blockingPages, options);
+	const indicesByBlockKey = groupIndicesByBlockKey(blockKeys);
+
+	validateDetectContentDepthCapOptions(options);
+
+	const finalKeys: string[] = Array.from({ length: pages.length });
+	const crossBlockUnits: CrossBlockUnit[] = [];
+	const totalBlocks = indicesByBlockKey.size;
+	let blocksProcessed = 0;
+
+	for (const [blockKey, indices] of indicesByBlockKey) {
+		const result = stageAPerBlock(
+			{
+				blockKey,
+				memberIndices: indices,
+				preparedHtml: indices.map((i) => preparedHtml[i]!),
+				landmarks: indices.map((i) => landmarks[i]!),
+				localLandmarkTokensByPage: indices.map((i) => localLandmarkTokensByPage[i]!),
+			},
+			options,
+		);
+		for (const [pageIndex, key] of result.pageKeys) {
+			finalKeys[pageIndex] = key;
+		}
+		crossBlockUnits.push(...result.crossBlockUnits);
+		blocksProcessed++;
+		onProgress({
+			phase: 'pass1-block-complete',
+			blockKey,
+			blocksProcessed,
+			totalBlocks,
+		});
+		// Yield to the event loop so Lanes' setTimeout frame can paint the
+		// updated header before the next block starts.
+		await new Promise<void>((resolve) => setImmediate(resolve));
+	}
+
+	onProgress({ phase: 'stage-b-start', unitCount: crossBlockUnits.length });
+
+	const stageBResult = mergeCrossBlockClusters(crossBlockUnits, options);
+	for (let i = 0; i < finalKeys.length; i++) {
+		const currentKey = finalKeys[i]!;
+		const rootKey = stageBResult.get(currentKey);
+		if (rootKey !== undefined && rootKey !== currentKey) {
+			finalKeys[i] = rootKey;
+		}
+	}
+	return finalKeys;
+}
+
+/**
  * Factory function returning an iterator over pages. Called once per streaming
  * pass — the driver may invoke it multiple times to re-read the same corpus
  * (once HTML-free for blocking, once again per block for HTML processing).
@@ -598,8 +723,8 @@ export async function resolvePageClusterKeys(
 	if (blockingSignals.length === 0) return [];
 
 	// Small corpus: read the whole factory again with HTML this time, then
-	// delegate to the in-memory path unchanged. Preserves every corpus-wide
-	// semantic (chrome, Stage B) for corpora within the threshold.
+	// delegate to the in-memory path. Preserves every corpus-wide semantic
+	// (chrome, Stage B) for corpora within the threshold.
 	if (blockingSignals.length <= CORPUS_INLINE_THRESHOLD) {
 		const fullPages: PageClusterSignals[] = [];
 		for await (const page of pages()) {
@@ -610,7 +735,15 @@ export async function resolvePageClusterKeys(
 				host: page.host,
 			});
 		}
-		return resolvePageClusterKeysInMemory(fullPages, options);
+		// Without an onProgress callback the caller does not need visibility
+		// into per-block progress, so delegate to the untouched sync path —
+		// keeping behavior byte-for-byte identical (and yield-overhead-free)
+		// to how library-only consumers experienced this before the CLI
+		// progress work landed.
+		if (onProgress === undefined) {
+			return resolvePageClusterKeysInMemory(fullPages, options);
+		}
+		return resolveSmallCorpusWithProgress(fullPages, onProgress, options);
 	}
 
 	// Large corpus: streaming path.

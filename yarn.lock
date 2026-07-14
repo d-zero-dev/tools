@@ -1350,8 +1350,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/page-cluster@workspace:packages/@d-zero/page-cluster"
   dependencies:
+    "@d-zero/dealer": "npm:1.9.4"
     "@d-zero/shared": "npm:0.22.2"
     htmlparser2: "npm:12.0.0"
+  bin:
+    page-cluster: ./dist/cli.js
   languageName: unknown
   linkType: soft
 
