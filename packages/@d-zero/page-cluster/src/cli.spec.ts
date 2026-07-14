@@ -29,6 +29,20 @@ function makeStdin(input: string): NodeJS.ReadableStream {
 	return Readable.from([input]);
 }
 
+/**
+ * Removes ANSI SGR (`\x1B[…m`) escape sequences from a captured stream so
+ * regex assertions against Lanes-produced verbose output can focus on the
+ * human-readable payload. Lanes wraps every verbose line as
+ * `RESET header RESET message RESET`, and those RESET codes would otherwise
+ * sit between the `[page-cluster]` header and the trailing message,
+ * breaking any regex that spans that boundary.
+ * @param text
+ */
+function stripAnsi(text: string): string {
+	// eslint-disable-next-line no-control-regex
+	return text.replaceAll(/\u001B\[[\d;]*m/g, '');
+}
+
 describe('parseArgs', () => {
 	test('empty args', () => {
 		expect(parseArgs([])).toEqual({});
@@ -206,5 +220,74 @@ describe('runCli', () => {
 			.filter(Boolean)
 			.map((line) => JSON.parse(line) as { id: number | string; clusterKey: string });
 		expect(parsed.map((p) => p.id)).toEqual([0, 1]);
+	});
+
+	test('emits reading / clustered / done progress lines on stderr (non-TTY)', async () => {
+		const input = [
+			JSON.stringify({
+				id: 'a',
+				paths: ['news', '1'],
+				stylesheetHrefs: [],
+				html: '<body><article>one</article></body>',
+			}),
+			JSON.stringify({
+				id: 'b',
+				paths: ['news', '2'],
+				stylesheetHrefs: [],
+				html: '<body><article>two</article></body>',
+			}),
+			JSON.stringify({
+				id: 'c',
+				paths: ['about'],
+				stylesheetHrefs: [],
+				html: '<body><section>about</section></body>',
+			}),
+		].join('\n');
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		const code = await runCli({
+			stdin: makeStdin(input),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: [],
+			version: '0.0.0',
+		});
+		expect(code).toBe(0);
+		const stderrText = stripAnsi(stderr.read());
+		// The `makeCollector` `Writable` has no `isTTY` so CLI routes through
+		// Lanes' verbose path, producing plain `[page-cluster] …` lines that
+		// this test can regex directly (after stripping the RESET codes
+		// Lanes wraps around every field). Verbose lines keep the original
+		// `pass1:` / `stage-b:` phase tokens for grep/awk compatibility.
+		expect(stderrText).toMatch(/\[page-cluster\] reading input pages/);
+		expect(stderrText).toMatch(/\[page-cluster\] read 3 pages, clustering/);
+		expect(stderrText).toMatch(/\[page-cluster\] pass1: clustered block \d+\/\d+/);
+		expect(stderrText).toMatch(/\[page-cluster\] done — 3 pages in \d+ clusters/);
+		// Regression guard for the "literal 'undefined ' prefix" bug that
+		// code-review high effort caught before this commit: an unset
+		// lanes.header made every verbose progress line begin with the
+		// string "undefined " ahead of the "[page-cluster]" chunk.
+		expect(stderrText).not.toMatch(/undefined \[page-cluster\]/);
+	});
+
+	test('malformed JSONL still closes the Lanes display (no timer leak / process hang) and surfaces the error via Lanes', async () => {
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		// A Node timer leak would hang this test because Vitest waits for the
+		// event loop to drain. If `runCli` resolves without hanging, the
+		// `try/finally` did its job of releasing the Display's setTimeout.
+		const code = await runCli({
+			stdin: makeStdin('this is not json\n'),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: [],
+			version: '0.0.0',
+		});
+		expect(code).toBe(1);
+		// The error is routed through Lanes so a TTY Display.close() repaint
+		// would not erase it. Verbose mode surfaces it as `[page-cluster] error: <message>`.
+		expect(stripAnsi(stderr.read())).toMatch(
+			/\[page-cluster\] error: .*failed to parse JSONL/,
+		);
 	});
 });

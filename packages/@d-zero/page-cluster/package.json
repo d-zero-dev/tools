@@ -26,9 +26,7 @@
 			"types": "./dist/resolve-page-cluster-keys.d.ts"
 		}
 	},
-	"bin": {
-		"page-cluster": "./dist/cli.js"
-	},
+	"bin": "./dist/cli.js",
 	"files": [
 		"dist"
 	],
@@ -38,6 +36,7 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
+		"@d-zero/dealer": "1.9.4",
 		"@d-zero/shared": "0.22.2",
 		"htmlparser2": "12.0.0"
 	},
