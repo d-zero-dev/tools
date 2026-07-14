@@ -14,10 +14,6 @@ import { extractLandmarks } from './extract-landmarks.js';
 import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
 import { jaccardSimilarity } from './jaccard-similarity.js';
 import { mergeCrossBlockClusters } from './merge-cross-block-clusters.js';
-import {
-	mergeLandmarkAffinedClusters,
-	validateMergeLandmarkAffinedClustersOptions,
-} from './merge-landmark-affined-clusters.js';
 import { groupIndicesByBlockKey, resolveBlockKeys } from './pass0-blocking.js';
 import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
 import { removeContentBlocks } from './remove-content-blocks.js';
@@ -299,6 +295,42 @@ export type PageClusterSignals = {
 };
 
 /**
+ * Progress event emitted by the async factory-based
+ * `resolvePageClusterKeys` when an `onProgress` callback is provided. Meant
+ * as a lightweight, opt-in observability hook for callers who need visible
+ * progress on multi-minute jobs — the CLI wires this straight to stderr.
+ *
+ * The event is a discriminated union on `phase`:
+ * - `pass0-signals`: reading blocking signals (paths / stylesheetHrefs /
+ *   host) from the factory. Fires every ~1,000 pages during Pass 0.
+ * - `pass1-block-complete`: one block's Stage A finished. Fires once per
+ *   block, with the block's key and a running count of how many blocks
+ *   have completed so far.
+ 
+ * - `pass1b-assign`: streaming assignment of non-sample pages is in
+ *   progress (large-corpus path only). Fires every ~1,000 pages of Pass 1b.
+ * - `stage-b-start`: cross-block merge has begun. Fires once per call.
+ *
+ * Stage B does not currently emit per-round events — a future extension
+ * that passes a callback down into `mergeCrossBlockClusters` can add them
+ * without breaking the existing shape.
+ */
+export type ProgressEvent =
+	| { readonly phase: 'pass0-signals'; readonly pagesSeen: number }
+	| {
+			readonly phase: 'pass1-block-complete';
+			readonly blockKey: string;
+			readonly blocksProcessed: number;
+			readonly totalBlocks: number;
+	  }
+	| {
+			readonly phase: 'pass1b-assign';
+			readonly pagesAssigned: number;
+			readonly pagesToAssign: number;
+	  }
+	| { readonly phase: 'stage-b-start'; readonly unitCount: number };
+
+/**
  * @see resolvePageClusterKeys
  */
 export type ResolvePageClusterKeysOptions = TokenizeOptions &
@@ -308,10 +340,14 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		reassignOrphans?: boolean;
 		contentBlockAttribute?: string;
 		restrictStylesheetsToFirstParty?: boolean;
-		autoCapMainDepth?: boolean;
-		mergeRareLandmarkClusters?: boolean;
-		landmarkRarityThreshold?: number;
-		landmarkGateSimilarityThreshold?: number;
+		/**
+		 * Optional observability hook — invoked at every progress event
+		 * documented on {@link ./resolve-page-cluster-keys.js | ProgressEvent}.
+		 * Fires only on the async factory-based `resolvePageClusterKeys`;
+		 * the in-memory `resolvePageClusterKeysInMemory` path leaves this
+		 * untouched.
+		 */
+		onProgress?: (event: ProgressEvent) => void;
 	};
 
 /**
@@ -395,10 +431,6 @@ export function resolvePageClusterKeysInMemory(
 	options?: ResolvePageClusterKeysOptions,
 ): string[] {
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
-	const mergeRareLandmarkClusters = options?.mergeRareLandmarkClusters ?? false;
-	if (mergeRareLandmarkClusters) {
-		validateMergeLandmarkAffinedClustersOptions(options);
-	}
 
 	const similarityThreshold = options?.similarityThreshold ?? 0.8;
 	if (!(similarityThreshold >= 0 && similarityThreshold <= 1)) {
@@ -408,8 +440,8 @@ export function resolvePageClusterKeysInMemory(
 	}
 
 	// Always computed: landmark fields are needed by Stage B's shell
-	// corroboration regardless of excludeLandmarks/mergeRareLandmarkClusters,
-	// and remainderHtml is needed whenever excludeLandmarks is true.
+	// corroboration regardless of `excludeLandmarks`, and `remainderHtml` is
+	// needed whenever `excludeLandmarks` is true.
 	const landmarks: readonly ExtractLandmarksResult[] = pages.map((page) =>
 		extractLandmarks(page.html),
 	);
@@ -437,15 +469,11 @@ export function resolvePageClusterKeysInMemory(
 	const blockKeys = resolveBlockKeys(blockingPages, options);
 	const indicesByBlockKey = groupIndicesByBlockKey(blockKeys);
 
-	const autoCapMainDepth = options?.autoCapMainDepth ?? true;
-	if (autoCapMainDepth) {
-		// Validated here, eagerly, because it's otherwise only reached from
-		// inside the per-block loop below — which never runs at all for an
-		// empty `pages` (no blocks), silently skipping a bad option instead
-		// of failing fast the way a direct `detectContentDepthCap` call
-		// always does.
-		validateDetectContentDepthCapOptions(options);
-	}
+	// Validated here, eagerly, because it's otherwise only reached from
+	// inside the per-block loop below — which never runs at all for an empty
+	// `pages` (no blocks), silently skipping a bad option instead of failing
+	// fast the way a direct `detectContentDepthCap` call always does.
+	validateDetectContentDepthCapOptions(options);
 
 	const finalKeys: string[] = Array.from({ length: pages.length });
 	const crossBlockUnits: CrossBlockUnit[] = [];
@@ -476,19 +504,7 @@ export function resolvePageClusterKeysInMemory(
 			finalKeys[i] = rootKey;
 		}
 	}
-
-	if (!mergeRareLandmarkClusters) {
-		return finalKeys;
-	}
-	const mergeGateContentTokenSets = landmarks.map(
-		(entry) => new Set(tokenize(entry.remainderHtml, options).tokens),
-	);
-	return mergeLandmarkAffinedClusters(
-		finalKeys,
-		landmarks,
-		mergeGateContentTokenSets,
-		options,
-	);
+	return finalKeys;
 }
 
 /**
@@ -539,10 +555,6 @@ export type PageFactory = () =>
  *   mode would treat it as local. This trade-off is why the threshold
  *   above is set generously — every real corpus historically validated
  *   here stays on the in-memory path.
- * - **`mergeRareLandmarkClusters` is not supported in streaming mode** — it
- *   requires corpus-wide landmark frequency knowledge before it can decide
- *   which are "rare." Callers who need it must ensure their corpus fits
- *   the in-memory path.
  * @param pages
  * @param options
  * @example
@@ -563,6 +575,7 @@ export async function resolvePageClusterKeys(
 	pages: PageFactory,
 	options?: ResolvePageClusterKeysOptions,
 ): Promise<string[]> {
+	const onProgress = options?.onProgress;
 	// Pass 0: HTML-free — collect blocking signals (paths, stylesheetHrefs,
 	// host) into an array. This is the only per-page state we keep across
 	// the whole corpus in streaming mode.
@@ -572,6 +585,9 @@ export async function resolvePageClusterKeys(
 		host?: string;
 	}[] = [];
 	for await (const page of pages()) {
+		if (onProgress && blockingSignals.length > 0 && blockingSignals.length % 1000 === 0) {
+			onProgress({ phase: 'pass0-signals', pagesSeen: blockingSignals.length });
+		}
 		blockingSignals.push({
 			paths: page.paths,
 			stylesheetHrefs: page.stylesheetHrefs,
@@ -598,12 +614,6 @@ export async function resolvePageClusterKeys(
 	}
 
 	// Large corpus: streaming path.
-	if (options?.mergeRareLandmarkClusters === true) {
-		throw new Error(
-			`resolvePageClusterKeys: mergeRareLandmarkClusters is not supported in streaming mode (pages > ${CORPUS_INLINE_THRESHOLD}). Reduce the corpus or use resolvePageClusterKeysInMemory directly.`,
-		);
-	}
-
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
 	const similarityThreshold = options?.similarityThreshold ?? 0.8;
 	if (!(similarityThreshold >= 0 && similarityThreshold <= 1)) {
@@ -611,10 +621,7 @@ export async function resolvePageClusterKeys(
 			`resolvePageClusterKeys: similarityThreshold must be between 0 and 1, got ${similarityThreshold}`,
 		);
 	}
-	const autoCapMainDepth = options?.autoCapMainDepth ?? true;
-	if (autoCapMainDepth) {
-		validateDetectContentDepthCapOptions(options);
-	}
+	validateDetectContentDepthCapOptions(options);
 
 	const restrictStylesheetsToFirstParty =
 		options?.restrictStylesheetsToFirstParty ?? true;
@@ -707,7 +714,7 @@ export async function resolvePageClusterKeys(
 		if (bucket.seenCount > bucket.reservoirIndices.length) {
 			// Save assignment artifacts for Pass 1b.
 			const maxMainDepth =
-				(options?.autoCapMainDepth ?? true) && bucket.reservoirPreparedHtml.length > 1
+				bucket.reservoirPreparedHtml.length > 1
 					? detectContentDepthCap(bucket.reservoirPreparedHtml, options)
 					: undefined;
 			const clustersByUnitKey = new Map<string, ReadonlySet<string>[]>();
@@ -783,6 +790,14 @@ export async function resolvePageClusterKeys(
 		if (bucket.seenCount === bucket.targetSize) {
 			flushBlock(bucket);
 			buckets.delete(bucket.blockKey);
+			if (onProgress) {
+				onProgress({
+					phase: 'pass1-block-complete',
+					blockKey: bucket.blockKey,
+					blocksProcessed: indicesByBlockKey.size - buckets.size,
+					totalBlocks: indicesByBlockKey.size,
+				});
+			}
 		}
 		pageIndex++;
 	}
@@ -803,6 +818,8 @@ export async function resolvePageClusterKeys(
 	// nearest sample-derived cluster in its block. Nothing is added to
 	// crossBlockUnits here — the assignment writes directly into finalKeys.
 	if (pendingAssignmentBlockKeyByIndex.size > 0) {
+		const totalToAssign = pendingAssignmentBlockKeyByIndex.size;
+		let assignedCount = 0;
 		let assignPageIndex = 0;
 		for await (const page of pages()) {
 			const targetBlockKey = pendingAssignmentBlockKeyByIndex.get(assignPageIndex);
@@ -818,6 +835,14 @@ export async function resolvePageClusterKeys(
 						targetBlockKey,
 					);
 				}
+				assignedCount++;
+				if (onProgress && assignedCount % 1000 === 0) {
+					onProgress({
+						phase: 'pass1b-assign',
+						pagesAssigned: assignedCount,
+						pagesToAssign: totalToAssign,
+					});
+				}
 			}
 			assignPageIndex++;
 		}
@@ -827,6 +852,9 @@ export async function resolvePageClusterKeys(
 	// Each unit already has at most BLOCK_SAMPLE_SIZE members from the
 	// reservoir sampling above, so no additional cap is needed here — the
 	// per-merge cost stays bounded across rounds.
+	if (onProgress) {
+		onProgress({ phase: 'stage-b-start', unitCount: crossBlockUnits.length });
+	}
 	const stageBResult = mergeCrossBlockClusters(crossBlockUnits, {
 		...options,
 		capMembers: BLOCK_SAMPLE_SIZE,

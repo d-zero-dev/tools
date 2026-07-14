@@ -1,70 +1,109 @@
 # `@d-zero/page-cluster`
 
-大量クローリングした HTML の重複・類似ページ検出のためのパッケージ。`tokenize()` は `<body>` 配下のHTMLを、テキストを除去した構造トークンに変換する。用途・設計判断のWHYは `src/tokenize.ts` の JSDoc を参照。
+大量クロール HTML の重複・類似ページを構造トークンで検出するパッケージ。CLI が主、ライブラリ関数群がオマケ。
 
-## Installation
+## What this does
+
+`page-cluster` は HTML ページ集合を受け取って、**同一テンプレートと判定できるページ**に同じキーを振る。テキストは無視して DOM 構造だけを見るので、記事本文が違うが同じテンプレートを使うページ群は 1 つのクラスタにまとまる。単一サイトで数万〜十数万ページ規模のクロール成果物を、テンプレート単位に畳んで概観したいときに使う。
+
+## Install
 
 ```sh
 yarn add @d-zero/page-cluster
 ```
 
-## Usage
+インストールすると `page-cluster` コマンドが `node_modules/.bin/` 配下に入る。
 
-```ts
-import { tokenize } from '@d-zero/page-cluster';
+## Quickstart (CLI)
 
-const { tokens, bodyClassList } = tokenize(
-	'<body class="law-page"><div class="card"><ul><li>A</li><li>B</li></ul></div></body>',
-);
-// tokens: ["body>.card>ul>li", "body>.card>ul>li"]
-// bodyClassList: ["law-page"]
+**入力**: JSONL 1 行 1 ページ。フィールドは以下。`html` 以外はすべて任意（`paths` / `stylesheetHrefs` がないと粗い分類になる）。
+
+```json
+{
+	"id": "任意の識別子",
+	"html": "<html>...</html>",
+	"paths": ["news", "1"],
+	"stylesheetHrefs": ["/a.css"],
+	"host": "example.com"
+}
 ```
 
-### オプション
+**出力**: JSONL 1 行 1 ページ、入力順。
 
-```ts
-tokenize(html, {
-	filterNoiseClasses: true, // 既定値。ハッシュ的自動生成class名を除外する
-	includeComments: false, // 既定値。コメントノードをトークン化しない
-});
+```json
+{ "id": "任意の識別子", "clusterKey": "..." }
 ```
 
-### クラスタリング
+### クローラ出力（JSON 配列）を JSONL に変換して食わせる
 
-クロールしたページ群から最終的なクラスタキーを得るには `resolvePageClusterKeys()` を使う。ブロッキング（URLパス/スタイルシートによる粗い絞り込み）と構造クラスタリング（ブロック内でのcomplete-linkage階層的クラスタリング）を内部で連結し、ブロックを跨いで一意なキーを返す。既定で各ページのランドマーク要素（`<header>`/`<footer>`/`<nav>`/`<aside>`/`<search>`および`role="form"`/`role="search"`。タグ名またはARIAランドマークロールで判定）を比較対象から除外し、共通chromeの影響を受けにくくする。また、スタイルシート参照が記録されていない「孤児」ページを、同一URLセクションに閉じたスタイルシート・ブロックへ再割当する処理（`reassignOrphanBlockKeys()`）や、埋め込みコンテンツが引き込むサードパーティCSS参照をブロッキング判定から除外する処理（`filterFirstPartyStylesheetHrefs()`）も既定で有効。挙動の詳細・トレードオフはそれぞれのJSDocを参照。
+`jq` のワンライナーで配列を line-delimited にする典型例:
 
-自由編集ブロックエディタ（CMSが各コンテンツブロックに固有のdata属性を付与するタイプ）を使うサイトでは、`contentBlockAttribute` オプションでその属性名を指定すると、ページごとに異なるブロック構成が構造比較のノイズになるのを防げる（既定は未指定＝無効、サイトごとの属性名を推測できないため）。詳細は `removeContentBlocks()` のJSDocを参照。
-
-CMSのブロック属性名が分からない・サイトごとに違う場合、`autoCapMainDepth` を使う。`<main>`/`role="main"`という標準タグを起点に、構造クラスタ数が急増する直前の深さをブロックごとに実データから自動検出して打ち切るため、サイト固有の設定が一切不要（既定はtrue。無効にするには `autoCapMainDepth: false` を渡す。実データ検証では`contentBlockAttribute`より良い結果になる場合もあった。計算コストは実測で数倍〜1桁台後半。倍率はコーパスのブロック構成に依存する）。詳細は `detectContentDepthCap()` のJSDocを参照。
-
-ブロッキング後の各ブロックを個別に処理する Stage A に加え、`resolvePageClusterKeys()` はすべてのブロックを処理した後、ブロック境界を越えた Stage B（クロスブロック統合）を常時実行する。URLパス・スタイルシート集合が異なるだけで構造的に同一テンプレートと判定できるユニットを、クォーラムコア（メンバーページの80%以上が持つコーパス識別トークン）ベースの complete-linkage・包含・シェイプ類似度（クラス名剥きトークン）とL2シグネチャ比較（シェル裏付き）を組み合わせて不動点まで反復的に統合する（実コーパスで2〜5ラウンド収束）。詳細は `mergeCrossBlockClusters()` のJSDocを参照。
-
-header/footer/nav/asideが一致するページ同士をさらに合流させたい場合は `mergeRareLandmarkClusters: true` を使う。ただし単純な一致判定は実データで過剰融合を招くことが分かっているため（header/footer/navは99%以上のページに存在し判別力を持たない）、コーパス全体で希少なランドマークバリアントが一致した場合に限り、より緩いコンテンツ類似度閾値（`landmarkGateSimilarityThreshold`）での合流を許可する（既定はfalse。実データでの検証は未実施で、合成フィクスチャでの単体・回帰テストのみ）。詳細・コスト特性は `mergeLandmarkAffinedClusters()` のJSDocを参照。
-
-```ts
-import { resolvePageClusterKeys } from '@d-zero/page-cluster/resolve-page-cluster-keys';
-
-const keys = resolvePageClusterKeys(
-	pages.map((page) => ({
-		paths: page.urlPathSegments,
-		stylesheetHrefs: page.stylesheetHrefs,
-		html: page.html,
-	})),
-	{ contentBlockAttribute: 'data-bgb' }, // 使っているCMSのブロック属性名に合わせて指定
-);
-// pagesと同じ順序・同じ長さ。同じキーのページが同一テンプレートと判定されたページ群
+```sh
+jq -c '.[]' crawl-output.json | page-cluster > clusters.jsonl
 ```
 
-### ランドマークバリアント分類
+### `--content-block-attribute`
 
-「同一テンプレートか」ではなく「このページはどのヘッダー/フッター/ナビ/サイドナビを持っているか」というメタプロパティを個別に知りたい場合は `resolveLandmarkVariantKeys()` を使う。`resolvePageClusterKeys()` とは独立した戻り値で、両者の合成は呼び出し側の責務。
+CMS が自由編集コンテンツブロックに付与している属性名（例: `data-bgb`）が分かっている場合に指定する。指定すると比較前にその属性を持つ要素配下を無視するので、同じテンプレートで本文構成だけ違うページを混同しなくなる。
 
-```ts
-import { resolveLandmarkVariantKeys } from '@d-zero/page-cluster/resolve-landmark-variant-keys';
-
-const headerVariantKeys = resolveLandmarkVariantKeys(
-	pages.map((page) => page.html),
-	'header',
-);
-// pagesと同じ順序・同じ長さ。同じキーのページが同じヘッダーデザインを持つページ群
+```sh
+page-cluster --content-block-attribute data-bgb < pages.jsonl > clusters.jsonl
 ```
+
+### 進捗
+
+処理中は stderr に `[page-cluster] ...` 形式で進捗を出す。stdout の JSONL 出力は影響を受けない。
+
+```
+[page-cluster] pass0: 10000 pages read
+[page-cluster] pass1: block 12/47 complete
+[page-cluster] pass1b: 30000/70000 pages assigned
+[page-cluster] stage-b: merging 47 unit(s)
+```
+
+## API (brief)
+
+すべての詳細は各関数の JSDoc にある。CLI 経由で十分な場合は読み飛ばして OK。
+
+- **`tokenize(html, options?)`** — `<body>` 配下の HTML を構造トークン列に変換する低レベルプリミティブ
+- **`resolvePageClusterKeys(pagesFactory, options?)`** — ページ集合からクラスタキーを返すメインエントリー。ファクトリ関数入力で大規模コーパスに対応
+- **`resolvePageClusterKeysFromArray(pages, options?)`** — メモリに全ページ載る前提の array 入力ラッパー
+- **`resolveLandmarkVariantKeys(htmlList, landmarkType, options?)`** — `header` / `footer` / `nav` / `aside` などのランドマークバリアント分類
+- **`extractLandmarks(html)`** — 1 ページから 6 種の HTML5 ランドマーク（header / footer / nav / aside / form / search）を抽出
+
+## Algorithm
+
+```
+              ┌────────────────────────────────────────┐
+              │  Blocking (paths / stylesheet 集合)    │
+              └──────────────────┬─────────────────────┘
+                                 │  同じテンプレートを共有する候補群
+                                 ▼
+              ┌────────────────────────────────────────┐
+              │  Stage A: complete-linkage クラスタリング │
+              │     (ブロック内、Jaccard 距離)          │
+              └──────────────────┬─────────────────────┘
+                                 │  各ブロックのクラスタ代表
+                                 ▼
+              ┌────────────────────────────────────────┐
+              │  Stage B: quorum-core cross-block merge │
+              │  (ブロック境界を越えた再統合)            │
+              └────────────────────────────────────────┘
+```
+
+- **Blocking** — URL パスと stylesheet 集合を安価なブロッキング信号として粗く分割。同一ブロック内でだけ高価な構造比較を行うので、コーパス全体に対する比較コストを O(n²) から劇的に減らす
+- **Stage A** — ブロック内で `<main>` 配下のトークン列に対して complete-linkage 階層的クラスタリングを実行し、max-gap detection でカット高を選ぶ
+- **Stage B** — 各クラスタの quorum-core（80% クォーラム）を代表としてブロック境界をまたぐ再統合を反復。complete-linkage、包含、shape-Jaccard、L2 signature の 4 経路で融合を試みて不動点まで回す
+- **大規模自動切替** — 20,000 ページ超で自動的に**ストリーミング経路**に切り替わる。ブロックごとにリザーバサンプルで代表を学ばせ、非サンプルページを Jaccard で最寄りクラスタに割当。メモリ使用量が最大ブロックのサイズに比例するようになる
+
+### Self-tuning
+
+閾値はすべて **max-gap auto-cut**（度数分布の最大ギャップの中点を境界とする）でデータから自己発見される。Stage A のマージ高さカット、Stage B のシェル判定、コーパス全体の共通クローム判定など、3 階層でこの同一プリミティブを再帰使用しているので、サイトごとにハイパーパラメータをチューニングする必要はない。詳細は `autoCutThreshold` の JSDoc を参照。
+
+## Notes
+
+### `contentBlockAttribute` の存在意義
+
+このパッケージが持つ唯一の site-specific なオプション。CMS の自由編集ブロックに付与される属性名（例: `data-bgb`）は HTML から自動検知できないので外部知識として受け取る形にしている。指定された属性を持つ要素の配下は比較対象から除外され、同じテンプレート上で本文構成だけ違うページの誤分割を防ぐ。
+
+未指定でも大半のケースで動くよう、`<main>` / `role="main"` を起点にした自動深さキャップが常時有効になっている。

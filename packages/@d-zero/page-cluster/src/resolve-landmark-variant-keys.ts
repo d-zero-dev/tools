@@ -72,6 +72,7 @@ export type ResolveLandmarkVariantKeysOptions = TokenizeOptions &
  * @param options
  * @example
  * ```ts
+ * // Header variants
  * resolveLandmarkVariantKeys(
  * 	[
  * 		'<body><header><nav>A</nav></header></body>',
@@ -83,6 +84,11 @@ export type ResolveLandmarkVariantKeysOptions = TokenizeOptions &
  * // pages 0 and 1 (structurally identical header) share a key; page 2 (a
  * // different header structure) gets its own — text content alone (e.g.
  * // the "A" vs "B" text) would not, since tokenize() discards visible text.
+ *
+ * // Same idea works for the other landmark types:
+ * resolveLandmarkVariantKeys(htmlList, 'nav');
+ * resolveLandmarkVariantKeys(htmlList, 'footer');
+ * resolveLandmarkVariantKeys(htmlList, 'aside');
  * ```
  */
 export function resolveLandmarkVariantKeys(
