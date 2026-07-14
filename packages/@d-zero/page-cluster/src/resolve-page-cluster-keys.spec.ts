@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { resolvePageClusterKeys } from './resolve-page-cluster-keys.js';
+import { resolvePageClusterKeysInMemory as resolvePageClusterKeys } from './resolve-page-cluster-keys.js';
 
 describe('resolvePageClusterKeys', () => {
 	test('an empty page list returns an empty array', () => {

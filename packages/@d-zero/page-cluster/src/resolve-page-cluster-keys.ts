@@ -4,55 +4,131 @@ import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-k
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
 import type { TokenizeOptions } from './types.js';
 
-import { assignContainedClusters } from './assign-contained-clusters.js';
 import { autoCutThreshold } from './auto-cut-threshold.js';
 import { capContentDepth } from './cap-content-depth.js';
-import { collapseAnonymousDivs } from './collapse-anonymous-divs.js';
-import {
-	completeLinkageDendrogram,
-	labelsAtThreshold,
-} from './complete-linkage-dendrogram.js';
-import {
-	deriveComparisonSets,
-	MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT,
-} from './derive-comparison-sets.js';
 import {
 	detectContentDepthCap,
 	validateDetectContentDepthCapOptions,
 } from './detect-content-depth-cap.js';
 import { extractLandmarks } from './extract-landmarks.js';
 import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
+import { jaccardSimilarity } from './jaccard-similarity.js';
 import { mergeCrossBlockClusters } from './merge-cross-block-clusters.js';
 import {
 	mergeLandmarkAffinedClusters,
 	validateMergeLandmarkAffinedClustersOptions,
 } from './merge-landmark-affined-clusters.js';
+import { groupIndicesByBlockKey, resolveBlockKeys } from './pass0-blocking.js';
 import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
-import { reassignOrphanBlockKeys } from './reassign-orphan-block-keys.js';
 import { removeContentBlocks } from './remove-content-blocks.js';
-import { resolveBlockingGroupKeys } from './resolve-blocking-group-keys.js';
+import { stageAPerBlock } from './stage-a-per-block.js';
 import { tokenize } from './tokenize.js';
 
 /**
- * Reads `values[index]`, throwing instead of returning `undefined`. Every
- * call site here indexes with a position this function generated itself
- * (an entry from `Map#entries()`/`Array#entries()` over an array it just
- * built), so the thrown branch is unreachable in practice; it exists to
- * satisfy `noUncheckedIndexedAccess` without a non-null assertion. Not
- * imported from `resolve-structural-cluster-keys.ts`'s own copy: that file's
- * `export`s are its intended public API surface, and this ~7-line generic
- * helper isn't worth carving an exception into that boundary for (same
- * rationale as `readDpValue` in `array-edit-distance.ts` being its own
- * independent copy rather than a shared import).
- * @param values
- * @param index
+ * FNV-1a 32-bit hash of a string, used to seed the per-block PRNG so
+ * reservoir sampling on the streaming path is deterministic for a given
+ * corpus (same input order → same sampled indices → same cluster keys).
+ * @param input
  */
-function requireIndex<T>(values: ArrayLike<T>, index: number): T {
-	const value = values[index];
-	if (value === undefined) {
-		throw new Error('resolvePageClusterKeys: index out of bounds');
+function fnv1a32(input: string): number {
+	let hash = 0x81_1c_9d_c5;
+	for (let i = 0; i < input.length; i++) {
+		hash ^= input.codePointAt(i) ?? 0;
+		hash = Math.imul(hash, 0x01_00_01_93);
 	}
-	return value;
+	return hash >>> 0;
+}
+
+/**
+ * Mulberry32 — small, well-known 32-bit PRNG. Kept independent per block
+ * (each block seeds from its own block key via {@link ./resolve-page-cluster-keys.js | fnv1a32})
+ * so different blocks sample independently.
+ * @param seed
+ */
+function makeSeededPrng(seed: number | string): () => number {
+	let state = (typeof seed === 'string' ? fnv1a32(seed) : seed) >>> 0;
+	return () => {
+		state = (state + 0x6d_2b_79_f5) >>> 0;
+		let t = state;
+		t = Math.imul(t ^ (t >>> 15), t | 1);
+		t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+		return ((t ^ (t >>> 14)) >>> 0) / 4_294_967_296;
+	};
+}
+
+/**
+ * Tokenizes a non-sample page using the block's learned parameters
+ * (`maxMainDepth` and local-signature reinjection set) and returns the
+ * key of the sample-derived cluster whose members it most closely matches
+ * by Jaccard similarity. Ties break in first-seen order (JS `Map`
+ * iteration). Falls back to a block-scoped singleton key when the block
+ * has no clusters at all (edge case: an empty sample, which shouldn't
+ * happen for a non-empty block but is defended against here).
+ * @param html
+ * @param assignment
+ * @param assignment.maxMainDepth
+ * @param assignment.localSignatures
+ * @param assignment.clustersByUnitKey
+ * @param excludeLandmarks
+ * @param contentBlockAttribute
+ * @param tokenizeOptions
+ * @param blockKey
+ */
+function assignPageToNearestCluster(
+	html: string,
+	assignment: {
+		readonly maxMainDepth: number | undefined;
+		readonly localSignatures: ReadonlySet<string>;
+		readonly clustersByUnitKey: ReadonlyMap<string, readonly ReadonlySet<string>[]>;
+	},
+	excludeLandmarks: boolean,
+	contentBlockAttribute: string | undefined,
+	tokenizeOptions: TokenizeOptions | undefined,
+	blockKey: string,
+): string {
+	const landmarkResult = extractLandmarks(html);
+	const landmarksExcised = excludeLandmarks ? landmarkResult.remainderHtml : html;
+	let prepared =
+		contentBlockAttribute === undefined
+			? landmarksExcised
+			: removeContentBlocks(landmarksExcised, { blockAttribute: contentBlockAttribute })
+					.remainderHtml;
+	if (assignment.maxMainDepth !== undefined) {
+		prepared = capContentDepth(prepared, {
+			landmark: 'main',
+			maxDepth: assignment.maxMainDepth,
+		}).remainderHtml;
+	}
+
+	const pageTokens = new Set(tokenize(prepared, tokenizeOptions).tokens);
+	// Reinject tokens for landmark instances whose signature matches the
+	// block's learned local-signature set (same rule the sample-side Stage
+	// A applied via computeLocalChromeArtifacts).
+	if (assignment.localSignatures.size > 0) {
+		const instances = computePerPageLandmarkInstances(
+			[landmarkResult],
+			tokenizeOptions,
+		)[0]!;
+		for (const inst of instances) {
+			if (!assignment.localSignatures.has(inst.signature)) continue;
+			for (const t of inst.tokens) pageTokens.add(t);
+		}
+	}
+
+	let bestKey: string | undefined;
+	let bestScore = -1;
+	for (const [unitKey, memberTokenSets] of assignment.clustersByUnitKey) {
+		let clusterBest = 0;
+		for (const memberTokens of memberTokenSets) {
+			const score = jaccardSimilarity(pageTokens, memberTokens);
+			if (score > clusterBest) clusterBest = score;
+		}
+		if (clusterBest > bestScore) {
+			bestScore = clusterBest;
+			bestKey = unitKey;
+		}
+	}
+	return bestKey ?? JSON.stringify([blockKey, 'cluster:unassigned']);
 }
 
 /**
@@ -104,12 +180,26 @@ function requireIndex<T>(values: ArrayLike<T>, index: number): T {
  * @param landmarks
  * @param tokenizeOptions
  */
-function computeLocalLandmarkTokens(
+/**
+ * Companion to {@link ./resolve-page-cluster-keys.js | computeLocalLandmarkTokens}
+ * that also returns the local-signature *set* the streaming path needs to
+ * reuse when tokenizing non-sample pages during Pass 1b. The in-memory path
+ * only cares about the per-page token sets (which pages carry which
+ * chrome-below-the-cut tokens); the streaming path additionally needs to
+ * apply the *same* "which signatures are local" verdict to pages that were
+ * not part of the sample the verdict was learned from.
+ * @param landmarks
+ * @param tokenizeOptions
+ */
+export function computeLocalChromeArtifacts(
 	landmarks: readonly ExtractLandmarksResult[],
 	tokenizeOptions: TokenizeOptions | undefined,
-): ReadonlySet<string>[] {
+): {
+	readonly localSignatures: ReadonlySet<string>;
+	readonly localTokensByPage: readonly ReadonlySet<string>[];
+} {
 	const pageCount = landmarks.length;
-	if (pageCount === 0) return [];
+	if (pageCount === 0) return { localSignatures: new Set(), localTokensByPage: [] };
 
 	const perPageInstances = computePerPageLandmarkInstances(landmarks, tokenizeOptions);
 
@@ -130,7 +220,12 @@ function computeLocalLandmarkTokens(
 			}
 		}
 	}
-	if (corpusHistogram.size === 0) return landmarks.map(() => new Set<string>());
+	if (corpusHistogram.size === 0) {
+		return {
+			localSignatures: new Set(),
+			localTokensByPage: landmarks.map(() => new Set<string>()),
+		};
+	}
 
 	const frequencies: number[] = [];
 	for (const entry of corpusHistogram.values()) {
@@ -146,10 +241,13 @@ function computeLocalLandmarkTokens(
 		}
 	}
 	if (localSignatures.size === 0) {
-		return landmarks.map(() => new Set<string>());
+		return {
+			localSignatures: new Set(),
+			localTokensByPage: landmarks.map(() => new Set<string>()),
+		};
 	}
 
-	return perPageInstances.map((instances) => {
+	const localTokensByPage = perPageInstances.map((instances) => {
 		const out = new Set<string>();
 		for (const inst of instances) {
 			if (!localSignatures.has(inst.signature)) continue;
@@ -157,16 +255,34 @@ function computeLocalLandmarkTokens(
 		}
 		return out;
 	});
+
+	return { localSignatures, localTokensByPage };
+}
+
+/**
+ * Reinjects each page's *local* (non-corpus-wide) landmark-instance tokens
+ * into its block token set for Stage A clustering, restoring exactly the
+ * structural signal that landmark excision removed for those pages while
+ * keeping global chrome removed (the whole point of `excludeLandmarks`).
+ *
+ * See {@link ./resolve-page-cluster-keys.js | computeLocalChromeArtifacts}
+ * for the underlying algorithm — this function is a thin wrapper that
+ * discards the local-signature set, exposed for callers that only need the
+ * per-page tokens (the in-memory driver's use case).
+ * @param landmarks
+ * @param tokenizeOptions
+ */
+export function computeLocalLandmarkTokens(
+	landmarks: readonly ExtractLandmarksResult[],
+	tokenizeOptions: TokenizeOptions | undefined,
+): ReadonlySet<string>[] {
+	return [...computeLocalChromeArtifacts(landmarks, tokenizeOptions).localTokensByPage];
 }
 
 /**
  * Per-page input to {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeys}:
  * the blocking signals {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys}
- * needs, plus the page's raw HTML. Raw HTML (rather than a pre-tokenized
- * `Set`, as earlier versions of this type required) because
- * `resolvePageClusterKeys` now needs to decide *how* to tokenize each page
- * (see `excludeLandmarks` below) — a decision a caller handed a bare
- * `Set<string>` could no longer make correctly on its own.
+ * needs, plus the page's raw HTML.
  */
 export type PageClusterSignals = {
 	paths: readonly string[];
@@ -177,11 +293,7 @@ export type PageClusterSignals = {
 	 * `new URL(pageUrl).host`), forwarded to
 	 * {@link ./filter-first-party-stylesheet-hrefs.js | filterFirstPartyStylesheetHrefs}
 	 * so it can judge that page's `stylesheetHrefs` by direct comparison
-	 * instead of inferring a batch-wide dominant host. Optional: omit if the
-	 * caller doesn't have each page's URL on hand, at the cost of that
-	 * function's dominant-host fallback and its known limitations (see its
-	 * own JSDoc) — most crawlers already have this since they fetched the
-	 * page from that URL, so providing it is the expected default.
+	 * instead of inferring a batch-wide dominant host.
 	 */
 	host?: string;
 };
@@ -192,255 +304,99 @@ export type PageClusterSignals = {
 export type ResolvePageClusterKeysOptions = TokenizeOptions &
 	ResolveBlockingGroupKeysOptions &
 	ResolveStructuralClusterKeysOptions & {
-		/**
-		 * Tokenize each page's `<header>`/`<footer>`/`<nav>`/`<aside>`-excised
-		 * remainder ({@link ./extract-landmarks.js | extractLandmarks}'s
-		 * `remainderHtml`) instead of its raw HTML, so shared site chrome never
-		 * reaches the structural-similarity comparison. Defaults to `true`.
-		 * Set to `false` to fall back to tokenizing the untouched page (the
-		 * pre-landmark-extraction behavior) — this is a large behavioral
-		 * change not yet validated across many sites beyond the two real
-		 * corpora checked so far, so the escape hatch is kept available.
-		 *
-		 * Leaving this `true` means every page's HTML is parsed twice (once by
-		 * `extractLandmarks`, once by `tokenize` on its `remainderHtml`)
-		 * instead of once. Measured on a real crawl corpus (8,936 pages),
-		 * this is still net faster overall than the single-parse `false`
-		 * path (17,557ms vs 25,997ms end-to-end): `remainderHtml` is
-		 * substantially shorter than the original page once landmarks are
-		 * excised, and the resulting smaller `tokenize` pass costs less than
-		 * the extra `extractLandmarks` pass adds.
-		 */
 		excludeLandmarks?: boolean;
-		/**
-		 * Apply {@link ./reassign-orphan-block-keys.js | reassignOrphanBlockKeys}
-		 * to the blocking keys before clustering, so a page with no recorded
-		 * stylesheets ("orphan" — often a crawl-completeness gap, not evidence
-		 * the page is actually template-less) can rejoin a same-URL-section
-		 * `css:` block instead of being stranded on its weaker `path:` fallback.
-		 * Defaults to `true`. Set to `false` to fall back to the raw
-		 * {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys}
-		 * output — kept available both because this is not yet broadly-
-		 * validated beyond the two real crawls checked so far, and because it
-		 * has a known trade-off documented on
-		 * {@link ./reassign-orphan-block-keys.js | reassignOrphanBlockKeys}
-		 * itself: pooling pages for comparison can change unrelated pages'
-		 * cluster outcomes too, not just the orphan's.
-		 */
 		reassignOrphans?: boolean;
-		/**
-		 * Apply {@link ./remove-content-blocks.js | removeContentBlocks} to each
-		 * page's landmark-excised remainder before tokenizing, so a freeform
-		 * block-editor content area's page-to-page variation (which specific
-		 * mix of blocks an author used) never reaches the structural-similarity
-		 * comparison. No default — unlike `excludeLandmarks`/`reassignOrphans`,
-		 * this needs the caller's own block-editor attribute name (see
-		 * `removeContentBlocks`'s `blockAttribute` option), which this package
-		 * cannot guess. Omit to skip this step entirely.
-		 */
 		contentBlockAttribute?: string;
-		/**
-		 * Apply {@link ./filter-first-party-stylesheet-hrefs.js |
-		 * filterFirstPartyStylesheetHrefs} to `pages` before computing blocking
-		 * keys, so a page's incidental third-party embeds (e.g. a video
-		 * player's own stylesheet, extra web-font requests pulled in by a
-		 * widget) never get mistaken for a template-identifying signal by
-		 * {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys}.
-		 * Defaults to `true`. Set to `false` to block on every page's full,
-		 * unfiltered `stylesheetHrefs` — kept available for the same reason
-		 * `excludeLandmarks`'s escape hatch is: a real but not yet broadly-
-		 * validated behavioral change (confirmed so far on one real crawl).
-		 *
-		 * Inherits `filterFirstPartyStylesheetHrefs`'s "roughly homogeneous
-		 * batch" precondition (see that function's own JSDoc): `pages` should
-		 * be one site or one section, the same expectation
-		 * `resolveBlockingGroupKeys` already places on its own input.
-		 *
-		 * Provide each page's `host` (see `PageClusterSignals`) so this filter
-		 * can compare directly instead of inferring a batch-wide dominant
-		 * host — the inferred fallback can pick the wrong host on a tie (e.g.
-		 * a page loading its own first-party stylesheet plus the same
-		 * sitewide webfont request as every other page, tying "referenced by
-		 * 100% of pages" between the real first party and that third party).
-		 */
 		restrictStylesheetsToFirstParty?: boolean;
-		/**
-		 * Apply {@link ./detect-content-depth-cap.js | detectContentDepthCap}
-		 * separately *within each block* (after `excludeLandmarks`/
-		 * `contentBlockAttribute`, after blocking, before that block's own
-		 * tokenizing) to find how many levels of nesting inside
-		 * `<main>`/`role="main"` to keep, then
-		 * {@link ./cap-content-depth.js | capContentDepth} each of that
-		 * block's pages at that depth — a `contentBlockAttribute`-style fix
-		 * for freeform-content noise that needs no site-specific attribute
-		 * name, since `<main>` is an HTML5/ARIA standard. Defaults to `true`
-		 * (changed from the previous default of `false` — callers that relied
-		 * on the old opt-in behavior must now pass `autoCapMainDepth: false`
-		 * explicitly). Validated on two real crawl corpora (302 pages and
-		 * 8,936 pages) as correct for most sites. The self-tuning cross-block
-		 * Stage B that runs after Stage A assumes this cap is enabled; running
-		 * without it (`false`) still works but produces uncapped tokens that
-		 * Stage B has not been validated against.
-		 *
-		 * Per-block rather than once across the whole corpus: different
-		 * blocks (different templates/sections) can have genuinely different
-		 * "skeleton depths." Confirmed on real crawl data: an 814-page block
-		 * whose own knee sits at depth 2 stayed at 189 clusters (barely moved
-		 * from 224 uncapped) when capped at depth 3 — the knee derived from
-		 * the *whole* 8,936-page corpus, dominated by two much larger blocks
-		 * whose own knee is 3. Re-deriving the knee for that block alone
-		 * brings it down to 46. A block too small for its knee-detection
-		 * sweep to find a reliable jump just falls through to
-		 * `detectContentDepthCap`'s own no-knee fallback (the largest
-		 * candidate depth, effectively "don't cap") — the same safe default
-		 * it already has for any input, now reached per-block instead of
-		 * corpus-wide. Skipped entirely (no cap) for a block of exactly 1
-		 * page — nothing to compare it against, so a knee sweep there could
-		 * only ever confirm what's already true.
-		 *
-		 * Trade-off of going per-block: a corpus-wide sweep's cluster-count
-		 * ratios are diluted by thousands of ordinary pages, so one
-		 * incidental outlier (e.g. a single page with an extra wrapper `div`
-		 * from a stray widget) barely moves them. A small block's sweep has
-		 * no such dilution — a similar outlier among only a handful of pages
-		 * can itself clear `minKneeRatio` and produce a too-shallow cap for
-		 * that block. Not yet observed on either real corpus checked so far
-		 * (both corpora's small blocks happened to be uniform enough that
-		 * this didn't come up), so no size-based guard is added speculatively;
-		 * revisit if real data surfaces it.
-		 *
-		 * Composes with `contentBlockAttribute` rather than replacing it: both
-		 * can be set at once — `removeContentBlocks` runs first, then
-		 * `capContentDepth` on what's left — for a site whose CMS marks *some*
-		 * blocks with a known attribute but still has other, unmarked
-		 * freeform depth the attribute alone doesn't catch.
-		 *
-		 * Confirmed on real crawl data this can outperform
-		 * `contentBlockAttribute` on its own, not just stand in for it when the
-		 * attribute is unknown: on a 302-page corpus, `autoCapMainDepth` alone
-		 * produced 20 final clusters versus 27 for
-		 * `contentBlockAttribute: 'data-bgb'` together with
-		 * `restrictStylesheetsToFirstParty` — the site's known CMS attribute
-		 * doesn't mark every source of freeform depth, but the `<main>`
-		 * boundary catches all of it uniformly. See `detectContentDepthCap`'s
-		 * JSDoc for the real cost/accuracy numbers this per-block sweep
-		 * measures on the same two corpora.
-		 */
 		autoCapMainDepth?: boolean;
-		/**
-		 * Re-key two or more otherwise-distinct clusters onto one shared key
-		 * when every landmark type present on their pages is both identical
-		 * and rare corpus-wide — see
-		 * {@link ./merge-landmark-affined-clusters.js | mergeLandmarkAffinedClusters}'s
-		 * JSDoc for the exact rule, the withdrawn earlier prototype this
-		 * reimplements, and why "rare" (not merely "identical") is required.
-		 * Defaults to `false`.
-		 *
-		 * Kept `false` by default: unlike `autoCapMainDepth`/
-		 * `restrictStylesheetsToFirstParty`, this has not been run against
-		 * real crawl data at all as of this change — only synthetic-fixture
-		 * unit/regression tests. See `mergeLandmarkAffinedClusters`'s JSDoc
-		 * for its cost profile before enabling this on a large corpus.
-		 */
 		mergeRareLandmarkClusters?: boolean;
-		/** Forwarded to {@link ./merge-landmark-affined-clusters.js | mergeLandmarkAffinedClusters} as-is. */
 		landmarkRarityThreshold?: number;
-		/** Forwarded to {@link ./merge-landmark-affined-clusters.js | mergeLandmarkAffinedClusters} as-is. */
 		landmarkGateSimilarityThreshold?: number;
 	};
 
 /**
- * Connects the two stages this package otherwise leaves for the caller to
- * wire together: {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys}
- * (coarse blocking by URL path or stylesheet set) and structural clustering
- * within each block. Returns one final key per page, in the same order as
- * `pages`, unique across the whole input — not just within a block.
+ * Corpus size at or below which the async factory-based
+ * `resolvePageClusterKeys` reads the entire input into an array and delegates
+ * to {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeysInMemory}
+ * unchanged — preserving corpus-wide semantics (chrome discovery, Stage B
+ * across all pages) exactly.
  *
- * **Stage A (per block):** Runs the complete-linkage dendrogram
- * ({@link ./complete-linkage-dendrogram.js | completeLinkageDendrogram})
- * and selects a threshold automatically via
- * {@link ./auto-cut-threshold.js | autoCutThreshold} (largest merge-height
- * gap, clamped to `similarityThreshold` so the default is never tightened,
- * only loosened). **`similarityThreshold` is an upper bound here, not a
- * per-pair hard floor** — the auto-cut can select a lower value when a
- * natural cluster boundary exists below `similarityThreshold`. To enforce a
- * strict minimum Jaccard per page-pair, use
- * {@link ./resolve-structural-cluster-keys.js | resolveStructuralClusterKeys}
- * directly (it skips auto-cut). For blocks large enough for frequency-based
- * comparison (`>= MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT`), each cluster's
- * token union (with anonymous `div` wrappers collapsed via
- * {@link ./collapse-anonymous-divs.js | collapseAnonymousDivs}) passes
- * through
- * {@link ./assign-contained-clusters.js | assignContainedClusters}
- * (containment ≥ 0.9) to absorb clusters caused by conditional rendering
- * (missing optional section, paginator absent). See
- * `assignContainedClusters`'s JSDoc for why this is directed assignment
- * rather than union-find.
+ * Above this threshold, the streaming path takes over: block dispatch during
+ * a second factory read, per-block chrome discovery (semantic drift from
+ * corpus-wide, unavoidable when the whole corpus does not fit in memory),
+ * and Stage B fed with the incrementally-accumulated cross-block units.
  *
- * **Stage B (cross-block, always):** After all blocks are processed,
- * {@link ./merge-cross-block-clusters.js | mergeCrossBlockClusters}
- * iteratively merges units across block boundaries — breaking through the
- * URL-path and stylesheet-set walls that Stage A cannot cross. Uses quorum
- * cores (80% of member pages' corpus-distinctive tokens) with three merge
- * mechanisms: complete-linkage at the fixed threshold (0.8), containment,
- * and shape-Jaccard (class-name-stripped skeleton similarity ≥ 0.9 for
- * multi-page units only). When those find nothing, falls back to an L2
- * multiset-containment signature anchored at `<main>` with shell
- * (header+nav+footer) corroboration. Converges to a fixed point in ≤ 10
- * rounds (real crawl data: 2–5 rounds).
+ * Chosen from Phase 0 spike measurements: a ~9,000-page real crawl (biggest
+ * block ~3,900) completed in ~108s / 1.25 GB heap on the in-memory path.
+ * Doubling that headroom to 20,000 keeps every corpus previously validated
+ * (302, 1,416, 8,936, 89 pages) on the exact code path they were validated
+ * against, so their gate values (9 / 21 / 63 / 3 clusters respectively)
+ * remain byte-reproducible. A ~176,000-page real crawl OOM'd on the in-memory
+ * path well below this threshold worth of pages ever being materialized, so
+ * anything above 20,000 is routed to streaming.
+ */
+export const CORPUS_INLINE_THRESHOLD = 20_000;
+
+/**
+ * Reservoir-sample size per block on the streaming path. Blocks larger than
+ * this have Stage A run on a random sample of `BLOCK_SAMPLE_SIZE` pages,
+ * with the remaining non-sample pages assigned via Jaccard similarity to
+ * the sample-derived clusters during Pass 1b. Blocks at or below this size
+ * still work — the sampling degenerates to "keep every input page unchanged"
+ * per the `reservoirSample` contract, so small blocks behave identically to
+ * the in-memory path.
  *
- * Cluster keys are composed from the block key and the local per-block
- * label via `JSON.stringify` (rather than string concatenation) to avoid
- * collisions regardless of what either half contains. Stage B preserves
- * the root unit's existing key, so merged clusters receive a key from one
- * of their constituent blocks, not a newly invented one.
+ * Chosen to bound accumulated Stage-B state: units × sample_size × per-
+ * member memory ≈ 200 units × 100 members × 25 KB ≈ 500 MB, well within an
+ * 8 GB Node heap even on macOS where jetsam (the kernel OOM killer) reacts
+ * to RSS pressure before V8's own heap limit trips.
  *
- * `excludeLandmarks` and `similarityThreshold` interact: removing shared
- * chrome makes every remaining comparison stricter (there's no more
- * chrome-driven baseline similarity propping scores up), so a threshold
- * tuned against raw, chrome-included tokens can become too strict once
- * landmarks are excluded. Confirmed on real crawl data: a 4-page block where
- * 3 same-template pages merged at the default `similarityThreshold` (0.8)
- * using raw tokens split one of the 3 into its own singleton once landmarks
- * were excluded, and re-merged correctly at `similarityThreshold: 0.6` — re-
- * tune per site after switching this on, the same as `similarityThreshold`
- * itself already needs.
+ * ## Semantic differences from the in-memory path
  *
- * `reassignOrphans` only ever pools a `path:`-fallback orphan alongside a
- * same-section `css:` block for comparison — it never forces a merge itself.
- * An orphan that turns out not to match anything in that pool (confirmed on
- * real crawl data) correctly surfaces as its own singleton.
+ * - **Chrome discovery is sample-based per block.** Landmark signatures that
+ *   are rare in the sample get treated as global chrome; only signatures
+ *   that show up on ≥ 2 sample members and below the sample-derived
+ *   auto-cut are reinjected. Full-block chrome discovery would see rare
+ *   signatures too — the sample-based decision approximates it.
+ * - **Non-sample pages are assigned by max-Jaccard against sample member
+ *   token sets.** A page whose closest sample member is genuinely dissimilar
+ *   still gets slotted into the least-bad cluster; this is a pragmatic
+ *   trade for a bounded assignment cost (no unbounded "outlier" cluster
+ *   growth).
+ * - **Stage B sees the sample-based `CrossBlockUnit`s only.** Non-sample
+ *   pages carry the final key that Stage B produces for their assigned
+ *   sample cluster, without contributing to Stage B's own DF / quorum-core
+ *   / shell-quorum computations.
  *
- * `restrictStylesheetsToFirstParty` runs before `reassignOrphans`: a page
- * whose only stylesheet reference was third-party becomes an orphan (no
- * first-party stylesheet left) *because of* the filtering, and is then
- * itself eligible for orphan reassignment — this is intentional, not an
- * ordering accident, since the underlying reason both options exist is the
- * same (a page's blocking key should reflect its template, not incidental
- * third-party embeds or missing crawl data).
+ * Preserves the in-memory path unchanged for corpora at or below
+ * {@link CORPUS_INLINE_THRESHOLD} — sampling is streaming-mode only.
+ */
+export const BLOCK_SAMPLE_SIZE = 100;
+
+/**
+ * Preserves the previous synchronous, array-in / array-out API of
+ * `resolvePageClusterKeys` under a new name so the factory-based async
+ * export can take the primary name while callers that already had a
+ * materialized page array (spec tests, the in-repo dogfood harness,
+ * downstream code that hasn't switched to streaming yet) retain the
+ * exact same behavior.
+ *
+ * Semantics: identical to the pre-refactor `resolvePageClusterKeys`.
+ * Corpus-wide chrome discovery, Stage B across every page, no memory
+ * bound — meant to be called on inputs already known to fit in memory.
+ * The async factory-based export delegates here whenever
+ * `pages.length ≤ CORPUS_INLINE_THRESHOLD`, guaranteeing existing corpora
+ * hit exactly this code path.
  * @param pages
  * @param options
- * @example
- * ```ts
- * resolvePageClusterKeys([
- * 	{ paths: ['news', '1'], stylesheetHrefs: [], html: '<body><article>one</article></body>' },
- * 	{ paths: ['news', '2'], stylesheetHrefs: [], html: '<body><article>two</article></body>' },
- * 	{ paths: ['about'], stylesheetHrefs: [], html: '<body><section>about</section></body>' },
- * ]);
- * // pages 0 and 1 (same block, same structure) share a key; page 2 (different block) gets its own
- * ```
  */
-export function resolvePageClusterKeys(
+export function resolvePageClusterKeysInMemory(
 	pages: readonly PageClusterSignals[],
 	options?: ResolvePageClusterKeysOptions,
 ): string[] {
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
 	const mergeRareLandmarkClusters = options?.mergeRareLandmarkClusters ?? false;
 	if (mergeRareLandmarkClusters) {
-		// Eager, same rationale as autoCapMainDepth's own eager validation
-		// below: this option's own validation is otherwise only reached from
-		// mergeLandmarkAffinedClusters's call at the very end of this
-		// function, which never runs at all for an empty `pages`.
 		validateMergeLandmarkAffinedClustersOptions(options);
 	}
 
@@ -454,27 +410,17 @@ export function resolvePageClusterKeys(
 	// Always computed: landmark fields are needed by Stage B's shell
 	// corroboration regardless of excludeLandmarks/mergeRareLandmarkClusters,
 	// and remainderHtml is needed whenever excludeLandmarks is true.
-	// extractLandmarks parses the whole page once; computing it upfront avoids
-	// parsing the same page twice for the two options that each need it.
 	const landmarks: readonly ExtractLandmarksResult[] = pages.map((page) =>
 		extractLandmarks(page.html),
 	);
 
-	// Corpus-level chrome discovery: identify which landmark-instance
-	// signatures are *local* (below the auto-cut on the corpus-wide
-	// frequency histogram) and inject a compact pseudo-token per local
-	// signature into each page's block token set. Pages that share a local
-	// landmark then share a distinctive token unavailable to the pages that
-	// lack it — giving Stage A the structural signal it needs to split
-	// section-local template variants (e.g. a URL subsection carrying a
-	// section-local nav absent from its block siblings) that would
-	// otherwise merge together after landmark tokens are excised.
+	// Corpus-level chrome discovery
 	const localLandmarkTokensByPage = computeLocalLandmarkTokens(landmarks, options);
 
 	const contentBlockAttribute = options?.contentBlockAttribute;
 	const preparedHtml = pages.map((page, index) => {
 		const landmarksExcised = excludeLandmarks
-			? requireIndex(landmarks, index).remainderHtml
+			? landmarks[index]!.remainderHtml
 			: page.html;
 		return contentBlockAttribute === undefined
 			? landmarksExcised
@@ -488,21 +434,8 @@ export function resolvePageClusterKeys(
 		? filterFirstPartyStylesheetHrefs(pages)
 		: pages;
 
-	const reassignOrphans = options?.reassignOrphans ?? true;
-	const rawBlockKeys = resolveBlockingGroupKeys(blockingPages, options);
-	const blockKeys = reassignOrphans
-		? reassignOrphanBlockKeys(blockingPages, rawBlockKeys, options?.pathDepth)
-		: rawBlockKeys;
-
-	const indicesByBlockKey = new Map<string, number[]>();
-	for (const [index, blockKey] of blockKeys.entries()) {
-		const indices = indicesByBlockKey.get(blockKey);
-		if (indices) {
-			indices.push(index);
-		} else {
-			indicesByBlockKey.set(blockKey, [index]);
-		}
-	}
+	const blockKeys = resolveBlockKeys(blockingPages, options);
+	const indicesByBlockKey = groupIndicesByBlockKey(blockKeys);
 
 	const autoCapMainDepth = options?.autoCapMainDepth ?? true;
 	if (autoCapMainDepth) {
@@ -518,113 +451,20 @@ export function resolvePageClusterKeys(
 	const crossBlockUnits: CrossBlockUnit[] = [];
 
 	for (const [blockKey, indices] of indicesByBlockKey) {
-		const blockPreparedHtml = indices.map((index) => requireIndex(preparedHtml, index));
-		// A block of 1 can never produce more than one cluster regardless of
-		// how it's tokenized — nothing to compare it against — so detecting a
-		// knee and capping for it would only spend a full multi-depth sweep
-		// (see detectContentDepthCap's own cost notes) to arrive back at the
-		// same single-cluster result. Skipped rather than swept.
-		const maxMainDepth =
-			autoCapMainDepth && blockPreparedHtml.length > 1
-				? detectContentDepthCap(blockPreparedHtml, options)
-				: undefined;
-		const blockTokenSets: ReadonlySet<string>[] = blockPreparedHtml.map(
-			(html, position) => {
-				const capped =
-					maxMainDepth === undefined
-						? html
-						: capContentDepth(html, { landmark: 'main', maxDepth: maxMainDepth })
-								.remainderHtml;
-				const tokens = new Set(tokenize(capped, options).tokens);
-				// Reinject each page's local-landmark tokens (see
-				// computeLocalLandmarkTokens's JSDoc). Empty set when the
-				// corpus-level auto-cut finds no local chrome — a no-op
-				// for corpora where every landmark is site-wide.
-				const pageIndex = requireIndex(indices, position);
-				for (const token of requireIndex(localLandmarkTokensByPage, pageIndex)) {
-					tokens.add(token);
-				}
-				return tokens;
-			},
-		);
-
-		// Stage A: dendrogram + auto-cut + optional containment assignment
-		const blockSize = blockTokenSets.length;
-		const comparisonSets = deriveComparisonSets(blockTokenSets);
-		const merges = completeLinkageDendrogram(comparisonSets);
-		const cut = autoCutThreshold(
-			merges.map((m) => m.height),
-			similarityThreshold,
-		);
-		let roots = labelsAtThreshold(blockSize, merges, cut);
-
-		// Containment assignment only for blocks large enough to have had
-		// frequency-based comparison sets (same MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT
-		// threshold as deriveComparisonSets): below that floor, comparison sets
-		// equal raw token sets, and containment on full token sets causes chrome-
-		// dominated pages (index page whose HTML includes every nav variant) to
-		// spuriously absorb unrelated clusters.
-		if (blockSize >= MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT) {
-			const clusterTokens = new Map<number, Set<string>>();
-			const clusterPageCount = new Map<number, number>();
-			for (let i = 0; i < blockSize; i++) {
-				const r = requireIndex(roots, i);
-				let tokens = clusterTokens.get(r);
-				if (!tokens) {
-					tokens = new Set();
-					clusterTokens.set(r, tokens);
-				}
-				for (const t of requireIndex(comparisonSets, i))
-					tokens.add(collapseAnonymousDivs(t));
-				clusterPageCount.set(r, (clusterPageCount.get(r) ?? 0) + 1);
-			}
-			const entries = [...clusterTokens.entries()].map(([id, tokens]) => ({
-				id,
-				tokens: tokens as ReadonlySet<string>,
-				pageCount: clusterPageCount.get(id) ?? 0,
-			}));
-			const contResult = assignContainedClusters(entries);
-			roots = roots.map((r) => contResult.get(r) ?? r);
-		}
-
-		// Assign string cluster labels in first-seen order
-		const rootToLabel = new Map<number, string>();
-		const localLabels = roots.map((root) => {
-			let label = rootToLabel.get(root);
-			if (label === undefined) {
-				label = `cluster:${rootToLabel.size}`;
-				rootToLabel.set(root, label);
-			}
-			return label;
-		});
-
-		for (const [position, pageIndex] of indices.entries()) {
-			finalKeys[pageIndex] = JSON.stringify([
+		const result = stageAPerBlock(
+			{
 				blockKey,
-				requireIndex(localLabels, position),
-			]);
+				memberIndices: indices,
+				preparedHtml: indices.map((i) => preparedHtml[i]!),
+				landmarks: indices.map((i) => landmarks[i]!),
+				localLandmarkTokensByPage: indices.map((i) => localLandmarkTokensByPage[i]!),
+			},
+			options,
+		);
+		for (const [pageIndex, key] of result.pageKeys) {
+			finalKeys[pageIndex] = key;
 		}
-
-		// Gather CrossBlockUnit entries for Stage B
-		const unitKeyToPositions = new Map<string, number[]>();
-		for (const [position, pageIndex] of indices.entries()) {
-			const unitKey = finalKeys[pageIndex]!;
-			let positions = unitKeyToPositions.get(unitKey);
-			if (!positions) {
-				positions = [];
-				unitKeyToPositions.set(unitKey, positions);
-			}
-			positions.push(position);
-		}
-		for (const [unitKey, positions] of unitKeyToPositions) {
-			crossBlockUnits.push({
-				key: unitKey,
-				memberTokenSets: positions.map((pos) => requireIndex(blockTokenSets, pos)),
-				memberLandmarks: positions.map((pos) =>
-					requireIndex(landmarks, requireIndex(indices, pos)),
-				),
-			});
-		}
+		crossBlockUnits.push(...result.crossBlockUnits);
 	}
 
 	// Stage B: cross-block merge — always runs regardless of options
@@ -640,19 +480,6 @@ export function resolvePageClusterKeys(
 	if (!mergeRareLandmarkClusters) {
 		return finalKeys;
 	}
-	// Deliberately not a reuse of blockTokenSets (this function's own
-	// primary-clustering token sets): those follow excludeLandmarks (raw
-	// HTML, landmarks included, when false) and the Stage A frequency
-	// narrowing can further filter them for large blocks.
-	// mergeLandmarkAffinedClusters's secondary content-similarity gate is
-	// meant to be independent corroboration alongside the landmark match
-	// already used to select these pages — if it reused landmark-inclusive
-	// tokens, a bulky shared rare header's own tokens could inflate two
-	// otherwise-unrelated pages' similarity past the gate, and if it reused
-	// the frequency-narrowed set, the gate would silently test different
-	// content than its own JSDoc describes. Always tokenizing each page's
-	// landmark-excised remainderHtml here keeps the gate's evidence
-	// independent of both.
 	const mergeGateContentTokenSets = landmarks.map(
 		(entry) => new Set(tokenize(entry.remainderHtml, options).tokens),
 	);
@@ -662,4 +489,377 @@ export function resolvePageClusterKeys(
 		mergeGateContentTokenSets,
 		options,
 	);
+}
+
+/**
+ * Factory function returning an iterator over pages. Called once per streaming
+ * pass — the driver may invoke it multiple times to re-read the same corpus
+ * (once HTML-free for blocking, once again per block for HTML processing).
+ * Callers with a materialized array can wrap it as
+ * `() => pagesArray[Symbol.iterator]()`, or use
+ * {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeysFromArray}.
+ *
+ * ## Why a factory rather than an `AsyncIterable`
+ *
+ * An `AsyncIterable` returned once cannot be traversed a second time (the
+ * iterator is spent after the first `for await`). The streaming driver must
+ * read the corpus at least twice — once with HTML dropped to compute
+ * blocking keys, and once again per block to process HTML. A factory
+ * function lets the caller build a fresh iterator each pass (typically by
+ * re-opening a JSONL file or re-issuing an archive query), so per-corpus
+ * memory stays proportional to the largest single block rather than to the
+ * full corpus.
+ */
+export type PageFactory = () =>
+	Iterable<PageClusterSignals> | AsyncIterable<PageClusterSignals>;
+
+/**
+ * Streaming, memory-bounded version of `resolvePageClusterKeysInMemory`.
+ *
+ * ## Behavior gate
+ *
+ * - `pageCount ≤ CORPUS_INLINE_THRESHOLD` — reads the whole factory into an
+ *   array, delegates to `resolvePageClusterKeysInMemory`. Same corpus-wide
+ *   chrome discovery, same Stage B across every page. All previously
+ *   validated corpora (302 / 1,416 / 8,936 / 89 pages) hit this path.
+ * - `pageCount > CORPUS_INLINE_THRESHOLD` — streaming path: reads the
+ *   factory twice (once for blocking signals, once for HTML processing),
+ *   dispatches HTML per block, runs Stage A per block, accumulates
+ *   cross-block units, then runs Stage B across all accumulated units. Peak
+ *   memory ≈ largest single block, not the whole corpus.
+ *
+ * ## Semantic differences in streaming mode
+ *
+ * - **Chrome discovery is per-block, not corpus-wide.** In the in-memory
+ *   path, {@link ./resolve-page-cluster-keys.js | computeLocalLandmarkTokens}
+ *   runs on all pages at once. In streaming mode the entire corpus cannot
+ *   be held at once, so chrome discovery runs per block. A landmark
+ *   signature that is rare corpus-wide but common within one block will
+ *   be treated as global chrome in streaming mode, whereas the in-memory
+ *   mode would treat it as local. This trade-off is why the threshold
+ *   above is set generously — every real corpus historically validated
+ *   here stays on the in-memory path.
+ * - **`mergeRareLandmarkClusters` is not supported in streaming mode** — it
+ *   requires corpus-wide landmark frequency knowledge before it can decide
+ *   which are "rare." Callers who need it must ensure their corpus fits
+ *   the in-memory path.
+ * @param pages
+ * @param options
+ * @example
+ * ```ts
+ * // JSONL file source — factory can be re-invoked to re-open the file.
+ * import { createReadStream } from 'node:fs';
+ * import readline from 'node:readline';
+ *
+ * const keys = await resolvePageClusterKeys(() => {
+ *   const lines = readline.createInterface({ input: createReadStream('pages.jsonl') });
+ *   return (async function* () {
+ *     for await (const line of lines) yield JSON.parse(line);
+ *   })();
+ * });
+ * ```
+ */
+export async function resolvePageClusterKeys(
+	pages: PageFactory,
+	options?: ResolvePageClusterKeysOptions,
+): Promise<string[]> {
+	// Pass 0: HTML-free — collect blocking signals (paths, stylesheetHrefs,
+	// host) into an array. This is the only per-page state we keep across
+	// the whole corpus in streaming mode.
+	const blockingSignals: {
+		paths: readonly string[];
+		stylesheetHrefs: readonly string[];
+		host?: string;
+	}[] = [];
+	for await (const page of pages()) {
+		blockingSignals.push({
+			paths: page.paths,
+			stylesheetHrefs: page.stylesheetHrefs,
+			host: page.host,
+		});
+	}
+
+	if (blockingSignals.length === 0) return [];
+
+	// Small corpus: read the whole factory again with HTML this time, then
+	// delegate to the in-memory path unchanged. Preserves every corpus-wide
+	// semantic (chrome, Stage B) for corpora within the threshold.
+	if (blockingSignals.length <= CORPUS_INLINE_THRESHOLD) {
+		const fullPages: PageClusterSignals[] = [];
+		for await (const page of pages()) {
+			fullPages.push({
+				paths: page.paths,
+				stylesheetHrefs: page.stylesheetHrefs,
+				html: page.html,
+				host: page.host,
+			});
+		}
+		return resolvePageClusterKeysInMemory(fullPages, options);
+	}
+
+	// Large corpus: streaming path.
+	if (options?.mergeRareLandmarkClusters === true) {
+		throw new Error(
+			`resolvePageClusterKeys: mergeRareLandmarkClusters is not supported in streaming mode (pages > ${CORPUS_INLINE_THRESHOLD}). Reduce the corpus or use resolvePageClusterKeysInMemory directly.`,
+		);
+	}
+
+	const excludeLandmarks = options?.excludeLandmarks ?? true;
+	const similarityThreshold = options?.similarityThreshold ?? 0.8;
+	if (!(similarityThreshold >= 0 && similarityThreshold <= 1)) {
+		throw new RangeError(
+			`resolvePageClusterKeys: similarityThreshold must be between 0 and 1, got ${similarityThreshold}`,
+		);
+	}
+	const autoCapMainDepth = options?.autoCapMainDepth ?? true;
+	if (autoCapMainDepth) {
+		validateDetectContentDepthCapOptions(options);
+	}
+
+	const restrictStylesheetsToFirstParty =
+		options?.restrictStylesheetsToFirstParty ?? true;
+	const blockingPagesForKeys = restrictStylesheetsToFirstParty
+		? filterFirstPartyStylesheetHrefs(blockingSignals)
+		: blockingSignals;
+	const blockKeys = resolveBlockKeys(blockingPagesForKeys, options);
+	const indicesByBlockKey = groupIndicesByBlockKey(blockKeys);
+
+	const finalKeys: string[] = Array.from({ length: blockingSignals.length });
+	const crossBlockUnits: CrossBlockUnit[] = [];
+	const contentBlockAttribute = options?.contentBlockAttribute;
+
+	/**
+	 * Per-block bucket accumulates a reservoir sample of the block's pages
+	 * (at most {@link BLOCK_SAMPLE_SIZE}). When the block is fully seen, the
+	 * sample is passed through Stage A to produce this block's cluster
+	 * representatives.
+	 */
+	type BlockBucket = {
+		readonly blockKey: string;
+		readonly targetSize: number;
+		/** Reservoir-bounded arrays of the sample-selected pages, parallel. */
+		reservoirIndices: number[];
+		reservoirPreparedHtml: string[];
+		reservoirLandmarks: ExtractLandmarksResult[];
+		/** Total pages seen so far for this block (across the whole stream). */
+		seenCount: number;
+		/** Per-block PRNG state; seed derived from block key for determinism. */
+		prng: () => number;
+	};
+	/**
+	 * Post–Stage-A learned parameters for a block. Used during Pass 1b to
+	 * assign non-sample pages of that block to the block's clusters.
+	 */
+	type BlockAssignment = {
+		/** `capContentDepth`'s `maxDepth`, learned from the sample. */
+		readonly maxMainDepth: number | undefined;
+		/** Signatures that are local chrome per the sample-based auto-cut. */
+		readonly localSignatures: ReadonlySet<string>;
+		/** unitKey → the sample members' token sets that back that cluster. */
+		readonly clustersByUnitKey: ReadonlyMap<string, readonly ReadonlySet<string>[]>;
+	};
+	/** Non-sample page indices that need Pass 1b Jaccard-based assignment. */
+	const pendingAssignmentBlockKeyByIndex = new Map<number, string>();
+	/** Block-level artifacts saved after Stage A runs on the sample. */
+	const blockAssignments = new Map<string, BlockAssignment>();
+
+	const buckets = new Map<string, BlockBucket>();
+	for (const [blockKey, indices] of indicesByBlockKey) {
+		buckets.set(blockKey, {
+			blockKey,
+			targetSize: indices.length,
+			reservoirIndices: [],
+			reservoirPreparedHtml: [],
+			reservoirLandmarks: [],
+			seenCount: 0,
+			prng: makeSeededPrng(blockKey),
+		});
+	}
+
+	/**
+	 * Runs Stage A on the block's reservoir sample, records sample-member
+	 * cluster keys into `finalKeys`, saves per-cluster member token sets so
+	 * Pass 1b can Jaccard-assign non-sample pages, and appends the produced
+	 * `CrossBlockUnit`s to the Stage-B input.
+	 * @param bucket
+	 */
+	function flushBlock(bucket: BlockBucket): void {
+		const { localSignatures, localTokensByPage } = computeLocalChromeArtifacts(
+			bucket.reservoirLandmarks,
+			options,
+		);
+		const result = stageAPerBlock(
+			{
+				blockKey: bucket.blockKey,
+				memberIndices: bucket.reservoirIndices,
+				preparedHtml: bucket.reservoirPreparedHtml,
+				landmarks: bucket.reservoirLandmarks,
+				localLandmarkTokensByPage: localTokensByPage,
+			},
+			// No capMembers — the reservoir already bounds `sampleSize`.
+			options,
+		);
+		for (const [idx, key] of result.pageKeys) {
+			finalKeys[idx] = key;
+		}
+		crossBlockUnits.push(...result.crossBlockUnits);
+
+		if (bucket.seenCount > bucket.reservoirIndices.length) {
+			// Save assignment artifacts for Pass 1b.
+			const maxMainDepth =
+				(options?.autoCapMainDepth ?? true) && bucket.reservoirPreparedHtml.length > 1
+					? detectContentDepthCap(bucket.reservoirPreparedHtml, options)
+					: undefined;
+			const clustersByUnitKey = new Map<string, ReadonlySet<string>[]>();
+			for (const unit of result.crossBlockUnits) {
+				clustersByUnitKey.set(unit.key, [...unit.memberTokenSets]);
+			}
+			blockAssignments.set(bucket.blockKey, {
+				maxMainDepth,
+				localSignatures,
+				clustersByUnitKey,
+			});
+		}
+
+		// Encourage V8 to reclaim the reservoir's transient allocations.
+		const maybeGc = (globalThis as { gc?: () => void }).gc;
+		if (maybeGc !== undefined) maybeGc();
+	}
+
+	// Pass 1: stream HTML pages, reservoir-sample each block, run Stage A
+	// on the sample the moment the block is fully seen.
+	let pageIndex = 0;
+	for await (const page of pages()) {
+		const blockKey = blockKeys[pageIndex]!;
+		const bucket = buckets.get(blockKey);
+		if (bucket === undefined) {
+			throw new Error(
+				`resolvePageClusterKeys: block "${blockKey}" is missing from the bucket registry`,
+			);
+		}
+		// Reservoir sampling (Algorithm R): keep the first BLOCK_SAMPLE_SIZE
+		// pages, then for each subsequent one replace a random reservoir slot
+		// with decreasing probability.
+		if (bucket.reservoirIndices.length < BLOCK_SAMPLE_SIZE) {
+			const landmarkResult = extractLandmarks(page.html);
+			const landmarksExcised = excludeLandmarks
+				? landmarkResult.remainderHtml
+				: page.html;
+			const prepared =
+				contentBlockAttribute === undefined
+					? landmarksExcised
+					: removeContentBlocks(landmarksExcised, {
+							blockAttribute: contentBlockAttribute,
+						}).remainderHtml;
+			const strippedLandmark = { ...landmarkResult, remainderHtml: '' };
+			bucket.reservoirIndices.push(pageIndex);
+			bucket.reservoirPreparedHtml.push(prepared);
+			bucket.reservoirLandmarks.push(strippedLandmark);
+		} else {
+			const j = Math.floor(bucket.prng() * (bucket.seenCount + 1));
+			if (j < BLOCK_SAMPLE_SIZE) {
+				const landmarkResult = extractLandmarks(page.html);
+				const landmarksExcised = excludeLandmarks
+					? landmarkResult.remainderHtml
+					: page.html;
+				const prepared =
+					contentBlockAttribute === undefined
+						? landmarksExcised
+						: removeContentBlocks(landmarksExcised, {
+								blockAttribute: contentBlockAttribute,
+							}).remainderHtml;
+				const strippedLandmark = { ...landmarkResult, remainderHtml: '' };
+				const evicted = bucket.reservoirIndices[j]!;
+				pendingAssignmentBlockKeyByIndex.set(evicted, bucket.blockKey);
+				bucket.reservoirIndices[j] = pageIndex;
+				bucket.reservoirPreparedHtml[j] = prepared;
+				bucket.reservoirLandmarks[j] = strippedLandmark;
+			} else {
+				pendingAssignmentBlockKeyByIndex.set(pageIndex, bucket.blockKey);
+			}
+		}
+		bucket.seenCount++;
+
+		if (bucket.seenCount === bucket.targetSize) {
+			flushBlock(bucket);
+			buckets.delete(bucket.blockKey);
+		}
+		pageIndex++;
+	}
+
+	if (pageIndex !== blockingSignals.length) {
+		throw new Error(
+			`resolvePageClusterKeys: streaming input yielded ${pageIndex} pages but Pass 0 saw ${blockingSignals.length} — factory must produce the same pages in the same order on repeated invocations`,
+		);
+	}
+	if (buckets.size > 0) {
+		throw new Error(
+			`resolvePageClusterKeys: ${buckets.size} block(s) never reached their target size — this should not happen if the factory produced identical pages across the two passes`,
+		);
+	}
+
+	// Pass 1b: for every non-sample page (evicted from a block's reservoir
+	// or never selected), re-stream its HTML and Jaccard-assign it to the
+	// nearest sample-derived cluster in its block. Nothing is added to
+	// crossBlockUnits here — the assignment writes directly into finalKeys.
+	if (pendingAssignmentBlockKeyByIndex.size > 0) {
+		let assignPageIndex = 0;
+		for await (const page of pages()) {
+			const targetBlockKey = pendingAssignmentBlockKeyByIndex.get(assignPageIndex);
+			if (targetBlockKey !== undefined) {
+				const assignment = blockAssignments.get(targetBlockKey);
+				if (assignment !== undefined) {
+					finalKeys[assignPageIndex] = assignPageToNearestCluster(
+						page.html,
+						assignment,
+						excludeLandmarks,
+						contentBlockAttribute,
+						options,
+						targetBlockKey,
+					);
+				}
+			}
+			assignPageIndex++;
+		}
+	}
+
+	// Stage B: cross-block merge over the accumulated (sample-based) units.
+	// Each unit already has at most BLOCK_SAMPLE_SIZE members from the
+	// reservoir sampling above, so no additional cap is needed here — the
+	// per-merge cost stays bounded across rounds.
+	const stageBResult = mergeCrossBlockClusters(crossBlockUnits, {
+		...options,
+		capMembers: BLOCK_SAMPLE_SIZE,
+	});
+	for (let i = 0; i < finalKeys.length; i++) {
+		const currentKey = finalKeys[i]!;
+		const rootKey = stageBResult.get(currentKey);
+		if (rootKey !== undefined && rootKey !== currentKey) {
+			finalKeys[i] = rootKey;
+		}
+	}
+	return finalKeys;
+}
+
+/**
+ * Convenience wrapper that runs {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeys}
+ * on a materialized array. Preserves the pre-refactor sync API for callers
+ * that already have all pages in memory, while flowing through the same
+ * async driver so behavior stays consistent across the two entry points.
+ * @param pages
+ * @param options
+ * @example
+ * ```ts
+ * const keys = await resolvePageClusterKeysFromArray([
+ *   { paths: ['news', '1'], stylesheetHrefs: [], html: '<body><article>one</article></body>' },
+ *   { paths: ['news', '2'], stylesheetHrefs: [], html: '<body><article>two</article></body>' },
+ *   { paths: ['about'], stylesheetHrefs: [], html: '<body><section>about</section></body>' },
+ * ]);
+ * ```
+ */
+export function resolvePageClusterKeysFromArray(
+	pages: readonly PageClusterSignals[],
+	options?: ResolvePageClusterKeysOptions,
+): Promise<string[]> {
+	return resolvePageClusterKeys(() => pages, options);
 }
