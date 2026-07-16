@@ -103,8 +103,199 @@ export type PageData = {
 	/** HTML snapshot of the rendered DOM. */
 	html: string;
 
+	/**
+	 * Quantitative main-content metrics extracted in the browser after load.
+	 * `null` when the page is non-HTML, external, non-HTTP, or otherwise not fully scraped.
+	 * When HTML is scraped but no main region is found, this is still an object with empty arrays and `wordCount: 0`.
+	 */
+	mainContents: MainContentsData | null;
+
+	/**
+	 * `document.body.scrollHeight` at desktop-compact and mobile-small viewports.
+	 * `null` when not measured (non-HTML, external, non-HTTP, or skipped).
+	 */
+	scrollHeight: ScrollHeightData | null;
+
 	/** Always `false` for successfully scraped pages. See {@link SkippedPageData} for skipped pages. */
 	isSkipped: false;
+};
+
+/**
+ * `document.body.scrollHeight` measured at the scraper's desktop and mobile device presets.
+ */
+export type ScrollHeightData = {
+	/** Height at `desktop-compact` (width 1280), or `null` if that preset failed. */
+	desktop: number | null;
+	/** Height at `mobile-small` (width 320 @ 2x), or `null` if that preset failed. */
+	mobile: number | null;
+};
+
+/**
+ * Quantitative metrics for the detected main content region of a page.
+ * @example
+ * ```ts
+ * const { mainContents } = pageData;
+ * if (mainContents) {
+ *   console.log(mainContents.wordCount, mainContents.headings.length);
+ * }
+ * ```
+ */
+export type MainContentsData = {
+	/** `document.title` trimmed. Empty string when the title is empty. */
+	title: string;
+	/**
+	 * Identifying info for the detected main region element.
+	 * `null` when no selector matched (arrays are empty and `wordCount` is `0`).
+	 */
+	main: MainContentsMainTag | null;
+	/**
+	 * Character count of the main region's `textContent` after whitespace removal.
+	 * `0` when no main region was found or the text is whitespace-only.
+	 */
+	wordCount: number;
+	/**
+	 * Character count of `document.body` `textContent` after whitespace removal.
+	 * Measured even when no main region is found (`0` if `body` is missing).
+	 */
+	bodyWordCount: number;
+	/** Headings (`h1`–`h6`) inside the main region, in DOM order. */
+	headings: MainContentsHeading[];
+	/** Images (`img`, `input[type=image]`) inside the main region, in DOM order. */
+	images: MainContentsImage[];
+	/** Tables inside the main region, in DOM order. */
+	tables: MainContentsTable[];
+	/** Button-like elements inside the main region, in DOM order. */
+	buttons: MainContentsButton[];
+	/** Iframes inside the main region, in DOM order. */
+	iframes: MainContentsIframe[];
+	/** Videos inside the main region, in DOM order. */
+	videos: MainContentsVideo[];
+	/** Audios inside the main region, in DOM order. */
+	audios: MainContentsAudio[];
+	/** Canvases inside the main region, in DOM order. */
+	canvases: MainContentsCanvas[];
+};
+
+/**
+ * Identifying information about the DOM element used as the main content area.
+ */
+export type MainContentsMainTag = {
+	/** Element tag name (e.g. `"MAIN"`, `"DIV"`), as reported by `nodeName`. */
+	nodeName: string;
+	/** The element's `id`, or `null` when empty/absent. */
+	id: string | null;
+	/** CSS class names on the element. */
+	classList: string[];
+	/** The WAI-ARIA `role` attribute value, or `null` when absent. */
+	role: string | null;
+	/**
+	 * A simple diagnostic CSS selector built from tag + id + classes
+	 * (not `@medv/finder`). // cspell:disable-line
+	 */
+	selector: string;
+};
+
+/**
+ * A heading element (`h1`–`h6`) found within the main content area.
+ */
+export type MainContentsHeading = {
+	/** Heading text after whitespace removal, or `null` when empty. */
+	text: string | null;
+	/** Heading level from the tag name. */
+	level: 1 | 2 | 3 | 4 | 5 | 6;
+};
+
+/**
+ * An `<img>` or `<input type="image">` element found in the main content.
+ */
+export type MainContentsImage = {
+	/** Resolved absolute `src` URL. */
+	src: string;
+	/** `alt` attribute value (may be an empty string). */
+	alt: string;
+};
+
+/**
+ * Structural summary of a `<table>` found within the main content.
+ */
+export type MainContentsTable = {
+	/** Number of `<tr>` elements. */
+	rows: number;
+	/** Number of `th`/`td` cells in the first row, or `0` when there is no row. */
+	cols: number;
+	/** Whether the table contains a `<thead>`. */
+	hasHeader: boolean;
+	/** Whether the table contains a `<tfoot>`. */
+	hasFooter: boolean;
+	/** Whether any cell uses `colspan` or `rowspan`. */
+	hasMergedCell: boolean;
+};
+
+/**
+ * A button-like element found in the main content
+ * (`button`, `[role=button]`, `[class*=button]`, `[class*=btn]`).
+ */
+export type MainContentsButton = {
+	/** Element tag name (e.g. `"BUTTON"`, `"A"`, `"DIV"`). */
+	nodeName: string;
+	/** `role` attribute, or `null` when absent. */
+	role: string | null;
+	/** `type` for `<button>` / `<input>`, otherwise `null`. */
+	type: string | null;
+	/** Label text after whitespace removal, or `null` when empty. */
+	text: string | null;
+	/** `true` when `disabled` or `aria-disabled="true"`. */
+	disabled: boolean;
+};
+
+/**
+ * An `<iframe>` found in the main content.
+ */
+export type MainContentsIframe = {
+	/** Resolved absolute `src` URL (empty string when unset). */
+	src: string;
+	/** `title` attribute, or `null` when the attribute is absent. */
+	title: string | null;
+	/** Raw `width` attribute string, or `null` when absent. */
+	width: string | null;
+	/** Raw `height` attribute string, or `null` when absent. */
+	height: string | null;
+};
+
+/**
+ * A `<video>` found in the main content.
+ */
+export type MainContentsVideo = {
+	/**
+	 * Resolved media URL: `currentSrc`, else `src` attribute, else first `source[src]`, else `""`.
+	 */
+	src: string;
+	/** Resolved `poster` URL, or `null` when unset. */
+	poster: string | null;
+	/** IDL `width` in pixels. */
+	width: number;
+	/** IDL `height` in pixels. */
+	height: number;
+};
+
+/**
+ * An `<audio>` found in the main content.
+ */
+export type MainContentsAudio = {
+	/**
+	 * Resolved media URL: `currentSrc`, else `src` attribute, else first `source[src]`, else `""`.
+	 */
+	src: string;
+};
+
+/**
+ * A `<canvas>` found in the main content.
+ */
+export type MainContentsCanvas = {
+	/** IDL bitmap width. */
+	width: number;
+	/** IDL bitmap height. */
+	height: number;
 };
 
 /**
@@ -427,4 +618,9 @@ export type ScraperOptions = {
 	 * Default: 180_000 (180s, aligned with the upstream retryable timeout).
 	 */
 	domEvaluationTimeout?: number;
+	/**
+	 * CSS selector prepended to the default main-content detection list
+	 * (highest priority). When omitted or `null`, only the built-in selectors are used.
+	 */
+	mainContentSelector?: string | null;
 };

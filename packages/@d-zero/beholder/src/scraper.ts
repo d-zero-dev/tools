@@ -10,6 +10,7 @@ import type {
 	PageData,
 	ParseURLOptions,
 	Resource,
+	ScrollHeightData,
 	SkippedPageData,
 } from './types.js';
 import type { PageScanPhase } from '@d-zero/puppeteer-page-scan';
@@ -28,8 +29,11 @@ import {
 	getImageList,
 	getMeta,
 } from './dom-evaluation.js';
+import { getMainContents } from './get-main-contents.js';
 import { isError } from './is-error.js';
+import { isHtmlContentType } from './is-html-content-type.js';
 import { keywordCheck } from './keyword-check.js';
+import { measureScrollHeight } from './measure-scroll-height.js';
 import { emptyMeta } from './meta/classify.js';
 import { findDisconnectionFailures } from './network-disconnection.js';
 import { parseUrl } from './parse-url.js';
@@ -148,6 +152,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				imageList: [],
 				anchorList: [],
 				html: '',
+				mainContents: null,
+				scrollHeight: null,
 				isSkipped: false,
 			};
 
@@ -176,12 +182,14 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				pageData: {
 					...headResult,
 					isTarget: false,
+					mainContents: headResult.mainContents ?? null,
+					scrollHeight: headResult.scrollHeight ?? null,
 				},
 				resources,
 			};
 		}
 
-		if (headResult === null || headResult.contentType === 'text/html') {
+		if (headResult === null || isHtmlContentType(headResult.contentType)) {
 			const fetchResult = await this.#fetchData(
 				page,
 				url,
@@ -555,7 +563,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		const _contentLength = Number.parseInt(responseHeaders['content-length'] ?? '');
 		const contentLength = Number.isFinite(_contentLength) ? _contentLength : null;
 
-		if (contentType !== 'text/html') {
+		if (!isHtmlContentType(contentType)) {
 			return {
 				url,
 				isTarget: false,
@@ -570,6 +578,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				imageList: [],
 				anchorList: [],
 				html: '',
+				mainContents: null,
+				scrollHeight: null,
 				isSkipped: false,
 			};
 		}
@@ -619,6 +629,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				imageList: [],
 				anchorList: [],
 				html,
+				mainContents: null,
+				scrollHeight: null,
 				isSkipped: false,
 			};
 		}
@@ -643,6 +655,10 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				.join(', ');
 			throw new Error(`Network disconnection detected during page load: ${errorSummary}`);
 		}
+
+		const mainContents = await getMainContents(page, {
+			mainContentSelector: options?.mainContentSelector,
+		});
 
 		void this.emit('changePhase', {
 			pid: process.pid,
@@ -671,24 +687,29 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			domEvaluationTimeout,
 		);
 
-		const imageList = captureImages
-			? await (async () => {
-					void this.emit('changePhase', {
-						pid: process.pid,
-						name: 'extractImages',
-						url,
-						isExternal,
-						message: `%countdown(${domEvaluationTimeout},extractImages_${url.withoutHash},s)%s`,
-					});
-					return this.#fetchImages(
-						page,
-						url.withoutHashAndAuth,
-						isExternal,
-						imageLoadTimeout,
-						domEvaluationTimeout,
-					);
-				})()
-			: [];
+		let imageList: ImageElement[] = [];
+		let scrollHeight: ScrollHeightData | null = null;
+
+		if (captureImages) {
+			void this.emit('changePhase', {
+				pid: process.pid,
+				name: 'extractImages',
+				url,
+				isExternal,
+				message: `%countdown(${domEvaluationTimeout},extractImages_${url.withoutHash},s)%s`,
+			});
+			const fetched = await this.#fetchImages(
+				page,
+				url.withoutHashAndAuth,
+				isExternal,
+				imageLoadTimeout,
+				domEvaluationTimeout,
+			);
+			imageList = fetched.imageList;
+			scrollHeight = fetched.scrollHeight;
+		} else {
+			scrollHeight = await measureScrollHeight(page);
+		}
 
 		return {
 			url,
@@ -704,6 +725,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			anchorList,
 			imageList,
 			html,
+			mainContents,
+			scrollHeight,
 			isSkipped: false,
 		};
 	}
@@ -719,12 +742,12 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * changes and triggers a reload. Isolating each device preset allows partial
 	 * results — if one viewport fails, the other can still succeed.
 	 *
-	 * WHY retryable with 20-min timeout and `fallback: []`: Image extraction is
-	 * best-effort. If all retries fail, an empty array is returned rather than
-	 * failing the entire page scrape. The 20-min wall clock accommodates pages
-	 * whose mobile-small `scrollHeight` reaches ~300k px (observed on
-	 * responsive data tables, which take ~5 min to scroll). A shorter timeout
-	 * causes a second retry to start while the previous attempt's
+	 * WHY retryable with 20-min timeout and empty fallback: Image extraction is
+	 * best-effort. If all retries fail, empty images and null scroll heights are
+	 * returned rather than failing the entire page scrape. The 20-min wall clock
+	 * accommodates pages whose mobile-small `scrollHeight` reaches ~300k px
+	 * (observed on responsive data tables, which take ~5 min to scroll). A shorter
+	 * timeout causes a second retry to start while the previous attempt's
 	 * `scrollAllOver` is still running its `page.evaluate` calls in the
 	 * background — `Promise.race` in `retry.ts` does not cancel `fn()`. The
 	 * collision then surfaces as "Attempted to use detached Frame" or
@@ -736,16 +759,22 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * preset entirely keeps the timeout-vs-background-evaluate collision from
 	 * ever being triggered, at the cost of losing that viewport's image data
 	 * for those pages. See {@link MAX_SCROLL_HEIGHT} for the chosen threshold.
+	 *
+	 * Scroll heights are still recorded when scrolling is skipped for the
+	 * height limit — the measurement from `beforePageScan` is kept.
 	 * @param page - Puppeteer page instance
 	 * @param url - The page URL string (without hash and auth)
 	 * @param isExternal - Whether the page is external
 	 * @param imageLoadTimeout - Timeout (ms) for waiting images to complete loading
 	 * @param domEvaluationTimeout - Timeout (ms) for the in-page image extraction `page.evaluate`
-	 * @returns Array of image elements from all device presets (may be partial if some viewports failed)
+	 * @returns Image elements plus desktop/mobile scroll heights from the scan path
 	 */
 	@retryable({
 		timeout: 20 * 60 * 1000,
-		fallback: [],
+		fallback: {
+			imageList: [],
+			scrollHeight: { desktop: null, mobile: null },
+		},
 		onWait(this: Scraper, determinedInterval, retryCount, methodName, error) {
 			void this.emit('changePhase', {
 				pid: process.pid,
@@ -771,15 +800,20 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		isExternal: boolean,
 		imageLoadTimeout: number,
 		domEvaluationTimeout: number,
-	): Promise<ImageElement[]> {
+	): Promise<{ imageList: ImageElement[]; scrollHeight: ScrollHeightData }> {
 		const listener = this.#createPageScanListener(isExternal);
-		const devices: { key: string; preset: { width: number; resolution?: number } }[] = [
+		const devices: {
+			key: 'desktop-compact' | 'mobile-small';
+			preset: { width: number; resolution?: number };
+		}[] = [
 			{ key: 'desktop-compact', preset: devicePresets['desktop-compact'] },
 			{ key: 'mobile-small', preset: devicePresets['mobile-small'] },
 		];
 		const imageList: ImageElement[] = [];
+		const scrollHeight: ScrollHeightData = { desktop: null, mobile: null };
 
 		for (const { key, preset } of devices) {
+			const scrollKey = key === 'desktop-compact' ? 'desktop' : 'mobile';
 			try {
 				void this.emit('changePhase', {
 					pid: process.pid,
@@ -797,6 +831,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					timeout: 5000,
 					maxScrollHeight: MAX_SCROLL_HEIGHT,
 				});
+
+				scrollHeight[scrollKey] = scanResult.scrollHeight;
 
 				if (!scanResult.scrolled) {
 					void this.emit('changePhase', {
@@ -845,6 +881,6 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			}
 		}
 
-		return imageList;
+		return { imageList, scrollHeight };
 	}
 }
