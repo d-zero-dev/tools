@@ -1,6 +1,6 @@
 # `@d-zero/beholder`
 
-Puppeteer の `Page` を受け取り、単一ページのメタデータ・リンク・画像・ネットワークリソースを収集するインプロセス型スクレイパー。結果は `ScrapeResult` として戻り値で返却される（イベント経由ではない）。ブラウザ管理は呼び出し側の責任。
+Puppeteer の `Page` を受け取り、単一ページのメタデータ・リンク・画像・ネットワークリソースに加え、メインコンテンツの定量データと desktop/mobile の `scrollHeight` を収集するインプロセス型スクレイパー。結果は `ScrapeResult` として戻り値で返却される（イベント経由ではない）。ブラウザ管理は呼び出し側の責任。
 
 ## Installation
 
@@ -26,12 +26,47 @@ const result = await scraper.scrapeStart(page, parseUrl('https://example.com'), 
 	isExternal: false,
 });
 
-if (result.type === 'success') {
-	console.log(result.pageData?.meta.title);
+if (result.type === 'success' && result.pageData) {
+	console.log(result.pageData.meta.title);
+	console.log(result.pageData.mainContents?.wordCount);
+	console.log(result.pageData.scrollHeight);
 }
 ```
 
 設計判断（イベントではなく戻り値で返す理由、`page` のライフサイクル責務、リトライ機構など）は `src/scraper.ts` の JSDoc を参照。
+
+## 取得フロー
+
+```mermaid
+flowchart TD
+  goto[page.goto]
+  ct{content-type is text/html?}
+  early[both null]
+  html[get HTML]
+  ext{isExternal?}
+  extOut[title-only; both null]
+  idle[networkidle]
+  mc["page.evaluate: mainContents"]
+  anchors[getAnchorList / getMeta]
+  imgs{captureImages?}
+  fetchImg["#fetchImages + collect scrollHeight"]
+  light["measureScrollHeight light path"]
+  done[return PageData]
+
+  goto --> ct
+  ct -->|no| early
+  ct -->|yes| html --> ext
+  ext -->|yes| extOut
+  ext -->|no| idle --> mc --> anchors --> imgs
+  imgs -->|yes| fetchImg --> done
+  imgs -->|no| light --> done
+```
+
+## 返却データ（`PageData` の追加分）
+
+- `mainContents`: メイン領域の定量（`wordCount` / `bodyWordCount`、見出し・画像・表・ボタン・iframe / video / audio / canvas の配列、検出した `main` の識別情報）。メイン未検出時もオブジェクトは返り、配列は空・`wordCount` は 0（非 HTML 等で取得しなかったときだけ `null`）
+- `scrollHeight`: `{ desktop, mobile }`（各 `number | null`）。未計測時はフィールド全体が `null`
+- 配列要素のフィールド詳細は型（`MainContents*` / `ScrollHeightData`）を参照
 
 ## DOM 文字列からメタ抽出（Puppeteer なし）
 
