@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/beholder",
-	"version": "3.1.6",
+	"version": "4.0.0",
 	"description": "Page-level scraper for web crawling and auditing",
 	"author": "D-ZERO",
 	"license": "MIT",

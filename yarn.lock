@@ -1133,7 +1133,7 @@ __metadata:
   dependencies:
     "@d-zero/cli-core": "npm:1.3.13"
     "@d-zero/fs": "npm:0.2.6"
-    "@d-zero/html-distiller": "npm:2.0.10"
+    "@d-zero/html-distiller": "npm:2.0.11"
     "@d-zero/puppeteer-dealer": "npm:0.7.20"
     "@d-zero/puppeteer-page-scan": "npm:4.6.5"
     "@d-zero/puppeteer-screenshot": "npm:3.4.8"
@@ -1317,7 +1317,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/html-distiller@npm:2.0.10, @d-zero/html-distiller@workspace:packages/@d-zero/html-distiller":
+"@d-zero/html-distiller@npm:2.0.11, @d-zero/html-distiller@workspace:packages/@d-zero/html-distiller":
   version: 0.0.0-use.local
   resolution: "@d-zero/html-distiller@workspace:packages/@d-zero/html-distiller"
   dependencies:
@@ -1376,7 +1376,7 @@ __metadata:
   resolution: "@d-zero/print@workspace:packages/@d-zero/print"
   dependencies:
     "@d-zero/cli-core": "npm:1.3.13"
-    "@d-zero/html-distiller": "npm:2.0.10"
+    "@d-zero/html-distiller": "npm:2.0.11"
     "@d-zero/puppeteer-dealer": "npm:0.7.20"
     "@d-zero/puppeteer-page-scan": "npm:4.6.5"
     "@d-zero/puppeteer-screenshot": "npm:3.4.8"

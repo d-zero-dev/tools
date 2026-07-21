@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.1.6...@d-zero/beholder@4.0.0) (2026-07-21)
+
+- feat(beholder)!: enrich PageData with mainContents metrics and scrollHeight ([8a0fc72](https://github.com/d-zero-dev/tools/commit/8a0fc72412295a92850b2c2fa2fa8cd8145eb5f6))
+
+### BREAKING CHANGES
+
+- PageData now requires mainContents and scrollHeight fields.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
 ## [3.1.6](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.1.5...@d-zero/beholder@3.1.6) (2026-07-14)
 
 **Note:** Version bump only for package @d-zero/beholder
