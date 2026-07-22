@@ -18,7 +18,7 @@ export { detectCompress } from '@d-zero/shared/detect-compress';
 export type { CompressType } from '@d-zero/shared/detect-compress';
 export { detectCDN } from '@d-zero/shared/detect-cdn';
 export type { CDNType } from '@d-zero/shared/detect-cdn';
-export type { ScrapeResult, ResourceEntry, PageData } from './types.js';
+export type { ScrapeResult, ResourceEntry, ConsoleLogEntry, PageData } from './types.js';
 export type { ScraperOptions, ChangePhaseEvent, ScraperEventTypes } from './types.js';
 export type {
 	Resource,

@@ -68,6 +68,16 @@ flowchart TD
 - `scrollHeight`: `{ desktop, mobile }`（各 `number | null`）。未計測時はフィールド全体が `null`
 - 配列要素のフィールド詳細は型（`MainContents*` / `ScrollHeightData`）を参照
 
+## console ログ・未捕捉例外の収集
+
+`ScrapeResult.consoleLogs`（`ConsoleLogEntry[]`）に、内部ページ（`isExternal: false`）が出力した `console` メッセージ（全type）と、未捕捉例外・未処理の Promise rejection（`page.on('pageerror')`、`type: 'pageerror'` として区別、スタックトレース付き）が格納される。`resources` と同様に `pageUrl` を持つ戻り値配列で、イベント経由では提供されない。`result.type` が `"success"` / `"skipped"` / `"error"` のいずれであっても常に配列として存在する（該当ログがなければ空配列）ため、エラー発生時のデバッグにもそのまま使える。
+
+```ts
+for (const entry of result.consoleLogs) {
+	console.log(entry.type, entry.text, entry.args);
+}
+```
+
 ## DOM 文字列からメタ抽出（Puppeteer なし）
 
 HTML 文字列を jsdom などでパースしてから `Meta` を取り出したい場合、`extractMetaFromDocument` を使う。`Scraper` が内部で呼ぶ `collectHead → detectTags → classify` パイプラインと同じ実装を再利用するため、戻り値の `Meta` 形状は `scrapeStart` と同一。DOM ライブラリ（jsdom 等）はユーザランドの責務。

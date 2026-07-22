@@ -1,5 +1,6 @@
 import type {
 	ChangePhaseEvent,
+	ConsoleLogEntry,
 	ResourceEntry,
 	ScraperEventTypes,
 	ScraperOptions,
@@ -14,7 +15,7 @@ import type {
 	SkippedPageData,
 } from './types.js';
 import type { PageScanPhase } from '@d-zero/puppeteer-page-scan';
-import type { Dialog, HTTPRequest, HTTPResponse, Page } from 'puppeteer';
+import type { ConsoleMessage, Dialog, HTTPRequest, HTTPResponse, Page } from 'puppeteer';
 
 import { beforePageScan, devicePresets } from '@d-zero/puppeteer-page-scan';
 import { detectCDN } from '@d-zero/shared/detect-cdn';
@@ -37,6 +38,8 @@ import { measureScrollHeight } from './measure-scroll-height.js';
 import { emptyMeta } from './meta/classify.js';
 import { findDisconnectionFailures } from './network-disconnection.js';
 import { parseUrl } from './parse-url.js';
+import { toConsoleLogEntry } from './to-console-log-entry.js';
+import { toPageErrorEntry } from './to-page-error-entry.js';
 
 const pid = `${process.pid}`;
 const log = scraperLog.extend(pid);
@@ -86,7 +89,10 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * - `type: "error"` with `error` details when scraping fails
 	 *
 	 * Sub-resources are collected via the `resourceResponse` event and
-	 * included in the returned `ScrapeResult.resources`.
+	 * included in the returned `ScrapeResult.resources`. Console messages and
+	 * uncaught page errors (internal pages only) are collected via
+	 * Puppeteer's `console`/`pageerror` page events and included in
+	 * `ScrapeResult.consoleLogs`.
 	 * @param page - The Puppeteer page instance to use for navigation and DOM evaluation.
 	 * @param url - The extended URL to scrape.
 	 * @param options - Optional scraper configuration overriding defaults.
@@ -106,6 +112,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		const metadataOnly = options?.metadataOnly ?? false;
 		const imageLoadTimeout = options?.imageLoadTimeout ?? 5000;
 		const resources: ResourceEntry[] = [];
+		const consoleLogs: ConsoleLogEntry[] = [];
 		const failedRequests: Array<{ url: string; errorText: string }> = [];
 
 		void this.emit('changePhase', {
@@ -128,6 +135,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			return {
 				type: 'skipped',
 				resources,
+				consoleLogs,
 				ignored: {
 					url,
 					matchedText: url.pathname || '',
@@ -164,7 +172,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				isExternal,
 				message: '',
 			});
-			return { type: 'success', pageData: result, resources };
+			return { type: 'success', pageData: result, resources, consoleLogs };
 		}
 
 		let headResult: PageData | SkippedPageData | null = options?.headCheckResult ?? null;
@@ -186,6 +194,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					scrollHeight: headResult.scrollHeight ?? null,
 				},
 				resources,
+				consoleLogs,
 			};
 		}
 
@@ -197,6 +206,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				captureImages,
 				imageLoadTimeout,
 				resources,
+				consoleLogs,
 				failedRequests,
 				options,
 			).catch((error) => {
@@ -212,6 +222,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				return {
 					type: 'error',
 					resources,
+					consoleLogs,
 					failedRequests: failedRequests.length > 0 ? failedRequests : undefined,
 					error: {
 						name: fetchResult.name,
@@ -246,6 +257,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					return {
 						type: 'skipped',
 						resources,
+						consoleLogs,
 						ignored: {
 							url,
 							matchedText: url.pathname || '',
@@ -263,6 +275,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				return {
 					type: 'skipped',
 					resources,
+					consoleLogs,
 					ignored: {
 						url,
 						matchedText: headResult.matched.text,
@@ -284,6 +297,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			type: 'success',
 			pageData: headResult,
 			resources,
+			consoleLogs,
 			failedRequests: failedRequests.length > 0 ? failedRequests : undefined,
 		};
 	}
@@ -342,7 +356,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * Frame" or "Session closed".
 	 *
 	 * Flow:
-	 * 1. Register request/response/requestfailed listeners to capture sub-resources (internal pages only)
+	 * 1. Register request/response/requestfailed/console/pageerror listeners to
+	 *    capture sub-resources and console output (internal pages only)
 	 * 2. Navigate to URL via `page.goto()` and track redirect chain
 	 * 3. Wait for DOM content and network idle
 	 * 4. Check for network disconnection errors and throw to trigger retry
@@ -354,6 +369,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * @param captureImages - Whether to run the image extraction pipeline
 	 * @param imageLoadTimeout - Timeout (ms) for waiting lazy-loaded images to complete
 	 * @param resources - Mutable array to collect captured sub-resources into
+	 * @param consoleLogs - Mutable array to collect captured console messages / page errors into
 	 * @param failedRequests - Mutable array to collect failed sub-resource requests into
 	 * @param options - Additional scraper options (e.g. `disableQueries`, `navigationTimeout`)
 	 * @returns Full page data or skipped page data if an exclusion rule matched
@@ -386,6 +402,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		captureImages: boolean,
 		imageLoadTimeout: number,
 		resources: ResourceEntry[],
+		consoleLogs: ConsoleLogEntry[],
 		failedRequests: Array<{ url: string; errorText: string }>,
 		options?: Partial<ScraperOptions>,
 	): Promise<PageData | SkippedPageData> {
@@ -396,12 +413,16 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		const domEvaluationTimeout =
 			options?.domEvaluationTimeout ?? DEFAULT_DOM_EVALUATION_TIMEOUT;
 		const networkLogs: Record<string, NetworkLog> = {};
+		// Tracks in-flight `toConsoleLogEntry()` resolutions (async `jsonValue()`
+		// extraction) so callers can await them before reading `consoleLogs`.
+		const pendingConsoleWork: Promise<void>[] = [];
 
 		// Clear stale state from previous retries (@retryable may re-invoke this method
 		// with the same page and mutable arrays, so we must reset to avoid accumulation)
 		this.#cleanupPageListeners();
 		failedRequests.length = 0;
 		resources.length = 0;
+		consoleLogs.length = 0;
 
 		// Define named listeners so they can be individually removed on retry/cleanup
 		const onDialog = async (dialog: Dialog) => {
@@ -418,6 +439,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		let onRequest: ((req: HTTPRequest) => void) | null = null;
 		let onResponse: ((res: HTTPResponse) => void) | null = null;
 		let onRequestFailed: ((req: HTTPRequest) => void) | null = null;
+		let onConsole: ((msg: ConsoleMessage) => void) | null = null;
+		let onPageError: ((error: unknown) => void) | null = null;
 
 		if (!isExternal) {
 			onRequest = (request: HTTPRequest) => {
@@ -503,9 +526,30 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				failedRequests.push({ url: request.url(), errorText });
 			};
 
+			onConsole = (msg: ConsoleMessage) => {
+				pendingConsoleWork.push(
+					toConsoleLogEntry(msg, url.withoutHash).then(
+						(entry) => {
+							consoleLogs.push(entry);
+						},
+						(error) => {
+							// A single malformed console message must not fail the whole
+							// scrape (e.g. mid-navigation execution-context teardown).
+							log('Error(CONSOLE_LOG): %s', error);
+						},
+					),
+				);
+			};
+
+			onPageError = (error: unknown) => {
+				consoleLogs.push(toPageErrorEntry(error, url.withoutHash));
+			};
+
 			page.on('request', onRequest);
 			page.on('response', onResponse);
 			page.on('requestfailed', onRequestFailed);
+			page.on('console', onConsole);
+			page.on('pageerror', onPageError);
 		}
 
 		// Store cleanup function for retry/post-fetch removal
@@ -514,221 +558,235 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			if (onRequest) page.off('request', onRequest);
 			if (onResponse) page.off('response', onResponse);
 			if (onRequestFailed) page.off('requestfailed', onRequestFailed);
+			if (onConsole) page.off('console', onConsole);
+			if (onPageError) page.off('pageerror', onPageError);
 		};
 
 		const navigationTimeout = options?.navigationTimeout ?? 60_000;
 
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'openPage',
-			url,
-			isExternal,
-			message: `%countdown(${navigationTimeout},openPage_${url.withoutHash},s)%s`,
-		});
-
-		if (url.username && url.password) {
-			await page.setExtraHTTPHeaders({
-				Authorization: `Basic ${Buffer.from(`${url.username}:${url.password}`).toString('base64')}`,
-			});
-		}
-
-		const res = await page.goto(url.withoutHashAndAuth, { timeout: navigationTimeout });
-
-		if (!res) {
-			throw new Error('The method Page.goto returned null');
-		}
-
-		const destUrl = parseUrl(page.url(), parseOpts)!;
-		const redirectPaths = new Set<string>();
-
-		if (url.withoutHash !== destUrl.withoutHash) {
-			const redirectChain = res
-				.request()
-				.redirectChain()
-				.map((req) => req.url());
-			for (const redirectPath of redirectChain) {
-				redirectPaths.add(redirectPath);
-			}
-			redirectPaths.add(destUrl.withoutHash);
-		}
-
-		if (destUrl.hostname !== url.hostname) {
-			isExternal = true;
-		}
-
-		const status = res.status();
-		const statusText = res.statusText();
-		const responseHeaders = res.headers();
-		const contentType = responseHeaders['content-type']?.split(';')[0] || null;
-		const _contentLength = Number.parseInt(responseHeaders['content-length'] ?? '');
-		const contentLength = Number.isFinite(_contentLength) ? _contentLength : null;
-
-		if (!isHtmlContentType(contentType)) {
-			return {
-				url,
-				isTarget: false,
-				isExternal,
-				redirectPaths: [...redirectPaths],
-				status,
-				statusText,
-				contentType,
-				contentLength,
-				responseHeaders,
-				meta: emptyMeta(),
-				imageList: [],
-				anchorList: [],
-				html: '',
-				mainContents: null,
-				scrollHeight: null,
-				isSkipped: false,
-			};
-		}
-
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'loadDOMContent',
-			url,
-			isExternal,
-			message: '',
-		});
-
-		await page
-			.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 5000 })
-			.catch(() => {});
-
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'getHTML',
-			url,
-			isExternal,
-			message: '',
-		});
-
-		const { title, html } = await page.evaluate(() => {
-			/* global document */
-			return {
-				title: document.title,
-				html: document.documentElement.outerHTML,
-			};
-		});
-
-		if (isExternal) {
-			const externalMeta = emptyMeta();
-			externalMeta.title = title;
-			return {
-				url,
-				isTarget: false,
-				isExternal,
-				redirectPaths: [...redirectPaths],
-				status,
-				statusText,
-				contentType,
-				contentLength,
-				responseHeaders,
-				meta: externalMeta,
-				imageList: [],
-				anchorList: [],
-				html,
-				mainContents: null,
-				scrollHeight: null,
-				isSkipped: false,
-			};
-		}
-
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'waitNetworkIdle',
-			url,
-			isExternal,
-			message: '',
-		});
-
-		await page
-			.waitForNavigation({ waitUntil: 'networkidle0', timeout: 5000 })
-			.catch(() => {});
-
-		// Check for network disconnection errors in failed requests
-		const disconnectionFailures = findDisconnectionFailures(failedRequests);
-		if (disconnectionFailures.length > 0) {
-			const errorSummary = disconnectionFailures
-				.map((r) => `${r.url} (${r.errorText})`)
-				.join(', ');
-			throw new Error(`Network disconnection detected during page load: ${errorSummary}`);
-		}
-
-		const mainContents = await getMainContents(page, {
-			mainContentSelector: options?.mainContentSelector,
-		});
-
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'getAnchors',
-			url,
-			isExternal,
-			message: `%countdown(${domEvaluationTimeout},getAnchors_${url.withoutHash},s)%s`,
-		});
-		const anchorList = await getAnchorList(page, parseOpts, domEvaluationTimeout);
-
-		void this.emit('changePhase', {
-			pid: process.pid,
-			name: 'getMeta',
-			url,
-			isExternal,
-			message: `%countdown(${domEvaluationTimeout},getMeta_${url.withoutHash},s)%s`,
-		});
-		const meta = await getMeta(
-			page,
-			{
-				url: url.withoutHashAndAuth,
-				html,
-				statusCode: status,
-				headers: responseHeaders ?? undefined,
-			},
-			domEvaluationTimeout,
-		);
-
-		let imageList: ImageElement[] = [];
-		let scrollHeight: ScrollHeightData | null = null;
-
-		if (captureImages) {
+		// The whole navigation/extraction sequence below is wrapped in `finally`
+		// so that `pendingConsoleWork` is always awaited exactly once — on every
+		// return AND on every throw (e.g. `Page.goto returned null`, network
+		// disconnection). A per-return-statement `await` would miss thrown exits
+		// and let a still-resolving `toConsoleLogEntry()` push into `consoleLogs`
+		// after a `@retryable` retry has already cleared it for a new attempt.
+		try {
 			void this.emit('changePhase', {
 				pid: process.pid,
-				name: 'extractImages',
+				name: 'openPage',
 				url,
 				isExternal,
-				message: `%countdown(${domEvaluationTimeout},extractImages_${url.withoutHash},s)%s`,
+				message: `%countdown(${navigationTimeout},openPage_${url.withoutHash},s)%s`,
 			});
-			const fetched = await this.#fetchImages(
-				page,
-				url.withoutHashAndAuth,
+
+			if (url.username && url.password) {
+				await page.setExtraHTTPHeaders({
+					Authorization: `Basic ${Buffer.from(`${url.username}:${url.password}`).toString('base64')}`,
+				});
+			}
+
+			const res = await page.goto(url.withoutHashAndAuth, { timeout: navigationTimeout });
+
+			if (!res) {
+				throw new Error('The method Page.goto returned null');
+			}
+
+			const destUrl = parseUrl(page.url(), parseOpts)!;
+			const redirectPaths = new Set<string>();
+
+			if (url.withoutHash !== destUrl.withoutHash) {
+				const redirectChain = res
+					.request()
+					.redirectChain()
+					.map((req) => req.url());
+				for (const redirectPath of redirectChain) {
+					redirectPaths.add(redirectPath);
+				}
+				redirectPaths.add(destUrl.withoutHash);
+			}
+
+			if (destUrl.hostname !== url.hostname) {
+				isExternal = true;
+			}
+
+			const status = res.status();
+			const statusText = res.statusText();
+			const responseHeaders = res.headers();
+			const contentType = responseHeaders['content-type']?.split(';')[0] || null;
+			const _contentLength = Number.parseInt(responseHeaders['content-length'] ?? '');
+			const contentLength = Number.isFinite(_contentLength) ? _contentLength : null;
+
+			if (!isHtmlContentType(contentType)) {
+				return {
+					url,
+					isTarget: false,
+					isExternal,
+					redirectPaths: [...redirectPaths],
+					status,
+					statusText,
+					contentType,
+					contentLength,
+					responseHeaders,
+					meta: emptyMeta(),
+					imageList: [],
+					anchorList: [],
+					html: '',
+					mainContents: null,
+					scrollHeight: null,
+					isSkipped: false,
+				};
+			}
+
+			void this.emit('changePhase', {
+				pid: process.pid,
+				name: 'loadDOMContent',
+				url,
 				isExternal,
-				imageLoadTimeout,
+				message: '',
+			});
+
+			await page
+				.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 5000 })
+				.catch(() => {});
+
+			void this.emit('changePhase', {
+				pid: process.pid,
+				name: 'getHTML',
+				url,
+				isExternal,
+				message: '',
+			});
+
+			const { title, html } = await page.evaluate(() => {
+				/* global document */
+				return {
+					title: document.title,
+					html: document.documentElement.outerHTML,
+				};
+			});
+
+			if (isExternal) {
+				const externalMeta = emptyMeta();
+				externalMeta.title = title;
+				return {
+					url,
+					isTarget: false,
+					isExternal,
+					redirectPaths: [...redirectPaths],
+					status,
+					statusText,
+					contentType,
+					contentLength,
+					responseHeaders,
+					meta: externalMeta,
+					imageList: [],
+					anchorList: [],
+					html,
+					mainContents: null,
+					scrollHeight: null,
+					isSkipped: false,
+				};
+			}
+
+			void this.emit('changePhase', {
+				pid: process.pid,
+				name: 'waitNetworkIdle',
+				url,
+				isExternal,
+				message: '',
+			});
+
+			await page
+				.waitForNavigation({ waitUntil: 'networkidle0', timeout: 5000 })
+				.catch(() => {});
+
+			// Check for network disconnection errors in failed requests
+			const disconnectionFailures = findDisconnectionFailures(failedRequests);
+			if (disconnectionFailures.length > 0) {
+				const errorSummary = disconnectionFailures
+					.map((r) => `${r.url} (${r.errorText})`)
+					.join(', ');
+				throw new Error(
+					`Network disconnection detected during page load: ${errorSummary}`,
+				);
+			}
+
+			const mainContents = await getMainContents(page, {
+				mainContentSelector: options?.mainContentSelector,
+			});
+
+			void this.emit('changePhase', {
+				pid: process.pid,
+				name: 'getAnchors',
+				url,
+				isExternal,
+				message: `%countdown(${domEvaluationTimeout},getAnchors_${url.withoutHash},s)%s`,
+			});
+			const anchorList = await getAnchorList(page, parseOpts, domEvaluationTimeout);
+
+			void this.emit('changePhase', {
+				pid: process.pid,
+				name: 'getMeta',
+				url,
+				isExternal,
+				message: `%countdown(${domEvaluationTimeout},getMeta_${url.withoutHash},s)%s`,
+			});
+			const meta = await getMeta(
+				page,
+				{
+					url: url.withoutHashAndAuth,
+					html,
+					statusCode: status,
+					headers: responseHeaders ?? undefined,
+				},
 				domEvaluationTimeout,
 			);
-			imageList = fetched.imageList;
-			scrollHeight = fetched.scrollHeight;
-		} else {
-			scrollHeight = await measureScrollHeight(page);
-		}
 
-		return {
-			url,
-			isTarget: true,
-			isExternal,
-			redirectPaths: [...redirectPaths],
-			status,
-			statusText,
-			contentType,
-			contentLength,
-			responseHeaders,
-			meta,
-			anchorList,
-			imageList,
-			html,
-			mainContents,
-			scrollHeight,
-			isSkipped: false,
-		};
+			let imageList: ImageElement[] = [];
+			let scrollHeight: ScrollHeightData | null = null;
+
+			if (captureImages) {
+				void this.emit('changePhase', {
+					pid: process.pid,
+					name: 'extractImages',
+					url,
+					isExternal,
+					message: `%countdown(${domEvaluationTimeout},extractImages_${url.withoutHash},s)%s`,
+				});
+				const fetched = await this.#fetchImages(
+					page,
+					url.withoutHashAndAuth,
+					isExternal,
+					imageLoadTimeout,
+					domEvaluationTimeout,
+				);
+				imageList = fetched.imageList;
+				scrollHeight = fetched.scrollHeight;
+			} else {
+				scrollHeight = await measureScrollHeight(page);
+			}
+
+			return {
+				url,
+				isTarget: true,
+				isExternal,
+				redirectPaths: [...redirectPaths],
+				status,
+				statusText,
+				contentType,
+				contentLength,
+				responseHeaders,
+				meta,
+				anchorList,
+				imageList,
+				html,
+				mainContents,
+				scrollHeight,
+				isSkipped: false,
+			};
+		} finally {
+			await Promise.all(pendingConsoleWork);
+		}
 	}
 	/**
 	 * Extracts image data from the page across multiple device presets.
