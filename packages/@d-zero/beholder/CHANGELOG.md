@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@4.0.0...@d-zero/beholder@4.1.0) (2026-07-22)
+
+### Features
+
+- **beholder:** capture console messages and page errors ([f271bbb](https://github.com/d-zero-dev/tools/commit/f271bbb033f8cc6ccb21a3c2981d1c27b684e551))
+
 # [4.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@3.1.6...@d-zero/beholder@4.0.0) (2026-07-21)
 
 - feat(beholder)!: enrich PageData with mainContents metrics and scrollHeight ([8a0fc72](https://github.com/d-zero-dev/tools/commit/8a0fc72412295a92850b2c2fa2fa8cd8145eb5f6))
