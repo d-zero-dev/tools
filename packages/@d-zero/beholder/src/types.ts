@@ -59,6 +59,7 @@ import type { Meta } from './meta/types.js';
 import type { CDNType } from '@d-zero/shared/detect-cdn';
 import type { CompressType } from '@d-zero/shared/detect-compress';
 import type { ExURL } from '@d-zero/shared/parse-url';
+import type { ConsoleMessageType } from 'puppeteer';
 
 /**
  * Scraped page data returned by the scraper after successfully processing a page.
@@ -477,6 +478,8 @@ export type ScrapeResult = {
 	pageData?: PageData;
 	/** All sub-resources captured during the page load. */
 	resources: ResourceEntry[];
+	/** All console messages and uncaught page errors captured during the page load. */
+	consoleLogs: ConsoleLogEntry[];
 	/** Details about why the page was ignored, present when `type` is `"skipped"`. */
 	ignored?: { url: ExURL; matchedText: string; excludeKeywords: string[] };
 	/** Error details, present when `type` is `"error"`. */
@@ -496,6 +499,35 @@ export type ResourceEntry = {
 	resource: Omit<Resource, 'uid'>;
 	/** The URL (without hash) of the page that triggered this resource load. */
 	pageUrl: string;
+};
+
+/**
+ * A single console message or uncaught page error captured during page scraping.
+ * Captured via Puppeteer's `console` and `pageerror` page events; internal pages only.
+ */
+export type ConsoleLogEntry = {
+	/** The URL (without hash) of the page that produced this message. */
+	pageUrl: string;
+	/**
+	 * The console message type (Puppeteer's `ConsoleMessageType`, e.g. `"log"`, `"warn"`, `"error"`),
+	 * or `"pageerror"` for an uncaught exception / unhandled Promise rejection.
+	 */
+	type: ConsoleMessageType | 'pageerror';
+	/** The message text, or the error's `message` for `"pageerror"` entries. */
+	text: string;
+	/**
+	 * Arguments passed to the console call, resolved via `JSHandle.jsonValue()`.
+	 * An individual argument is `undefined` when it could not be resolved (e.g. a
+	 * destroyed execution context or a value `jsonValue()` cannot serialize).
+	 * Always empty for `"pageerror"` entries.
+	 */
+	args: unknown[];
+	/** Source location of the message, or `undefined` when unavailable (always `undefined` for `"pageerror"`). */
+	location?: { url?: string; lineNumber?: number; columnNumber?: number };
+	/** Stack trace text, present only for `"pageerror"` entries. */
+	stack?: string;
+	/** Timestamp (ms since epoch) when the message was captured. */
+	ts: number;
 };
 
 /**
