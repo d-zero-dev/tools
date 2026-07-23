@@ -6,6 +6,7 @@
 // animated header on a TTY, appended `[page-cluster] …` lines otherwise.
 
 import type {
+	PageClusterKeyResult,
 	PageClusterSignals,
 	ProgressEvent,
 	ResolvePageClusterKeysOptions,
@@ -23,13 +24,14 @@ import { resolvePageClusterKeys } from './resolve-page-cluster-keys.js';
  */
 type CliArgs = {
 	readonly contentBlockAttribute?: string;
+	readonly includeLandmarkPositions?: boolean;
 	readonly help?: boolean;
 	readonly version?: boolean;
 	readonly unknownFlag?: string;
 };
 
 const HELP_TEXT = `Usage:
-  page-cluster [--content-block-attribute <name>] < pages.jsonl > clusters.jsonl
+  page-cluster [--content-block-attribute <name>] [--include-landmark-positions] < pages.jsonl > clusters.jsonl
 
 Input (JSONL, one page per line):
   {
@@ -43,10 +45,35 @@ Input (JSONL, one page per line):
 Output (JSONL, one line per input page, in input order):
   { "id": "...", "clusterKey": "..." }
 
+  With --include-landmark-positions, each line additionally carries a
+  \`landmarks\` field: every header/footer/nav/aside/form/search/main
+  instance's position (1-based line/column plus string offsets), with the
+  six excisable types (all but main) also carrying an \`isChrome\` verdict
+  against that page's final cluster:
+  {
+    "id": "...", "clusterKey": "...",
+    "landmarks": {
+      "header": [{ "startLine": 1, "startColumn": 7, "endLine": 1,
+                    "endColumn": 30, "startOffset": 6, "endOffset": 29,
+                    "isChrome": true }],
+      "footer": [...], "nav": [...], "aside": [...], "form": [...], "search": [...],
+      "main": [{ "startLine": 2, "startColumn": 1, "endLine": 10,
+                  "endColumn": 8, "startOffset": 40, "endOffset": 120 }]
+    }
+  }
+
 Options:
   --content-block-attribute <name>   CMS-provided attribute marking freeform
                                      content blocks that should be stripped
                                      before comparison (e.g. \`data-bgb\`).
+  --include-landmark-positions       Add the \`landmarks\` field described
+                                     above to every output line. Not
+                                     supported for corpora over 20,000 pages
+                                     (throws instead of streaming). Disables
+                                     progress output on stderr — this option
+                                     always routes through the same
+                                     non-progress-emitting code path as a
+                                     run without progress.
   --help                             Print this help and exit.
   --version                          Print the package version and exit.
 
@@ -84,6 +111,7 @@ const VERBOSE_HEADER = '[page-cluster]';
 export function parseArgs(argv: readonly string[]): CliArgs {
 	const out: {
 		contentBlockAttribute?: string;
+		includeLandmarkPositions?: boolean;
 		help?: boolean;
 		version?: boolean;
 		unknownFlag?: string;
@@ -109,6 +137,10 @@ export function parseArgs(argv: readonly string[]): CliArgs {
 				}
 				out.contentBlockAttribute = next;
 				i++;
+				break;
+			}
+			case '--include-landmark-positions': {
+				out.includeLandmarkPositions = true;
 				break;
 			}
 			default: {
@@ -406,21 +438,39 @@ export async function runCli(options: {
 				renderProgress(lanes, useTty, formatProgressLine(event, elapsed()));
 			},
 		};
-		let keys: string[];
+
+		// `includeLandmarkPositions` always routes resolvePageClusterKeys
+		// through its non-progress-emitting sync path (see that option's own
+		// JSDoc), so the onProgress callback above is set but never invoked
+		// in this branch — no separate "quiet" resolveOptions variant needed.
+		let clusterKeys: string[];
+		let landmarksByIndex: PageClusterKeyResult['landmarks'][] | undefined;
 		try {
-			keys = await resolvePageClusterKeys(() => pages, resolveOptions);
+			if (args.includeLandmarkPositions) {
+				const results = await resolvePageClusterKeys(() => pages, {
+					...resolveOptions,
+					includeLandmarkPositions: true,
+				});
+				clusterKeys = results.map((r) => r.clusterKey);
+				landmarksByIndex = results.map((r) => r.landmarks);
+			} else {
+				clusterKeys = await resolvePageClusterKeys(() => pages, resolveOptions);
+			}
 		} catch (error) {
 			renderProgress(lanes, useTty, errorLine((error as Error).message));
 			return 1;
 		}
 
-		const clusterCount = new Set(keys).size;
+		const clusterCount = new Set(clusterKeys).size;
 		renderProgress(lanes, useTty, doneLine(pages.length, clusterCount, elapsed()));
 
-		for (const [index, key] of keys.entries()) {
-			options.stdout.write(
-				`${JSON.stringify({ id: ids[index] ?? index, clusterKey: key })}\n`,
-			);
+		for (const [index, key] of clusterKeys.entries()) {
+			const row: { id: string | number; clusterKey: string; landmarks?: unknown } = {
+				id: ids[index] ?? index,
+				clusterKey: key,
+			};
+			if (landmarksByIndex) row.landmarks = landmarksByIndex[index];
+			options.stdout.write(`${JSON.stringify(row)}\n`);
 		}
 		return 0;
 	} finally {

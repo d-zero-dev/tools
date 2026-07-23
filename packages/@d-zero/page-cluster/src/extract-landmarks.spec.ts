@@ -7,14 +7,34 @@ import { describe, expect, test } from 'vitest';
 import { extractLandmarks } from './extract-landmarks.js';
 import { tokenize } from './tokenize.js';
 
-const EMPTY_LANDMARKS = {
+const EMPTY_LANDMARK_HTML = {
 	header: [] as string[],
 	footer: [] as string[],
 	nav: [] as string[],
 	aside: [] as string[],
 	form: [] as string[],
 	search: [] as string[],
+	main: [] as string[],
 };
+
+/**
+ * Projects an {@link ./extract-landmarks.js | ExtractLandmarksResult} down
+ * to just each instance's `html`, for tests that only care about content,
+ * not position.
+ * @param result
+ */
+function toHtmlOnly(result: ReturnType<typeof extractLandmarks>) {
+	return {
+		header: result.header.map((i) => i.html),
+		footer: result.footer.map((i) => i.html),
+		nav: result.nav.map((i) => i.html),
+		aside: result.aside.map((i) => i.html),
+		form: result.form.map((i) => i.html),
+		search: result.search.map((i) => i.html),
+		main: result.main.map((i) => i.html),
+		remainderHtml: result.remainderHtml,
+	};
+}
 
 describe('extractLandmarks (basic extraction)', () => {
 	test('matches the exact output documented in the JSDoc @example', () => {
@@ -25,22 +45,56 @@ describe('extractLandmarks (basic extraction)', () => {
 			'<body><header>H</header><main>M</main><footer>F</footer></body>',
 		);
 		expect(result).toStrictEqual({
-			...EMPTY_LANDMARKS,
-			header: ['<header>H</header>'],
-			footer: ['<footer>F</footer>'],
+			header: [
+				{
+					html: '<header>H</header>',
+					startOffset: 6,
+					endOffset: 24,
+					startLine: 1,
+					startColumn: 7,
+					endLine: 1,
+					endColumn: 25,
+				},
+			],
+			footer: [
+				{
+					html: '<footer>F</footer>',
+					startOffset: 38,
+					endOffset: 56,
+					startLine: 1,
+					startColumn: 39,
+					endLine: 1,
+					endColumn: 57,
+				},
+			],
+			nav: [],
+			aside: [],
+			form: [],
+			search: [],
+			main: [
+				{
+					html: '<main>M</main>',
+					startOffset: 24,
+					endOffset: 38,
+					startLine: 1,
+					startColumn: 25,
+					endLine: 1,
+					endColumn: 39,
+				},
+			],
 			remainderHtml: '<body><main>M</main></body>',
 		});
 	});
 
 	test('a nav is extracted and removed the same way as header/footer', () => {
 		const result = extractLandmarks('<body><nav>N</nav><main>M</main></body>');
-		expect(result.nav).toStrictEqual(['<nav>N</nav>']);
+		expect(result.nav.map((i) => i.html)).toStrictEqual(['<nav>N</nav>']);
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
 	});
 
 	test('an aside is extracted and removed the same way as header/footer', () => {
 		const result = extractLandmarks('<body><aside>A</aside><main>M</main></body>');
-		expect(result.aside).toStrictEqual(['<aside>A</aside>']);
+		expect(result.aside.map((i) => i.html)).toStrictEqual(['<aside>A</aside>']);
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
 	});
 
@@ -48,7 +102,9 @@ describe('extractLandmarks (basic extraction)', () => {
 		const result = extractLandmarks(
 			'<body><search><input type="search"/></search><main>M</main></body>',
 		);
-		expect(result.search).toStrictEqual(['<search><input type="search"/></search>']);
+		expect(result.search.map((i) => i.html)).toStrictEqual([
+			'<search><input type="search"/></search>',
+		]);
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
 	});
 
@@ -56,7 +112,9 @@ describe('extractLandmarks (basic extraction)', () => {
 		const withRole = extractLandmarks(
 			'<body><form role="form"><input/></form><main>M</main></body>',
 		);
-		expect(withRole.form).toStrictEqual(['<form role="form"><input/></form>']);
+		expect(withRole.form.map((i) => i.html)).toStrictEqual([
+			'<form role="form"><input/></form>',
+		]);
 		expect(withRole.remainderHtml).toBe('<body><main>M</main></body>');
 
 		const bareForm = extractLandmarks('<body><form><input/></form><main>M</main></body>');
@@ -70,22 +128,24 @@ describe('extractLandmarks (basic extraction)', () => {
 		const result = extractLandmarks(
 			'<body><form role="search"><input/></form><main>M</main></body>',
 		);
-		expect(result.search).toStrictEqual(['<form role="search"><input/></form>']);
+		expect(result.search.map((i) => i.html)).toStrictEqual([
+			'<form role="search"><input/></form>',
+		]);
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
 	});
 
 	test('a page with no landmarks returns all fields as empty arrays and an unchanged remainderHtml', () => {
-		const html = '<body><main>only content</main></body>';
-		expect(extractLandmarks(html)).toStrictEqual({
-			...EMPTY_LANDMARKS,
+		const html = '<body>only content</body>';
+		expect(toHtmlOnly(extractLandmarks(html))).toStrictEqual({
+			...EMPTY_LANDMARK_HTML,
 			remainderHtml: html,
 		});
 	});
 
 	test('no <body> at all leaves remainderHtml unchanged and every field as an empty array', () => {
 		const html = '<html><head><title>x</title></head></html>';
-		expect(extractLandmarks(html)).toStrictEqual({
-			...EMPTY_LANDMARKS,
+		expect(toHtmlOnly(extractLandmarks(html))).toStrictEqual({
+			...EMPTY_LANDMARK_HTML,
 			remainderHtml: html,
 		});
 	});
@@ -96,7 +156,9 @@ describe('extractLandmarks (role-based matching)', () => {
 		const result = extractLandmarks(
 			'<body><div role="banner">H</div><main>M</main></body>',
 		);
-		expect(result.header).toStrictEqual(['<div role="banner">H</div>']);
+		expect(result.header.map((i) => i.html)).toStrictEqual([
+			'<div role="banner">H</div>',
+		]);
 		expect(result.footer).toStrictEqual([]);
 	});
 
@@ -108,8 +170,12 @@ describe('extractLandmarks (role-based matching)', () => {
 		// strictly contained by each other).
 		const html = '<body><header role="navigation">HN</header><main>M</main></body>';
 		const result = extractLandmarks(html);
-		expect(result.header).toStrictEqual(['<header role="navigation">HN</header>']);
-		expect(result.nav).toStrictEqual(['<header role="navigation">HN</header>']);
+		expect(result.header.map((i) => i.html)).toStrictEqual([
+			'<header role="navigation">HN</header>',
+		]);
+		expect(result.nav.map((i) => i.html)).toStrictEqual([
+			'<header role="navigation">HN</header>',
+		]);
 		// Excising the single matched span once, not twice.
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
 	});
@@ -121,8 +187,17 @@ describe('extractLandmarks (role-based matching)', () => {
 		// silently regress to "body's own role is never checked" again.
 		const html = '<body role="banner"><main>M</main></body>';
 		const result = extractLandmarks(html);
-		expect(result.header).toStrictEqual([html]);
+		expect(result.header.map((i) => i.html)).toStrictEqual([html]);
 		expect(result.remainderHtml).toBe('');
+	});
+
+	test('role=main is recognized as a main landmark without a <main> tag', () => {
+		const result = extractLandmarks(
+			'<body><header>H</header><div role="main">content</div></body>',
+		);
+		expect(result.main.map((i) => i.html)).toStrictEqual([
+			'<div role="main">content</div>',
+		]);
 	});
 });
 
@@ -136,7 +211,7 @@ describe('extractLandmarks (multiple instances of the same type)', () => {
 		const html =
 			'<body><main><article><header>Article H</header></article></main><header>Site H</header></body>';
 		const result = extractLandmarks(html);
-		expect(result.header).toStrictEqual([
+		expect(result.header.map((i) => i.html)).toStrictEqual([
 			'<header>Article H</header>',
 			'<header>Site H</header>',
 		]);
@@ -154,8 +229,8 @@ describe('extractLandmarks (multiple instances of the same type)', () => {
 		const html = `<body><header>outer</header>${siblings}</body>`;
 		const result = extractLandmarks(html);
 		expect(result.header).toHaveLength(11);
-		expect(result.header[0]).toBe('<header>outer</header>');
-		expect(result.header[10]).toBe('<header>sibling-9</header>');
+		expect(result.header[0]!.html).toBe('<header>outer</header>');
+		expect(result.header[10]!.html).toBe('<header>sibling-9</header>');
 	});
 });
 
@@ -168,7 +243,9 @@ describe('extractLandmarks (nested landmark spans)', () => {
 		// nav's markup as part of its own span.
 		const html = '<body><header>H<nav>N</nav>after-nav</header><main>M</main></body>';
 		const result = extractLandmarks(html);
-		expect(result.header).toStrictEqual(['<header>H<nav>N</nav>after-nav</header>']);
+		expect(result.header.map((i) => i.html)).toStrictEqual([
+			'<header>H<nav>N</nav>after-nav</header>',
+		]);
 		expect(result.nav).toStrictEqual([]);
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
 	});
@@ -177,10 +254,114 @@ describe('extractLandmarks (nested landmark spans)', () => {
 		const html =
 			'<body><header>H</header><main>M</main><footer>F<nav>N</nav></footer></body>';
 		const result = extractLandmarks(html);
-		expect(result.header).toStrictEqual(['<header>H</header>']);
-		expect(result.footer).toStrictEqual(['<footer>F<nav>N</nav></footer>']);
+		expect(result.header.map((i) => i.html)).toStrictEqual(['<header>H</header>']);
+		expect(result.footer.map((i) => i.html)).toStrictEqual([
+			'<footer>F<nav>N</nav></footer>',
+		]);
 		expect(result.nav).toStrictEqual([]);
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
+	});
+});
+
+describe('extractLandmarks (main handling)', () => {
+	test('multiple non-nested <main>s are all collected', () => {
+		// HTML discourages more than one <main>, but real/malformed markup can
+		// still carry it — every non-nested instance is reported the same way
+		// the other six types are.
+		const html = '<body><main>one</main><main>two</main></body>';
+		const result = extractLandmarks(html);
+		expect(result.main.map((i) => i.html)).toStrictEqual([
+			'<main>one</main>',
+			'<main>two</main>',
+		]);
+	});
+
+	test('a <main> nested inside another <main> is deduplicated to the outer one only', () => {
+		const html = '<body><main>outer<main>inner</main></main></body>';
+		const result = extractLandmarks(html);
+		expect(result.main.map((i) => i.html)).toStrictEqual([
+			'<main>outer<main>inner</main></main>',
+		]);
+	});
+
+	test('main is never excised from remainderHtml, unlike the other six types', () => {
+		const html = '<body><header>H</header><main>content</main><footer>F</footer></body>';
+		const result = extractLandmarks(html);
+		expect(result.remainderHtml).toBe('<body><main>content</main></body>');
+		expect(result.remainderHtml).toContain('content');
+	});
+
+	test('a section-local nav inside <main> is still extracted, not hidden by main containment', () => {
+		// This is the regression main-handling must not reintroduce: sharing
+		// keepOutermost's containment sweep between main and the other six
+		// types would make every nav/header/aside inside <main> look
+		// "contained by main" and silently vanish from those result arrays.
+		const html =
+			'<body><nav>global</nav>' +
+			'<main><nav class="local">local menu</nav><article>body</article></main></body>';
+		const result = extractLandmarks(html);
+		expect(result.nav.map((i) => i.html)).toStrictEqual([
+			'<nav>global</nav>',
+			'<nav class="local">local menu</nav>',
+		]);
+		expect(result.main.map((i) => i.html)).toStrictEqual([
+			'<main><nav class="local">local menu</nav><article>body</article></main>',
+		]);
+	});
+
+	test('main is absent from ALL_LANDMARK_TYPES-driven chrome discovery by construction (position-only)', () => {
+		// extractLandmarks itself has no chrome/shell notion — this test only
+		// pins that main instances are reported at all, alongside the other
+		// six, with no isChrome-like field (that lives in
+		// build-page-landmark-report.ts, a separate layer downstream).
+		const html = '<body><main>content</main></body>';
+		const result = extractLandmarks(html);
+		expect(result.main).toHaveLength(1);
+		expect(Object.keys(result.main[0]!)).toStrictEqual([
+			'html',
+			'startOffset',
+			'endOffset',
+			'startLine',
+			'startColumn',
+			'endLine',
+			'endColumn',
+		]);
+	});
+
+	test('a main nested inside an excisable landmark is still reported, even though the excisable landmark takes its markup out of remainderHtml', () => {
+		// main's own keepOutermost sweep is independent of the excisable six,
+		// but excision itself is unaware of main: excising the outer header
+		// removes main's markup from remainderHtml along with it. main is
+		// still reported in `result.main` — only remainderHtml is affected.
+		const html = '<body><header>H<main>M</main></header></body>';
+		const result = extractLandmarks(html);
+		expect(result.main.map((i) => i.html)).toStrictEqual(['<main>M</main>']);
+		expect(result.remainderHtml).toBe('<body></body>');
+	});
+});
+
+describe('extractLandmarks (position: line/column)', () => {
+	test('a landmark on the first line reports startColumn/endColumn relative to offset 0', () => {
+		const html = '<body><header>H</header></body>';
+		const result = extractLandmarks(html);
+		const [instance] = result.header;
+		expect(instance).toMatchObject({ startLine: 1, startColumn: 7, endLine: 1 });
+	});
+
+	test('a landmark on a later line reports the correct line number and column reset to 1', () => {
+		const html = '<body>\n<div>x</div>\n<header>H</header>\n</body>';
+		const result = extractLandmarks(html);
+		const [instance] = result.header;
+		// Line 1: "<body>"; line 2: "<div>x</div>"; line 3: "<header>H</header>"
+		expect(instance).toMatchObject({ startLine: 3, startColumn: 1, endLine: 3 });
+	});
+
+	test('a multi-line landmark reports different start/end lines', () => {
+		const html = '<body><header>\nH\n</header></body>';
+		const result = extractLandmarks(html);
+		const [instance] = result.header;
+		expect(instance!.startLine).toBe(1);
+		expect(instance!.endLine).toBe(3);
 	});
 });
 
@@ -222,7 +403,7 @@ describe('extractLandmarks (remainderHtml tokenizes to content-only tokens)', ()
 			'<body><nav>global</nav>' +
 			'<main><nav class="local">local menu</nav><article>body</article></main></body>';
 		const result = extractLandmarks(html);
-		expect(result.nav).toStrictEqual([
+		expect(result.nav.map((i) => i.html)).toStrictEqual([
 			'<nav>global</nav>',
 			'<nav class="local">local menu</nav>',
 		]);
@@ -243,7 +424,7 @@ describe('extractLandmarks (opaque tags suppress landmark detection inside them)
 	test('a self-nested opaque tag (<svg> inside <svg>) does not leave stale state that blocks a later real header', () => {
 		const html = '<body><svg><svg></svg></svg><header>H</header><main>M</main></body>';
 		const result = extractLandmarks(html);
-		expect(result.header).toStrictEqual(['<header>H</header>']);
+		expect(result.header.map((i) => i.html)).toStrictEqual(['<header>H</header>']);
 		expect(result.remainderHtml).toBe(
 			'<body><svg><svg></svg></svg><main>M</main></body>',
 		);
@@ -261,7 +442,9 @@ describe('extractLandmarks (malformed HTML)', () => {
 		);
 		const html = fs.readFileSync(fixturePath, 'utf8');
 		const result = extractLandmarks(html);
-		expect(result.header.join('')).toContain('MARKER_NESTED_BODY_TAGS_MALFORMED');
+		expect(result.header.map((i) => i.html).join('')).toContain(
+			'MARKER_NESTED_BODY_TAGS_MALFORMED',
+		);
 		expect(result.remainderHtml).not.toContain('MARKER_NESTED_BODY_TAGS_MALFORMED');
 		expect(result.remainderHtml).toContain(
 			'Main content that appears after multiple malformed body tags.',
@@ -300,7 +483,9 @@ describe('extractLandmarks (malformed HTML)', () => {
 		const html = '<body><div(foo role="banner">H</div(foo><main>M</main></body>';
 		expect(() => extractLandmarks(html)).not.toThrow();
 		const result = extractLandmarks(html);
-		expect(result.header).toStrictEqual(['<div(foo role="banner">H</div(foo>']);
+		expect(result.header.map((i) => i.html)).toStrictEqual([
+			'<div(foo role="banner">H</div(foo>',
+		]);
 		expect(result.remainderHtml).toBe('<body><main>M</main></body>');
 	});
 
@@ -312,7 +497,7 @@ describe('extractLandmarks (malformed HTML)', () => {
 		const html =
 			'<body><header>Outer malformed<main><header>Inner OK</header></main></body>';
 		const result = extractLandmarks(html);
-		expect(result.header).toStrictEqual(['<header>Inner OK</header>']);
+		expect(result.header.map((i) => i.html)).toStrictEqual(['<header>Inner OK</header>']);
 		expect(result.remainderHtml).toBe(
 			'<body><header>Outer malformed<main></main></body>',
 		);

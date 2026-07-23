@@ -3,6 +3,7 @@ import {
 	findMatchingElements,
 	type MatchingElement,
 } from './find-shallowest-elements.js';
+import { buildLineColumnIndex, offsetToLineColumn } from './offset-to-line-column.js';
 
 /**
  * The six structural regions this module knows how to carve out of a page.
@@ -17,17 +18,58 @@ import {
  * have no implicit landmark role under HTML-AAM unless given an accessible
  * name). `search` is matched via both the `<search>` element (WHATWG
  * landmark shorthand) and `role="search"`.
+ *
+ * `main` is deliberately not a member of this union even though
+ * {@link ./extract-landmarks.js | extractLandmarks} reports it: this type is
+ * also the parameter type of `resolveLandmarkVariantKeys` and the vocabulary
+ * that chrome discovery (`computePerPageLandmarkInstances`'s
+ * `ALL_LANDMARK_TYPES`) iterates over. Admitting `'main'` here would let
+ * `resolveLandmarkVariantKeys(pages, 'main')` type-check while silently
+ * returning nothing (chrome discovery never looks at `main` instances) —
+ * exactly the kind of type-level lie this module avoids elsewhere. `main` is
+ * content, not chrome: it never participates in frequency-based chrome
+ * discovery, only in position reporting.
  */
 export type LandmarkType = 'header' | 'footer' | 'nav' | 'aside' | 'form' | 'search';
 
 /**
+ * `extractLandmarks`'s internal scanning vocabulary: every public
+ * `LandmarkType` plus `'main'`. Kept private to this module so `'main'`
+ * never leaks into the public `LandmarkType` union (see its JSDoc).
+ */
+type InternalLandmarkType = LandmarkType | 'main';
+
+/**
+ * An instance's location within the HTML string it was extracted from, in
+ * both string-index and 1-based line/column form. Computed once per page by
+ * {@link ./extract-landmarks.js | extractLandmarks} via
+ * {@link ./offset-to-line-column.js | buildLineColumnIndex}/`offsetToLineColumn`
+ * and carried downstream as plain numbers — nothing recomputes it.
+ */
+export type LandmarkPosition = {
+	readonly startOffset: number;
+	readonly endOffset: number;
+	readonly startLine: number;
+	readonly startColumn: number;
+	readonly endLine: number;
+	readonly endColumn: number;
+};
+
+/**
+ * One landmark instance: its raw HTML plus its {@link LandmarkPosition}
+ * within the page it was extracted from.
+ */
+export type LandmarkInstance = LandmarkPosition & { readonly html: string };
+
+/**
  * Result of {@link ./extract-landmarks.js | extractLandmarks}. Each landmark
- * field holds an array of the raw HTML of every genuinely-closed instance
- * of that region on the page, in document order. Empty array if the page
- * has none — or if every candidate found was malformed markup
- * `extractLandmarks` declined to trust (see its JSDoc's note on discarded
- * candidates). `remainderHtml` is the original HTML with every extracted
- * span excised, meant to be fed straight into
+ * field holds an array of every genuinely-closed instance of that region on
+ * the page, in document order. Empty array if the page has none — or if
+ * every candidate found was malformed markup `extractLandmarks` declined to
+ * trust (see its JSDoc's note on discarded candidates). `remainderHtml` is
+ * the original HTML with every extracted `header`/`footer`/`nav`/`aside`/
+ * `form`/`search` span excised (`main` is never excised — see
+ * `extractLandmarks`'s "main handling" note), meant to be fed straight into
  * {@link ./tokenize.js | tokenize} as the page's content-only signal.
  *
  * Multiple instances per type are the norm, not the exception: real crawl
@@ -40,30 +82,33 @@ export type LandmarkType = 'header' | 'footer' | 'nav' | 'aside' | 'form' | 'sea
  * depth or ordering rule.
  */
 export type ExtractLandmarksResult = {
-	header: string[];
-	footer: string[];
-	nav: string[];
-	aside: string[];
-	form: string[];
-	search: string[];
+	header: LandmarkInstance[];
+	footer: LandmarkInstance[];
+	nav: LandmarkInstance[];
+	aside: LandmarkInstance[];
+	form: LandmarkInstance[];
+	search: LandmarkInstance[];
+	main: LandmarkInstance[];
 	remainderHtml: string;
 };
 
-const TAG_TO_TYPE: Readonly<Record<string, LandmarkType>> = {
+const TAG_TO_TYPE: Readonly<Record<string, InternalLandmarkType>> = {
 	header: 'header',
 	footer: 'footer',
 	nav: 'nav',
 	aside: 'aside',
 	search: 'search',
+	main: 'main',
 };
 
-const ROLE_TO_TYPE: Readonly<Record<string, LandmarkType>> = {
+const ROLE_TO_TYPE: Readonly<Record<string, InternalLandmarkType>> = {
 	banner: 'header',
 	contentinfo: 'footer',
 	navigation: 'nav',
 	complementary: 'aside',
 	form: 'form',
 	search: 'search',
+	main: 'main',
 };
 
 /**
@@ -76,8 +121,11 @@ const ROLE_TO_TYPE: Readonly<Record<string, LandmarkType>> = {
  * @param tagName
  * @param role
  */
-function matchLandmarkTypes(tagName: string, role: string | undefined): LandmarkType[] {
-	const types: LandmarkType[] = [];
+function matchLandmarkTypes(
+	tagName: string,
+	role: string | undefined,
+): InternalLandmarkType[] {
+	const types: InternalLandmarkType[] = [];
 	const byTag = TAG_TO_TYPE[tagName];
 	if (byTag) {
 		types.push(byTag);
@@ -90,6 +138,19 @@ function matchLandmarkTypes(tagName: string, role: string | undefined): Landmark
 		types.push(byRole);
 	}
 	return types;
+}
+
+/**
+ * Type guard splitting `findMatchingElements`' combined match list into the
+ * excisable six landmark types vs `main`. `main` is content, not chrome, and
+ * must never be mixed into the same `keepOutermost` sweep as the other six
+ * — see `extractLandmarks`'s "main handling" note for why.
+ * @param match
+ */
+function isMainMatch(
+	match: MatchingElement<InternalLandmarkType>,
+): match is MatchingElement<'main'> {
+	return match.type === 'main';
 }
 
 /**
@@ -207,21 +268,53 @@ function keepOutermost<T extends string>(
  * segment then disappears from the surviving paths, shortening them by one
  * level. This is inherent to "delete the matched span, use whatever's
  * left" and is not treated as a bug.
+ *
+ * ## Main handling
+ *
+ * `main` (the `<main>` tag or `role="main"`) is collected the same way as
+ * the other six types — one entry per genuinely-closed instance, in
+ * document order — but is kept out of every mechanism the other six feed:
+ *
+ * - It is **never excised**: its span is never added to `remainderHtml`'s
+ *   excise list, because `main` is the page's actual content, not chrome.
+ *   Removing it would gut `remainderHtml` down to whatever sits outside
+ *   `<main>` (nothing, on most real pages).
+ * - Its `keepOutermost` nesting sweep runs **separately** from the other six
+ *   types'. If it shared the sweep, a `<main>` that wraps most of the page
+ *   (as it typically does) would make every `header`/`nav`/`aside` nested
+ *   inside it look "contained by main" and get dropped — destroying the
+ *   section-local chrome detection this module exists to enable (see "Why
+ *   collect every instance" above). Only nested `<main>`s (an edge case —
+ *   HTML discourages more than one) are deduplicated against each other.
+ * - It never contributes to chrome/shell-frequency analysis (`main` is
+ *   absent from `computePerPageLandmarkInstances`'s `ALL_LANDMARK_TYPES`):
+ *   its instances are reported for position purposes only, never treated as
+ *   candidate chrome.
  * @param html
  * @example
  * ```ts
  * extractLandmarks('<body><header>H</header><main>M</main><footer>F</footer></body>');
  * // {
- * //   header: ['<header>H</header>'],
- * //   footer: ['<footer>F</footer>'],
+ * //   header: [{ html: '<header>H</header>', startOffset: 6, endOffset: 24,
+ * //              startLine: 1, startColumn: 7, endLine: 1, endColumn: 25 }],
+ * //   footer: [{ html: '<footer>F</footer>', startOffset: 38, endOffset: 56,
+ * //              startLine: 1, startColumn: 39, endLine: 1, endColumn: 57 }],
  * //   nav: [], aside: [], form: [], search: [],
+ * //   main: [{ html: '<main>M</main>', startOffset: 24, endOffset: 38,
+ * //            startLine: 1, startColumn: 25, endLine: 1, endColumn: 39 }],
  * //   remainderHtml: '<body><main>M</main></body>',
  * // }
  * ```
  */
 export function extractLandmarks(html: string): ExtractLandmarksResult {
 	const allMatches = findMatchingElements(html, matchLandmarkTypes);
-	const outermost = keepOutermost(allMatches);
+	const mainMatches = allMatches.filter(isMainMatch);
+	const excisableMatches = allMatches.filter(
+		(match): match is MatchingElement<LandmarkType> => !isMainMatch(match),
+	);
+
+	const outermost = keepOutermost(excisableMatches);
+	const outermostMain = keepOutermost(mainMatches);
 
 	const result: ExtractLandmarksResult = {
 		header: [],
@@ -230,13 +323,35 @@ export function extractLandmarks(html: string): ExtractLandmarksResult {
 		aside: [],
 		form: [],
 		search: [],
+		main: [],
 		remainderHtml: html,
 	};
 	const spans: { start: number; end: number }[] = [];
+	const lineColumnIndex = buildLineColumnIndex(html);
+
+	const toInstance = (match: {
+		readonly startOffset: number;
+		readonly endOffset: number;
+	}): LandmarkInstance => {
+		const start = offsetToLineColumn(lineColumnIndex, match.startOffset);
+		const end = offsetToLineColumn(lineColumnIndex, match.endOffset);
+		return {
+			html: html.slice(match.startOffset, match.endOffset),
+			startOffset: match.startOffset,
+			endOffset: match.endOffset,
+			startLine: start.line,
+			startColumn: start.column,
+			endLine: end.line,
+			endColumn: end.column,
+		};
+	};
 
 	for (const match of outermost) {
-		result[match.type].push(html.slice(match.startOffset, match.endOffset));
+		result[match.type].push(toInstance(match));
 		spans.push({ start: match.startOffset, end: match.endOffset });
+	}
+	for (const match of outermostMain) {
+		result.main.push(toInstance(match));
 	}
 
 	result.remainderHtml = excise(html, spans);

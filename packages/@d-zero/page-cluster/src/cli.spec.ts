@@ -68,6 +68,12 @@ describe('parseArgs', () => {
 		});
 	});
 
+	test('--include-landmark-positions', () => {
+		expect(parseArgs(['--include-landmark-positions'])).toEqual({
+			includeLandmarkPositions: true,
+		});
+	});
+
 	test('unknown flag is captured', () => {
 		expect(parseArgs(['--nope'])).toEqual({ unknownFlag: '--nope' });
 	});
@@ -141,6 +147,19 @@ describe('runCli', () => {
 		});
 		expect(code).toBe(0);
 		expect(stdout.read()).toMatch(/Usage:/);
+	});
+
+	test('--help mentions --include-landmark-positions', async () => {
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		await runCli({
+			stdin: makeStdin(''),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: ['--help'],
+			version: '0.0.0',
+		});
+		expect(stdout.read()).toMatch(/--include-landmark-positions/);
 	});
 
 	test('--version prints version and exits 0', async () => {
@@ -289,5 +308,61 @@ describe('runCli', () => {
 		expect(stripAnsi(stderr.read())).toMatch(
 			/\[page-cluster\] error: .*failed to parse JSONL/,
 		);
+	});
+
+	test('--include-landmark-positions adds a landmarks field to each output line', async () => {
+		const input = [
+			JSON.stringify({
+				id: 'a',
+				paths: ['news', '1'],
+				stylesheetHrefs: [],
+				html: '<body><header>H</header><main><article>one</article></main></body>',
+			}),
+			JSON.stringify({
+				id: 'b',
+				paths: ['news', '2'],
+				stylesheetHrefs: [],
+				html: '<body><header>H</header><main><article>two</article></main></body>',
+			}),
+		].join('\n');
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		const code = await runCli({
+			stdin: makeStdin(input),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: ['--include-landmark-positions'],
+			version: '0.0.0',
+		});
+		expect(code).toBe(0);
+		const lines = stdout.read().split('\n').filter(Boolean);
+		expect(lines).toHaveLength(2);
+		const parsed = lines.map(
+			(line) =>
+				JSON.parse(line) as {
+					id: string;
+					clusterKey: string;
+					landmarks: { header: { isChrome: boolean }[]; main: object[] };
+				},
+		);
+		expect(parsed[0]!.landmarks.header[0]!.isChrome).toBe(true);
+		expect(parsed[0]!.landmarks.main).toHaveLength(1);
+	});
+
+	test('without --include-landmark-positions, output lines carry no landmarks field', async () => {
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		const code = await runCli({
+			stdin: makeStdin(
+				JSON.stringify({ id: 'a', html: '<body><header>H</header></body>' }),
+			),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: [],
+			version: '0.0.0',
+		});
+		expect(code).toBe(0);
+		const line = stdout.read().split('\n').find(Boolean);
+		expect(JSON.parse(line!)).not.toHaveProperty('landmarks');
 	});
 });
