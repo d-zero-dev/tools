@@ -117,10 +117,16 @@ const GENERIC_SEGMENTS = new Set([
 // ---------------------------------------------------------------------------
 
 /**
- *
+ * Frequency-based token core of a group of member pages: a token must be
+ * present in at least `QUORUM_FRACTION` of members to enter the core, with a
+ * full-union fallback when no token clears that bar (see
+ * {@link mergeCrossBlockClusters}'s JSDoc for why quorum beats strict
+ * intersection or full union). Exported so callers building a `ClusterReason`
+ * (`build-cluster-reason.ts`) can re-derive a final group's structural core
+ * from `finalGroupsByRoot` without duplicating this logic.
  * @param memberDistinctiveTokens
  */
-function quorumCore(
+export function computeQuorumCore(
 	memberDistinctiveTokens: readonly ReadonlySet<string>[],
 ): ReadonlySet<string> {
 	const n = memberDistinctiveTokens.length;
@@ -205,10 +211,37 @@ function l2Contained(xSig: Map<string, number>, ySig: Map<string, number>): bool
 // ---------------------------------------------------------------------------
 
 /**
+ * One root key's pooled member state after Stage B converges: every
+ * `tokenSets`/`landmarkInstances` entry folded in from every unit merged into
+ * this root (down-sampled to `capMembers` when the caller opts in, same as
+ * during merging). This is the exact state `mergeCrossBlockClusters` already
+ * builds internally to run quorum-core/shell comparisons each round — it was
+ * discarded once `keyToRoot` was returned. Exposing it lets a `ClusterReason`
+ * (`build-cluster-reason.ts`) be built from data Stage B already computed,
+ * with no extra pass over the corpus.
+ */
+export type FinalGroupMembers = {
+	readonly tokenSets: readonly ReadonlySet<string>[];
+	readonly landmarkInstances: readonly (readonly PerPageLandmarkInstance[])[];
+};
+
+/**
+ * `mergeCrossBlockClusters`'s result: the root-key mapping every caller
+ * needs for `clusterKey` resolution, plus each surviving root's final pooled
+ * member state for callers that also want to explain *why* (`ClusterReason`).
+ */
+export type MergeCrossBlockClustersResult = {
+	/** Every input unit's `key` mapped to its final root key. Units not absorbed into any other unit map to themselves. */
+	readonly rootByKey: ReadonlyMap<string, string>;
+	/** Every surviving root key's final pooled member state. */
+	readonly finalGroupsByRoot: ReadonlyMap<string, FinalGroupMembers>;
+};
+
+/**
  * Merges cross-block clusters (Stage B) via recursive quorum-core comparison.
  *
- * Returns a `Map` from each input unit's `key` to its final root key. Units
- * not absorbed into any other unit map to themselves.
+ * Returns the root-key mapping (see {@link MergeCrossBlockClustersResult}).
+ * Units not absorbed into any other unit map to themselves.
  *
  * Three merge mechanisms run per round, in order:
  * 1. **Fine stage** — complete-linkage at `CROSS_BLOCK_THRESHOLD` on quorum
@@ -247,9 +280,17 @@ export function mergeCrossBlockClusters(
 		 */
 		capMembers?: number;
 	},
-): Map<string, string> {
+): MergeCrossBlockClustersResult {
 	if (units.length <= 1) {
-		return new Map(units.map((u) => [u.key, u.key]));
+		return {
+			rootByKey: new Map(units.map((u) => [u.key, u.key])),
+			finalGroupsByRoot: new Map(
+				units.map((u) => [
+					u.key,
+					{ tokenSets: u.memberTokenSets, landmarkInstances: u.memberLandmarkInstances },
+				]),
+			),
+		};
 	}
 
 	const threshold = options?.similarityThreshold ?? CROSS_BLOCK_THRESHOLD;
@@ -334,7 +375,7 @@ export function mergeCrossBlockClusters(
 		// Quorum core per group
 		const cores = new Map<string, ReadonlySet<string>>();
 		for (const key of groupKeys) {
-			cores.set(key, quorumCore(groupDistinctive.get(key) ?? []));
+			cores.set(key, computeQuorumCore(groupDistinctive.get(key) ?? []));
 		}
 
 		// ---------------------------------------------------------------
@@ -533,5 +574,11 @@ export function mergeCrossBlockClusters(
 		applyMerges(l2Merges);
 	}
 
-	return keyToRoot;
+	const finalGroupsByRoot = new Map<string, FinalGroupMembers>(
+		[...groups.entries()].map(([root, g]) => [
+			root,
+			{ tokenSets: g.tokenSets, landmarkInstances: g.landmarkInstances },
+		]),
+	);
+	return { rootByKey: keyToRoot, finalGroupsByRoot };
 }

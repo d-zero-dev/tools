@@ -1,7 +1,8 @@
+import type { ClusterReason } from './build-cluster-reason.js';
+
 import { describe, expect, test } from 'vitest';
 
 import {
-	assertLandmarkPositionsSupportedForPageCount,
 	resolvePageClusterKeysInMemory,
 	resolvePageClusterKeysInMemory as resolvePageClusterKeys,
 } from './resolve-page-cluster-keys.js';
@@ -644,8 +645,39 @@ describe('resolvePageClusterKeys (local-landmark pseudo-token injection)', () =>
 	});
 });
 
-describe('resolvePageClusterKeysInMemory (includeLandmarkPositions)', () => {
-	test('omitting includeLandmarkPositions returns a plain string[], unchanged from before', () => {
+describe('resolvePageClusterKeysInMemory (onClusterReason)', () => {
+	test('two clusters split within the same block are reported as siblings of each other', () => {
+		// Same fixture as "pages within the same block but with dissimilar
+		// structure get different final keys" above: header/footer are
+		// identical (and excluded from comparison by default), but the
+		// <div> vs <form> distinguishing element still splits Stage A into
+		// two clusters within the single `path:dept-a` block.
+		const cardHtml =
+			'<body><header>H</header><main><div class="card">C</div></main><footer>F</footer></body>';
+		const formHtml =
+			'<body><header>H</header><main><form>F</form></main><footer>F</footer></body>';
+		const reasons = new Map<string, ClusterReason>();
+		const result = resolvePageClusterKeysInMemory(
+			[
+				{ paths: ['dept-a', 'page1'], stylesheetHrefs: [], html: cardHtml },
+				{ paths: ['dept-a', 'page2'], stylesheetHrefs: [], html: cardHtml },
+				{ paths: ['dept-a', 'page3'], stylesheetHrefs: [], html: formHtml },
+			],
+			{ onClusterReason: (key, reason) => reasons.set(key, reason) },
+		);
+
+		// Precondition: the two clusters really did split within one block.
+		expect(result[2]).not.toBe(result[0]);
+		expect(reasons.size).toBe(2);
+
+		const cardReason = reasons.get(result[0]!)!;
+		const formReason = reasons.get(result[2]!)!;
+		expect(cardReason.siblingClusterKeys).toEqual([result[2]]);
+		expect(formReason.siblingClusterKeys).toEqual([result[0]]);
+		expect(cardReason.blocking).toEqual(formReason.blocking);
+	});
+
+	test('omitting onClusterReason returns a plain string[], unchanged from before', () => {
 		const html = '<body><header>H</header><main>content</main></body>';
 		const result = resolvePageClusterKeysInMemory([
 			{ paths: ['a'], stylesheetHrefs: [], html },
@@ -653,47 +685,47 @@ describe('resolvePageClusterKeysInMemory (includeLandmarkPositions)', () => {
 		expect(result).toStrictEqual(['["path:a","cluster:0"]']);
 	});
 
-	test("a header shared across the whole cluster is reported as chrome; each page's own unique nav is not", () => {
+	test("a header shared across the whole cluster reads as chrome (chromeRate 1); each page's own unique nav does not", () => {
 		const sharedHeader = '<header><nav>global</nav></header>';
 		const html1 = `<body>${sharedHeader}<main><nav class="unique-1">x</nav><article>one</article></main></body>`;
 		const html2 = `<body>${sharedHeader}<main><nav class="unique-2">y</nav><article>two</article></main></body>`;
+		const reasons = new Map<string, ClusterReason>();
 		const result = resolvePageClusterKeysInMemory(
 			[
 				{ paths: ['p', '1'], stylesheetHrefs: [], html: html1 },
 				{ paths: ['p', '2'], stylesheetHrefs: [], html: html2 },
 			],
-			{ includeLandmarkPositions: true },
+			{ onClusterReason: (key, reason) => reasons.set(key, reason) },
 		);
-		expect(result).toHaveLength(2);
 		// Both pages land in the same final cluster (identical header + same
-		// article structure), so shellQuorum is computed over both together.
-		expect(result[0]!.clusterKey).toBe(result[1]!.clusterKey);
-		expect(result[0]!.landmarks.header[0]!.isChrome).toBe(true);
-		expect(result[1]!.landmarks.header[0]!.isChrome).toBe(true);
+		// article structure), so one ClusterReason covers both.
+		expect(result[0]).toBe(result[1]);
+		expect(reasons.size).toBe(1);
+		const reason = reasons.get(result[0]!)!;
+		expect(reason.memberCount).toBe(2);
+		expect(reason.landmarks.header?.chromeRate).toBe(1);
 		// Each page's nav carries a page-unique class not shared by the other
 		// — content, not shell.
-		expect(result[0]!.landmarks.nav[0]!.isChrome).toBe(false);
-		expect(result[1]!.landmarks.nav[0]!.isChrome).toBe(false);
+		expect(reason.landmarks.nav?.chromeRate).toBe(0);
 	});
 
-	test('main instances are reported with position but no isChrome verdict', () => {
+	test('main never appears in ClusterReason.landmarks — chrome discovery does not classify content', () => {
 		const html = '<body><header>H</header><main>content</main></body>';
-		const result = resolvePageClusterKeysInMemory(
-			[{ paths: ['a'], stylesheetHrefs: [], html }],
-			{ includeLandmarkPositions: true },
-		);
-		expect(result[0]!.landmarks.main).toHaveLength(1);
-		expect(Object.keys(result[0]!.landmarks.main[0]!)).not.toContain('isChrome');
+		const reasons = new Map<string, ClusterReason>();
+		resolvePageClusterKeysInMemory([{ paths: ['a'], stylesheetHrefs: [], html }], {
+			onClusterReason: (key, reason) => reasons.set(key, reason),
+		});
+		expect(Object.keys([...reasons.values()][0]!.landmarks)).not.toContain('main');
 	});
 
-	test('two distinct clusters each get their own shellQuorum, not a corpus-wide one', () => {
+	test('two distinct clusters each get their own shellQuorum-derived ClusterReason, not a corpus-wide one', () => {
 		// Cluster A's header/nav tokens never appear anywhere in cluster B's
 		// pages, and vice versa. If shellQuorum were mistakenly computed once
 		// over all 6 pages instead of once per final cluster, each header's
 		// corpus-wide frequency would be 3/6 = 0.5 — below the single-distinct-
-		// signature fallback clamp (0.8) — and neither would be chrome. Per-
-		// cluster computation gives each header a 3/3 = 1.0 frequency within
-		// its own cluster, so both are correctly chrome.
+		// signature fallback clamp (0.8) — and neither would read as chrome.
+		// Per-cluster computation gives each header a 3/3 = 1.0 frequency
+		// within its own cluster, so both correctly read as chrome.
 		const headerA = '<header><nav>team-a-nav</nav></header>';
 		const headerB = '<header><nav>team-b-nav</nav></header>';
 		const clusterAPages = Array.from({ length: 3 }, (_, i) => ({
@@ -706,34 +738,24 @@ describe('resolvePageClusterKeysInMemory (includeLandmarkPositions)', () => {
 			stylesheetHrefs: [],
 			html: `<body>${headerB}<main><section>content ${i}</section></main></body>`,
 		}));
+		const reasons = new Map<string, ClusterReason>();
 		const result = resolvePageClusterKeysInMemory([...clusterAPages, ...clusterBPages], {
-			includeLandmarkPositions: true,
+			onClusterReason: (key, reason) => reasons.set(key, reason),
 		});
 
 		// Precondition: the two groups really are in different final clusters
 		// (different blocking path AND different tag skeleton: article vs
 		// section) — otherwise this test wouldn't be exercising the
 		// per-cluster grouping at all.
-		const clusterKeys = new Set(result.map((r) => r.clusterKey));
-		expect(clusterKeys.size).toBe(2);
-		expect(result[0]!.clusterKey).toBe(result[1]!.clusterKey);
-		expect(result[0]!.clusterKey).toBe(result[2]!.clusterKey);
-		expect(result[3]!.clusterKey).toBe(result[4]!.clusterKey);
-		expect(result[3]!.clusterKey).toBe(result[5]!.clusterKey);
+		expect(reasons.size).toBe(2);
+		expect(result[0]).toBe(result[1]);
+		expect(result[0]).toBe(result[2]);
+		expect(result[3]).toBe(result[4]);
+		expect(result[3]).toBe(result[5]);
 
-		for (const r of result) {
-			expect(r.landmarks.header[0]!.isChrome).toBe(true);
+		for (const reason of reasons.values()) {
+			expect(reason.landmarks.header?.chromeRate).toBe(1);
+			expect(reason.memberCount).toBe(3);
 		}
-	});
-});
-
-describe('assertLandmarkPositionsSupportedForPageCount', () => {
-	test('does not throw when pageCount is at or below threshold', () => {
-		expect(() => assertLandmarkPositionsSupportedForPageCount(5, 5)).not.toThrow();
-		expect(() => assertLandmarkPositionsSupportedForPageCount(4, 5)).not.toThrow();
-	});
-
-	test('throws a RangeError when pageCount exceeds threshold', () => {
-		expect(() => assertLandmarkPositionsSupportedForPageCount(6, 5)).toThrow(RangeError);
 	});
 });

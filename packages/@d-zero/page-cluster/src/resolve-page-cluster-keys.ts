@@ -1,15 +1,14 @@
+import type { ClusterReason } from './build-cluster-reason.js';
+import type { BlockingReason } from './derive-blocking-reason.js';
 import type { ExtractLandmarksResult } from './extract-landmarks.js';
-import type { CrossBlockUnit } from './merge-cross-block-clusters.js';
+import type { CrossBlockUnit, FinalGroupMembers } from './merge-cross-block-clusters.js';
 import type { PerPageLandmarkInstance } from './per-page-landmark-signatures.js';
 import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-keys.js';
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
 import type { TokenizeOptions } from './types.js';
 
 import { autoCutThreshold } from './auto-cut-threshold.js';
-import {
-	type PageLandmarkReport,
-	buildPageLandmarkReport,
-} from './build-page-landmark-report.js';
+import { buildClusterReason } from './build-cluster-reason.js';
 import { capContentDepth } from './cap-content-depth.js';
 import {
 	detectContentDepthCap,
@@ -22,7 +21,6 @@ import { mergeCrossBlockClusters } from './merge-cross-block-clusters.js';
 import { groupIndicesByBlockKey, resolveBlockKeys } from './pass0-blocking.js';
 import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
 import { removeContentBlocks } from './remove-content-blocks.js';
-import { shellQuorum } from './shell-quorum.js';
 import { stageAPerBlock } from './stage-a-per-block.js';
 import { tokenize } from './tokenize.js';
 
@@ -287,41 +285,70 @@ export function computeLocalLandmarkTokens(
 }
 
 /**
- * Builds every page's {@link PageLandmarkReport} for the `includeLandmarkPositions`
- * result path. Groups pages by their *final* cluster key (post–Stage-B), runs
- * {@link ./shell-quorum.js | shellQuorum} once per cluster over the pooled
- * member `PerPageLandmarkInstance`s (the same "shell tokens" concept Stage B
- * itself uses for L2 shell corroboration, just recomputed at the final-
- * cluster granularity rather than the pre-merge unit granularity), then
- * classifies each member page's own landmark instances against that
- * cluster-level shell.
- * @param finalKeys
- * @param landmarks
- * @param perPageInstances
+ * Builds and emits one {@link ClusterReason} per final cluster via
+ * `onClusterReason`, from data Stage A/B already computed for clustering
+ * itself: `crossBlockUnits` (Stage A's pre-merge units, each carrying its
+ * originating block key inside `JSON.parse(unit.key)[0]`), Stage B's
+ * `rootByKey`/`finalGroupsByRoot`, the per-block-key `BlockingReason`s Pass 0
+ * derived, and the per-block sibling-unit-key lists the driver accumulated
+ * alongside its Stage A loop. No re-tokenization and no extra corpus pass —
+ * this only re-groups references the driver already held.
+ * @param crossBlockUnits
+ * @param rootByKey
+ * @param finalGroupsByRoot
+ * @param reasonsByBlockKey
+ * @param siblingUnitKeysByBlock
+ * @param onClusterReason
  */
-function buildLandmarkReportsByCluster(
-	finalKeys: readonly string[],
-	landmarks: readonly ExtractLandmarksResult[],
-	perPageInstances: readonly (readonly PerPageLandmarkInstance[])[],
-): PageLandmarkReport[] {
-	const indicesByKey = new Map<string, number[]>();
-	for (const [i, key] of finalKeys.entries()) {
-		const indices = indicesByKey.get(key);
-		if (indices) {
-			indices.push(i);
+function emitClusterReasons(
+	crossBlockUnits: readonly CrossBlockUnit[],
+	rootByKey: ReadonlyMap<string, string>,
+	finalGroupsByRoot: ReadonlyMap<string, FinalGroupMembers>,
+	reasonsByBlockKey: ReadonlyMap<string, BlockingReason>,
+	siblingUnitKeysByBlock: ReadonlyMap<string, readonly string[]>,
+	onClusterReason: (clusterKey: string, reason: ClusterReason) => void,
+): void {
+	const unitKeysByRoot = new Map<string, string[]>();
+	for (const unit of crossBlockUnits) {
+		const root = rootByKey.get(unit.key) ?? unit.key;
+		const list = unitKeysByRoot.get(root);
+		if (list) {
+			list.push(unit.key);
 		} else {
-			indicesByKey.set(key, [i]);
+			unitKeysByRoot.set(root, [unit.key]);
 		}
 	}
 
-	const reports: PageLandmarkReport[] = Array.from({ length: finalKeys.length });
-	for (const indices of indicesByKey.values()) {
-		const shellTokens = shellQuorum(indices.map((i) => perPageInstances[i]!));
-		for (const i of indices) {
-			reports[i] = buildPageLandmarkReport(landmarks[i]!, shellTokens);
+	for (const [rootKey, unitKeys] of unitKeysByRoot) {
+		const finalGroup = finalGroupsByRoot.get(rootKey);
+		if (!finalGroup) continue;
+
+		const seenBlockKeys = new Set<string>();
+		const blocking: { blockKey: string; reason: BlockingReason }[] = [];
+		const siblingRoots = new Set<string>();
+		for (const unitKey of unitKeys) {
+			const blockKey = JSON.parse(unitKey)[0] as string;
+			if (!seenBlockKeys.has(blockKey)) {
+				seenBlockKeys.add(blockKey);
+				const reason = reasonsByBlockKey.get(blockKey);
+				if (reason) blocking.push({ blockKey, reason });
+			}
+			for (const siblingUnitKey of siblingUnitKeysByBlock.get(blockKey) ?? []) {
+				const siblingRoot = rootByKey.get(siblingUnitKey) ?? siblingUnitKey;
+				if (siblingRoot !== rootKey) siblingRoots.add(siblingRoot);
+			}
 		}
+
+		onClusterReason(
+			rootKey,
+			buildClusterReason({
+				tokenSets: finalGroup.tokenSets,
+				landmarkInstances: finalGroup.landmarkInstances,
+				blocking,
+				siblingClusterKeys: [...siblingRoots].toSorted(),
+			}),
+		);
 	}
-	return reports;
 }
 
 /**
@@ -408,49 +435,43 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * sync helper to running a per-block async loop that emits
 		 * `pass1-block-complete` and `stage-b-start`. Omitting `onProgress`
 		 * keeps the small-corpus branch on the pre-refactor sync path with
-		 * zero yield overhead. Ignored when `includeLandmarkPositions` is
-		 * `true` — that option always routes the small-corpus branch through
-		 * the sync helper (see `includeLandmarkPositions`'s own JSDoc), so no
-		 * progress events fire in that combination.
+		 * zero yield overhead. Ignored when `onClusterReason` is set — that
+		 * option always routes the small-corpus branch through the sync
+		 * helper (see `onClusterReason`'s own JSDoc), so no progress events
+		 * fire in that combination.
 		 */
 		onProgress?: (event: ProgressEvent) => void;
 		/**
-		 * When `true`, every result entry additionally carries a
-		 * {@link PageLandmarkReport} — each landmark instance's position, plus
-		 * a chrome/content verdict for the six excisable types (see
-		 * {@link ./build-page-landmark-report.js | buildPageLandmarkReport}).
-		 * Changes the return shape from `string[]` to
-		 * `{@link PageClusterKeyResult}[]` (see the overloads on
-		 * `resolvePageClusterKeysInMemory`/`resolvePageClusterKeys`/
-		 * `resolvePageClusterKeysFromArray`). Defaults to `false`, in which
-		 * case every existing caller's behavior and return type are
-		 * unchanged.
+		 * Optional observability hook invoked once per **final cluster** (not
+		 * per page) with that cluster's {@link ClusterReason} — the blocking
+		 * signal that grouped it, its DOM-structural token core, its
+		 * per-landmark-type commonality, and the sibling cluster keys it was
+		 * split from within the same Pass-0 block. Unlike `onProgress`, this
+		 * fires on every path — small-corpus and streaming alike — because a
+		 * `ClusterReason` is sized by cluster count, not page count, so it
+		 * carries no streaming-path memory risk the way a per-page report
+		 * would.
 		 *
-		 * Not supported on the streaming path
-		 * (`pageCount > {@link CORPUS_INLINE_THRESHOLD}`): reservoir sampling
-		 * and Jaccard-based non-sample assignment there have no notion of
-		 * "this page's shell tokens" to classify chrome against, and
-		 * retrofitting one is out of scope. `resolvePageClusterKeys` throws a
-		 * `RangeError` up front if both apply to the same call, rather than
-		 * silently degrading semantics.
+		 * Building the reasons re-uses Stage A/B's own intermediate state (the
+		 * quorum core, the per-unit landmark instances, the blocking
+		 * evidence) — it does not re-tokenize pages or re-run corpus-wide
+		 * discovery. Omitting `onClusterReason` skips that bookkeeping
+		 * entirely, so existing callers pay nothing for this option.
 		 *
-		 * On the async factory-based `resolvePageClusterKeys`, this option
+		 * On the async factory-based `resolvePageClusterKeys`, setting this
 		 * forces the small-corpus branch through the sync
 		 * `resolvePageClusterKeysInMemory` helper regardless of `onProgress`
 		 * — see `onProgress`'s own JSDoc.
+		 * @example
+		 * ```ts
+		 * const reasons = new Map<string, ClusterReason>();
+		 * const keys = await resolvePageClusterKeys(pages, {
+		 *   onClusterReason: (key, reason) => reasons.set(key, reason),
+		 * });
+		 * ```
 		 */
-		includeLandmarkPositions?: boolean;
+		onClusterReason?: (clusterKey: string, reason: ClusterReason) => void;
 	};
-
-/**
- * One page's clustering result when `includeLandmarkPositions` is `true`:
- * the same `clusterKey` every caller already gets, plus that page's
- * {@link PageLandmarkReport}.
- */
-export type PageClusterKeyResult = {
-	readonly clusterKey: string;
-	readonly landmarks: PageLandmarkReport;
-};
 
 /**
  * Corpus size at or below which the async factory-based
@@ -474,27 +495,6 @@ export type PageClusterKeyResult = {
  * anything above 20,000 is routed to streaming.
  */
 export const CORPUS_INLINE_THRESHOLD = 20_000;
-
-/**
- * Throws when `includeLandmarkPositions` is combined with a corpus over
- * `threshold` pages (the streaming path — see `includeLandmarkPositions`'s
- * own JSDoc for why it has no sample-based equivalent there). Split out from
- * its call site so tests can exercise the boundary with a small injected
- * `threshold` instead of constructing a 20,001-page fixture to cross the
- * real {@link CORPUS_INLINE_THRESHOLD}.
- * @param pageCount
- * @param threshold
- */
-export function assertLandmarkPositionsSupportedForPageCount(
-	pageCount: number,
-	threshold: number,
-): void {
-	if (pageCount > threshold) {
-		throw new RangeError(
-			`resolvePageClusterKeys: includeLandmarkPositions is not supported for corpora larger than ${threshold} pages (the streaming path) — this corpus has ${pageCount}`,
-		);
-	}
-}
 
 /**
  * Reservoir-sample size per block on the streaming path. Blocks larger than
@@ -551,16 +551,8 @@ export const BLOCK_SAMPLE_SIZE = 100;
  */
 export function resolvePageClusterKeysInMemory(
 	pages: readonly PageClusterSignals[],
-	options: ResolvePageClusterKeysOptions & { includeLandmarkPositions: true },
-): PageClusterKeyResult[];
-export function resolvePageClusterKeysInMemory(
-	pages: readonly PageClusterSignals[],
 	options?: ResolvePageClusterKeysOptions,
-): string[];
-export function resolvePageClusterKeysInMemory(
-	pages: readonly PageClusterSignals[],
-	options?: ResolvePageClusterKeysOptions,
-): string[] | PageClusterKeyResult[] {
+): string[] {
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
 
 	const similarityThreshold = options?.similarityThreshold ?? 0.8;
@@ -571,18 +563,15 @@ export function resolvePageClusterKeysInMemory(
 	}
 
 	// Always computed: landmark fields are needed by Stage B's shell
-	// corroboration regardless of `excludeLandmarks`, and `remainderHtml` is
-	// needed whenever `excludeLandmarks` is true.
+	// corroboration regardless of `excludeLandmarks`.
 	const landmarks: readonly ExtractLandmarksResult[] = pages.map((page) =>
 		extractLandmarks(page.html),
 	);
 
-	// Corpus-level chrome discovery. `perPageInstances` is only consumed
-	// below when `includeLandmarkPositions` is set — computed unconditionally
-	// anyway since `computeLocalChromeArtifacts` already builds it internally
-	// for chrome discovery, so exposing it here costs nothing extra.
-	const { localTokensByPage: localLandmarkTokensByPage, perPageInstances } =
-		computeLocalChromeArtifacts(landmarks, options);
+	const { localTokensByPage: localLandmarkTokensByPage } = computeLocalChromeArtifacts(
+		landmarks,
+		options,
+	);
 
 	const contentBlockAttribute = options?.contentBlockAttribute;
 	const preparedHtml = pages.map((page, index) => {
@@ -601,7 +590,19 @@ export function resolvePageClusterKeysInMemory(
 		? filterFirstPartyStylesheetHrefs(pages)
 		: pages;
 
-	const blockKeys = resolveBlockKeys(blockingPages, options);
+	// Reasons (blocking evidence) are only worth deriving when a caller
+	// actually asked for `onClusterReason` — see that option's own JSDoc for
+	// why this is the only place ClusterReason bookkeeping is opt-in.
+	const onClusterReason = options?.onClusterReason;
+	let blockKeys: string[];
+	let reasonsByBlockKey: ReadonlyMap<string, BlockingReason> | undefined;
+	if (onClusterReason) {
+		const result = resolveBlockKeys(blockingPages, { ...options, includeReasons: true });
+		blockKeys = result.blockKeys;
+		reasonsByBlockKey = result.reasonsByBlockKey;
+	} else {
+		blockKeys = resolveBlockKeys(blockingPages, options);
+	}
 	const indicesByBlockKey = groupIndicesByBlockKey(blockKeys);
 
 	// Validated here, eagerly, because it's otherwise only reached from
@@ -612,6 +613,9 @@ export function resolvePageClusterKeysInMemory(
 
 	const finalKeys: string[] = Array.from({ length: pages.length });
 	const crossBlockUnits: CrossBlockUnit[] = [];
+	const siblingUnitKeysByBlock = onClusterReason
+		? new Map<string, readonly string[]>()
+		: undefined;
 
 	for (const [blockKey, indices] of indicesByBlockKey) {
 		const result = stageAPerBlock(
@@ -628,22 +632,37 @@ export function resolvePageClusterKeysInMemory(
 			finalKeys[pageIndex] = key;
 		}
 		crossBlockUnits.push(...result.crossBlockUnits);
+		siblingUnitKeysByBlock?.set(
+			blockKey,
+			result.crossBlockUnits.map((u) => u.key),
+		);
 	}
 
 	// Stage B: cross-block merge — always runs regardless of options
-	const stageBResult = mergeCrossBlockClusters(crossBlockUnits, options);
+	const { rootByKey, finalGroupsByRoot } = mergeCrossBlockClusters(
+		crossBlockUnits,
+		options,
+	);
 	for (let i = 0; i < finalKeys.length; i++) {
 		const currentKey = finalKeys[i]!;
-		const rootKey = stageBResult.get(currentKey);
+		const rootKey = rootByKey.get(currentKey);
 		if (rootKey !== undefined && rootKey !== currentKey) {
 			finalKeys[i] = rootKey;
 		}
 	}
 
-	if (!options?.includeLandmarkPositions) return finalKeys;
+	if (onClusterReason && reasonsByBlockKey && siblingUnitKeysByBlock) {
+		emitClusterReasons(
+			crossBlockUnits,
+			rootByKey,
+			finalGroupsByRoot,
+			reasonsByBlockKey,
+			siblingUnitKeysByBlock,
+			onClusterReason,
+		);
+	}
 
-	const reports = buildLandmarkReportsByCluster(finalKeys, landmarks, perPageInstances);
-	return finalKeys.map((clusterKey, i) => ({ clusterKey, landmarks: reports[i]! }));
+	return finalKeys;
 }
 
 /**
@@ -746,10 +765,10 @@ async function resolveSmallCorpusWithProgress(
 
 	onProgress({ phase: 'stage-b-start', unitCount: crossBlockUnits.length });
 
-	const stageBResult = mergeCrossBlockClusters(crossBlockUnits, options);
+	const { rootByKey } = mergeCrossBlockClusters(crossBlockUnits, options);
 	for (let i = 0; i < finalKeys.length; i++) {
 		const currentKey = finalKeys[i]!;
-		const rootKey = stageBResult.get(currentKey);
+		const rootKey = rootByKey.get(currentKey);
 		if (rootKey !== undefined && rootKey !== currentKey) {
 			finalKeys[i] = rootKey;
 		}
@@ -823,16 +842,8 @@ export type PageFactory = () =>
  */
 export async function resolvePageClusterKeys(
 	pages: PageFactory,
-	options: ResolvePageClusterKeysOptions & { includeLandmarkPositions: true },
-): Promise<PageClusterKeyResult[]>;
-export async function resolvePageClusterKeys(
-	pages: PageFactory,
 	options?: ResolvePageClusterKeysOptions,
-): Promise<string[]>;
-export async function resolvePageClusterKeys(
-	pages: PageFactory,
-	options?: ResolvePageClusterKeysOptions,
-): Promise<string[] | PageClusterKeyResult[]> {
+): Promise<string[]> {
 	const onProgress = options?.onProgress;
 	// Pass 0: HTML-free — collect blocking signals (paths, stylesheetHrefs,
 	// host) into an array. This is the only per-page state we keep across
@@ -872,27 +883,18 @@ export async function resolvePageClusterKeys(
 		// into per-block progress, so delegate to the untouched sync path —
 		// keeping behavior byte-for-byte identical (and yield-overhead-free)
 		// to how library-only consumers experienced this before the CLI
-		// progress work landed. `includeLandmarkPositions` always routes here
-		// too (see its own JSDoc): `resolveSmallCorpusWithProgress` has no
-		// landmark-report support, and duplicating that logic into the
+		// progress work landed. `onClusterReason` always routes here too (see
+		// its own JSDoc): `resolveSmallCorpusWithProgress` has no
+		// cluster-reason support, and duplicating that logic into the
 		// progress-emitting path for a reporting feature that has nothing to
 		// do with progress observability isn't worth the added surface.
-		if (onProgress === undefined || options?.includeLandmarkPositions) {
+		if (onProgress === undefined || options?.onClusterReason) {
 			return resolvePageClusterKeysInMemory(fullPages, options);
 		}
 		return resolveSmallCorpusWithProgress(fullPages, onProgress, options);
 	}
 
-	// Large corpus: streaming path. includeLandmarkPositions has no sample-
-	// based equivalent (see its own JSDoc) — fail fast rather than silently
-	// ignoring the option or returning a semantically-wrong report.
-	if (options?.includeLandmarkPositions) {
-		assertLandmarkPositionsSupportedForPageCount(
-			blockingSignals.length,
-			CORPUS_INLINE_THRESHOLD,
-		);
-	}
-
+	// Large corpus: streaming path.
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
 	const similarityThreshold = options?.similarityThreshold ?? 0.8;
 	if (!(similarityThreshold >= 0 && similarityThreshold <= 1)) {
@@ -907,12 +909,31 @@ export async function resolvePageClusterKeys(
 	const blockingPagesForKeys = restrictStylesheetsToFirstParty
 		? filterFirstPartyStylesheetHrefs(blockingSignals)
 		: blockingSignals;
-	const blockKeys = resolveBlockKeys(blockingPagesForKeys, options);
+
+	// Reasons (blocking evidence) cost nothing beyond bookkeeping — a Map
+	// keyed by distinct block key, not by page — but are only derived when a
+	// caller actually asked for `onClusterReason`.
+	const onClusterReason = options?.onClusterReason;
+	let blockKeys: string[];
+	let reasonsByBlockKey: ReadonlyMap<string, BlockingReason> | undefined;
+	if (onClusterReason) {
+		const result = resolveBlockKeys(blockingPagesForKeys, {
+			...options,
+			includeReasons: true,
+		});
+		blockKeys = result.blockKeys;
+		reasonsByBlockKey = result.reasonsByBlockKey;
+	} else {
+		blockKeys = resolveBlockKeys(blockingPagesForKeys, options);
+	}
 	const indicesByBlockKey = groupIndicesByBlockKey(blockKeys);
 
 	const finalKeys: string[] = Array.from({ length: blockingSignals.length });
 	const crossBlockUnits: CrossBlockUnit[] = [];
 	const contentBlockAttribute = options?.contentBlockAttribute;
+	const siblingUnitKeysByBlock = onClusterReason
+		? new Map<string, readonly string[]>()
+		: undefined;
 
 	/**
 	 * Per-block bucket accumulates a reservoir sample of the block's pages
@@ -989,6 +1010,10 @@ export async function resolvePageClusterKeys(
 			finalKeys[idx] = key;
 		}
 		crossBlockUnits.push(...result.crossBlockUnits);
+		siblingUnitKeysByBlock?.set(
+			bucket.blockKey,
+			result.crossBlockUnits.map((u) => u.key),
+		);
 
 		if (bucket.seenCount > bucket.reservoirIndices.length) {
 			// Save assignment artifacts for Pass 1b.
@@ -1134,16 +1159,27 @@ export async function resolvePageClusterKeys(
 	if (onProgress) {
 		onProgress({ phase: 'stage-b-start', unitCount: crossBlockUnits.length });
 	}
-	const stageBResult = mergeCrossBlockClusters(crossBlockUnits, {
+	const { rootByKey, finalGroupsByRoot } = mergeCrossBlockClusters(crossBlockUnits, {
 		...options,
 		capMembers: BLOCK_SAMPLE_SIZE,
 	});
 	for (let i = 0; i < finalKeys.length; i++) {
 		const currentKey = finalKeys[i]!;
-		const rootKey = stageBResult.get(currentKey);
+		const rootKey = rootByKey.get(currentKey);
 		if (rootKey !== undefined && rootKey !== currentKey) {
 			finalKeys[i] = rootKey;
 		}
+	}
+
+	if (onClusterReason && reasonsByBlockKey && siblingUnitKeysByBlock) {
+		emitClusterReasons(
+			crossBlockUnits,
+			rootByKey,
+			finalGroupsByRoot,
+			reasonsByBlockKey,
+			siblingUnitKeysByBlock,
+			onClusterReason,
+		);
 	}
 	return finalKeys;
 }
@@ -1166,15 +1202,7 @@ export async function resolvePageClusterKeys(
  */
 export function resolvePageClusterKeysFromArray(
 	pages: readonly PageClusterSignals[],
-	options: ResolvePageClusterKeysOptions & { includeLandmarkPositions: true },
-): Promise<PageClusterKeyResult[]>;
-export function resolvePageClusterKeysFromArray(
-	pages: readonly PageClusterSignals[],
 	options?: ResolvePageClusterKeysOptions,
-): Promise<string[]>;
-export function resolvePageClusterKeysFromArray(
-	pages: readonly PageClusterSignals[],
-	options?: ResolvePageClusterKeysOptions,
-): Promise<string[] | PageClusterKeyResult[]> {
+): Promise<string[]> {
 	return resolvePageClusterKeys(() => pages, options);
 }

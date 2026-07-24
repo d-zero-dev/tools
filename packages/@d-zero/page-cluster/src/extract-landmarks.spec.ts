@@ -312,8 +312,8 @@ describe('extractLandmarks (main handling)', () => {
 	test('main is absent from ALL_LANDMARK_TYPES-driven chrome discovery by construction (position-only)', () => {
 		// extractLandmarks itself has no chrome/shell notion — this test only
 		// pins that main instances are reported at all, alongside the other
-		// six, with no isChrome-like field (that lives in
-		// build-page-landmark-report.ts, a separate layer downstream).
+		// six, with no isChrome-like field (that classification is derived
+		// downstream, e.g. by build-cluster-reason.ts).
 		const html = '<body><main>content</main></body>';
 		const result = extractLandmarks(html);
 		expect(result.main).toHaveLength(1);

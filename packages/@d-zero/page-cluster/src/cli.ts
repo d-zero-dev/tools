@@ -5,13 +5,14 @@
 // and streams progress to stderr via `@d-zero/dealer`'s `Lanes` — in-place
 // animated header on a TTY, appended `[page-cluster] …` lines otherwise.
 
+import type { ClusterReason } from './build-cluster-reason.js';
 import type {
-	PageClusterKeyResult,
 	PageClusterSignals,
 	ProgressEvent,
 	ResolvePageClusterKeysOptions,
 } from './resolve-page-cluster-keys.js';
 
+import { writeFile } from 'node:fs/promises';
 import process from 'node:process';
 
 import { Lanes } from '@d-zero/dealer';
@@ -24,14 +25,14 @@ import { resolvePageClusterKeys } from './resolve-page-cluster-keys.js';
  */
 type CliArgs = {
 	readonly contentBlockAttribute?: string;
-	readonly includeLandmarkPositions?: boolean;
+	readonly clusterReasonsFile?: string;
 	readonly help?: boolean;
 	readonly version?: boolean;
 	readonly unknownFlag?: string;
 };
 
 const HELP_TEXT = `Usage:
-  page-cluster [--content-block-attribute <name>] [--include-landmark-positions] < pages.jsonl > clusters.jsonl
+  page-cluster [--content-block-attribute <name>] [--cluster-reasons-file <path>] < pages.jsonl > clusters.jsonl
 
 Input (JSONL, one page per line):
   {
@@ -45,20 +46,27 @@ Input (JSONL, one page per line):
 Output (JSONL, one line per input page, in input order):
   { "id": "...", "clusterKey": "..." }
 
-  With --include-landmark-positions, each line additionally carries a
-  \`landmarks\` field: every header/footer/nav/aside/form/search/main
-  instance's position (1-based line/column plus string offsets), with the
-  six excisable types (all but main) also carrying an \`isChrome\` verdict
-  against that page's final cluster:
+  With --cluster-reasons-file <path>, a separate JSON file is written once
+  processing completes: an object keyed by clusterKey, one entry per final
+  cluster (not per page — a ClusterReason is sized by cluster count, so
+  this file has no page-count limit, unlike a per-page report would).
+  Each ClusterReason reports the blocking evidence that grouped the
+  cluster (shared stylesheet set or URL path prefix), the shared DOM-
+  structural token core, per-landmark-type (header/footer/nav/aside/form/
+  search) commonality within the cluster, and the sibling cluster keys it
+  was split from within the same blocking group — e.g. "header/footer are
+  common chrome across both clusters, but they differ in whether a
+  sidebar nav is present":
   {
-    "id": "...", "clusterKey": "...",
-    "landmarks": {
-      "header": [{ "startLine": 1, "startColumn": 7, "endLine": 1,
-                    "endColumn": 30, "startOffset": 6, "endOffset": 29,
-                    "isChrome": true }],
-      "footer": [...], "nav": [...], "aside": [...], "form": [...], "search": [...],
-      "main": [{ "startLine": 2, "startColumn": 1, "endLine": 10,
-                  "endColumn": 8, "startOffset": 40, "endOffset": 120 }]
+    "[\\"path:news\\",\\"cluster:0\\"]": {
+      "memberCount": 42,
+      "blocking": [{ "blockKey": "path:news", "reason": { "kind": "path", "pathKey": "news" } }],
+      "structuralCoreTokens": ["body>main>article", "..."],
+      "landmarks": {
+        "header": { "presenceRate": 1, "chromeRate": 1, "shellTokens": ["..."], "memberCountWithInstance": 42 },
+        "aside": { "presenceRate": 0.3, "chromeRate": 0, "shellTokens": [], "memberCountWithInstance": 13 }
+      },
+      "siblingClusterKeys": ["[\\"path:news\\",\\"cluster:1\\"]"]
     }
   }
 
@@ -66,14 +74,10 @@ Options:
   --content-block-attribute <name>   CMS-provided attribute marking freeform
                                      content blocks that should be stripped
                                      before comparison (e.g. \`data-bgb\`).
-  --include-landmark-positions       Add the \`landmarks\` field described
-                                     above to every output line. Not
-                                     supported for corpora over 20,000 pages
-                                     (throws instead of streaming). Disables
-                                     progress output on stderr — this option
-                                     always routes through the same
-                                     non-progress-emitting code path as a
-                                     run without progress.
+  --cluster-reasons-file <path>      Write the per-cluster ClusterReason
+                                     object described above to <path> after
+                                     processing completes. No page-count
+                                     limit.
   --help                             Print this help and exit.
   --version                          Print the package version and exit.
 
@@ -111,7 +115,7 @@ const VERBOSE_HEADER = '[page-cluster]';
 export function parseArgs(argv: readonly string[]): CliArgs {
 	const out: {
 		contentBlockAttribute?: string;
-		includeLandmarkPositions?: boolean;
+		clusterReasonsFile?: string;
 		help?: boolean;
 		version?: boolean;
 		unknownFlag?: string;
@@ -139,8 +143,14 @@ export function parseArgs(argv: readonly string[]): CliArgs {
 				i++;
 				break;
 			}
-			case '--include-landmark-positions': {
-				out.includeLandmarkPositions = true;
+			case '--cluster-reasons-file': {
+				const next = argv[i + 1];
+				if (next === undefined) {
+					out.unknownFlag = `${arg} requires a value`;
+					return out;
+				}
+				out.clusterReasonsFile = next;
+				i++;
 				break;
 			}
 			default: {
@@ -432,30 +442,26 @@ export async function runCli(options: {
 
 		renderProgress(lanes, useTty, readingDoneLine(pages.length));
 
+		// Only worth collecting when the caller asked for the file — a
+		// ClusterReason Map costs bookkeeping proportional to cluster count,
+		// not page count, but there's no reason to pay even that when unused.
+		const reasonsByClusterKey = args.clusterReasonsFile
+			? new Map<string, ClusterReason>()
+			: undefined;
+
 		const resolveOptions: ResolvePageClusterKeysOptions = {
 			contentBlockAttribute: args.contentBlockAttribute,
 			onProgress: (event) => {
 				renderProgress(lanes, useTty, formatProgressLine(event, elapsed()));
 			},
+			onClusterReason: reasonsByClusterKey
+				? (key, reason) => reasonsByClusterKey.set(key, reason)
+				: undefined,
 		};
 
-		// `includeLandmarkPositions` always routes resolvePageClusterKeys
-		// through its non-progress-emitting sync path (see that option's own
-		// JSDoc), so the onProgress callback above is set but never invoked
-		// in this branch — no separate "quiet" resolveOptions variant needed.
 		let clusterKeys: string[];
-		let landmarksByIndex: PageClusterKeyResult['landmarks'][] | undefined;
 		try {
-			if (args.includeLandmarkPositions) {
-				const results = await resolvePageClusterKeys(() => pages, {
-					...resolveOptions,
-					includeLandmarkPositions: true,
-				});
-				clusterKeys = results.map((r) => r.clusterKey);
-				landmarksByIndex = results.map((r) => r.landmarks);
-			} else {
-				clusterKeys = await resolvePageClusterKeys(() => pages, resolveOptions);
-			}
+			clusterKeys = await resolvePageClusterKeys(() => pages, resolveOptions);
 		} catch (error) {
 			renderProgress(lanes, useTty, errorLine((error as Error).message));
 			return 1;
@@ -465,13 +471,22 @@ export async function runCli(options: {
 		renderProgress(lanes, useTty, doneLine(pages.length, clusterCount, elapsed()));
 
 		for (const [index, key] of clusterKeys.entries()) {
-			const row: { id: string | number; clusterKey: string; landmarks?: unknown } = {
-				id: ids[index] ?? index,
-				clusterKey: key,
-			};
-			if (landmarksByIndex) row.landmarks = landmarksByIndex[index];
+			const row = { id: ids[index] ?? index, clusterKey: key };
 			options.stdout.write(`${JSON.stringify(row)}\n`);
 		}
+
+		if (args.clusterReasonsFile && reasonsByClusterKey) {
+			try {
+				await writeFile(
+					args.clusterReasonsFile,
+					JSON.stringify(Object.fromEntries(reasonsByClusterKey), null, 2),
+				);
+			} catch (error) {
+				renderProgress(lanes, useTty, errorLine((error as Error).message));
+				return 1;
+			}
+		}
+
 		return 0;
 	} finally {
 		lanes.close();

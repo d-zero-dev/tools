@@ -24,6 +24,14 @@
 		"./resolve-page-cluster-keys": {
 			"import": "./dist/resolve-page-cluster-keys.js",
 			"types": "./dist/resolve-page-cluster-keys.d.ts"
+		},
+		"./is-chrome-landmark-instance": {
+			"import": "./dist/is-chrome-landmark-instance.js",
+			"types": "./dist/is-chrome-landmark-instance.d.ts"
+		},
+		"./jaccard-similarity": {
+			"import": "./dist/jaccard-similarity.js",
+			"types": "./dist/jaccard-similarity.d.ts"
 		}
 	},
 	"bin": "./dist/cli.js",

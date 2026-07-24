@@ -74,10 +74,10 @@ const SHELL_QUORUM_FALLBACK_FRACTION = 0.8;
  *
  * Originally private to {@link ./merge-cross-block-clusters.js | mergeCrossBlockClusters}'s
  * Stage B L2 corroboration; exported from its own module so
- * {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeysInMemory}'s
- * `includeLandmarkPositions` reporting path can run it once per final
- * cluster to classify individual landmark instances as chrome (see
- * {@link ./is-chrome-landmark-instance.js | isChromeLandmarkInstance}).
+ * {@link ./build-cluster-reason.js | buildClusterReason} can run it once per
+ * final cluster, per landmark type, to classify individual landmark
+ * instances as chrome (see {@link ./is-chrome-landmark-instance.js |
+ * isChromeLandmarkInstance}).
  * @param perPageInstances
  */
 export function shellQuorum(

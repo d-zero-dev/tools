@@ -1,3 +1,4 @@
+import type { ClusterReason } from './build-cluster-reason.js';
 import type { PageClusterSignals, ProgressEvent } from './resolve-page-cluster-keys.js';
 
 import { describe, expect, test } from 'vitest';
@@ -166,31 +167,43 @@ describe('resolvePageClusterKeys onProgress on small corpus', () => {
 	});
 });
 
-describe('resolvePageClusterKeys (includeLandmarkPositions)', () => {
-	test('small corpus with includeLandmarkPositions matches resolvePageClusterKeysInMemory', async () => {
+describe('resolvePageClusterKeys (onClusterReason)', () => {
+	test('small corpus with onClusterReason produces the same keys and reasons as resolvePageClusterKeysInMemory', async () => {
 		const pages = buildTinyCorpus();
+		const streamedReasons = new Map<string, ClusterReason>();
 		const streamed = await resolvePageClusterKeys(() => pages, {
-			includeLandmarkPositions: true,
+			onClusterReason: (key, reason) => streamedReasons.set(key, reason),
 		});
+		const inMemoryReasons = new Map<string, ClusterReason>();
 		const inMemory = resolvePageClusterKeysInMemory(pages, {
-			includeLandmarkPositions: true,
+			onClusterReason: (key, reason) => inMemoryReasons.set(key, reason),
 		});
 		expect(streamed).toEqual(inMemory);
+		expect(streamedReasons).toEqual(inMemoryReasons);
+		expect(streamedReasons.size).toBeGreaterThan(0);
 	});
 
-	test('combined with onProgress, still returns reports but emits no progress events (routed through the sync path)', async () => {
+	test('combined with onProgress, still fires onClusterReason but emits no progress events (routed through the sync path)', async () => {
 		const pages = buildTinyCorpus();
 		const events: ProgressEvent[] = [];
+		const reasons = new Map<string, ClusterReason>();
 		const result = await resolvePageClusterKeys(() => pages, {
-			includeLandmarkPositions: true,
+			onClusterReason: (key, reason) => reasons.set(key, reason),
 			onProgress: (event) => events.push(event),
 		});
 		expect(result).toHaveLength(pages.length);
-		expect(result[0]).toHaveProperty('landmarks');
+		expect(reasons.size).toBeGreaterThan(0);
 		expect(events).toStrictEqual([]);
 	});
 
-	test('a corpus above CORPUS_INLINE_THRESHOLD rejects with a RangeError instead of streaming', async () => {
+	test('a corpus above CORPUS_INLINE_THRESHOLD completes on the streaming path and fires onClusterReason once per final cluster, without throwing', async () => {
+		// Regression guard for the fixed design flaw this replaces: the old
+		// `includeLandmarkPositions` retained every member page's landmark
+		// data until final clustering completed, which is why it had to
+		// reject corpora over this threshold outright. `ClusterReason` is
+		// sized by cluster count, not page count, so it has no such ceiling —
+		// this test's whole point is proving that by actually crossing the
+		// threshold instead of asserting a thrown error.
 		const bigCount = CORPUS_INLINE_THRESHOLD + 1;
 		/**
 		 * @yields {PageClusterSignals} A minimal page, `bigCount` times.
@@ -200,8 +213,13 @@ describe('resolvePageClusterKeys (includeLandmarkPositions)', () => {
 				yield { paths: ['p', String(i)], stylesheetHrefs: [], html: '<body></body>' };
 			}
 		}
-		await expect(
-			resolvePageClusterKeys(() => generate(), { includeLandmarkPositions: true }),
-		).rejects.toThrow(RangeError);
-	});
+		const reasons = new Map<string, ClusterReason>();
+		const keys = await resolvePageClusterKeys(() => generate(), {
+			onClusterReason: (key, reason) => reasons.set(key, reason),
+		});
+		expect(keys).toHaveLength(bigCount);
+		const distinctKeys = new Set(keys);
+		expect(reasons.size).toBe(distinctKeys.size);
+		for (const key of distinctKeys) expect(reasons.has(key)).toBe(true);
+	}, 30_000);
 });

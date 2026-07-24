@@ -1,3 +1,6 @@
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
 
 import { describe, expect, test } from 'vitest';
@@ -68,9 +71,15 @@ describe('parseArgs', () => {
 		});
 	});
 
-	test('--include-landmark-positions', () => {
-		expect(parseArgs(['--include-landmark-positions'])).toEqual({
-			includeLandmarkPositions: true,
+	test('--cluster-reasons-file takes a value', () => {
+		expect(parseArgs(['--cluster-reasons-file', 'reasons.json'])).toEqual({
+			clusterReasonsFile: 'reasons.json',
+		});
+	});
+
+	test('--cluster-reasons-file without a value flags an error', () => {
+		expect(parseArgs(['--cluster-reasons-file'])).toEqual({
+			unknownFlag: '--cluster-reasons-file requires a value',
 		});
 	});
 
@@ -149,7 +158,7 @@ describe('runCli', () => {
 		expect(stdout.read()).toMatch(/Usage:/);
 	});
 
-	test('--help mentions --include-landmark-positions', async () => {
+	test('--help mentions --cluster-reasons-file', async () => {
 		const stdout = makeCollector();
 		const stderr = makeCollector();
 		await runCli({
@@ -159,7 +168,7 @@ describe('runCli', () => {
 			argv: ['--help'],
 			version: '0.0.0',
 		});
-		expect(stdout.read()).toMatch(/--include-landmark-positions/);
+		expect(stdout.read()).toMatch(/--cluster-reasons-file/);
 	});
 
 	test('--version prints version and exits 0', async () => {
@@ -310,7 +319,7 @@ describe('runCli', () => {
 		);
 	});
 
-	test('--include-landmark-positions adds a landmarks field to each output line', async () => {
+	test('--cluster-reasons-file writes a clusterKey-keyed ClusterReason object, output lines stay landmarks-free', async () => {
 		const input = [
 			JSON.stringify({
 				id: 'a',
@@ -327,29 +336,59 @@ describe('runCli', () => {
 		].join('\n');
 		const stdout = makeCollector();
 		const stderr = makeCollector();
-		const code = await runCli({
-			stdin: makeStdin(input),
-			stdout: stdout.stream,
-			stderr: stderr.stream,
-			argv: ['--include-landmark-positions'],
-			version: '0.0.0',
-		});
-		expect(code).toBe(0);
-		const lines = stdout.read().split('\n').filter(Boolean);
-		expect(lines).toHaveLength(2);
-		const parsed = lines.map(
-			(line) =>
-				JSON.parse(line) as {
-					id: string;
-					clusterKey: string;
-					landmarks: { header: { isChrome: boolean }[]; main: object[] };
-				},
-		);
-		expect(parsed[0]!.landmarks.header[0]!.isChrome).toBe(true);
-		expect(parsed[0]!.landmarks.main).toHaveLength(1);
+		const dir = await mkdtemp(path.join(tmpdir(), 'page-cluster-cli-'));
+		const reasonsFile = path.join(dir, 'reasons.json');
+		try {
+			const code = await runCli({
+				stdin: makeStdin(input),
+				stdout: stdout.stream,
+				stderr: stderr.stream,
+				argv: ['--cluster-reasons-file', reasonsFile],
+				version: '0.0.0',
+			});
+			expect(code).toBe(0);
+
+			const lines = stdout.read().split('\n').filter(Boolean);
+			expect(lines).toHaveLength(2);
+			const parsed = lines.map(
+				(line) => JSON.parse(line) as { id: string; clusterKey: string },
+			);
+			expect(parsed[0]).not.toHaveProperty('landmarks');
+			expect(parsed[0]!.clusterKey).toBe(parsed[1]!.clusterKey);
+
+			const reasonsByKey = JSON.parse(await readFile(reasonsFile, 'utf8')) as Record<
+				string,
+				{ memberCount: number; landmarks: { header?: { chromeRate: number } } }
+			>;
+			const reason = reasonsByKey[parsed[0]!.clusterKey];
+			expect(reason?.memberCount).toBe(2);
+			expect(reason?.landmarks.header?.chromeRate).toBe(1);
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
 	});
 
-	test('without --include-landmark-positions, output lines carry no landmarks field', async () => {
+	test('--cluster-reasons-file write failure is reported as a clean exit-1 error, not an unhandled rejection', async () => {
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		const code = await runCli({
+			stdin: makeStdin(
+				JSON.stringify({ id: 'a', html: '<body><header>H</header></body>' }),
+			),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			// A path under a nonexistent directory always fails ENOENT on write.
+			argv: [
+				'--cluster-reasons-file',
+				path.join(tmpdir(), 'page-cluster-nonexistent-dir', 'reasons.json'),
+			],
+			version: '0.0.0',
+		});
+		expect(code).toBe(1);
+		expect(stripAnsi(stderr.read())).toMatch(/\[page-cluster\] error: /);
+	});
+
+	test('without --cluster-reasons-file, no reasons file is written and output lines carry no landmarks field', async () => {
 		const stdout = makeCollector();
 		const stderr = makeCollector();
 		const code = await runCli({
