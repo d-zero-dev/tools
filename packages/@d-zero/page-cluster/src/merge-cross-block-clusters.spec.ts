@@ -1,4 +1,8 @@
-import type { ExtractLandmarksResult } from './extract-landmarks.js';
+import type {
+	ExtractLandmarksResult,
+	LandmarkInstance,
+	LandmarkType,
+} from './extract-landmarks.js';
 import type { CrossBlockUnit } from './merge-cross-block-clusters.js';
 
 import { describe, expect, test } from 'vitest';
@@ -19,6 +23,24 @@ function toInstances(landmarks: readonly ExtractLandmarksResult[]) {
 	return computePerPageLandmarkInstances(landmarks);
 }
 
+/**
+ * Builds fixture {@link LandmarkInstance}s from raw HTML strings. Position
+ * values are arbitrary but distinct per instance — this file's tests never
+ * assert on position.
+ * @param htmlList
+ */
+function toLandmarkInstances(htmlList: readonly string[]): LandmarkInstance[] {
+	return htmlList.map((html, i) => ({
+		html,
+		startOffset: i,
+		endOffset: i + html.length,
+		startLine: 1,
+		startColumn: i + 1,
+		endLine: 1,
+		endColumn: i + html.length + 1,
+	}));
+}
+
 const noLandmarks: ExtractLandmarksResult = {
 	header: [],
 	footer: [],
@@ -26,12 +48,22 @@ const noLandmarks: ExtractLandmarksResult = {
 	aside: [],
 	form: [],
 	search: [],
+	main: [],
 	remainderHtml: '',
 };
 
 const landmarksWith = (
-	overrides: Partial<ExtractLandmarksResult>,
-): ExtractLandmarksResult => ({ ...noLandmarks, ...overrides });
+	overrides: Partial<Record<LandmarkType, readonly string[]>>,
+): ExtractLandmarksResult => {
+	const result = { ...noLandmarks };
+	for (const [type, htmlList] of Object.entries(overrides) as [
+		LandmarkType,
+		readonly string[],
+	][]) {
+		result[type] = toLandmarkInstances(htmlList);
+	}
+	return result;
+};
 
 describe('mergeCrossBlockClusters', () => {
 	test('empty input returns empty map', () => {

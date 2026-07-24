@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'vitest';
 
-import { resolvePageClusterKeysInMemory as resolvePageClusterKeys } from './resolve-page-cluster-keys.js';
+import {
+	assertLandmarkPositionsSupportedForPageCount,
+	resolvePageClusterKeysInMemory,
+	resolvePageClusterKeysInMemory as resolvePageClusterKeys,
+} from './resolve-page-cluster-keys.js';
 
 describe('resolvePageClusterKeys', () => {
 	test('an empty page list returns an empty array', () => {
@@ -637,5 +641,99 @@ describe('resolvePageClusterKeys (local-landmark pseudo-token injection)', () =>
 		}));
 		const result = resolvePageClusterKeys(pages);
 		for (let i = 1; i < 6; i++) expect(result[i]).toBe(result[0]);
+	});
+});
+
+describe('resolvePageClusterKeysInMemory (includeLandmarkPositions)', () => {
+	test('omitting includeLandmarkPositions returns a plain string[], unchanged from before', () => {
+		const html = '<body><header>H</header><main>content</main></body>';
+		const result = resolvePageClusterKeysInMemory([
+			{ paths: ['a'], stylesheetHrefs: [], html },
+		]);
+		expect(result).toStrictEqual(['["path:a","cluster:0"]']);
+	});
+
+	test("a header shared across the whole cluster is reported as chrome; each page's own unique nav is not", () => {
+		const sharedHeader = '<header><nav>global</nav></header>';
+		const html1 = `<body>${sharedHeader}<main><nav class="unique-1">x</nav><article>one</article></main></body>`;
+		const html2 = `<body>${sharedHeader}<main><nav class="unique-2">y</nav><article>two</article></main></body>`;
+		const result = resolvePageClusterKeysInMemory(
+			[
+				{ paths: ['p', '1'], stylesheetHrefs: [], html: html1 },
+				{ paths: ['p', '2'], stylesheetHrefs: [], html: html2 },
+			],
+			{ includeLandmarkPositions: true },
+		);
+		expect(result).toHaveLength(2);
+		// Both pages land in the same final cluster (identical header + same
+		// article structure), so shellQuorum is computed over both together.
+		expect(result[0]!.clusterKey).toBe(result[1]!.clusterKey);
+		expect(result[0]!.landmarks.header[0]!.isChrome).toBe(true);
+		expect(result[1]!.landmarks.header[0]!.isChrome).toBe(true);
+		// Each page's nav carries a page-unique class not shared by the other
+		// — content, not shell.
+		expect(result[0]!.landmarks.nav[0]!.isChrome).toBe(false);
+		expect(result[1]!.landmarks.nav[0]!.isChrome).toBe(false);
+	});
+
+	test('main instances are reported with position but no isChrome verdict', () => {
+		const html = '<body><header>H</header><main>content</main></body>';
+		const result = resolvePageClusterKeysInMemory(
+			[{ paths: ['a'], stylesheetHrefs: [], html }],
+			{ includeLandmarkPositions: true },
+		);
+		expect(result[0]!.landmarks.main).toHaveLength(1);
+		expect(Object.keys(result[0]!.landmarks.main[0]!)).not.toContain('isChrome');
+	});
+
+	test('two distinct clusters each get their own shellQuorum, not a corpus-wide one', () => {
+		// Cluster A's header/nav tokens never appear anywhere in cluster B's
+		// pages, and vice versa. If shellQuorum were mistakenly computed once
+		// over all 6 pages instead of once per final cluster, each header's
+		// corpus-wide frequency would be 3/6 = 0.5 — below the single-distinct-
+		// signature fallback clamp (0.8) — and neither would be chrome. Per-
+		// cluster computation gives each header a 3/3 = 1.0 frequency within
+		// its own cluster, so both are correctly chrome.
+		const headerA = '<header><nav>team-a-nav</nav></header>';
+		const headerB = '<header><nav>team-b-nav</nav></header>';
+		const clusterAPages = Array.from({ length: 3 }, (_, i) => ({
+			paths: ['team-a', `p${i}`],
+			stylesheetHrefs: [],
+			html: `<body>${headerA}<main><article>content ${i}</article></main></body>`,
+		}));
+		const clusterBPages = Array.from({ length: 3 }, (_, i) => ({
+			paths: ['team-b', `p${i}`],
+			stylesheetHrefs: [],
+			html: `<body>${headerB}<main><section>content ${i}</section></main></body>`,
+		}));
+		const result = resolvePageClusterKeysInMemory([...clusterAPages, ...clusterBPages], {
+			includeLandmarkPositions: true,
+		});
+
+		// Precondition: the two groups really are in different final clusters
+		// (different blocking path AND different tag skeleton: article vs
+		// section) — otherwise this test wouldn't be exercising the
+		// per-cluster grouping at all.
+		const clusterKeys = new Set(result.map((r) => r.clusterKey));
+		expect(clusterKeys.size).toBe(2);
+		expect(result[0]!.clusterKey).toBe(result[1]!.clusterKey);
+		expect(result[0]!.clusterKey).toBe(result[2]!.clusterKey);
+		expect(result[3]!.clusterKey).toBe(result[4]!.clusterKey);
+		expect(result[3]!.clusterKey).toBe(result[5]!.clusterKey);
+
+		for (const r of result) {
+			expect(r.landmarks.header[0]!.isChrome).toBe(true);
+		}
+	});
+});
+
+describe('assertLandmarkPositionsSupportedForPageCount', () => {
+	test('does not throw when pageCount is at or below threshold', () => {
+		expect(() => assertLandmarkPositionsSupportedForPageCount(5, 5)).not.toThrow();
+		expect(() => assertLandmarkPositionsSupportedForPageCount(4, 5)).not.toThrow();
+	});
+
+	test('throws a RangeError when pageCount exceeds threshold', () => {
+		expect(() => assertLandmarkPositionsSupportedForPageCount(6, 5)).toThrow(RangeError);
 	});
 });

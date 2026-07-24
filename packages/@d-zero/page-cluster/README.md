@@ -15,7 +15,7 @@ yarn add @d-zero/page-cluster
 ### CLI
 
 ```sh
-page-cluster [--content-block-attribute <name>] < pages.jsonl > clusters.jsonl
+page-cluster [--content-block-attribute <name>] [--include-landmark-positions] < pages.jsonl > clusters.jsonl
 ```
 
 **入力**: JSONL 1 行 1 ページ。フィールドは以下。`html` 以外はすべて任意（`paths` / `stylesheetHrefs` がないと粗い分類になる）。
@@ -36,6 +36,45 @@ page-cluster [--content-block-attribute <name>] < pages.jsonl > clusters.jsonl
 { "id": "任意の識別子", "clusterKey": "..." }
 ```
 
+`--include-landmark-positions` を指定すると、各行に `landmarks` フィールドが追加される。header / footer / nav / aside / form / search / main のインスタンスごとに、HTML 内の位置（1-based の line/column と文字列オフセットの両方）を返す。header 〜 search の 6 種は追加で、そのページが属する最終クラスタ内での頻度分析（`shellQuorum`）に基づく `isChrome`（サイト/セクション共通の chrome か、ページ固有のコンテンツか）を持つ。`main` は常にコンテンツなので `isChrome` を持たない。
+
+```json
+{
+	"id": "任意の識別子",
+	"clusterKey": "...",
+	"landmarks": {
+		"header": [
+			{
+				"startLine": 1,
+				"startColumn": 7,
+				"endLine": 1,
+				"endColumn": 30,
+				"startOffset": 6,
+				"endOffset": 29,
+				"isChrome": true
+			}
+		],
+		"footer": [],
+		"nav": [],
+		"aside": [],
+		"form": [],
+		"search": [],
+		"main": [
+			{
+				"startLine": 2,
+				"startColumn": 1,
+				"endLine": 10,
+				"endColumn": 8,
+				"startOffset": 40,
+				"endOffset": 120
+			}
+		]
+	}
+}
+```
+
+20,000 ページを超えるコーパス（ストリーミング経路）では `--include-landmark-positions` は使えない（エラーで終了する）。ストリーミング経路はリザーバサンプリングと近似割当を使うため、ページ単位の chrome 判定に必要な「そのページが属する最終クラスタの shell トークン」という概念を持たないため。
+
 クローラ出力が JSON 配列の場合は `jq` で line-delimited に変換して食わせる:
 
 ```sh
@@ -45,6 +84,7 @@ jq -c '.[]' crawl-output.json | page-cluster > clusters.jsonl
 #### オプション
 
 - `--content-block-attribute <name>` — CMS が自由編集コンテンツブロックに付与している属性名（例: `data-bgb`）が分かっている場合に指定する。指定すると比較前にその属性を持つ要素配下を無視するので、同じテンプレートで本文構成だけ違うページを混同しなくなる。唯一の site-specific なオプションで、未指定でも `<main>` / `role="main"` を起点にした自動深さキャップが常時働く（詳細は `resolve-page-cluster-keys.ts` の JSDoc を参照）
+- `--include-landmark-positions` — 出力の各行に上記の `landmarks` フィールドを追加する。20,000 ページ超のコーパスでは使えない。指定すると進捗表示（後述）は出なくなる（進捗を出さない非ストリーミング経路に常に振り分けられるため）
 - `--help` / `-h` — ヘルプを表示する
 - `--version` / `-v` — バージョンを表示する
 
@@ -76,12 +116,12 @@ silence したい場合は `2>/dev/null`。ログに残したい場合は `2> pr
 
 サブパスエクスポート構成。import パスと提供関数の対応は以下。
 
-| import パス                                          | 提供関数                                                                                                                                                                                        |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@d-zero/page-cluster`                               | `tokenize` — `<body>` 配下を構造トークン列に変換する低レベルプリミティブ                                                                                                                        |
-| `@d-zero/page-cluster/resolve-page-cluster-keys`     | `resolvePageClusterKeys`（非同期・ファクトリ入力・メモリ有界のメインエントリー）、`resolvePageClusterKeysFromArray`（array 入力ラッパー）、`resolvePageClusterKeysInMemory`（同期・array 入力） |
-| `@d-zero/page-cluster/extract-landmarks`             | `extractLandmarks` — 6 種の HTML5 ランドマーク（header / footer / nav / aside / form / search）を抽出                                                                                           |
-| `@d-zero/page-cluster/resolve-landmark-variant-keys` | `resolveLandmarkVariantKeys` — 特定ランドマークのデザインバリアントでページを分類                                                                                                               |
+| import パス                                          | 提供関数                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@d-zero/page-cluster`                               | `tokenize` — `<body>` 配下を構造トークン列に変換する低レベルプリミティブ                                                                                                                                                                                                                                                          |
+| `@d-zero/page-cluster/resolve-page-cluster-keys`     | `resolvePageClusterKeys`（非同期・ファクトリ入力・メモリ有界のメインエントリー）、`resolvePageClusterKeysFromArray`（array 入力ラッパー）、`resolvePageClusterKeysInMemory`（同期・array 入力）。いずれも `includeLandmarkPositions: true` を渡すと `clusterKey` に加えて位置情報つきの `landmarks`（`PageLandmarkReport`）を返す |
+| `@d-zero/page-cluster/extract-landmarks`             | `extractLandmarks` — header / footer / nav / aside / form / search / main の 7 種を抽出し、インスタンスごとの生 HTML と HTML 内の位置（line/column・文字列オフセット）を返す                                                                                                                                                      |
+| `@d-zero/page-cluster/resolve-landmark-variant-keys` | `resolveLandmarkVariantKeys` — 特定ランドマークのデザインバリアントでページを分類                                                                                                                                                                                                                                                 |
 
 ```ts
 import { resolvePageClusterKeysFromArray } from '@d-zero/page-cluster/resolve-page-cluster-keys';

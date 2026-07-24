@@ -1,10 +1,15 @@
 import type { ExtractLandmarksResult } from './extract-landmarks.js';
 import type { CrossBlockUnit } from './merge-cross-block-clusters.js';
+import type { PerPageLandmarkInstance } from './per-page-landmark-signatures.js';
 import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-keys.js';
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
 import type { TokenizeOptions } from './types.js';
 
 import { autoCutThreshold } from './auto-cut-threshold.js';
+import {
+	type PageLandmarkReport,
+	buildPageLandmarkReport,
+} from './build-page-landmark-report.js';
 import { capContentDepth } from './cap-content-depth.js';
 import {
 	detectContentDepthCap,
@@ -17,6 +22,7 @@ import { mergeCrossBlockClusters } from './merge-cross-block-clusters.js';
 import { groupIndicesByBlockKey, resolveBlockKeys } from './pass0-blocking.js';
 import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
 import { removeContentBlocks } from './remove-content-blocks.js';
+import { shellQuorum } from './shell-quorum.js';
 import { stageAPerBlock } from './stage-a-per-block.js';
 import { tokenize } from './tokenize.js';
 
@@ -193,9 +199,12 @@ export function computeLocalChromeArtifacts(
 ): {
 	readonly localSignatures: ReadonlySet<string>;
 	readonly localTokensByPage: readonly ReadonlySet<string>[];
+	readonly perPageInstances: readonly (readonly PerPageLandmarkInstance[])[];
 } {
 	const pageCount = landmarks.length;
-	if (pageCount === 0) return { localSignatures: new Set(), localTokensByPage: [] };
+	if (pageCount === 0) {
+		return { localSignatures: new Set(), localTokensByPage: [], perPageInstances: [] };
+	}
 
 	const perPageInstances = computePerPageLandmarkInstances(landmarks, tokenizeOptions);
 
@@ -220,6 +229,7 @@ export function computeLocalChromeArtifacts(
 		return {
 			localSignatures: new Set(),
 			localTokensByPage: landmarks.map(() => new Set<string>()),
+			perPageInstances,
 		};
 	}
 
@@ -240,6 +250,7 @@ export function computeLocalChromeArtifacts(
 		return {
 			localSignatures: new Set(),
 			localTokensByPage: landmarks.map(() => new Set<string>()),
+			perPageInstances,
 		};
 	}
 
@@ -252,7 +263,7 @@ export function computeLocalChromeArtifacts(
 		return out;
 	});
 
-	return { localSignatures, localTokensByPage };
+	return { localSignatures, localTokensByPage, perPageInstances };
 }
 
 /**
@@ -273,6 +284,44 @@ export function computeLocalLandmarkTokens(
 	tokenizeOptions: TokenizeOptions | undefined,
 ): ReadonlySet<string>[] {
 	return [...computeLocalChromeArtifacts(landmarks, tokenizeOptions).localTokensByPage];
+}
+
+/**
+ * Builds every page's {@link PageLandmarkReport} for the `includeLandmarkPositions`
+ * result path. Groups pages by their *final* cluster key (post–Stage-B), runs
+ * {@link ./shell-quorum.js | shellQuorum} once per cluster over the pooled
+ * member `PerPageLandmarkInstance`s (the same "shell tokens" concept Stage B
+ * itself uses for L2 shell corroboration, just recomputed at the final-
+ * cluster granularity rather than the pre-merge unit granularity), then
+ * classifies each member page's own landmark instances against that
+ * cluster-level shell.
+ * @param finalKeys
+ * @param landmarks
+ * @param perPageInstances
+ */
+function buildLandmarkReportsByCluster(
+	finalKeys: readonly string[],
+	landmarks: readonly ExtractLandmarksResult[],
+	perPageInstances: readonly (readonly PerPageLandmarkInstance[])[],
+): PageLandmarkReport[] {
+	const indicesByKey = new Map<string, number[]>();
+	for (const [i, key] of finalKeys.entries()) {
+		const indices = indicesByKey.get(key);
+		if (indices) {
+			indices.push(i);
+		} else {
+			indicesByKey.set(key, [i]);
+		}
+	}
+
+	const reports: PageLandmarkReport[] = Array.from({ length: finalKeys.length });
+	for (const indices of indicesByKey.values()) {
+		const shellTokens = shellQuorum(indices.map((i) => perPageInstances[i]!));
+		for (const i of indices) {
+			reports[i] = buildPageLandmarkReport(landmarks[i]!, shellTokens);
+		}
+	}
+	return reports;
 }
 
 /**
@@ -359,10 +408,49 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * sync helper to running a per-block async loop that emits
 		 * `pass1-block-complete` and `stage-b-start`. Omitting `onProgress`
 		 * keeps the small-corpus branch on the pre-refactor sync path with
-		 * zero yield overhead.
+		 * zero yield overhead. Ignored when `includeLandmarkPositions` is
+		 * `true` — that option always routes the small-corpus branch through
+		 * the sync helper (see `includeLandmarkPositions`'s own JSDoc), so no
+		 * progress events fire in that combination.
 		 */
 		onProgress?: (event: ProgressEvent) => void;
+		/**
+		 * When `true`, every result entry additionally carries a
+		 * {@link PageLandmarkReport} — each landmark instance's position, plus
+		 * a chrome/content verdict for the six excisable types (see
+		 * {@link ./build-page-landmark-report.js | buildPageLandmarkReport}).
+		 * Changes the return shape from `string[]` to
+		 * `{@link PageClusterKeyResult}[]` (see the overloads on
+		 * `resolvePageClusterKeysInMemory`/`resolvePageClusterKeys`/
+		 * `resolvePageClusterKeysFromArray`). Defaults to `false`, in which
+		 * case every existing caller's behavior and return type are
+		 * unchanged.
+		 *
+		 * Not supported on the streaming path
+		 * (`pageCount > {@link CORPUS_INLINE_THRESHOLD}`): reservoir sampling
+		 * and Jaccard-based non-sample assignment there have no notion of
+		 * "this page's shell tokens" to classify chrome against, and
+		 * retrofitting one is out of scope. `resolvePageClusterKeys` throws a
+		 * `RangeError` up front if both apply to the same call, rather than
+		 * silently degrading semantics.
+		 *
+		 * On the async factory-based `resolvePageClusterKeys`, this option
+		 * forces the small-corpus branch through the sync
+		 * `resolvePageClusterKeysInMemory` helper regardless of `onProgress`
+		 * — see `onProgress`'s own JSDoc.
+		 */
+		includeLandmarkPositions?: boolean;
 	};
+
+/**
+ * One page's clustering result when `includeLandmarkPositions` is `true`:
+ * the same `clusterKey` every caller already gets, plus that page's
+ * {@link PageLandmarkReport}.
+ */
+export type PageClusterKeyResult = {
+	readonly clusterKey: string;
+	readonly landmarks: PageLandmarkReport;
+};
 
 /**
  * Corpus size at or below which the async factory-based
@@ -386,6 +474,27 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
  * anything above 20,000 is routed to streaming.
  */
 export const CORPUS_INLINE_THRESHOLD = 20_000;
+
+/**
+ * Throws when `includeLandmarkPositions` is combined with a corpus over
+ * `threshold` pages (the streaming path — see `includeLandmarkPositions`'s
+ * own JSDoc for why it has no sample-based equivalent there). Split out from
+ * its call site so tests can exercise the boundary with a small injected
+ * `threshold` instead of constructing a 20,001-page fixture to cross the
+ * real {@link CORPUS_INLINE_THRESHOLD}.
+ * @param pageCount
+ * @param threshold
+ */
+export function assertLandmarkPositionsSupportedForPageCount(
+	pageCount: number,
+	threshold: number,
+): void {
+	if (pageCount > threshold) {
+		throw new RangeError(
+			`resolvePageClusterKeys: includeLandmarkPositions is not supported for corpora larger than ${threshold} pages (the streaming path) — this corpus has ${pageCount}`,
+		);
+	}
+}
 
 /**
  * Reservoir-sample size per block on the streaming path. Blocks larger than
@@ -442,8 +551,16 @@ export const BLOCK_SAMPLE_SIZE = 100;
  */
 export function resolvePageClusterKeysInMemory(
 	pages: readonly PageClusterSignals[],
+	options: ResolvePageClusterKeysOptions & { includeLandmarkPositions: true },
+): PageClusterKeyResult[];
+export function resolvePageClusterKeysInMemory(
+	pages: readonly PageClusterSignals[],
 	options?: ResolvePageClusterKeysOptions,
-): string[] {
+): string[];
+export function resolvePageClusterKeysInMemory(
+	pages: readonly PageClusterSignals[],
+	options?: ResolvePageClusterKeysOptions,
+): string[] | PageClusterKeyResult[] {
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
 
 	const similarityThreshold = options?.similarityThreshold ?? 0.8;
@@ -460,8 +577,12 @@ export function resolvePageClusterKeysInMemory(
 		extractLandmarks(page.html),
 	);
 
-	// Corpus-level chrome discovery
-	const localLandmarkTokensByPage = computeLocalLandmarkTokens(landmarks, options);
+	// Corpus-level chrome discovery. `perPageInstances` is only consumed
+	// below when `includeLandmarkPositions` is set — computed unconditionally
+	// anyway since `computeLocalChromeArtifacts` already builds it internally
+	// for chrome discovery, so exposing it here costs nothing extra.
+	const { localTokensByPage: localLandmarkTokensByPage, perPageInstances } =
+		computeLocalChromeArtifacts(landmarks, options);
 
 	const contentBlockAttribute = options?.contentBlockAttribute;
 	const preparedHtml = pages.map((page, index) => {
@@ -518,7 +639,11 @@ export function resolvePageClusterKeysInMemory(
 			finalKeys[i] = rootKey;
 		}
 	}
-	return finalKeys;
+
+	if (!options?.includeLandmarkPositions) return finalKeys;
+
+	const reports = buildLandmarkReportsByCluster(finalKeys, landmarks, perPageInstances);
+	return finalKeys.map((clusterKey, i) => ({ clusterKey, landmarks: reports[i]! }));
 }
 
 /**
@@ -698,8 +823,16 @@ export type PageFactory = () =>
  */
 export async function resolvePageClusterKeys(
 	pages: PageFactory,
+	options: ResolvePageClusterKeysOptions & { includeLandmarkPositions: true },
+): Promise<PageClusterKeyResult[]>;
+export async function resolvePageClusterKeys(
+	pages: PageFactory,
 	options?: ResolvePageClusterKeysOptions,
-): Promise<string[]> {
+): Promise<string[]>;
+export async function resolvePageClusterKeys(
+	pages: PageFactory,
+	options?: ResolvePageClusterKeysOptions,
+): Promise<string[] | PageClusterKeyResult[]> {
 	const onProgress = options?.onProgress;
 	// Pass 0: HTML-free — collect blocking signals (paths, stylesheetHrefs,
 	// host) into an array. This is the only per-page state we keep across
@@ -739,14 +872,27 @@ export async function resolvePageClusterKeys(
 		// into per-block progress, so delegate to the untouched sync path —
 		// keeping behavior byte-for-byte identical (and yield-overhead-free)
 		// to how library-only consumers experienced this before the CLI
-		// progress work landed.
-		if (onProgress === undefined) {
+		// progress work landed. `includeLandmarkPositions` always routes here
+		// too (see its own JSDoc): `resolveSmallCorpusWithProgress` has no
+		// landmark-report support, and duplicating that logic into the
+		// progress-emitting path for a reporting feature that has nothing to
+		// do with progress observability isn't worth the added surface.
+		if (onProgress === undefined || options?.includeLandmarkPositions) {
 			return resolvePageClusterKeysInMemory(fullPages, options);
 		}
 		return resolveSmallCorpusWithProgress(fullPages, onProgress, options);
 	}
 
-	// Large corpus: streaming path.
+	// Large corpus: streaming path. includeLandmarkPositions has no sample-
+	// based equivalent (see its own JSDoc) — fail fast rather than silently
+	// ignoring the option or returning a semantically-wrong report.
+	if (options?.includeLandmarkPositions) {
+		assertLandmarkPositionsSupportedForPageCount(
+			blockingSignals.length,
+			CORPUS_INLINE_THRESHOLD,
+		);
+	}
+
 	const excludeLandmarks = options?.excludeLandmarks ?? true;
 	const similarityThreshold = options?.similarityThreshold ?? 0.8;
 	if (!(similarityThreshold >= 0 && similarityThreshold <= 1)) {
@@ -1020,7 +1166,15 @@ export async function resolvePageClusterKeys(
  */
 export function resolvePageClusterKeysFromArray(
 	pages: readonly PageClusterSignals[],
+	options: ResolvePageClusterKeysOptions & { includeLandmarkPositions: true },
+): Promise<PageClusterKeyResult[]>;
+export function resolvePageClusterKeysFromArray(
+	pages: readonly PageClusterSignals[],
 	options?: ResolvePageClusterKeysOptions,
-): Promise<string[]> {
+): Promise<string[]>;
+export function resolvePageClusterKeysFromArray(
+	pages: readonly PageClusterSignals[],
+	options?: ResolvePageClusterKeysOptions,
+): Promise<string[] | PageClusterKeyResult[]> {
 	return resolvePageClusterKeys(() => pages, options);
 }

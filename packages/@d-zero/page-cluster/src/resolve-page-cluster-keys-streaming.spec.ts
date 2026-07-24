@@ -3,6 +3,7 @@ import type { PageClusterSignals, ProgressEvent } from './resolve-page-cluster-k
 import { describe, expect, test } from 'vitest';
 
 import {
+	CORPUS_INLINE_THRESHOLD,
 	resolvePageClusterKeys,
 	resolvePageClusterKeysFromArray,
 	resolvePageClusterKeysInMemory,
@@ -162,5 +163,45 @@ describe('resolvePageClusterKeys onProgress on small corpus', () => {
 		const withoutProgress = await resolvePageClusterKeys(() => pages);
 		const inMemory = resolvePageClusterKeysInMemory(pages);
 		expect(withoutProgress).toEqual(inMemory);
+	});
+});
+
+describe('resolvePageClusterKeys (includeLandmarkPositions)', () => {
+	test('small corpus with includeLandmarkPositions matches resolvePageClusterKeysInMemory', async () => {
+		const pages = buildTinyCorpus();
+		const streamed = await resolvePageClusterKeys(() => pages, {
+			includeLandmarkPositions: true,
+		});
+		const inMemory = resolvePageClusterKeysInMemory(pages, {
+			includeLandmarkPositions: true,
+		});
+		expect(streamed).toEqual(inMemory);
+	});
+
+	test('combined with onProgress, still returns reports but emits no progress events (routed through the sync path)', async () => {
+		const pages = buildTinyCorpus();
+		const events: ProgressEvent[] = [];
+		const result = await resolvePageClusterKeys(() => pages, {
+			includeLandmarkPositions: true,
+			onProgress: (event) => events.push(event),
+		});
+		expect(result).toHaveLength(pages.length);
+		expect(result[0]).toHaveProperty('landmarks');
+		expect(events).toStrictEqual([]);
+	});
+
+	test('a corpus above CORPUS_INLINE_THRESHOLD rejects with a RangeError instead of streaming', async () => {
+		const bigCount = CORPUS_INLINE_THRESHOLD + 1;
+		/**
+		 * @yields {PageClusterSignals} A minimal page, `bigCount` times.
+		 */
+		function* generate(): Generator<PageClusterSignals> {
+			for (let i = 0; i < bigCount; i++) {
+				yield { paths: ['p', String(i)], stylesheetHrefs: [], html: '<body></body>' };
+			}
+		}
+		await expect(
+			resolvePageClusterKeys(() => generate(), { includeLandmarkPositions: true }),
+		).rejects.toThrow(RangeError);
 	});
 });

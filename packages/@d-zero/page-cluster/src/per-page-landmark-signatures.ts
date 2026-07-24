@@ -1,4 +1,8 @@
-import type { ExtractLandmarksResult, LandmarkType } from './extract-landmarks.js';
+import type {
+	ExtractLandmarksResult,
+	LandmarkPosition,
+	LandmarkType,
+} from './extract-landmarks.js';
 import type { TokenizeOptions } from './types.js';
 
 import { canonicalizeTokenSet } from './canonicalize-token-set.js';
@@ -25,11 +29,20 @@ export const ALL_LANDMARK_TYPES: readonly LandmarkType[] = [
  * {@link ./canonicalize-token-set.js | canonicalizeTokenSet}). Signatures
  * are reused across consumers so two callers see the same "same instance"
  * verdict without independently re-canonicalizing.
+ *
+ * `position` is the instance's location in the page it came from, computed
+ * once by {@link ./extract-landmarks.js | extractLandmarks} and carried here
+ * unchanged — a back-reference for callers (e.g.
+ * {@link ./build-page-landmark-report.js | buildPageLandmarkReport}) that
+ * need to report where a chrome-classified instance actually sits, not just
+ * that it exists. It plays no part in `tokens`/`signature` computation or in
+ * the corpus-frequency logic that consumes this type.
  */
 export type PerPageLandmarkInstance = {
 	readonly type: LandmarkType;
 	readonly tokens: ReadonlySet<string>;
 	readonly signature: string;
+	readonly position: LandmarkPosition;
 };
 
 /**
@@ -66,16 +79,28 @@ export function computePerPageLandmarkInstances(
 		const seenSignatures = new Set<string>();
 		const out: PerPageLandmarkInstance[] = [];
 		for (const type of ALL_LANDMARK_TYPES) {
-			for (const instanceHtml of entry[type]) {
-				if (!instanceHtml) continue;
+			for (const instance of entry[type]) {
+				if (!instance.html) continue;
 				const tokens = new Set(
-					tokenize(`<body>${instanceHtml}</body>`, tokenizeOptions).tokens,
+					tokenize(`<body>${instance.html}</body>`, tokenizeOptions).tokens,
 				);
 				if (tokens.size === 0) continue;
 				const signature = canonicalizeTokenSet(tokens);
 				if (seenSignatures.has(signature)) continue;
 				seenSignatures.add(signature);
-				out.push({ type, tokens, signature });
+				out.push({
+					type,
+					tokens,
+					signature,
+					position: {
+						startOffset: instance.startOffset,
+						endOffset: instance.endOffset,
+						startLine: instance.startLine,
+						startColumn: instance.startColumn,
+						endLine: instance.endLine,
+						endColumn: instance.endColumn,
+					},
+				});
 			}
 		}
 		return out;

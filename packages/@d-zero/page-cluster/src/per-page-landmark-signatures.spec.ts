@@ -1,4 +1,8 @@
-import type { ExtractLandmarksResult } from './extract-landmarks.js';
+import type {
+	ExtractLandmarksResult,
+	LandmarkInstance,
+	LandmarkType,
+} from './extract-landmarks.js';
 
 import { describe, expect, test } from 'vitest';
 
@@ -11,15 +15,40 @@ const emptyLandmarks: ExtractLandmarksResult = {
 	aside: [],
 	form: [],
 	search: [],
+	main: [],
 	remainderHtml: '',
 };
 
+/**
+ * Builds fixture {@link LandmarkInstance}s from raw HTML strings. Position
+ * values are arbitrary but distinct per instance — these tests only assert
+ * on `type`/`tokens`/`signature`, never on position.
+ * @param htmlList
+ */
+function toInstances(htmlList: readonly string[]): LandmarkInstance[] {
+	return htmlList.map((html, i) => ({
+		html,
+		startOffset: i,
+		endOffset: i + html.length,
+		startLine: 1,
+		startColumn: i + 1,
+		endLine: 1,
+		endColumn: i + html.length + 1,
+	}));
+}
+
 const landmarksOf = (
-	overrides: Partial<ExtractLandmarksResult>,
-): ExtractLandmarksResult => ({
-	...emptyLandmarks,
-	...overrides,
-});
+	overrides: Partial<Record<LandmarkType, readonly string[]>>,
+): ExtractLandmarksResult => {
+	const result = { ...emptyLandmarks };
+	for (const [type, htmlList] of Object.entries(overrides) as [
+		LandmarkType,
+		readonly string[],
+	][]) {
+		result[type] = toInstances(htmlList);
+	}
+	return result;
+};
 
 describe('computePerPageLandmarkInstances', () => {
 	test('an empty landmarks array yields an empty result', () => {
@@ -32,7 +61,7 @@ describe('computePerPageLandmarkInstances', () => {
 		expect(result[0]).toStrictEqual([]);
 	});
 
-	test('every landmark instance across every type is returned with its tokens and signature', () => {
+	test('every landmark instance across every type is returned with its tokens, signature, and position', () => {
 		const landmarks = landmarksOf({
 			header: ['<header><nav>a</nav></header>'],
 			footer: ['<footer><a>x</a></footer>'],
@@ -43,6 +72,15 @@ describe('computePerPageLandmarkInstances', () => {
 		for (const inst of instances!) {
 			expect(inst.tokens.size).toBeGreaterThan(0);
 			expect(inst.signature).toMatch(/^\[.*\]$/);
+			const source = landmarks[inst.type][0]!;
+			expect(inst.position).toStrictEqual({
+				startOffset: source.startOffset,
+				endOffset: source.endOffset,
+				startLine: source.startLine,
+				startColumn: source.startColumn,
+				endLine: source.endLine,
+				endColumn: source.endColumn,
+			});
 		}
 	});
 
