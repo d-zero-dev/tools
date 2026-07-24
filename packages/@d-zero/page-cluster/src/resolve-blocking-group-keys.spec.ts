@@ -157,3 +157,48 @@ describe('resolveBlockingGroupKeys', () => {
 		);
 	});
 });
+
+describe('resolveBlockingGroupKeys (includeReasons)', () => {
+	const pages = [
+		{
+			paths: ['dept-a', 'news', '1'],
+			stylesheetHrefs: ['https://example.com/a.css', 'https://example.com/common.css'],
+		},
+		{
+			paths: ['dept-a', 'news', '2'],
+			stylesheetHrefs: ['https://example.com/a.css', 'https://example.com/common.css'],
+		},
+		{ paths: ['dept-b', 'about'], stylesheetHrefs: ['https://example.com/common.css'] },
+		{ paths: ['dept-c', 'contact'], stylesheetHrefs: ['https://example.com/common.css'] },
+	];
+
+	test('a css: key reason carries the exact distinctive hrefs that were hashed (common.css excluded)', () => {
+		const { keys, reasonsByKey } = resolveBlockingGroupKeys(pages, {
+			includeReasons: true,
+		});
+		const reason = reasonsByKey.get(keys[0]!);
+		expect(reason).toEqual({
+			kind: 'css',
+			distinctiveStylesheetHrefs: ['https://example.com/a.css'],
+		});
+	});
+
+	test('a path: key reason carries the pathKey it fell back to', () => {
+		const { reasonsByKey } = resolveBlockingGroupKeys(pages, { includeReasons: true });
+		expect(reasonsByKey.get('path:dept-b')).toEqual({ kind: 'path', pathKey: 'dept-b' });
+		expect(reasonsByKey.get('path:dept-c')).toEqual({ kind: 'path', pathKey: 'dept-c' });
+	});
+
+	test('reasonsByKey has exactly one entry per distinct key, not one per page', () => {
+		const { keys, reasonsByKey } = resolveBlockingGroupKeys(pages, {
+			includeReasons: true,
+		});
+		expect(keys).toHaveLength(4);
+		expect(reasonsByKey.size).toBe(3);
+	});
+
+	test('without includeReasons, the return value is still a plain string[]', () => {
+		const result = resolveBlockingGroupKeys(pages);
+		expect(Array.isArray(result)).toBe(true);
+	});
+});

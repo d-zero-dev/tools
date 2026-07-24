@@ -105,6 +105,69 @@ describe('resolveBlockKeys', () => {
 	});
 });
 
+describe('resolveBlockKeys (includeReasons)', () => {
+	test('css/path reasons pass through resolveBlockingGroupKeys unchanged when no orphan reassignment happens', () => {
+		const { blockKeys, reasonsByBlockKey } = resolveBlockKeys(
+			[
+				{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'] },
+				{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'] },
+				{ paths: ['about'], stylesheetHrefs: ['https://example.com/b.css'] },
+			],
+			{ includeReasons: true },
+		);
+		expect(reasonsByBlockKey.get(blockKeys[0]!)).toEqual({
+			kind: 'css',
+			distinctiveStylesheetHrefs: ['https://example.com/a.css'],
+		});
+		expect(reasonsByBlockKey.get('path:about')).toEqual({
+			kind: 'path',
+			pathKey: 'about',
+		});
+	});
+
+	test('an orphan-merged key gets an orphanMerge reason carrying the confined pathKey', () => {
+		const pages = [
+			{
+				paths: ['news', '1'],
+				stylesheetHrefs: ['https://example.com/a.css', 'https://example.com/shared.css'],
+			},
+			{
+				paths: ['news', '2'],
+				stylesheetHrefs: ['https://example.com/a.css', 'https://example.com/shared.css'],
+			},
+			{
+				paths: ['about'],
+				stylesheetHrefs: ['https://example.com/b.css', 'https://example.com/shared.css'],
+			},
+			// Orphan (no stylesheets) in the news section — reassigned to the
+			// news css: block, which should carry an `orphanMerge` reason
+			// distinct from the plain `css` reason of a non-reassigned key.
+			{ paths: ['news', '4'], stylesheetHrefs: [] },
+		];
+		const { blockKeys, reasonsByBlockKey } = resolveBlockKeys(pages, {
+			includeReasons: true,
+		});
+		expect(blockKeys[0]).toMatch(/^orphan-merge:/);
+		expect(reasonsByBlockKey.get(blockKeys[0]!)).toEqual({
+			kind: 'orphanMerge',
+			pathKey: 'news',
+		});
+	});
+
+	test('reasonsByBlockKey has exactly one entry per distinct block key', () => {
+		const { blockKeys, reasonsByBlockKey } = resolveBlockKeys(
+			[
+				{ paths: ['news', '1'], stylesheetHrefs: ['https://example.com/a.css'] },
+				{ paths: ['news', '2'], stylesheetHrefs: ['https://example.com/a.css'] },
+				{ paths: ['about'], stylesheetHrefs: ['https://example.com/b.css'] },
+			],
+			{ includeReasons: true },
+		);
+		expect(blockKeys).toHaveLength(3);
+		expect(reasonsByBlockKey.size).toBe(2);
+	});
+});
+
 describe('groupIndicesByBlockKey', () => {
 	test('groups indices by key, preserving first-seen order of keys and input order within each', () => {
 		const groups = groupIndicesByBlockKey(['a', 'b', 'a', 'c', 'a', 'b']);

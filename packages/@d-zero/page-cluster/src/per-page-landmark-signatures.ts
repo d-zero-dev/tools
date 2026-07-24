@@ -32,11 +32,10 @@ export const ALL_LANDMARK_TYPES: readonly LandmarkType[] = [
  *
  * `position` is the instance's location in the page it came from, computed
  * once by {@link ./extract-landmarks.js | extractLandmarks} and carried here
- * unchanged — a back-reference for callers (e.g.
- * {@link ./build-page-landmark-report.js | buildPageLandmarkReport}) that
- * need to report where a chrome-classified instance actually sits, not just
- * that it exists. It plays no part in `tokens`/`signature` computation or in
- * the corpus-frequency logic that consumes this type.
+ * unchanged — a back-reference for callers that need to report where a
+ * chrome-classified instance actually sits, not just that it exists. It
+ * plays no part in `tokens`/`signature` computation or in the corpus-
+ * frequency logic that consumes this type.
  */
 export type PerPageLandmarkInstance = {
 	readonly type: LandmarkType;

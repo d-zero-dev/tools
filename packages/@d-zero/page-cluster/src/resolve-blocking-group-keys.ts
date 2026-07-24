@@ -1,3 +1,5 @@
+import type { BlockingReason } from './derive-blocking-reason.js';
+
 import { computeDocumentFrequency } from './compute-document-frequency.js';
 import { derivePathClusterKeys } from './derive-path-cluster-keys.js';
 import { derivePathGroupKey } from './derive-path-group-key.js';
@@ -42,6 +44,13 @@ export type ResolveBlockingGroupKeysOptions = {
 	minCssGroupSize?: number;
 	/** Forwarded to `splitTokensByFrequency` as-is. */
 	hrefCommonThreshold?: number;
+};
+
+/** Return shape when `includeReasons: true` is passed to `resolveBlockingGroupKeys`. */
+export type BlockingGroupKeysWithReasons = {
+	readonly keys: string[];
+	/** One entry per distinct blocking key produced, keyed by that key. */
+	readonly reasonsByKey: ReadonlyMap<string, BlockingReason>;
 };
 
 const DEFAULT_MIN_CSS_GROUP_SIZE = 2;
@@ -131,8 +140,16 @@ const DEFAULT_MIN_CSS_GROUP_SIZE = 2;
  */
 export function resolveBlockingGroupKeys(
 	pages: readonly PageBlockingSignals[],
+	options: ResolveBlockingGroupKeysOptions & { includeReasons: true },
+): BlockingGroupKeysWithReasons;
+export function resolveBlockingGroupKeys(
+	pages: readonly PageBlockingSignals[],
 	options?: ResolveBlockingGroupKeysOptions,
-): string[] {
+): string[];
+export function resolveBlockingGroupKeys(
+	pages: readonly PageBlockingSignals[],
+	options?: ResolveBlockingGroupKeysOptions & { includeReasons?: boolean },
+): string[] | BlockingGroupKeysWithReasons {
 	const pathDepthOption = options?.pathDepth;
 	const minCssGroupSize = options?.minCssGroupSize ?? DEFAULT_MIN_CSS_GROUP_SIZE;
 	const hrefCommonThreshold = options?.hrefCommonThreshold;
@@ -187,15 +204,29 @@ export function resolveBlockingGroupKeys(
 		}
 	}
 
-	return pages.map((page, index) => {
+	const reasonsByKey = new Map<string, BlockingReason>();
+	const keys = pages.map((page, index) => {
 		const cssKey = cssKeys[index];
 		if (cssKey !== undefined && (cssKeyCounts.get(cssKey) ?? 0) >= minCssGroupSize) {
-			return `css:${cssKey}`;
+			const key = `css:${cssKey}`;
+			if (!reasonsByKey.has(key)) {
+				reasonsByKey.set(key, {
+					kind: 'css',
+					distinctiveStylesheetHrefs: [...(distinctiveHrefs[index] ?? [])].toSorted(),
+				});
+			}
+			return key;
 		}
 		const pathKey =
 			perPagePathKeys === null
 				? derivePathGroupKey(page.paths, pathDepthOption as number | undefined)
 				: (perPagePathKeys[index] ?? '');
-		return `path:${pathKey}`;
+		const key = `path:${pathKey}`;
+		if (!reasonsByKey.has(key)) {
+			reasonsByKey.set(key, { kind: 'path', pathKey });
+		}
+		return key;
 	});
+
+	return options?.includeReasons ? { keys, reasonsByKey } : keys;
 }

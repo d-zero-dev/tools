@@ -1,7 +1,11 @@
+import type { BlockingReason } from './derive-blocking-reason.js';
 import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-keys.js';
 
 import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
-import { reassignOrphanBlockKeys } from './reassign-orphan-block-keys.js';
+import {
+	REASSIGNED_KEY_PREFIX,
+	reassignOrphanBlockKeys,
+} from './reassign-orphan-block-keys.js';
 import { resolveBlockingGroupKeys } from './resolve-blocking-group-keys.js';
 
 /**
@@ -36,6 +40,13 @@ export type ResolveBlockKeysOptions = ResolveBlockingGroupKeysOptions & {
 	 * blocking signal. Defaults to `true`.
 	 */
 	readonly restrictStylesheetsToFirstParty?: boolean;
+};
+
+/** Return shape when `includeReasons: true` is passed to `resolveBlockKeys`. */
+export type BlockKeysWithReasons = {
+	readonly blockKeys: string[];
+	/** One entry per distinct final block key produced, keyed by that key. */
+	readonly reasonsByBlockKey: ReadonlyMap<string, BlockingReason>;
 };
 
 /**
@@ -80,17 +91,22 @@ export type ResolveBlockKeysOptions = ResolveBlockingGroupKeysOptions & {
  */
 export function resolveBlockKeys(
 	pages: readonly Pass0PageSignals[],
+	options: ResolveBlockKeysOptions & { includeReasons: true },
+): BlockKeysWithReasons;
+export function resolveBlockKeys(
+	pages: readonly Pass0PageSignals[],
 	options?: ResolveBlockKeysOptions,
-): string[] {
+): string[];
+export function resolveBlockKeys(
+	pages: readonly Pass0PageSignals[],
+	options?: ResolveBlockKeysOptions & { includeReasons?: boolean },
+): string[] | BlockKeysWithReasons {
 	const restrictStylesheetsToFirstParty =
 		options?.restrictStylesheetsToFirstParty ?? true;
 	const blockingPages = restrictStylesheetsToFirstParty
 		? filterFirstPartyStylesheetHrefs(pages)
 		: pages;
 
-	const rawBlockKeys = resolveBlockingGroupKeys(blockingPages, options);
-	const reassignOrphans = options?.reassignOrphans ?? true;
-	if (!reassignOrphans) return rawBlockKeys;
 	// Orphan reassignment always uses a numeric `pathDepth`. When the caller
 	// asked for `'auto'`, fall back to the historical default 1 here — a
 	// future PR that wires the auto-cut depth through can compute it once
@@ -98,7 +114,36 @@ export function resolveBlockKeys(
 	// call to keep them consistent.
 	const numericPathDepth =
 		typeof options?.pathDepth === 'number' ? options.pathDepth : undefined;
-	return reassignOrphanBlockKeys(blockingPages, rawBlockKeys, numericPathDepth);
+	const reassignOrphans = options?.reassignOrphans ?? true;
+
+	if (!options?.includeReasons) {
+		const rawBlockKeys = resolveBlockingGroupKeys(blockingPages, options);
+		if (!reassignOrphans) return rawBlockKeys;
+		return reassignOrphanBlockKeys(blockingPages, rawBlockKeys, numericPathDepth);
+	}
+
+	const { keys: rawBlockKeys, reasonsByKey } = resolveBlockingGroupKeys(blockingPages, {
+		...options,
+		includeReasons: true,
+	});
+	if (!reassignOrphans) {
+		return { blockKeys: rawBlockKeys, reasonsByBlockKey: reasonsByKey };
+	}
+
+	const finalBlockKeys = reassignOrphanBlockKeys(
+		blockingPages,
+		rawBlockKeys,
+		numericPathDepth,
+	);
+	const reasonsByBlockKey = new Map<string, BlockingReason>(reasonsByKey);
+	for (const blockKey of finalBlockKeys) {
+		if (reasonsByBlockKey.has(blockKey)) continue;
+		reasonsByBlockKey.set(blockKey, {
+			kind: 'orphanMerge',
+			pathKey: blockKey.slice(REASSIGNED_KEY_PREFIX.length),
+		});
+	}
+	return { blockKeys: finalBlockKeys, reasonsByBlockKey };
 }
 
 /**
