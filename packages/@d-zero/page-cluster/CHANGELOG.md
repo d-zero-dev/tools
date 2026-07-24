@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.3.1...@d-zero/page-cluster@0.4.0) (2026-07-24)
+
+- feat(page-cluster)!: report landmark positions and main/chrome classification ([d09f8d2](https://github.com/d-zero-dev/tools/commit/d09f8d21b910ac9079553829344620ad7e9ad149))
+
+### BREAKING CHANGES
+
+- ExtractLandmarksResult's six landmark fields change
+  from string[] (raw HTML) to LandmarkInstance[] (html + position). A
+  new `main` field is added. Callers reading .header/.footer/etc. as
+  strings must switch to .html on each instance.
+
 ## [0.3.1](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.3.0...@d-zero/page-cluster@0.3.1) (2026-07-14)
 
 **Note:** Version bump only for package @d-zero/page-cluster
