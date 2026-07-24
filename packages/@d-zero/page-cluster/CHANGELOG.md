@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.4.0...@d-zero/page-cluster@0.5.0) (2026-07-24)
+
+- feat(page-cluster)!: report cluster selection reasons via onClusterReason ([d047963](https://github.com/d-zero-dev/tools/commit/d047963f956ac9ed04285b6478f5f9bf98a8a363))
+
+### BREAKING CHANGES
+
+- includeLandmarkPositions, PageClusterKeyResult, and
+  PageLandmarkReport are removed (never used in production). Landmark
+  position extraction and chrome/content classification are now
+  decomposed into independently-callable, stateless public APIs
+  (extractLandmarks plus the newly public isChromeLandmarkInstance) that
+  callers combine with onClusterReason's
+  ClusterReason.landmarks[type].shellTokens themselves, instead of
+  receiving one pre-built per-page report from the library. The CLI's
+  --include-landmark-positions flag is replaced by
+  --cluster-reasons-file <path>, which writes a clusterKey-keyed
+  ClusterReason object once per run instead of per-page JSONL fields.
+
 # [0.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.3.1...@d-zero/page-cluster@0.4.0) (2026-07-24)
 
 - feat(page-cluster)!: report landmark positions and main/chrome classification ([d09f8d2](https://github.com/d-zero-dev/tools/commit/d09f8d21b910ac9079553829344620ad7e9ad149))
