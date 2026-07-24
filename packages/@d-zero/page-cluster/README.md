@@ -15,7 +15,7 @@ yarn add @d-zero/page-cluster
 ### CLI
 
 ```sh
-page-cluster [--content-block-attribute <name>] [--include-landmark-positions] < pages.jsonl > clusters.jsonl
+page-cluster [--content-block-attribute <name>] [--cluster-reasons-file <path>] < pages.jsonl > clusters.jsonl
 ```
 
 **入力**: JSONL 1 行 1 ページ。フィールドは以下。`html` 以外はすべて任意（`paths` / `stylesheetHrefs` がないと粗い分類になる）。
@@ -36,44 +36,38 @@ page-cluster [--content-block-attribute <name>] [--include-landmark-positions] <
 { "id": "任意の識別子", "clusterKey": "..." }
 ```
 
-`--include-landmark-positions` を指定すると、各行に `landmarks` フィールドが追加される。header / footer / nav / aside / form / search / main のインスタンスごとに、HTML 内の位置（1-based の line/column と文字列オフセットの両方）を返す。header 〜 search の 6 種は追加で、そのページが属する最終クラスタ内での頻度分析（`shellQuorum`）に基づく `isChrome`（サイト/セクション共通の chrome か、ページ固有のコンテンツか）を持つ。`main` は常にコンテンツなので `isChrome` を持たない。
+`--cluster-reasons-file <path>` を指定すると、処理完了後に別ファイルとして「クラスタ選定理由」を書き出す。ページ単位ではなく**クラスタ単位**（`clusterKey` をキーにしたオブジェクト、1 クラスタにつき 1 エントリ）なので、ファイルサイズはページ数ではなくクラスタ数に比例する — ページ単位のレポートと違い、コーパスサイズの上限はない。各エントリは「なぜこのページ達が同じクラスタになったか」の根拠を構造化データとして返す: ブロッキング理由（共有 stylesheet 集合 or URL パスプレフィックス）、クラスタ内で共有されている DOM 構造トークンのコア、landmark タイプ（header/footer/nav/aside/form/search）ごとのクラスタ内共通性、そして同一ブロッキンググループ内で分岐した兄弟クラスタのキー一覧。
 
 ```json
 {
-	"id": "任意の識別子",
-	"clusterKey": "...",
-	"landmarks": {
-		"header": [
-			{
-				"startLine": 1,
-				"startColumn": 7,
-				"endLine": 1,
-				"endColumn": 30,
-				"startOffset": 6,
-				"endOffset": 29,
-				"isChrome": true
-			}
+	"[\"path:news\",\"cluster:0\"]": {
+		"memberCount": 42,
+		"blocking": [
+			{ "blockKey": "path:news", "reason": { "kind": "path", "pathKey": "news" } }
 		],
-		"footer": [],
-		"nav": [],
-		"aside": [],
-		"form": [],
-		"search": [],
-		"main": [
-			{
-				"startLine": 2,
-				"startColumn": 1,
-				"endLine": 10,
-				"endColumn": 8,
-				"startOffset": 40,
-				"endOffset": 120
+		"structuralCoreTokens": ["body>main>article", "..."],
+		"landmarks": {
+			"header": {
+				"presenceRate": 1,
+				"chromeRate": 1,
+				"shellTokens": ["..."],
+				"memberCountWithInstance": 42
+			},
+			"aside": {
+				"presenceRate": 0.3,
+				"chromeRate": 0,
+				"shellTokens": [],
+				"memberCountWithInstance": 13
 			}
-		]
+		},
+		"siblingClusterKeys": ["[\"path:news\",\"cluster:1\"]"]
 	}
 }
 ```
 
-20,000 ページを超えるコーパス（ストリーミング経路）では `--include-landmark-positions` は使えない（エラーで終了する）。ストリーミング経路はリザーバサンプリングと近似割当を使うため、ページ単位の chrome 判定に必要な「そのページが属する最終クラスタの shell トークン」という概念を持たないため。
+上の例は、header はクラスタ全体で共通の chrome（`chromeRate: 1`）である一方、aside は 42 ページ中 13 ページにしか無く chrome とは判定されていない（`chromeRate: 0`）ことを示す。つまり「ヘッダーは共通だが、サイドナビの有無で分かれているページがある」という状況を数値で表している。`siblingClusterKeys` は同じブロッキンググループ内で Stage A/B が結局別クラスタのままにした相手のキーで、それぞれの `ClusterReason` を突き合わせれば「何が違って分かれたか」を呼び出し側で解釈できる。理由は構造化データのみで、文言化（「ヘッダーが共通です」等）は呼び出し側の責務。
+
+landmark の位置情報そのもの（HTML 内のどこにあるか）が必要な場合は、ライブラリの `extractLandmarks`（ステートレス・公開 API）をページの HTML に対して自分で呼び、その結果と `ClusterReason.landmarks[type].shellTokens` を突き合わせて `isChromeLandmarkInstance`（同じく公開 API）で chrome 判定すればよい。詳細は [Library](#library) 節を参照。
 
 クローラ出力が JSON 配列の場合は `jq` で line-delimited に変換して食わせる:
 
@@ -84,7 +78,7 @@ jq -c '.[]' crawl-output.json | page-cluster > clusters.jsonl
 #### オプション
 
 - `--content-block-attribute <name>` — CMS が自由編集コンテンツブロックに付与している属性名（例: `data-bgb`）が分かっている場合に指定する。指定すると比較前にその属性を持つ要素配下を無視するので、同じテンプレートで本文構成だけ違うページを混同しなくなる。唯一の site-specific なオプションで、未指定でも `<main>` / `role="main"` を起点にした自動深さキャップが常時働く（詳細は `resolve-page-cluster-keys.ts` の JSDoc を参照）
-- `--include-landmark-positions` — 出力の各行に上記の `landmarks` フィールドを追加する。20,000 ページ超のコーパスでは使えない。指定すると進捗表示（後述）は出なくなる（進捗を出さない非ストリーミング経路に常に振り分けられるため）
+- `--cluster-reasons-file <path>` — 上記の「クラスタ選定理由」を `<path>` に JSON として書き出す。ページ数の上限はない。20,000 ページ以下のコーパスでは、指定すると進捗表示（後述）は出なくなる（進捗を出さない非ストリーミング経路に常に振り分けられるため。20,000 ページ超のストリーミング経路では進捗表示・クラスタ理由の両方が動く）
 - `--help` / `-h` — ヘルプを表示する
 - `--version` / `-v` — バージョンを表示する
 
@@ -116,12 +110,15 @@ silence したい場合は `2>/dev/null`。ログに残したい場合は `2> pr
 
 サブパスエクスポート構成。import パスと提供関数の対応は以下。
 
-| import パス                                          | 提供関数                                                                                                                                                                                                                                                                                                                          |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@d-zero/page-cluster`                               | `tokenize` — `<body>` 配下を構造トークン列に変換する低レベルプリミティブ                                                                                                                                                                                                                                                          |
-| `@d-zero/page-cluster/resolve-page-cluster-keys`     | `resolvePageClusterKeys`（非同期・ファクトリ入力・メモリ有界のメインエントリー）、`resolvePageClusterKeysFromArray`（array 入力ラッパー）、`resolvePageClusterKeysInMemory`（同期・array 入力）。いずれも `includeLandmarkPositions: true` を渡すと `clusterKey` に加えて位置情報つきの `landmarks`（`PageLandmarkReport`）を返す |
-| `@d-zero/page-cluster/extract-landmarks`             | `extractLandmarks` — header / footer / nav / aside / form / search / main の 7 種を抽出し、インスタンスごとの生 HTML と HTML 内の位置（line/column・文字列オフセット）を返す                                                                                                                                                      |
-| `@d-zero/page-cluster/resolve-landmark-variant-keys` | `resolveLandmarkVariantKeys` — 特定ランドマークのデザインバリアントでページを分類                                                                                                                                                                                                                                                 |
+| import パス                                          | 提供関数                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@d-zero/page-cluster`                               | `tokenize` — `<body>` 配下を構造トークン列に変換する低レベルプリミティブ                                                                                                                                                                                                                            |
+| `@d-zero/page-cluster/resolve-page-cluster-keys`     | `resolvePageClusterKeys`（非同期・ファクトリ入力・メモリ有界のメインエントリー）、`resolvePageClusterKeysFromArray`（array 入力ラッパー）、`resolvePageClusterKeysInMemory`（同期・array 入力）。`onClusterReason` コールバックを渡すと、確定したクラスタごとに 1 回だけ `ClusterReason` を通知する |
+| `@d-zero/page-cluster/build-cluster-reason`          | `ClusterReason` / `LandmarkClusterProfile` 型、`buildClusterReason` — クラスタ選定理由の型定義と組み立て関数（通常は `resolvePageClusterKeys` の `onClusterReason` 経由で使うので直接呼ぶ必要はない）                                                                                               |
+| `@d-zero/page-cluster/extract-landmarks`             | `extractLandmarks` — header / footer / nav / aside / form / search / main の 7 種を抽出し、インスタンスごとの生 HTML と HTML 内の位置（line/column・文字列オフセット）を返す                                                                                                                        |
+| `@d-zero/page-cluster/resolve-landmark-variant-keys` | `resolveLandmarkVariantKeys` — 特定ランドマークのデザインバリアントでページを分類                                                                                                                                                                                                                   |
+| `@d-zero/page-cluster/is-chrome-landmark-instance`   | `isChromeLandmarkInstance` — 1 つの landmark インスタンスのトークン集合と `ClusterReason.landmarks[type].shellTokens` のようなシェルトークン集合を突き合わせて chrome/content を判定するステートレス関数                                                                                            |
+| `@d-zero/page-cluster/jaccard-similarity`            | `jaccardSimilarity` — 2 つのトークン集合の Jaccard 類似度。`ClusterReason` 同士（`structuralCoreTokens` や `shellTokens`）を比較して兄弟クラスタとの差分を調べる用途などに使う                                                                                                                      |
 
 ```ts
 import { resolvePageClusterKeysFromArray } from '@d-zero/page-cluster/resolve-page-cluster-keys';
@@ -175,7 +172,7 @@ flowchart TD
 - **chrome discovery** — 全ページのランドマーク署名の度数分布に auto-cut を当て、閾値以上を「グローバル chrome」（サイト共通のヘッダー等）として比較から除外し、閾値未満かつ 2 ページ以上に出現するものを「ローカル chrome」（セクション固有のナビ等）としてトークン再注入する
 - **Stage A（ブロック内クラスタリング）** — ブロックごとに直線的な処理。`<main>` の深さキャップ（候補深度を全走査して knee を探す自動選択）→ tokenize → complete-linkage 階層クラスタリング → max-gap auto-cut でカット高を決定 → 最後に包含関係にあるクラスタを吸収する包含割当（割当チェーンを辿り、循環はメンバー最大のクラスタをルートに選んで解決）
 - **Pass 1b（ストリーミング時のみ）** — 20,000 ページ超では各ブロックをリザーバサンプリング（最大 100 ページ、ブロックキーをシードにした決定的乱数）で代表させ、サンプル外のページは Stage A 完了後に max-Jaccard で最寄りクラスタへ一括割当する。メモリ使用量はコーパス全体ではなくサンプルサイズに比例する
-- **Stage B（ブロック越えマージ）** — ブロック分割はあくまで比較コスト削減のためなので、最後に同一テンプレートがブロックを跨いで分かれていないか再統合する。これが唯一の反復処理（次節）
+- **Stage B（ブロック越えマージ）** — ブロック分割はあくまで比較コスト削減のためなので、最後に同一テンプレートがブロックを跨いで分かれていないか再統合する。これが唯一の反復処理（次節）。収束後、`onClusterReason` が指定されていれば、確定した最終クラスタごとに `ClusterReason` を 1 回ずつ組み立てて通知する — 追加の全コーパススキャンではなく、Stage A/B が既に計算済みの中間データ（quorum core、landmark インスタンス、ブロッキング根拠）を再利用するだけなので、クラスタ数にしか比例しない
 
 ### Stage B: ブロック越え統合の不動点ループ
 

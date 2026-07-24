@@ -5,9 +5,12 @@ import { derivePathGroupKey } from './derive-path-group-key.js';
 /**
  * Prefix distinguishing a reassigned key from the `css:`/`path:` keys
  * {@link ./resolve-blocking-group-keys.js | resolveBlockingGroupKeys} itself
- * produces, so the two families can never collide.
+ * produces, so the two families can never collide. Exported so
+ * {@link ./pass0-blocking.js | resolveBlockKeys} can recover the confined
+ * path key back out of a reassigned block key when building `BlockingReason`s,
+ * without duplicating this literal.
  */
-const REASSIGNED_KEY_PREFIX = 'orphan-merge:';
+export const REASSIGNED_KEY_PREFIX = 'orphan-merge:';
 
 /**
  * Reads `values[index]`, throwing instead of returning `undefined`. Every

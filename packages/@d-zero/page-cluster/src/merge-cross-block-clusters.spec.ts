@@ -66,8 +66,10 @@ const landmarksWith = (
 };
 
 describe('mergeCrossBlockClusters', () => {
-	test('empty input returns empty map', () => {
-		expect(mergeCrossBlockClusters([], {})).toEqual(new Map());
+	test('empty input returns empty maps', () => {
+		const result = mergeCrossBlockClusters([], {});
+		expect(result.rootByKey).toEqual(new Map());
+		expect(result.finalGroupsByRoot).toEqual(new Map());
 	});
 
 	test('single unit maps to itself', () => {
@@ -77,7 +79,7 @@ describe('mergeCrossBlockClusters', () => {
 			memberLandmarkInstances: toInstances([noLandmarks]),
 		};
 		const result = mergeCrossBlockClusters([unit], {});
-		expect(result.get('k1')).toBe('k1');
+		expect(result.rootByKey.get('k1')).toBe('k1');
 	});
 
 	test('two units with identical token sets merge into one', () => {
@@ -93,7 +95,7 @@ describe('mergeCrossBlockClusters', () => {
 			memberLandmarkInstances: toInstances([noLandmarks]),
 		};
 		const result = mergeCrossBlockClusters([unit1, unit2], {});
-		expect(result.get('k1')).toBe(result.get('k2'));
+		expect(result.rootByKey.get('k1')).toBe(result.rootByKey.get('k2'));
 	});
 
 	test('two units with disjoint token sets stay separate', () => {
@@ -112,8 +114,8 @@ describe('mergeCrossBlockClusters', () => {
 			memberLandmarkInstances: toInstances([noLandmarks]),
 		};
 		const result = mergeCrossBlockClusters([unit1, unit2], {});
-		expect(result.get('k1')).toBe('k1');
-		expect(result.get('k2')).toBe('k2');
+		expect(result.rootByKey.get('k1')).toBe('k1');
+		expect(result.rootByKey.get('k2')).toBe('k2');
 	});
 
 	test('multi-page units with same shape but different class names merge via shape-Jaccard', () => {
@@ -148,7 +150,7 @@ describe('mergeCrossBlockClusters', () => {
 			memberLandmarkInstances: toInstances([noLandmarks, noLandmarks]),
 		};
 		const result = mergeCrossBlockClusters([unit1, unit2], {});
-		expect(result.get('reports')).toBe(result.get('projects'));
+		expect(result.rootByKey.get('reports')).toBe(result.rootByKey.get('projects'));
 	});
 
 	test('single-page units are excluded from shape-Jaccard comparison', () => {
@@ -169,8 +171,8 @@ describe('mergeCrossBlockClusters', () => {
 			memberLandmarkInstances: toInstances([noLandmarks]),
 		};
 		const result = mergeCrossBlockClusters([unit1, unit2], {});
-		expect(result.get('solo-a')).toBe('solo-a');
-		expect(result.get('solo-b')).toBe('solo-b');
+		expect(result.rootByKey.get('solo-a')).toBe('solo-a');
+		expect(result.rootByKey.get('solo-b')).toBe('solo-b');
 	});
 
 	test('result map has an entry for every input unit key', () => {
@@ -190,9 +192,9 @@ describe('mergeCrossBlockClusters', () => {
 			memberLandmarkInstances: toInstances([noLandmarks]),
 		};
 		const result = mergeCrossBlockClusters([unit1, unit2, unit3], {});
-		expect(result.has('a')).toBe(true);
-		expect(result.has('b')).toBe(true);
-		expect(result.has('c')).toBe(true);
+		expect(result.rootByKey.has('a')).toBe(true);
+		expect(result.rootByKey.has('b')).toBe(true);
+		expect(result.rootByKey.has('c')).toBe(true);
 	});
 
 	test('result is deterministic: same input twice produces identical output', () => {
@@ -209,8 +211,8 @@ describe('mergeCrossBlockClusters', () => {
 		};
 		const r1 = mergeCrossBlockClusters([unit1, unit2], {});
 		const r2 = mergeCrossBlockClusters([unit1, unit2], {});
-		expect(r1.get('k1')).toBe(r2.get('k1'));
-		expect(r1.get('k2')).toBe(r2.get('k2'));
+		expect(r1.rootByKey.get('k1')).toBe(r2.rootByKey.get('k1'));
+		expect(r1.rootByKey.get('k2')).toBe(r2.rootByKey.get('k2'));
 	});
 
 	test('merged result preserves an existing unit key (no freshly invented key)', () => {
@@ -226,7 +228,7 @@ describe('mergeCrossBlockClusters', () => {
 			memberLandmarkInstances: toInstances([noLandmarks]),
 		};
 		const result = mergeCrossBlockClusters([unit1, unit2], {});
-		const rootKey = result.get('block-a')!;
+		const rootKey = result.rootByKey.get('block-a')!;
 		expect(rootKey === 'block-a' || rootKey === 'block-b').toBe(true);
 	});
 
@@ -247,7 +249,7 @@ describe('mergeCrossBlockClusters', () => {
 			memberLandmarkInstances: toInstances([landmarks]),
 		};
 		const result = mergeCrossBlockClusters([unit1, unit2], {});
-		expect(result.get('l1')).toBe(result.get('l2'));
+		expect(result.rootByKey.get('l1')).toBe(result.rootByKey.get('l2'));
 	});
 });
 
@@ -304,7 +306,7 @@ describe('mergeCrossBlockClusters shellQuorum (via mergeCrossBlockClusters exerc
 		// have been at risk. The stronger correctness assertion is that
 		// shellQuorum returns non-empty for these landmarks (exercised
 		// implicitly by not crashing on the L2 shell lookup).
-		expect(result.get('A')).toBe(result.get('B'));
+		expect(result.rootByKey.get('A')).toBe(result.rootByKey.get('B'));
 	});
 
 	test('landmark instances that vary per page do not falsely act as shell (histogram cuts them off)', () => {
@@ -333,7 +335,7 @@ describe('mergeCrossBlockClusters shellQuorum (via mergeCrossBlockClusters exerc
 		// separate. Precondition: shell histogram correctly filters out the
 		// per-page varying headers rather than admitting them all via a
 		// union fallback.
-		expect(result.get('A')).toBe('A');
-		expect(result.get('B')).toBe('B');
+		expect(result.rootByKey.get('A')).toBe('A');
+		expect(result.rootByKey.get('B')).toBe('B');
 	});
 });
