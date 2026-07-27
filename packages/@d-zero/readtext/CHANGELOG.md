@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/readtext@1.1.24...@d-zero/readtext@1.2.0) (2026-07-27)
+
+### Features
+
+- **readtext:** add position-aware list parsing ([a5faa61](https://github.com/d-zero-dev/tools/commit/a5faa61f8c92cec6e6179c87f8a62ad4c9907478))
+- **readtext:** re-export ListItem type from the list subpath ([69841b2](https://github.com/d-zero-dev/tools/commit/69841b224f25c4a12f02c1a0874a32c2a2861495))
+
 ## [1.1.24](https://github.com/d-zero-dev/tools/compare/@d-zero/readtext@1.1.23...@d-zero/readtext@1.1.24) (2026-07-02)
 
 **Note:** Version bump only for package @d-zero/readtext

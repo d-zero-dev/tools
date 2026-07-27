@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.0...@d-zero/page-cluster@0.5.1) (2026-07-27)
+
+**Note:** Version bump only for package @d-zero/page-cluster
+
 # [0.5.0](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.4.0...@d-zero/page-cluster@0.5.0) (2026-07-24)
 
 - feat(page-cluster)!: report cluster selection reasons via onClusterReason ([d047963](https://github.com/d-zero-dev/tools/commit/d047963f956ac9ed04285b6478f5f9bf98a8a363))
