@@ -147,6 +147,12 @@ assert result == 42
 - 設定 → パース → 処理 → 出力のフルパイプラインを検証するテスト
 - 設定駆動の機能: 設定値を供給し振る舞いの差異をアサートするテスト
 
+**tools での具体例:**
+
+- `puppeteer-general-actions` / `puppeteer-scroll` → `puppeteer-page-scan` → `puppeteer-screenshot` → `archaeologist` / `print` という CLI パイプライン。末端の `puppeteer-general-actions` の変更が `archaeologist` の出力まで正しく伝播するかは、各パッケージのユニットテストだけでは検証できない
+- `dealer` → `puppeteer-dealer` → `a11y-check-core` → `a11y-check-axe-scenario` / `a11y-check-scenarios` → `a11y-check` という診断パイプライン。同様にエンドツーエンドの統合テストが必要
+- `@d-zero/shared` のサブパスエクスポート変更は 20 以上のパッケージに波及する。`shared` 単体のユニットテストが通っていても、実際に依存する主要パッケージ（`cli-core`、`puppeteer-page-scan` 等）から import して壊れていないかを確認するテストが要る
+
 ### 8. カバレッジ改善の提案
 
 テストカバレッジを向上させるための具体的な提案を行う。
