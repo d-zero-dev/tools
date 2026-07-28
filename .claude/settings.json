@@ -12,7 +12,14 @@
 			"Edit(**/credentials.json)",
 			"Edit(**/token.json)",
 			"Write(**/credentials.json)",
-			"Write(**/token.json)"
+			"Write(**/token.json)",
+			"Bash(git push *)",
+			"Bash(gh pr create *)",
+			"Bash(rm -rf *)",
+			"Bash(git reset --hard *)",
+			"Bash(git checkout -- . *)",
+			"Bash(git clean -f *)",
+			"Bash(git branch -D *)"
 		]
 	}
 }
