@@ -61,6 +61,19 @@ disable-model-invocation: true
 - ステージングから除外するのではなく、**汎用値（example.com 等）へ書き換える**（fixture 内の実ドメインは除外しても解決しない）。書き換え後にテストが通ることを確認してからコミットする
 - 判断が難しい場合（実データが検証に不可欠に見える等）はユーザーに確認する
 
+# パッケージのコミット順序（依存元優先）
+
+複数パッケージにまたがる変更をコミットする場合、必ず**リーフからルートへ**コミットする。依存順序が不明な場合は `yarn lerna list --graph` で確認する。ルート設定ファイル（`package.json`、lint 設定等）の変更はティア 0 より先にコミットする。
+
+| ティア | パッケージ |
+| ------ | ---------- |
+| 0      | `shared`, `readtext`, `fs`, `html-distiller`, `google-auth`, `puppeteer-general-actions`, `roar` |
+| 1      | `cli-core`, `dealer`, `notion`, `proc-talk`, `puppeteer-scroll`, `google-sheets`, `filematch` |
+| 2      | `puppeteer-page-scan`, `puppeteer-dealer`, `page-cluster`, `remote-inspector`, `backlog-projects` |
+| 3      | `puppeteer-screenshot`, `beholder`, `a11y-check-core`, `replicator` |
+| 4      | `archaeologist`, `print`, `a11y-check-axe-scenario`, `a11y-check-scenarios` |
+| 5      | `a11y-check` |
+
 # コミットメッセージの形式
 
 - 英語で記述すること
