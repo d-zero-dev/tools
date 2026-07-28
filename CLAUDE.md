@@ -22,7 +22,7 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 - `yarn watch` — `lerna run watch --parallel`
 - `yarn test` — Vitest によるテスト実行
 - `yarn lint` — eslint / prettier / textlint / cspell を直列実行
-- `yarn release` / `yarn release:alpha` 等 — リリース用。**ユーザーのみ実行可**（エージェントは実行しない）
+- `yarn release` / `yarn release:alpha` 等 — リリース用。**ユーザーのみ実行可**（エージェントは実行しない）。手順は `.claude/skills/npm-publish/SKILL.md` に従う
 - **git worktree からのビルドは `NX_WORKSPACE_ROOT_PATH` 必須**: リポジトリ内部にネストした worktree（`.claude/worktrees/*` 等）から素の `yarn build` を実行すると、Nx がルートをメインチェックアウトに誤解決し、成功表示のまま成果物がメイン側に書かれる（worktree の `lib/` は生成されない）。`NX_WORKSPACE_ROOT_PATH=<worktree絶対パス> yarn build` でルートを明示すること
 
 ### コマンド制約
@@ -53,6 +53,21 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 - リリース時は `v-release` タグの強制更新を伴い、タグ push で Actions のリリース（[publish.yml](.github/workflows/publish.yml)）が開始される
 - 単一パッケージの破壊的変更でもリポジトリ全体の major bump にはならない
 
+## 依存関係の追加
+
+- バージョンは固定で追加する（`yarn add foo@1.2.3`）。`^` / `~` を付けない
+- **追加したら `.github/renovate.json` の `packageRules` を確認する**。そのパッケージが既存の `groupName` グループに入るべきか、新しいグループを作るべきかを判断する
+  - `config:recommended` は `group:monorepos` を含むため、**同一 monorepo から公開されるパッケージ群（`@vitest/*`、`@tiptap/*`、`playwright` 系など）は設定なしで自動的に束ねられる**。手で書く必要はない
+  - 手当てが必要なのは Renovate が推測できない**ベンダー横断の結合**。tools では既に以下がグループ化済み:
+    - `google-apis`: `googleapis` + `google-auth-library` + `gaxios`
+    - `image-processing`: `pixelmatch` + `pngjs` + `jimp` と各型定義
+    - 本体と型定義のペア（`debug` + `@types/debug`、`diff` + `@types/diff` 等）
+    - `resolutions` で固定している `google-auth-library` とその利用側
+    - 自前の `@d-zero/*` config 系パッケージ群
+  - 判断基準は「**片方だけバージョンが上がった状態でビルドと型チェックが通るか**」。通らないなら同じ `groupName` にまとめる
+- グループ化を怠ると、Renovate が個別に PR を作り、片方だけマージされた中間状態で CI が赤になる。結果として**両方の PR がマージできなくなる**
+- グルーピングの現状は `git branch -r --list 'origin/renovate/*'` で確認できる。`*-monorepo` サフィックスのブランチは `group:monorepos` による自動グループ
+
 ## コーディング規約
 
 - **`@d-zero/shared` はサブパスエクスポート**: `@d-zero/shared/parse-url` のような形式で import すること（ルート import は不可）
@@ -82,13 +97,14 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 
 タスクに応じて `.claude/skills/` 配下のスキルを参照すること。
 
-| スキル          | パス                                      | 用途                                                           |
-| --------------- | ----------------------------------------- | -------------------------------------------------------------- |
-| Product Manager | `.claude/skills/product-manager/SKILL.md` | リポジトリ分析、ドキュメント整合チェック、PR レビュー          |
-| QA Engineer     | `.claude/skills/qa-engineer/SKILL.md`     | コードレビュー、テスト品質チェック、カバレッジ改善             |
-| Impl            | `.claude/skills/impl/SKILL.md`            | 合意済み計画の実装・検証・PR 作成までのオーケストレーション    |
-| git             | `.claude/skills/git/SKILL.md`             | コミット作成ルール（粒度、メッセージ形式、コミット前チェック） |
-| pr              | `.claude/skills/pr/SKILL.md`              | PR 作成（プリフライト、base 追従、CI 監視）                    |
-| grill-me        | `.claude/skills/grill-me/SKILL.md`        | 計画・設計の合意形成（実装前の徹底質問）                       |
+| スキル          | パス                                      | 用途                                                                   |
+| --------------- | ----------------------------------------- | ---------------------------------------------------------------------- |
+| Product Manager | `.claude/skills/product-manager/SKILL.md` | リポジトリ分析、ドキュメント整合チェック、PR レビュー                  |
+| QA Engineer     | `.claude/skills/qa-engineer/SKILL.md`     | コードレビュー、テスト品質チェック、カバレッジ改善                     |
+| Impl            | `.claude/skills/impl/SKILL.md`            | 合意済み計画の実装・検証・PR 作成までのオーケストレーション            |
+| git             | `.claude/skills/git/SKILL.md`             | コミット作成ルール（粒度、メッセージ形式、コミット前チェック）         |
+| pr              | `.claude/skills/pr/SKILL.md`              | PR 作成（プリフライト、base 追従、CI 監視）                            |
+| grill-me        | `.claude/skills/grill-me/SKILL.md`        | 計画・設計の合意形成（実装前の徹底質問）                               |
+| npm publish     | `.claude/skills/npm-publish/SKILL.md`     | リリース（dev→main、バージョニング、tag push、publish 検証、dev 同期） |
 
-コミットは必ず `.claude/skills/git/SKILL.md`、PR 作成は `.claude/skills/pr/SKILL.md` の手順に従うこと。
+コミットは必ず `.claude/skills/git/SKILL.md`、PR 作成は `.claude/skills/pr/SKILL.md`、リリースは `.claude/skills/npm-publish/SKILL.md` の手順に従うこと。
