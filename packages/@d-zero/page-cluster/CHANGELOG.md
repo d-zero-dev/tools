@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.3](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.2...@d-zero/page-cluster@0.5.3) (2026-07-29)
+
+### Bug Fixes
+
+- **page-cluster:** let onClusterReason and onProgress compose on small corpora ([fe099b9](https://github.com/d-zero-dev/tools/commit/fe099b9e589247542eca8c80ee59a752f2d1fbf1)), closes [#932](https://github.com/d-zero-dev/tools/issues/932)
+
 ## [0.5.2](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.1...@d-zero/page-cluster@0.5.2) (2026-07-29)
 
 ### Bug Fixes
