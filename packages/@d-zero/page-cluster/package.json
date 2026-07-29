@@ -32,6 +32,10 @@
 		"./jaccard-similarity": {
 			"import": "./dist/jaccard-similarity.js",
 			"types": "./dist/jaccard-similarity.d.ts"
+		},
+		"./build-cluster-reason": {
+			"import": "./dist/build-cluster-reason.js",
+			"types": "./dist/build-cluster-reason.d.ts"
 		}
 	},
 	"bin": "./dist/cli.js",
