@@ -2,6 +2,7 @@ import type { ClusterReason } from './build-cluster-reason.js';
 import type { BlockingReason } from './derive-blocking-reason.js';
 import type { ExtractLandmarksResult } from './extract-landmarks.js';
 import type { CrossBlockUnit, FinalGroupMembers } from './merge-cross-block-clusters.js';
+import type { Pass0PageSignals } from './pass0-blocking.js';
 import type { PerPageLandmarkInstance } from './per-page-landmark-signatures.js';
 import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-keys.js';
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
@@ -285,6 +286,35 @@ export function computeLocalLandmarkTokens(
 }
 
 /**
+ * Resolves block keys for a clustering pass, deriving each block key's
+ * `BlockingReason` in the same call (via `resolveBlockKeys`'s
+ * `includeReasons: true` overload) whenever a caller wants `ClusterReason`s.
+ * All three clustering drivers below (in-memory, small-corpus-with-progress,
+ * streaming) share this exact branch so the "does this caller need reasons"
+ * decision can't drift between them.
+ * @param blockingPages
+ * @param options
+ * @param needReasons
+ */
+function resolveBlockKeysForClustering(
+	blockingPages: readonly Pass0PageSignals[],
+	options: ResolvePageClusterKeysOptions | undefined,
+	needReasons: boolean,
+): {
+	blockKeys: string[];
+	reasonsByBlockKey: ReadonlyMap<string, BlockingReason> | undefined;
+} {
+	if (!needReasons) {
+		return {
+			blockKeys: resolveBlockKeys(blockingPages, options),
+			reasonsByBlockKey: undefined,
+		};
+	}
+	const result = resolveBlockKeys(blockingPages, { ...options, includeReasons: true });
+	return { blockKeys: result.blockKeys, reasonsByBlockKey: result.reasonsByBlockKey };
+}
+
+/**
  * Builds and emits one {@link ClusterReason} per final cluster via
  * `onClusterReason`, from data Stage A/B already computed for clustering
  * itself: `crossBlockUnits` (Stage A's pre-merge units, each carrying its
@@ -293,6 +323,12 @@ export function computeLocalLandmarkTokens(
  * derived, and the per-block sibling-unit-key lists the driver accumulated
  * alongside its Stage A loop. No re-tokenization and no extra corpus pass —
  * this only re-groups references the driver already held.
+ *
+ * No-ops when any of `reasonsByBlockKey` / `siblingUnitKeysByBlock` /
+ * `onClusterReason` is `undefined` — the single gate for "was
+ * `onClusterReason` requested" that all three clustering drivers below defer
+ * to, instead of each repeating the same three-way null check before calling
+ * this function.
  * @param crossBlockUnits
  * @param rootByKey
  * @param finalGroupsByRoot
@@ -304,10 +340,12 @@ function emitClusterReasons(
 	crossBlockUnits: readonly CrossBlockUnit[],
 	rootByKey: ReadonlyMap<string, string>,
 	finalGroupsByRoot: ReadonlyMap<string, FinalGroupMembers>,
-	reasonsByBlockKey: ReadonlyMap<string, BlockingReason>,
-	siblingUnitKeysByBlock: ReadonlyMap<string, readonly string[]>,
-	onClusterReason: (clusterKey: string, reason: ClusterReason) => void,
+	reasonsByBlockKey: ReadonlyMap<string, BlockingReason> | undefined,
+	siblingUnitKeysByBlock: ReadonlyMap<string, readonly string[]> | undefined,
+	onClusterReason: ((clusterKey: string, reason: ClusterReason) => void) | undefined,
 ): void {
+	if (!onClusterReason || !reasonsByBlockKey || !siblingUnitKeysByBlock) return;
+
 	const unitKeysByRoot = new Map<string, string[]>();
 	for (const unit of crossBlockUnits) {
 		const root = rootByKey.get(unit.key) ?? unit.key;
@@ -435,10 +473,9 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * sync helper to running a per-block async loop that emits
 		 * `pass1-block-complete` and `stage-b-start`. Omitting `onProgress`
 		 * keeps the small-corpus branch on the pre-refactor sync path with
-		 * zero yield overhead. Ignored when `onClusterReason` is set — that
-		 * option always routes the small-corpus branch through the sync
-		 * helper (see `onClusterReason`'s own JSDoc), so no progress events
-		 * fire in that combination.
+		 * zero yield overhead. Independent of `onClusterReason` — both hooks
+		 * can be set together and each fires on its own schedule (see
+		 * `onClusterReason`'s own JSDoc).
 		 */
 		onProgress?: (event: ProgressEvent) => void;
 		/**
@@ -458,10 +495,11 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * discovery. Omitting `onClusterReason` skips that bookkeeping
 		 * entirely, so existing callers pay nothing for this option.
 		 *
-		 * On the async factory-based `resolvePageClusterKeys`, setting this
-		 * forces the small-corpus branch through the sync
-		 * `resolvePageClusterKeysInMemory` helper regardless of `onProgress`
-		 * — see `onProgress`'s own JSDoc.
+		 * Independent of `onProgress`: on the async factory-based
+		 * `resolvePageClusterKeys`, the small-corpus branch still chooses
+		 * between the sync and progress-emitting helpers based on `onProgress`
+		 * alone, and both helpers derive `ClusterReason`s the same way when
+		 * this option is set.
 		 * @example
 		 * ```ts
 		 * const reasons = new Map<string, ClusterReason>();
@@ -594,15 +632,11 @@ export function resolvePageClusterKeysInMemory(
 	// actually asked for `onClusterReason` — see that option's own JSDoc for
 	// why this is the only place ClusterReason bookkeeping is opt-in.
 	const onClusterReason = options?.onClusterReason;
-	let blockKeys: string[];
-	let reasonsByBlockKey: ReadonlyMap<string, BlockingReason> | undefined;
-	if (onClusterReason) {
-		const result = resolveBlockKeys(blockingPages, { ...options, includeReasons: true });
-		blockKeys = result.blockKeys;
-		reasonsByBlockKey = result.reasonsByBlockKey;
-	} else {
-		blockKeys = resolveBlockKeys(blockingPages, options);
-	}
+	const { blockKeys, reasonsByBlockKey } = resolveBlockKeysForClustering(
+		blockingPages,
+		options,
+		onClusterReason !== undefined,
+	);
 	const indicesByBlockKey = groupIndicesByBlockKey(blockKeys);
 
 	// Validated here, eagerly, because it's otherwise only reached from
@@ -651,16 +685,14 @@ export function resolvePageClusterKeysInMemory(
 		}
 	}
 
-	if (onClusterReason && reasonsByBlockKey && siblingUnitKeysByBlock) {
-		emitClusterReasons(
-			crossBlockUnits,
-			rootByKey,
-			finalGroupsByRoot,
-			reasonsByBlockKey,
-			siblingUnitKeysByBlock,
-			onClusterReason,
-		);
-	}
+	emitClusterReasons(
+		crossBlockUnits,
+		rootByKey,
+		finalGroupsByRoot,
+		reasonsByBlockKey,
+		siblingUnitKeysByBlock,
+		onClusterReason,
+	);
 
 	return finalKeys;
 }
@@ -678,7 +710,9 @@ export function resolvePageClusterKeysInMemory(
  * un-capped Stage B across the entire crossBlockUnits array. `finalKeys`
  * returned here must be byte-for-byte identical to what the sync path
  * would have produced for the same `pages` input — spec-enforced by
- * `resolve-page-cluster-keys-streaming.spec.ts`.
+ * `resolve-page-cluster-keys-streaming.spec.ts`. When `options.onClusterReason`
+ * is set, it derives and emits `ClusterReason`s the same way the sync path
+ * does, so the two hooks compose freely.
  *
  * The sync `resolvePageClusterKeysInMemory` is deliberately left in place
  * as its own implementation rather than being folded into a shared helper.
@@ -726,13 +760,23 @@ async function resolveSmallCorpusWithProgress(
 		? filterFirstPartyStylesheetHrefs(pages)
 		: pages;
 
-	const blockKeys = resolveBlockKeys(blockingPages, options);
+	// Reasons (blocking evidence) are only worth deriving when a caller
+	// actually asked for `onClusterReason` — same gate as the in-memory path.
+	const onClusterReason = options?.onClusterReason;
+	const { blockKeys, reasonsByBlockKey } = resolveBlockKeysForClustering(
+		blockingPages,
+		options,
+		onClusterReason !== undefined,
+	);
 	const indicesByBlockKey = groupIndicesByBlockKey(blockKeys);
 
 	validateDetectContentDepthCapOptions(options);
 
 	const finalKeys: string[] = Array.from({ length: pages.length });
 	const crossBlockUnits: CrossBlockUnit[] = [];
+	const siblingUnitKeysByBlock = onClusterReason
+		? new Map<string, readonly string[]>()
+		: undefined;
 	const totalBlocks = indicesByBlockKey.size;
 	let blocksProcessed = 0;
 
@@ -751,6 +795,10 @@ async function resolveSmallCorpusWithProgress(
 			finalKeys[pageIndex] = key;
 		}
 		crossBlockUnits.push(...result.crossBlockUnits);
+		siblingUnitKeysByBlock?.set(
+			blockKey,
+			result.crossBlockUnits.map((u) => u.key),
+		);
 		blocksProcessed++;
 		onProgress({
 			phase: 'pass1-block-complete',
@@ -765,7 +813,10 @@ async function resolveSmallCorpusWithProgress(
 
 	onProgress({ phase: 'stage-b-start', unitCount: crossBlockUnits.length });
 
-	const { rootByKey } = mergeCrossBlockClusters(crossBlockUnits, options);
+	const { rootByKey, finalGroupsByRoot } = mergeCrossBlockClusters(
+		crossBlockUnits,
+		options,
+	);
 	for (let i = 0; i < finalKeys.length; i++) {
 		const currentKey = finalKeys[i]!;
 		const rootKey = rootByKey.get(currentKey);
@@ -773,6 +824,16 @@ async function resolveSmallCorpusWithProgress(
 			finalKeys[i] = rootKey;
 		}
 	}
+
+	emitClusterReasons(
+		crossBlockUnits,
+		rootByKey,
+		finalGroupsByRoot,
+		reasonsByBlockKey,
+		siblingUnitKeysByBlock,
+		onClusterReason,
+	);
+
 	return finalKeys;
 }
 
@@ -883,12 +944,11 @@ export async function resolvePageClusterKeys(
 		// into per-block progress, so delegate to the untouched sync path —
 		// keeping behavior byte-for-byte identical (and yield-overhead-free)
 		// to how library-only consumers experienced this before the CLI
-		// progress work landed. `onClusterReason` always routes here too (see
-		// its own JSDoc): `resolveSmallCorpusWithProgress` has no
-		// cluster-reason support, and duplicating that logic into the
-		// progress-emitting path for a reporting feature that has nothing to
-		// do with progress observability isn't worth the added surface.
-		if (onProgress === undefined || options?.onClusterReason) {
+		// progress work landed. `onClusterReason` is independent of this
+		// choice: both the sync and progress-emitting paths derive
+		// ClusterReasons the same way, so passing it doesn't change which
+		// path handles a small corpus.
+		if (onProgress === undefined) {
 			return resolvePageClusterKeysInMemory(fullPages, options);
 		}
 		return resolveSmallCorpusWithProgress(fullPages, onProgress, options);
@@ -914,18 +974,11 @@ export async function resolvePageClusterKeys(
 	// keyed by distinct block key, not by page — but are only derived when a
 	// caller actually asked for `onClusterReason`.
 	const onClusterReason = options?.onClusterReason;
-	let blockKeys: string[];
-	let reasonsByBlockKey: ReadonlyMap<string, BlockingReason> | undefined;
-	if (onClusterReason) {
-		const result = resolveBlockKeys(blockingPagesForKeys, {
-			...options,
-			includeReasons: true,
-		});
-		blockKeys = result.blockKeys;
-		reasonsByBlockKey = result.reasonsByBlockKey;
-	} else {
-		blockKeys = resolveBlockKeys(blockingPagesForKeys, options);
-	}
+	const { blockKeys, reasonsByBlockKey } = resolveBlockKeysForClustering(
+		blockingPagesForKeys,
+		options,
+		onClusterReason !== undefined,
+	);
 	const indicesByBlockKey = groupIndicesByBlockKey(blockKeys);
 
 	const finalKeys: string[] = Array.from({ length: blockingSignals.length });
@@ -1171,16 +1224,14 @@ export async function resolvePageClusterKeys(
 		}
 	}
 
-	if (onClusterReason && reasonsByBlockKey && siblingUnitKeysByBlock) {
-		emitClusterReasons(
-			crossBlockUnits,
-			rootByKey,
-			finalGroupsByRoot,
-			reasonsByBlockKey,
-			siblingUnitKeysByBlock,
-			onClusterReason,
-		);
-	}
+	emitClusterReasons(
+		crossBlockUnits,
+		rootByKey,
+		finalGroupsByRoot,
+		reasonsByBlockKey,
+		siblingUnitKeysByBlock,
+		onClusterReason,
+	);
 	return finalKeys;
 }
 

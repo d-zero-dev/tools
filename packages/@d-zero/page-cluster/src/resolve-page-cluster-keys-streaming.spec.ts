@@ -183,7 +183,7 @@ describe('resolvePageClusterKeys (onClusterReason)', () => {
 		expect(streamedReasons.size).toBeGreaterThan(0);
 	});
 
-	test('combined with onProgress, still fires onClusterReason but emits no progress events (routed through the sync path)', async () => {
+	test('combined with onProgress on a small corpus, fires both onClusterReason and progress events, with matching reasons and keys to the sync path', async () => {
 		const pages = buildTinyCorpus();
 		const events: ProgressEvent[] = [];
 		const reasons = new Map<string, ClusterReason>();
@@ -191,9 +191,17 @@ describe('resolvePageClusterKeys (onClusterReason)', () => {
 			onClusterReason: (key, reason) => reasons.set(key, reason),
 			onProgress: (event) => events.push(event),
 		});
-		expect(result).toHaveLength(pages.length);
+
+		const inMemoryReasons = new Map<string, ClusterReason>();
+		const inMemory = resolvePageClusterKeysInMemory(pages, {
+			onClusterReason: (key, reason) => inMemoryReasons.set(key, reason),
+		});
+		expect(result).toEqual(inMemory);
+		expect(reasons).toEqual(inMemoryReasons);
 		expect(reasons.size).toBeGreaterThan(0);
-		expect(events).toStrictEqual([]);
+
+		expect(events.some((e) => e.phase === 'pass1-block-complete')).toBe(true);
+		expect(events.filter((e) => e.phase === 'stage-b-start')).toHaveLength(1);
 	});
 
 	test('a corpus above CORPUS_INLINE_THRESHOLD completes on the streaming path and fires onClusterReason once per final cluster, without throwing', async () => {
