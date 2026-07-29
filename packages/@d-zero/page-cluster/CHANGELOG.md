@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.2](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.1...@d-zero/page-cluster@0.5.2) (2026-07-29)
+
+### Bug Fixes
+
+- **page-cluster:** add missing build-cluster-reason exports entry ([625d360](https://github.com/d-zero-dev/tools/commit/625d360104ad98b08f78411303a70471c8db9b95))
+
 ## [0.5.1](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.0...@d-zero/page-cluster@0.5.1) (2026-07-27)
 
 **Note:** Version bump only for package @d-zero/page-cluster

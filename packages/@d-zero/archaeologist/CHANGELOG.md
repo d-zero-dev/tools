@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.14](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@4.0.13...@d-zero/archaeologist@4.0.14) (2026-07-29)
+
+**Note:** Version bump only for package @d-zero/archaeologist
+
 ## [4.0.13](https://github.com/d-zero-dev/tools/compare/@d-zero/archaeologist@4.0.12...@d-zero/archaeologist@4.0.13) (2026-07-27)
 
 **Note:** Version bump only for package @d-zero/archaeologist
