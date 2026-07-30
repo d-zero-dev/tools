@@ -120,6 +120,9 @@
 		"oncomment",
 
 		// Divi Builder (WordPress page builder plugin)
-		"Divi"
+		"Divi",
+
+		// anatomist layout classification terminology
+		"misparse"
 	]
 }

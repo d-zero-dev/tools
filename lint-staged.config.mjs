@@ -21,5 +21,13 @@ export default lintStagedConfigGenerator({
 			// leniency htmlparser2 is supposed to be tested against.
 			prettier: 'packages/@d-zero/page-cluster/src/__fixtures__/**/*.html',
 		},
+		{
+			// Same markuplint-not-installed issue as page-cluster's fixtures
+			// above: these are `<body>`-only fragments used as
+			// getBoundingClientRect-shim input for anatomist's classify-layer
+			// tests, not full documents, so markuplint's document-validity
+			// rules don't apply to them regardless.
+			markuplint: 'packages/@d-zero/anatomist/src/__fixtures__/*.html',
+		},
 	],
 });

@@ -1127,6 +1127,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@d-zero/anatomist@workspace:packages/@d-zero/anatomist":
+  version: 0.0.0-use.local
+  resolution: "@d-zero/anatomist@workspace:packages/@d-zero/anatomist"
+  dependencies:
+    "@d-zero/beholder": "npm:4.1.1"
+    "@d-zero/dealer": "npm:1.10.2"
+    "@d-zero/puppeteer-page-scan": "npm:4.6.6"
+    "@d-zero/shared": "npm:0.22.3"
+    puppeteer: "npm:25.3.0"
+  bin:
+    anatomist: ./dist/cli.js
+  languageName: unknown
+  linkType: soft
+
 "@d-zero/archaeologist@workspace:packages/@d-zero/archaeologist":
   version: 0.0.0-use.local
   resolution: "@d-zero/archaeologist@workspace:packages/@d-zero/archaeologist"
@@ -1176,7 +1190,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/beholder@workspace:packages/@d-zero/beholder":
+"@d-zero/beholder@npm:4.1.1, @d-zero/beholder@workspace:packages/@d-zero/beholder":
   version: 0.0.0-use.local
   resolution: "@d-zero/beholder@workspace:packages/@d-zero/beholder"
   dependencies:
