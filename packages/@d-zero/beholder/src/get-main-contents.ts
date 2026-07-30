@@ -94,6 +94,10 @@ export function extractMainContentsFromDocument(
 	const title = doc.title?.trim() ?? '';
 	const bodyWordCount = removeSpaces(doc.body?.textContent ?? null)?.length ?? 0;
 
+	// Kept in sync with MAIN_CONTENT_SELECTORS in main-content-selectors.ts
+	// (main-content-selectors.spec.ts asserts the two stay identical). Inlined
+	// rather than imported because this function must stay closure-free — see
+	// the module JSDoc.
 	const selectors = [
 		'main',
 		'[role="main"]',
@@ -126,6 +130,8 @@ export function extractMainContentsFromDocument(
 	}
 
 	if (!$main) {
+		// Kept in sync with MAIN_CONTENT_FALLBACK_SELECTORS in
+		// main-content-selectors.ts — see the comment on `selectors` above.
 		const fallbackSelectors = [
 			'[id*="main" i]',
 			'[class*="main" i]',
