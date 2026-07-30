@@ -1,0 +1,46 @@
+{
+	"name": "@d-zero/anatomist",
+	"version": "0.1.0",
+	"description": "Renders a URL's main content in a real browser and classifies its child blocks into layout patterns (vertical stack, horizontal row, grid, table, float-wrap) from measured box geometry. CLI-first, with library APIs.",
+	"author": "D-ZERO",
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/analyze-page-layout.js",
+			"types": "./dist/analyze-page-layout.d.ts"
+		},
+		"./classify-layout-tree": {
+			"import": "./dist/classify-layout-tree.js",
+			"types": "./dist/classify-layout-tree.d.ts"
+		},
+		"./capture-layout": {
+			"import": "./dist/capture-layout.js",
+			"types": "./dist/capture-layout.d.ts"
+		}
+	},
+	"bin": "./dist/cli.js",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"clean": "tsc --build --clean"
+	},
+	"dependencies": {
+		"@d-zero/beholder": "4.1.1",
+		"@d-zero/dealer": "1.10.2",
+		"@d-zero/puppeteer-page-scan": "4.6.6",
+		"@d-zero/shared": "0.22.3",
+		"puppeteer": "25.3.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/d-zero-dev/tools.git",
+		"directory": "packages/@d-zero/anatomist"
+	}
+}
