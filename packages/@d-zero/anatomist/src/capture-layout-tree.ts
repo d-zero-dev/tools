@@ -30,6 +30,20 @@
  * can match a different element than the one actually found, so this
  * module resolves the element itself directly instead of round-tripping
  * through that string.
+ *
+ * WHY the priority-list resolution logic in `resolveMainElement` is
+ * duplicated rather than shared: same closure-free constraint as above.
+ * `extractMainContentsFromDocument` (`@d-zero/beholder/get-main-contents.ts`)
+ * independently re-implements the identical "try each selector in array
+ * order, first match wins" strategy for the same reason. The two copies
+ * have drifted out of sync before (one queried the array with a single
+ * `querySelector(selectors.join(','))` — which resolves by DOM document
+ * order, not array priority — while the other still tried selectors one at
+ * a time); `capture-layout-tree.spec.ts` and `get-main-contents.spec.ts`
+ * both carry matching regression cases (searchable by the test name
+ * "prefers a higher-priority selector...") specifically so that fixing one
+ * side's resolution logic without the other shows up as a spec gap, not a
+ * silent divergence.
  * @module
  */
 
