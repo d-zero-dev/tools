@@ -7,6 +7,19 @@
  *
  * WHY no `@medv/finder`: selector strings are diagnostic only; a tag+id+class // cspell:disable-line
  * path is enough and avoids a Node-only dependency inside the page realm.
+ *
+ * WHY the priority-list resolution logic below is duplicated rather than
+ * shared: same closure-free constraint as above. `@d-zero/anatomist`'s
+ * `capture-layout-tree.ts` independently re-implements the identical "try
+ * each selector in array order, first match wins" strategy for the same
+ * reason. The two copies have drifted out of sync before (one queried the
+ * array with a single `querySelector(selectors.join(','))` — which resolves
+ * by DOM document order, not array priority — while the other still tried
+ * selectors one at a time); this file's spec and
+ * `anatomist/capture-layout-tree.spec.ts` both carry matching regression
+ * cases (searchable by the test name "prefers a higher-priority
+ * selector...") specifically so that fixing one side's resolution logic
+ * without the other shows up as a spec gap, not a silent divergence.
  * @module
  */
 

@@ -229,6 +229,37 @@ describe('extractMainContentsFromDocument', () => {
 		expect(result.main?.id).toBe('main');
 	});
 
+	it('prefers the earlier-listed selector when two selectors both match different elements', () => {
+		const result = extract(`
+			<html><body>
+				<div class="main">Wrong</div>
+				<div id="main">Right</div>
+			</body></html>
+		`);
+
+		expect(result.main?.id).toBe('main');
+	});
+
+	it('still returns DOM-order-first match among fallback selectors (fallback list is not priority-ordered per element)', () => {
+		// Both #wrapperMain and #innerMain match the same fallback selector
+		// (`[id*="main" i]`), so — unlike the priority list above — there is
+		// no higher/lower priority to arbitrate between them. `querySelector`
+		// returns whichever matches first in document order, which is the
+		// outer wrapper here. This is accepted, existing behavior: the
+		// priority-list fix only orders *between* selectors in the array,
+		// not among multiple elements matching the *same* selector.
+		const result = extract(`
+			<html><body>
+				<div id="wrapperMain">
+					<p>breadcrumb</p>
+					<div id="innerMain">Inner</div>
+				</div>
+			</body></html>
+		`);
+
+		expect(result.main?.id).toBe('wrapperMain');
+	});
+
 	it('uses Phase-2 class*=main when Phase-1 finds nothing', () => {
 		const result = extract(
 			'<html><body><div class="page-main-area">Phase two</div></body></html>',
