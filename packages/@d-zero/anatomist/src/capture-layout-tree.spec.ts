@@ -60,6 +60,31 @@ describe('captureLayoutTree', () => {
 		expect(result.root?.children[0]?.tagName).toBe('P');
 	});
 
+	it('prefers a higher-priority selector even when it matches later in DOM order', () => {
+		const doc = createDocument(
+			'<body><div class="main" data-rect="0,0,1,1">Wrong</div>' +
+				'<main id="page" data-rect="0,0,800,600">Right</main></body>',
+		);
+
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.mainSelector).toBe('main#page');
+	});
+
+	it('prefers a nested higher-priority match over its lower-priority ancestor wrapper', () => {
+		const doc = createDocument(
+			'<body><div class="main" data-rect="0,0,800,600">' +
+				'<p data-rect="0,0,100,20">breadcrumb</p>' +
+				'<main id="page" data-rect="0,20,400,580">Real main</main>' +
+				'<div id="aside" data-rect="400,20,400,580">Sidebar</div>' +
+				'</div></body>',
+		);
+
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.mainSelector).toBe('main#page');
+	});
+
 	it('falls back to the fallback selector list when the priority list has no match', () => {
 		const doc = createDocument(
 			'<body><div id="primaryMain" data-rect="0,0,800,600">Fallback</div></body>',

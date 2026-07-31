@@ -117,12 +117,27 @@ export function captureLayoutTree(
 			}
 		}
 
+		// Tried one at a time, in priority order, rather than joined into a
+		// single `querySelector(selectors.join(','))` call: a CSS group
+		// selector matches whichever selector is first in *document order*,
+		// not whichever is first in this array — an ancestor wrapper matching
+		// a low-priority selector (e.g. `#contents`) would win over a
+		// descendant matching a higher-priority one (e.g. `#main`) just
+		// because it appears earlier in the DOM. Querying one selector at a
+		// time makes this array's order the actual priority.
 		let element: Element | null = null;
-		try {
-			element = doc.querySelector(selectors.join(','));
-		} catch {
-			// The built-in selector list is a fixed, known-valid constant, so
-			// this should be unreachable — but fail closed rather than throw.
+		for (const sel of selectors) {
+			try {
+				element = doc.querySelector(sel);
+			} catch {
+				// The built-in selector list is a fixed, known-valid constant,
+				// so this should be unreachable — but fail closed rather than
+				// aborting the whole priority list over one bad entry.
+				continue;
+			}
+			if (element) {
+				break;
+			}
 		}
 
 		if (element) {
