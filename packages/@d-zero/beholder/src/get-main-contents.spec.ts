@@ -203,16 +203,30 @@ describe('extractMainContentsFromDocument', () => {
 		expect(result.wordCount).toBe(15);
 	});
 
-	it('returns first matching element in DOM order when multiple Phase-1 selectors match', () => {
+	it('prefers a higher-priority selector even when it matches later in DOM order', () => {
 		const result = extract(`
 			<html><body>
-				<main>Semantic main</main>
 				<div id="content">ID content</div>
+				<main>Semantic main</main>
 			</body></html>
 		`);
 
 		expect(result.main?.nodeName).toBe('MAIN');
 		expect(result.wordCount).toBe(12);
+	});
+
+	it('prefers a nested higher-priority match over its lower-priority ancestor wrapper', () => {
+		const result = extract(`
+			<html><body>
+				<div id="contents">
+					<p>breadcrumb</p>
+					<div id="main">Real main</div>
+					<div id="aside">Sidebar</div>
+				</div>
+			</body></html>
+		`);
+
+		expect(result.main?.id).toBe('main');
 	});
 
 	it('uses Phase-2 class*=main when Phase-1 finds nothing', () => {
