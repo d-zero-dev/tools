@@ -60,6 +60,58 @@ describe('captureLayoutTree', () => {
 		expect(result.root?.children[0]?.tagName).toBe('P');
 	});
 
+	it('prefers a higher-priority selector even when it matches later in DOM order', () => {
+		const doc = createDocument(
+			'<body><div class="main" data-rect="0,0,1,1">Wrong</div>' +
+				'<main id="page" data-rect="0,0,800,600">Right</main></body>',
+		);
+
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.mainSelector).toBe('main#page');
+	});
+
+	it('prefers a nested higher-priority match over its lower-priority ancestor wrapper', () => {
+		const doc = createDocument(
+			'<body><div class="main" data-rect="0,0,800,600">' +
+				'<p data-rect="0,0,100,20">breadcrumb</p>' +
+				'<main id="page" data-rect="0,20,400,580">Real main</main>' +
+				'<div id="aside" data-rect="400,20,400,580">Sidebar</div>' +
+				'</div></body>',
+		);
+
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.mainSelector).toBe('main#page');
+	});
+
+	it('skips an invalid selector in the priority list and keeps trying the rest', () => {
+		const doc = createDocument(
+			'<body><main id="page" data-rect="0,0,800,600">Right</main></body>',
+		);
+
+		const result = captureLayoutTree(
+			null,
+			['[[[invalid', ...SELECTORS],
+			FALLBACK_SELECTORS,
+			10,
+			doc,
+		);
+
+		expect(result.mainSelector).toBe('main#page');
+	});
+
+	it('prefers the earlier-listed selector when two selectors both match different elements', () => {
+		const doc = createDocument(
+			'<body><div class="main" data-rect="0,0,1,1">Wrong</div>' +
+				'<div id="main" data-rect="0,0,800,600">Right</div></body>',
+		);
+
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.mainSelector).toBe('div#main');
+	});
+
 	it('falls back to the fallback selector list when the priority list has no match', () => {
 		const doc = createDocument(
 			'<body><div id="primaryMain" data-rect="0,0,800,600">Fallback</div></body>',
@@ -68,6 +120,26 @@ describe('captureLayoutTree', () => {
 		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
 
 		expect(result.mainSelector).toBe('div#primaryMain');
+	});
+
+	it('still returns DOM-order-first match among fallback selectors (fallback list is not priority-ordered per element)', () => {
+		const doc = createDocument(
+			'<body><div id="wrapperMain" data-rect="0,0,800,600">' +
+				'<p data-rect="0,0,100,20">breadcrumb</p>' +
+				'<div id="innerMain" data-rect="0,20,800,580">Inner</div>' +
+				'</div></body>',
+		);
+
+		// Both #wrapperMain and #innerMain match the same fallback selector
+		// (`[id*="main" i]`), so — unlike the priority list above — there is
+		// no higher/lower priority to arbitrate between them. `querySelector`
+		// returns whichever matches first in document order, which is the
+		// outer wrapper here. This is accepted, existing behavior: the
+		// priority-list fix only orders *between* selectors in the array,
+		// not among multiple elements matching the *same* selector.
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.mainSelector).toBe('div#wrapperMain');
 	});
 
 	it('tries the explicit mainContentSelector before the priority list', () => {

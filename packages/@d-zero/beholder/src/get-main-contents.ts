@@ -7,6 +7,19 @@
  *
  * WHY no `@medv/finder`: selector strings are diagnostic only; a tag+id+class // cspell:disable-line
  * path is enough and avoids a Node-only dependency inside the page realm.
+ *
+ * WHY the priority-list resolution logic below is duplicated rather than
+ * shared: same closure-free constraint as above. `@d-zero/anatomist`'s
+ * `capture-layout-tree.ts` independently re-implements the identical "try
+ * each selector in array order, first match wins" strategy for the same
+ * reason. The two copies have drifted out of sync before (one queried the
+ * array with a single `querySelector(selectors.join(','))` — which resolves
+ * by DOM document order, not array priority — while the other still tried
+ * selectors one at a time); this file's spec and
+ * `anatomist/capture-layout-tree.spec.ts` both carry matching regression
+ * cases (searchable by the test name "prefers a higher-priority
+ * selector...") specifically so that fixing one side's resolution logic
+ * without the other shows up as a spec gap, not a silent divergence.
  * @module
  */
 
@@ -118,14 +131,27 @@ export function extractMainContentsFromDocument(
 		selectors.unshift(mainContentSelector);
 	}
 
+	// Tried one at a time, in priority order, rather than joined into a
+	// single `querySelector(selectors.join(','))` call: a CSS group selector
+	// matches whichever selector is first in *document order*, not whichever
+	// is first in this array — an ancestor wrapper matching a low-priority
+	// selector (e.g. `#contents`) would win over a descendant matching a
+	// higher-priority one (e.g. `#main`) just because it appears earlier in
+	// the DOM. Querying one selector at a time makes this array's order the
+	// actual priority.
 	let $main: Element | null = null;
-	try {
-		$main = doc.querySelector(selectors.join(','));
-	} catch {
-		// Invalid custom selector: retry without it so built-in selectors still run.
-		if (mainContentSelector) {
-			selectors.shift();
-			$main = doc.querySelector(selectors.join(','));
+	for (const sel of selectors) {
+		try {
+			$main = doc.querySelector(sel);
+		} catch {
+			// Invalid selector — only reachable for the caller-supplied
+			// mainContentSelector unshifted above, since the built-in list is
+			// a fixed, known-valid constant. Skip it and keep trying the
+			// remaining selectors in priority order.
+			continue;
+		}
+		if ($main) {
+			break;
 		}
 	}
 

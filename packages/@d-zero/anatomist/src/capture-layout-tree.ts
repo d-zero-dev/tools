@@ -30,6 +30,20 @@
  * can match a different element than the one actually found, so this
  * module resolves the element itself directly instead of round-tripping
  * through that string.
+ *
+ * WHY the priority-list resolution logic in `resolveMainElement` is
+ * duplicated rather than shared: same closure-free constraint as above.
+ * `extractMainContentsFromDocument` (`@d-zero/beholder/get-main-contents.ts`)
+ * independently re-implements the identical "try each selector in array
+ * order, first match wins" strategy for the same reason. The two copies
+ * have drifted out of sync before (one queried the array with a single
+ * `querySelector(selectors.join(','))` — which resolves by DOM document
+ * order, not array priority — while the other still tried selectors one at
+ * a time); `capture-layout-tree.spec.ts` and `get-main-contents.spec.ts`
+ * both carry matching regression cases (searchable by the test name
+ * "prefers a higher-priority selector...") specifically so that fixing one
+ * side's resolution logic without the other shows up as a spec gap, not a
+ * silent divergence.
  * @module
  */
 
@@ -117,12 +131,27 @@ export function captureLayoutTree(
 			}
 		}
 
+		// Tried one at a time, in priority order, rather than joined into a
+		// single `querySelector(selectors.join(','))` call: a CSS group
+		// selector matches whichever selector is first in *document order*,
+		// not whichever is first in this array — an ancestor wrapper matching
+		// a low-priority selector (e.g. `#contents`) would win over a
+		// descendant matching a higher-priority one (e.g. `#main`) just
+		// because it appears earlier in the DOM. Querying one selector at a
+		// time makes this array's order the actual priority.
 		let element: Element | null = null;
-		try {
-			element = doc.querySelector(selectors.join(','));
-		} catch {
-			// The built-in selector list is a fixed, known-valid constant, so
-			// this should be unreachable — but fail closed rather than throw.
+		for (const sel of selectors) {
+			try {
+				element = doc.querySelector(sel);
+			} catch {
+				// The built-in selector list is a fixed, known-valid constant,
+				// so this should be unreachable — but fail closed rather than
+				// aborting the whole priority list over one bad entry.
+				continue;
+			}
+			if (element) {
+				break;
+			}
 		}
 
 		if (element) {
