@@ -14,7 +14,9 @@
 			"types": "./dist/print.d.ts"
 		}
 	},
-	"bin": "./dist/cli.js",
+	"bin": {
+		"print": "dist/cli.js"
+	},
 	"files": [
 		"dist"
 	],

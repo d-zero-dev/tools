@@ -14,7 +14,9 @@
 			"types": "./dist/a11y-check.d.ts"
 		}
 	},
-	"bin": "./dist/cli.js",
+	"bin": {
+		"a11y-check": "dist/cli.js"
+	},
 	"files": [
 		"dist"
 	],
