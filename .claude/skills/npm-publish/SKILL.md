@@ -22,6 +22,7 @@ disable-model-invocation: true
 | `packages/@d-zero/a11y-check-axe-scenario` | `@d-zero/a11y-check-axe-scenario` |
 | `packages/@d-zero/a11y-check-core` | `@d-zero/a11y-check-core` |
 | `packages/@d-zero/a11y-check-scenarios` | `@d-zero/a11y-check-scenarios` |
+| `packages/@d-zero/anatomist` | `@d-zero/anatomist` |
 | `packages/@d-zero/archaeologist` | `@d-zero/archaeologist` |
 | `packages/@d-zero/backlog-projects` | `@d-zero/backlog-projects` |
 | `packages/@d-zero/beholder` | `@d-zero/beholder` |
@@ -175,7 +176,7 @@ gh run watch --exit-status
 
 ## 11. publish 結果の検証
 
-workflow が success でも publish が意図通りとは限らない。**「対象パッケージ」の全 28 パッケージについて**実際の npm 上の状態を確認する。
+workflow が success でも publish が意図通りとは限らない。**「対象パッケージ」の全 29 パッケージについて**実際の npm 上の状態を確認する。
 
 ```bash
 npm view <package> version
@@ -188,7 +189,7 @@ npm view <package> dist-tags
 - dist-tag が手順 10 のロジック通りか（正式リリースは `latest`、プレリリースは `alpha` / `beta` / `rc` / `next`）
 - provenance が付与されているか（npm の該当バージョンページ、または `npm view <package> --json` の `dist.attestations`）
 
-independent モードでは**一部のパッケージだけ publish される（部分 publish）**ことがある。28 パッケージ全てを個別に確認し、漏れがあればユーザーに報告する。
+independent モードでは**一部のパッケージだけ publish される（部分 publish）**ことがある。29 パッケージ全てを個別に確認し、漏れがあればユーザーに報告する。
 
 **ここが success の判定点**。npm 上の状態を確認するまでリリース完了と判断してはいけない。
 
