@@ -22,7 +22,9 @@
 			"types": "./dist/capture-layout.d.ts"
 		}
 	},
-	"bin": "./dist/cli.js",
+	"bin": {
+		"anatomist": "dist/cli.js"
+	},
 	"files": [
 		"dist"
 	],

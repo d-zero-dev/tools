@@ -38,7 +38,9 @@
 			"types": "./dist/build-cluster-reason.d.ts"
 		}
 	},
-	"bin": "./dist/cli.js",
+	"bin": {
+		"page-cluster": "dist/cli.js"
+	},
 	"files": [
 		"dist"
 	],
