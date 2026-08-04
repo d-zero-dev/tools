@@ -73,11 +73,12 @@ main 要素が見つからなかった場合は `mainSelector: null, root: null`
 
 サブパスエクスポート構成。
 
-| import パス                              | 提供関数                                                                       |
+| import パス                              | 提供 API                                                                       |
 | ---------------------------------------- | ------------------------------------------------------------------------------ |
 | `@d-zero/anatomist`                      | `analyzePageLayout` — 1 URL を複数ビューポートで解析するメインエントリー       |
 | `@d-zero/anatomist/capture-layout`       | `captureLayout` — Puppeteer の `Page` から main 配下の座標・スタイルを採取する |
 | `@d-zero/anatomist/classify-layout-tree` | `classifyLayoutTree` — 採取済みツリーからレイアウトパターンを判定する純粋関数  |
+| `@d-zero/anatomist/types`                | 型のみ — `LayoutAnalysisResult` / `ViewportSpec` / `LayoutBlock` 等            |
 
 ```ts
 import puppeteer from 'puppeteer';
