@@ -20,6 +20,9 @@
 		"./capture-layout": {
 			"import": "./dist/capture-layout.js",
 			"types": "./dist/capture-layout.d.ts"
+		},
+		"./types": {
+			"types": "./dist/types.d.ts"
 		}
 	},
 	"bin": {
