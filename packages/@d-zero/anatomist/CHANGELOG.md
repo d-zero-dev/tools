@@ -1,0 +1,16 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# 0.2.0 (2026-08-04)
+
+### Bug Fixes
+
+- **anatomist:** expose types via ./types subpath export ([9b50066](https://github.com/d-zero-dev/tools/commit/9b50066459674a66b990f0c6d9584a7f9b0ff00d)), closes [#938](https://github.com/d-zero-dev/tools/issues/938)
+- **anatomist:** resolve main-content selectors by priority, not DOM order ([8039e0a](https://github.com/d-zero-dev/tools/commit/8039e0aa2f50c3247b46fb0f286cb2a082e96180))
+- **repo:** normalize bin path to survive npm 11 auto-correction ([bd0d615](https://github.com/d-zero-dev/tools/commit/bd0d6159d06a737ea7e781e52b0f8d6b9e02d10a))
+
+### Features
+
+- **anatomist:** add package classifying main-content layout from box geometry ([1b37c2b](https://github.com/d-zero-dev/tools/commit/1b37c2b82be65ffc54bcfc375dc6080a9737eb36))

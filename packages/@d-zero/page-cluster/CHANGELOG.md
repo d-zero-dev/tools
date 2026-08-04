@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.4](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.3...@d-zero/page-cluster@0.5.4) (2026-08-04)
+
+### Bug Fixes
+
+- **repo:** normalize bin path to survive npm 11 auto-correction ([bd0d615](https://github.com/d-zero-dev/tools/commit/bd0d6159d06a737ea7e781e52b0f8d6b9e02d10a))
+
 ## [0.5.3](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.2...@d-zero/page-cluster@0.5.3) (2026-07-29)
 
 ### Bug Fixes

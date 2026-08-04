@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@4.1.1...@d-zero/beholder@4.2.0) (2026-08-04)
+
+### Bug Fixes
+
+- **beholder:** resolve main-content selectors by priority, not DOM order ([7f715df](https://github.com/d-zero-dev/tools/commit/7f715df4b5f9aeb608bb0a0c0c45f1b1e4d87736))
+
+### Features
+
+- **beholder:** export main-content selector lists as shared constants ([5dae5c5](https://github.com/d-zero-dev/tools/commit/5dae5c51ec6b0a0ea08706dadbbce85efe35ac69))
+
 ## [4.1.1](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@4.1.0...@d-zero/beholder@4.1.1) (2026-07-29)
 
 **Note:** Version bump only for package @d-zero/beholder

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.16](https://github.com/d-zero-dev/tools/compare/@d-zero/backlog-projects@0.6.15...@d-zero/backlog-projects@0.6.16) (2026-08-04)
+
+### Bug Fixes
+
+- **repo:** normalize bin path to survive npm 11 auto-correction ([bd0d615](https://github.com/d-zero-dev/tools/commit/bd0d6159d06a737ea7e781e52b0f8d6b9e02d10a))
+
 ## [0.6.15](https://github.com/d-zero-dev/tools/compare/@d-zero/backlog-projects@0.6.14...@d-zero/backlog-projects@0.6.15) (2026-07-29)
 
 **Note:** Version bump only for package @d-zero/backlog-projects

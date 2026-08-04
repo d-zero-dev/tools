@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.12](https://github.com/d-zero-dev/tools/compare/@d-zero/filematch@1.2.11...@d-zero/filematch@1.2.12) (2026-08-04)
+
+### Bug Fixes
+
+- **repo:** normalize bin path to survive npm 11 auto-correction ([bd0d615](https://github.com/d-zero-dev/tools/commit/bd0d6159d06a737ea7e781e52b0f8d6b9e02d10a))
+
 ## [1.2.11](https://github.com/d-zero-dev/tools/compare/@d-zero/filematch@1.2.10...@d-zero/filematch@1.2.11) (2026-07-27)
 
 **Note:** Version bump only for package @d-zero/filematch

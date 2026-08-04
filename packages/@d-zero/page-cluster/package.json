@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/page-cluster",
-	"version": "0.5.3",
+	"version": "0.5.4",
 	"description": "Clusters crawled HTML pages by DOM-structure similarity — assigns the same key to pages sharing a template, ignoring text content. CLI-first, with library APIs.",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -38,9 +38,7 @@
 			"types": "./dist/build-cluster-reason.d.ts"
 		}
 	},
-	"bin": {
-		"page-cluster": "dist/cli.js"
-	},
+	"bin": "dist/cli.js",
 	"files": [
 		"dist"
 	],

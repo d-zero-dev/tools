@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/backlog-projects",
-	"version": "0.6.15",
+	"version": "0.6.16",
 	"description": "A manipulating Backlog projects library",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -11,9 +11,7 @@
 		"node": ">=22.1.0"
 	},
 	"type": "module",
-	"bin": {
-		"backlog-projects": "dist/cli.js"
-	},
+	"bin": "dist/cli.js",
 	"exports": {
 		".": {
 			"import": "./dist/index.js"

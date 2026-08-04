@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/filematch",
-	"version": "1.2.11",
+	"version": "1.2.12",
 	"description": "A simple file matching library",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -16,9 +16,7 @@
 			"types": "./dist/index.d.ts"
 		}
 	},
-	"bin": {
-		"filematch": "dist/cli.js"
-	},
+	"bin": "dist/cli.js",
 	"files": [
 		"dist"
 	],
