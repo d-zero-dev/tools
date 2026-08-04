@@ -73,6 +73,7 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 - **`@d-zero/shared` はサブパスエクスポート**: `@d-zero/shared/parse-url` のような形式で import すること（ルート import は不可）
 - **exports フィールドを壊さない**: package.json の `exports` を変更する場合は差分のみを追記し、既存パスを削除しない
 - 1関数1ファイルを基本とし、`index.ts` の作成は避ける
+- **CLI パッケージの `bin` は先頭 `./` なしのオブジェクト形式で書く**: `"bin": { "コマンド名": "dist/cli.js" }`。文字列形式や先頭 `./` 付きのパス（`"./dist/cli.js"`）は、npm CLI 11.17 以降の `npm publish` で「script name ... was invalid and removed」という警告とともに `bin` エントリごと削除され、CLI が使えないパッケージとして公開されてしまう。publish 前に `npm pack --dry-run` で `bin` 警告が出ないことを確認する（`npm publish --dry-run` は公開済みバージョンとの重複チェックが先に走り、tarball 内容の警告確認まで到達しないことがある）
 
 ## セキュリティ
 
