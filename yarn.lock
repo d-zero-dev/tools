@@ -1123,7 +1123,7 @@ __metadata:
     front-matter: "npm:4.0.2"
     minimist: "npm:1.2.8"
   bin:
-    a11y-check: ./dist/cli.js
+    a11y-check: dist/cli.js
   languageName: unknown
   linkType: soft
 
@@ -1137,7 +1137,7 @@ __metadata:
     "@d-zero/shared": "npm:0.22.3"
     puppeteer: "npm:25.3.0"
   bin:
-    anatomist: ./dist/cli.js
+    anatomist: dist/cli.js
   languageName: unknown
   linkType: soft
 
@@ -1168,7 +1168,7 @@ __metadata:
     puppeteer: "npm:25.3.0"
     strip-ansi: "npm:7.2.0"
   bin:
-    archaeologist: ./dist/cli.js
+    archaeologist: dist/cli.js
   languageName: unknown
   linkType: soft
 
@@ -1186,7 +1186,7 @@ __metadata:
     enquirer: "npm:2.4.1"
     minimist: "npm:1.2.8"
   bin:
-    backlog-projects: ./dist/cli.js
+    backlog-projects: dist/cli.js
   languageName: unknown
   linkType: soft
 
@@ -1290,7 +1290,7 @@ __metadata:
     follow-redirects: "npm:1.16.0"
     minimist: "npm:1.2.8"
   bin:
-    filematch: ./dist/cli.js
+    filematch: dist/cli.js
   languageName: unknown
   linkType: soft
 
@@ -1368,7 +1368,7 @@ __metadata:
     "@d-zero/shared": "npm:0.22.3"
     htmlparser2: "npm:12.0.0"
   bin:
-    page-cluster: ./dist/cli.js
+    page-cluster: dist/cli.js
   languageName: unknown
   linkType: soft
 
@@ -1402,7 +1402,7 @@ __metadata:
     minimist: "npm:1.2.8"
     puppeteer: "npm:25.3.0"
   bin:
-    print: ./dist/cli.js
+    print: dist/cli.js
   languageName: unknown
   linkType: soft
 
@@ -1517,7 +1517,7 @@ __metadata:
     minimist: "npm:1.2.8"
     puppeteer: "npm:25.3.0"
   bin:
-    replicator: ./dist/cli.js
+    replicator: dist/cli.js
   languageName: unknown
   linkType: soft
 
