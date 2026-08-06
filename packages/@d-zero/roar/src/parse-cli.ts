@@ -10,6 +10,7 @@ import yargsParser from 'yargs-parser';
  *   type: 'string',
  *   shortFlag: 'u',
  *   desc: 'Target URL',
+ *   valueName: 'URL',
  *   isRequired: true,
  * };
  * ```
@@ -20,6 +21,16 @@ interface StringFlag {
 	readonly shortFlag?: string;
 	/** Description shown in `--help` output. */
 	readonly desc?: string;
+	/**
+	 * Value placeholder shown in `--help` output (e.g. `'URL'` renders
+	 * `--url <URL>`). Defaults to `'value'` when omitted.
+	 */
+	readonly valueName?: string;
+	/**
+	 * Section heading this flag is listed under in `--help` output.
+	 * Flags without a group are listed first under `Options:`.
+	 */
+	readonly group?: string;
 	/** Default value applied when the flag is omitted. */
 	readonly default?: string;
 	/** When `true`, the flag accepts multiple values and produces a `string[]`. */
@@ -37,6 +48,16 @@ interface NumberFlag {
 	readonly shortFlag?: string;
 	/** Description shown in `--help` output. */
 	readonly desc?: string;
+	/**
+	 * Value placeholder shown in `--help` output (e.g. `'ms'` renders
+	 * `--interval <ms>`). Defaults to `'n'` when omitted.
+	 */
+	readonly valueName?: string;
+	/**
+	 * Section heading this flag is listed under in `--help` output.
+	 * Flags without a group are listed first under `Options:`.
+	 */
+	readonly group?: string;
 	/** Default value applied when the flag is omitted. */
 	readonly default?: number;
 	/** When `true`, the flag accepts multiple values and produces a `number[]`. */
@@ -53,6 +74,11 @@ interface BooleanFlag {
 	readonly shortFlag?: string;
 	/** Description shown in `--help` output. */
 	readonly desc?: string;
+	/**
+	 * Section heading this flag is listed under in `--help` output.
+	 * Flags without a group are listed first under `Options:`.
+	 */
+	readonly group?: string;
 	/** Default value applied when the flag is omitted. */
 	readonly default?: boolean;
 }
@@ -104,12 +130,49 @@ export type InferFlags<F extends AnyFlags> = {
 // ---- Command definition ----
 
 /**
+ * Help-only metadata for a sub-command nested under a command
+ * (e.g. `my-cli query pages`).
+ *
+ * roar does not parse or dispatch sub-commands — the host CLI keeps
+ * receiving them as positional arguments and dispatches on its own.
+ * This metadata only drives `--help` rendering: the command help lists
+ * sub-commands, and `my-cli <command> <sub-command> --help` renders a
+ * help page filtered to the flags that apply to that sub-command.
+ * @template F - Flag definitions record of the parent command
+ * @example
+ * ```ts
+ * const pagesSubCommand: SubCommandDef = {
+ *   desc: 'List pages in the archive',
+ *   usage: '<file> pages [options]',
+ *   flags: ['limit', 'offset', 'status'],
+ * };
+ * ```
+ */
+export interface SubCommandDef<F extends AnyFlags = AnyFlags> {
+	/** Human-readable description shown in the sub-command list. */
+	readonly desc: string;
+	/**
+	 * Usage line(s) for this sub-command's filtered help, written relative
+	 * to the program name and command name (both are prepended automatically).
+	 * When omitted, a generic `<sub-command> [options]` line is rendered.
+	 */
+	readonly usage?: string | readonly string[];
+	/**
+	 * Keys of the parent command's `flags` that apply to this sub-command.
+	 * Flags not referenced by any sub-command are treated as common to all
+	 * sub-commands and always shown. When omitted, every flag applies.
+	 */
+	readonly flags?: readonly (keyof F & string)[];
+}
+
+/**
  * Defines a single CLI sub-command with its description and optional flags.
  * @template F - Flag definitions record for this command
  * @example
  * ```ts
  * const crawlCommand = {
  *   desc: 'Crawl a website',
+ *   usage: ['<URL> [<URL>...] [options]', '<archive> --append <URL> [options]'],
  *   flags: {
  *     depth: { type: 'number' as const, shortFlag: 'd', desc: 'Max crawl depth', default: 10 },
  *     verbose: { type: 'boolean' as const, shortFlag: 'v', desc: 'Enable verbose output' },
@@ -120,8 +183,20 @@ export type InferFlags<F extends AnyFlags> = {
 export interface CommandDef<F extends AnyFlags = AnyFlags> {
 	/** Human-readable description of the command. */
 	readonly desc: string;
+	/**
+	 * Usage line(s) shown in `--help`, written relative to the program name
+	 * and command name (both are prepended automatically). Multiple entries
+	 * render one `Usage:` block line each — useful for mutually exclusive
+	 * invocation modes. When omitted, a generic `[options]` line is rendered.
+	 */
+	readonly usage?: string | readonly string[];
 	/** Flag definitions. When omitted, the command accepts no flags. */
 	readonly flags?: F;
+	/**
+	 * Help-only sub-command metadata. See {@link SubCommandDef} for how it
+	 * changes `--help` rendering. Parsing behaviour is unaffected.
+	 */
+	readonly subCommands?: Readonly<Record<string, SubCommandDef<F>>>;
 }
 
 // ---- Settings and result types ----
@@ -131,7 +206,11 @@ export interface CommandDef<F extends AnyFlags = AnyFlags> {
  * @template Commands - Record of command name to {@link CommandDef}
  */
 interface RoarSettings<Commands extends Record<string, CommandDef>> {
-	/** CLI program name shown in help text (e.g. `"my-cli"`). */
+	/**
+	 * CLI program name shown in help text. Use the canonical invocation
+	 * (e.g. the full `npx`-prefixed command for a scoped package) rather
+	 * than the bare binary name when the CLI is not expected to be on `PATH`.
+	 */
 	name: string;
 	/**
 	 * Program version string (e.g. `"1.2.3"`).
@@ -151,6 +230,9 @@ interface RoarSettings<Commands extends Record<string, CommandDef>> {
 	/**
 	 * Called when no command or an unknown command is specified.
 	 * Return `true` to print help text to stderr before exiting.
+	 *
+	 * `--help` / `-h` as the first argument is not an error: it prints the
+	 * same help to stdout and exits with code `0` without calling this.
 	 */
 	onError?: (error: Error) => boolean;
 }
@@ -177,12 +259,233 @@ type RoarResult<Commands extends Record<string, CommandDef>> = {
 // ---- Help text generation ----
 
 /**
+ * Layout constants for help rendering.
+ *
+ * WHY a max width: unbounded lines follow the terminal width, which makes
+ * long flag descriptions unreadable on wide displays; 100 columns keeps
+ * the text measure comfortable while still using wide terminals.
+ * WHY a label column cap: a single long flag (e.g.
+ * `--image-file-size-threshold <bytes>`) must not push every description
+ * across the screen — over-long labels get their own line instead.
+ */
+const HELP_MAX_WIDTH = 100;
+const HELP_MIN_WIDTH = 40;
+const LABEL_COLUMN_CAP = 32;
+const INDENT = '  ';
+const COLUMN_GAP = '  ';
+
+/**
+ * Resolves the effective help width from the current terminal.
+ * @returns Column count clamped to a readable range
+ */
+function helpWidth(): number {
+	const columns = process.stdout.columns ?? 80;
+	return Math.min(Math.max(columns, HELP_MIN_WIDTH), HELP_MAX_WIDTH);
+}
+
+/**
+ * Wraps text at word boundaries to fit the given width.
+ * @param text - Text to wrap (single logical line)
+ * @param width - Maximum characters per line (at least one word per line)
+ * @returns Wrapped lines; `['']` for empty text so callers always get a line
+ */
+function wrapText(text: string, width: number): string[] {
+	const words = text.split(' ').filter((word) => word.length > 0);
+	if (words.length === 0) {
+		return [''];
+	}
+	const lines: string[] = [];
+	let current = '';
+	for (const word of words) {
+		if (current.length === 0) {
+			current = word;
+		} else if (current.length + 1 + word.length <= width) {
+			current += ` ${word}`;
+		} else {
+			lines.push(current);
+			current = word;
+		}
+	}
+	lines.push(current);
+	return lines;
+}
+
+/** A single label/description row in a two-column help section. */
+interface HelpRow {
+	readonly label: string;
+	readonly desc: string;
+}
+
+/**
+ * Renders label/description rows as two aligned columns.
+ *
+ * The label column width adapts to the longest label, capped at
+ * {@link LABEL_COLUMN_CAP}; labels beyond the cap are rendered on their own
+ * line with the description continuing on the next line. Descriptions wrap
+ * at the terminal width with a hanging indent aligned to the description
+ * column.
+ * @param rows - Rows to render
+ * @returns Formatted lines
+ */
+function renderRows(rows: readonly HelpRow[]): string[] {
+	const labelWidth = Math.min(
+		Math.max(...rows.map((row) => row.label.length), 0),
+		LABEL_COLUMN_CAP,
+	);
+	const descColumn = INDENT.length + labelWidth + COLUMN_GAP.length;
+	const descWidth = Math.max(helpWidth() - descColumn, 20);
+	const lines: string[] = [];
+	for (const row of rows) {
+		const descLines = wrapText(row.desc, descWidth);
+		if (row.label.length > labelWidth) {
+			lines.push(`${INDENT}${row.label}`);
+			for (const descLine of descLines) {
+				if (descLine.length > 0) {
+					lines.push(`${' '.repeat(descColumn)}${descLine}`);
+				}
+			}
+			continue;
+		}
+		const [first = '', ...rest] = descLines;
+		const firstLine = `${INDENT}${row.label.padEnd(labelWidth)}${COLUMN_GAP}${first}`;
+		lines.push(firstLine.trimEnd());
+		for (const descLine of rest) {
+			lines.push(`${' '.repeat(descColumn)}${descLine}`);
+		}
+	}
+	return lines;
+}
+
+/**
  * Converts a camelCase string to kebab-case for CLI flag display.
  * @param str - camelCase identifier (e.g. `"maxDepth"`)
  * @returns kebab-case string (e.g. `"max-depth"`)
  */
 function camelToKebab(str: string): string {
 	return str.replaceAll(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
+}
+
+/**
+ * Builds the label column text for a flag (short alias, long name, and
+ * value placeholder).
+ * @param key - camelCase flag key
+ * @param def - Flag definition
+ * @returns Label such as `-I, --interval <ms>` or `    --verbose`
+ */
+function flagLabel(key: string, def: FlagDef): string {
+	const kebab = camelToKebab(key);
+	const short = def.shortFlag ? `-${def.shortFlag}, ` : '    ';
+	let label = `${short}--${kebab}`;
+	if (def.type !== 'boolean') {
+		const valueName = def.valueName ?? (def.type === 'number' ? 'n' : 'value');
+		label += ` <${valueName}>`;
+		if ('isMultiple' in def && def.isMultiple) {
+			label += '...';
+		}
+	}
+	return label;
+}
+
+/**
+ * Builds the description column text for a flag (description plus
+ * default-value suffix).
+ * @param def - Flag definition
+ * @returns Description such as `Number of parallel scraping (default: 3)`
+ */
+function flagDesc(def: FlagDef): string {
+	const desc = def.desc ?? '';
+	const defaultStr =
+		'default' in def && def.default !== undefined ? ` (default: ${def.default})` : '';
+	return `${desc}${defaultStr}`.trim();
+}
+
+/**
+ * Renders flags as grouped two-column sections. Ungrouped flags come first
+ * under `Options:`; grouped flags follow under their `group` heading in
+ * first-appearance order.
+ * @param flags - Flag definitions to render
+ * @param keys - Flag keys to include, in definition order
+ * @returns Formatted lines including section headings
+ */
+function renderFlagSections<F extends AnyFlags>(
+	flags: F,
+	keys: readonly string[],
+): string[] {
+	const sections = new Map<string, HelpRow[]>();
+	for (const key of keys) {
+		const def = flags[key];
+		if (!def) {
+			continue;
+		}
+		const group = def.group ?? 'Options';
+		const rows = sections.get(group) ?? [];
+		rows.push({ label: flagLabel(key, def), desc: flagDesc(def) });
+		sections.set(group, rows);
+	}
+	const lines: string[] = [];
+	const ungrouped = sections.get('Options');
+	if (ungrouped) {
+		lines.push('Options:', ...renderRows(ungrouped));
+	}
+	for (const [group, rows] of sections) {
+		if (group === 'Options') {
+			continue;
+		}
+		if (lines.length > 0) {
+			lines.push('');
+		}
+		lines.push(`${group}:`, ...renderRows(rows));
+	}
+	return lines;
+}
+
+/**
+ * Renders a `Usage:` block from usage entries, prepending the given prefix
+ * (program name and command name) to each entry.
+ * @param prefix - Invocation prefix (e.g. `"my-cli crawl"`)
+ * @param usage - Usage entries relative to the prefix
+ * @returns Formatted lines
+ */
+function renderUsage(prefix: string, usage: readonly string[]): string[] {
+	return usage.map((entry, index) =>
+		index === 0 ? `Usage: ${prefix} ${entry}` : `       ${prefix} ${entry}`,
+	);
+}
+
+/**
+ * Normalizes a `string | readonly string[]` usage value to an array.
+ * @param usage - Usage value from a command or sub-command definition
+ * @param fallback - Entry used when the definition has no usage
+ * @returns Usage entries
+ */
+function usageEntries(
+	usage: string | readonly string[] | undefined,
+	fallback: string,
+): readonly string[] {
+	if (usage === undefined) {
+		return [fallback];
+	}
+	return typeof usage === 'string' ? [usage] : usage;
+}
+
+/**
+ * Collects the flag keys that are common to all sub-commands: keys not
+ * referenced by any sub-command's `flags` list.
+ *
+ * WHY implicit: listing common flags (e.g. `--pretty`) on every one of
+ * dozens of sub-commands would be pure noise in the definitions; a flag
+ * that no sub-command claims is by definition sub-command-agnostic.
+ * @param def - Command definition with sub-commands
+ * @returns Common flag keys in definition order
+ */
+function commonFlagKeys(def: CommandDef): string[] {
+	const referenced = new Set<string>();
+	for (const sub of Object.values(def.subCommands ?? {})) {
+		for (const key of sub.flags ?? []) {
+			referenced.add(key);
+		}
+	}
+	return Object.keys(def.flags ?? {}).filter((key) => !referenced.has(key));
 }
 
 /**
@@ -193,44 +496,85 @@ function camelToKebab(str: string): string {
 function generateHelp<Commands extends Record<string, CommandDef>>(
 	settings: RoarSettings<Commands>,
 ): string {
-	const lines: string[] = [
+	const rows: HelpRow[] = Object.entries(settings.commands).map(([name, def]) => ({
+		label: name,
+		desc: def.desc,
+	}));
+	return [
 		`Usage: ${settings.name} <command> [options]`,
 		'',
 		'Commands:',
-	];
-
-	for (const [name, def] of Object.entries(settings.commands)) {
-		lines.push(`  ${name.padEnd(16)} ${def.desc}`);
-	}
-
-	return lines.join('\n');
+		...renderRows(rows),
+		'',
+		`Run '${settings.name} <command> --help' for details on a command.`,
+	].join('\n');
 }
 
 /**
- * Generates per-command help text listing all available flags
- * with their short aliases, descriptions, and defaults.
- * @param name - CLI program name
- * @param commandName - The sub-command name
- * @param flags - Flag definitions for the command
+ * Generates per-command help text.
+ *
+ * Three shapes depending on the definition and the requested scope:
+ * - Plain command: usage block plus all flags in grouped sections.
+ * - Command with `subCommands`, no sub-command requested: usage block,
+ *   sub-command list, and only the flags common to all sub-commands,
+ *   with a hint pointing at per-sub-command help.
+ * - Sub-command requested: the sub-command's usage block and the flags
+ *   that apply to it (its own list plus the common flags).
+ * @param settings - The roar settings containing the program name
+ * @param commandName - The command name
+ * @param def - The command definition
+ * @param subCommandName - Sub-command to filter help to, when requested
  * @returns Formatted multi-line help string
  */
-function generateCommandHelp<F extends AnyFlags>(
-	name: string,
+function generateCommandHelp<Commands extends Record<string, CommandDef>>(
+	settings: RoarSettings<Commands>,
 	commandName: string,
-	flags: F,
+	def: CommandDef,
+	subCommandName?: string,
 ): string {
-	const lines: string[] = [`Usage: ${name} ${commandName} [options]`, '', 'Options:'];
+	const prefix = `${settings.name} ${commandName}`;
+	const flags = def.flags ?? {};
+	const allKeys = Object.keys(flags);
 
-	for (const [key, def] of Object.entries(flags)) {
-		const kebab = camelToKebab(key);
-		const short = def.shortFlag ? `-${def.shortFlag}, ` : '    ';
-		const flagStr = `${short}--${kebab}`;
-		const desc = def.desc ?? '';
-		const defaultStr =
-			'default' in def && def.default !== undefined ? ` (default: ${def.default})` : '';
-		lines.push(`  ${flagStr.padEnd(30)} ${desc}${defaultStr}`);
+	const subCommand =
+		subCommandName === undefined ? undefined : def.subCommands?.[subCommandName];
+	if (subCommand && subCommandName !== undefined) {
+		const common = new Set(commonFlagKeys(def));
+		const own = new Set(subCommand.flags ?? allKeys);
+		const keys = allKeys.filter((key) => own.has(key) || common.has(key));
+		const lines = [
+			...renderUsage(
+				prefix,
+				usageEntries(subCommand.usage, `${subCommandName} [options]`),
+			),
+			'',
+			...wrapText(subCommand.desc, helpWidth()),
+		];
+		if (keys.length > 0) {
+			lines.push('', ...renderFlagSections(flags, keys));
+		}
+		return lines.join('\n');
 	}
 
+	const lines = [...renderUsage(prefix, usageEntries(def.usage, '[options]'))];
+
+	if (def.subCommands) {
+		const rows: HelpRow[] = Object.entries(def.subCommands).map(([name, sub]) => ({
+			label: name,
+			desc: sub.desc,
+		}));
+		lines.push('', 'Sub-commands:', ...renderRows(rows));
+		const common = commonFlagKeys(def);
+		if (common.length > 0) {
+			lines.push('', ...renderFlagSections(flags, common));
+		}
+		lines.push('', `Run '${prefix} <sub-command> --help' for details on a sub-command.`);
+		return lines.join('\n');
+	}
+
+	if (allKeys.length > 0) {
+		lines.push('', ...renderFlagSections(flags, allKeys));
+	}
 	return lines.join('\n');
 }
 
@@ -318,7 +662,11 @@ function parseFlags<F extends AnyFlags>(
  *
  * A minimal CLI framework built on yargs-parser. It provides:
  * - Sub-command dispatch with typed flag inference
- * - Automatic `--help` / `-h` handling per command
+ * - Automatic `--help` / `-h` handling: at the top level it prints the
+ *   command list; after a command it prints that command's flags; when the
+ *   command defines `subCommands` and a sub-command name is present
+ *   (e.g. `my-cli query file.db pages --help`), it prints help filtered
+ *   to that sub-command. All help goes to stdout with exit code `0`.
  * - Automatic `--version` / `-v` handling at the top level when `version` is set
  * - camelCase flag names converted to kebab-case in help text
  * @template Commands - Record of command name to {@link CommandDef}
@@ -331,6 +679,7 @@ function parseFlags<F extends AnyFlags>(
  *   commands: {
  *     crawl: {
  *       desc: 'Crawl a website',
+ *       usage: '<URL> [options]',
  *       flags: {
  *         depth: { type: 'number', shortFlag: 'd', desc: 'Max depth', default: 10 },
  *       },
@@ -359,6 +708,12 @@ export function parseCli<const Commands extends Record<string, CommandDef>>(
 		process.exit(0);
 	}
 
+	if (command === '--help' || command === '-h') {
+		// eslint-disable-next-line no-console
+		console.log(generateHelp(settings));
+		process.exit(0);
+	}
+
 	if (!command || !(command in settings.commands)) {
 		if (settings.onError) {
 			const showHelp = settings.onError(new Error('No command specified'));
@@ -377,8 +732,14 @@ export function parseCli<const Commands extends Record<string, CommandDef>>(
 	const commandArgv = argv.slice(1);
 
 	if (commandArgv.includes('--help') || commandArgv.includes('-h')) {
+		const subCommandName = commandDef.subCommands
+			? commandArgv.find(
+					(arg) =>
+						!arg.startsWith('-') && Object.hasOwn(commandDef.subCommands ?? {}, arg),
+				)
+			: undefined;
 		// eslint-disable-next-line no-console
-		console.log(generateCommandHelp(settings.name, command, commandDef.flags ?? {}));
+		console.log(generateCommandHelp(settings, command, commandDef, subCommandName));
 		process.exit(0);
 	}
 
