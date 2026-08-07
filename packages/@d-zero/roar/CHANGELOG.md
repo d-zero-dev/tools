@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/d-zero-dev/tools/compare/@d-zero/roar@2.1.3...@d-zero/roar@2.2.0) (2026-08-07)
+
+### Features
+
+- **roar:** add usage, flag groups, and sub-command metadata to help rendering ([2489edc](https://github.com/d-zero-dev/tools/commit/2489edcb0f6a151923f08177d81fc52710031f96))
+
 ## [2.1.3](https://github.com/d-zero-dev/tools/compare/@d-zero/roar@2.1.2...@d-zero/roar@2.1.3) (2026-07-02)
 
 **Note:** Version bump only for package @d-zero/roar
