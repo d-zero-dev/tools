@@ -34,6 +34,7 @@ anatomist [options] < urls.txt > results.jsonl
 		"classList": ["cards"],
 		"boundingBox": { "x": 0, "y": 0, "width": 960, "height": 220 },
 		"innerHTML": "...",
+		"attributes": { "href": "/about/" },
 		"confidence": 0.8,
 		"signals": { "rowCount": 1, "childCount": 3 },
 		"children": [/* 同じ形の LayoutBlock が再帰的に続く */]
@@ -42,6 +43,8 @@ anatomist [options] < urls.txt > results.jsonl
 ```
 
 main 要素が見つからなかった場合は `mainSelector: null, root: null`。
+
+`attributes` はブロック自身のタグが持つ属性のうち、`href`/`src`/`srcset`/`action`/`alt`/`target`/`download` の固定allowlistのみを生値のまま（URL解決なし）保持する。属性が無ければ `{}`。`innerHTML` は子孫要素の属性を文字列としてそのまま含むが、ブロック自身のタグの属性は元々ここでしか取得できない — 特に、単一子ラッパーのcollapse（`--max-depth`とは別の、`layoutType: "leaf"` を生む折り畳み）により `<a>`/`<img>`/`<form>` 自身がブロックのルートタグになった場合、`href`/`src`/`action` はこの `attributes` 経由でしか読み取れない。
 
 `layoutType` は視覚的な配置パターン（座標から読み取れる見た目）を表し、CSS の実装手段（`flex` か `grid` か `inline-block` か）とは独立している。実装手段は常に `signals` に生値として残るので、両方を突き合わせられる。`leaf` は「子要素がなく判定不要」、`unknown` は「子要素はあるがどのパターンにも自信を持って割り当てられなかった」を意味し、両者は区別される。
 

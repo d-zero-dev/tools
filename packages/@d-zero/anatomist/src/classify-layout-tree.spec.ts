@@ -102,6 +102,27 @@ describe('classifyLayoutTree', () => {
 		expect(result.layoutType).toBe('leaf');
 	});
 
+	it('carries attributes over onto a leaf block verbatim', () => {
+		const root = mockNode({ attributes: { href: '/about/' }, children: [] });
+		const result = classifyLayoutTree(root);
+		expect(result.layoutType).toBe('leaf');
+		expect(result.attributes).toEqual({ href: '/about/' });
+	});
+
+	it('carries attributes over onto a classified (non-leaf) block verbatim', () => {
+		const children = [cell(0, 0, 100, 100), cell(120, 0, 100, 100)];
+		const root = mockNode({
+			attributes: { href: '/about/' },
+			boundingBox: { x: 0, y: 0, width: 220, height: 100 },
+			children,
+		});
+
+		const result = classifyLayoutTree(root);
+
+		expect(result.layoutType).toBe('horizontal-row');
+		expect(result.attributes).toEqual({ href: '/about/' });
+	});
+
 	it('does not hang on a long single-child wrapper chain (collapse safety bound)', () => {
 		let node = cell(0, 0, 100, 100, { id: 'deepest' });
 		for (let i = 0; i < 100; i++) {

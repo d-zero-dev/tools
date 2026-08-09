@@ -229,4 +229,44 @@ describe('captureLayoutTree', () => {
 			visibility: 'visible',
 		});
 	});
+
+	it('captures allowlisted attributes (href) verbatim on the node that owns them', () => {
+		const doc = createDocument(
+			'<body><main data-rect="0,0,100,100"><a href="/about/" data-rect="0,0,10,10">About</a></main></body>',
+		);
+
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.root?.children[0]?.attributes).toEqual({ href: '/about/' });
+	});
+
+	it('captures multiple allowlisted attributes on the same element (img src+alt)', () => {
+		const doc = createDocument(
+			'<body><main data-rect="0,0,100,100"><img src="/a.png" alt="A" data-rect="0,0,10,10"></main></body>',
+		);
+
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.root?.children[0]?.attributes).toEqual({ src: '/a.png', alt: 'A' });
+	});
+
+	it('omits non-allowlisted attributes (e.g. data-*) from the captured attributes bag', () => {
+		const doc = createDocument(
+			'<body><main data-rect="0,0,100,100"><div data-testid="x" data-rect="0,0,10,10"></div></main></body>',
+		);
+
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.root?.children[0]?.attributes).toEqual({});
+	});
+
+	it('captures an empty attributes bag for an element with no allowlisted attribute', () => {
+		const doc = createDocument(
+			'<body><main data-rect="0,0,100,100"><div data-rect="0,0,10,10"></div></main></body>',
+		);
+
+		const result = captureLayoutTree(null, SELECTORS, FALLBACK_SELECTORS, 10, doc);
+
+		expect(result.root?.children[0]?.attributes).toEqual({});
+	});
 });

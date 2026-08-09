@@ -30,6 +30,11 @@ function transformBlock(
 		classList: block.classList,
 		...(options.includeBoundingBox ? { boundingBox: block.boundingBox } : {}),
 		...(includeInnerHtml ? { innerHTML: block.innerHTML } : {}),
+		// Always included, unlike `innerHTML`/`boundingBox`: `attributes` is
+		// already bounded to a small fixed allowlist at capture time (see
+		// `capture-layout-tree.ts`'s `CAPTURED_ATTRIBUTES`), so it never
+		// grows large enough to need its own opt-out.
+		attributes: block.attributes ?? {},
 		confidence: block.confidence,
 		signals: block.signals,
 		children: block.children.map((child) => transformBlock(child, options)),

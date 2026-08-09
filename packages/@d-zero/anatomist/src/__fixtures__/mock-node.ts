@@ -14,6 +14,7 @@ export function mockNode(overrides: Partial<RawLayoutNode> = {}): RawLayoutNode 
 		boundingBox: { x: 0, y: 0, width: 100, height: 40 },
 		style: { display: 'block', float: 'none', position: 'static', visibility: 'visible' },
 		innerHTML: '',
+		attributes: {},
 		children: [],
 		...overrides,
 	};
