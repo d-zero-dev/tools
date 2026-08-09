@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/anatomist@0.2.0...@d-zero/anatomist@0.3.0) (2026-08-09)
+
+### Features
+
+- **anatomist:** capture href/src/action attributes on RawLayoutNode/LayoutBlock ([9ec9e41](https://github.com/d-zero-dev/tools/commit/9ec9e41ca85e0eb471013aacbc120d4b9c4a0ef1)), closes [d-zero-dev/tools#941](https://github.com/d-zero-dev/tools/issues/941)
+
 # 0.2.0 (2026-08-04)
 
 ### Bug Fixes

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.6](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.9.5...@d-zero/google-sheets@0.9.6) (2026-08-09)
+
+**Note:** Version bump only for package @d-zero/google-sheets
+
 ## [0.9.5](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.9.4...@d-zero/google-sheets@0.9.5) (2026-07-29)
 
 **Note:** Version bump only for package @d-zero/google-sheets
