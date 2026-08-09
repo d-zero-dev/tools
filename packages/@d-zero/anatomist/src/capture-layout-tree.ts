@@ -169,6 +169,33 @@ export function captureLayoutTree(
 	}
 
 	/**
+	 * Attributes copied verbatim (no URL resolution) onto a captured node's
+	 * own `attributes` field, when present on the element. Deliberately a
+	 * small, fixed allowlist rather than a full attribute dump: `data-*`/
+	 * `aria-*`/inline `style` etc. would bloat every node in a tree that can
+	 * be tens of levels deep, for values classification doesn't use.
+	 * `href`/`src`/`action` are the reference-bearing attributes
+	 * `@d-zero/site-migrator`'s `rewriteBlockRefs` needs when a
+	 * `<a>`/`<img>`/`<form>` collapses to become the classified block itself
+	 * (see `should-recurse.ts`); `srcset`/`alt`/`target`/`download` ride
+	 * along as attributes that typically accompany those on the same
+	 * element. Declared inside `captureLayoutTree` rather than at module
+	 * scope for the same reason every helper here is nested (see `@module`
+	 * JSDoc above): Puppeteer's `page.evaluate` serializes only
+	 * `captureLayoutTree`'s own source text, so a module-scope `const`
+	 * would be `undefined` at runtime in the page.
+	 */
+	const CAPTURED_ATTRIBUTES: readonly string[] = [
+		'href',
+		'src',
+		'srcset',
+		'action',
+		'alt',
+		'target',
+		'download',
+	];
+
+	/**
 	 * Recursively captures one element and its descendants.
 	 *
 	 * Elements with no rendered box (`display: none`, zero-area) still
@@ -211,6 +238,14 @@ export function captureLayoutTree(
 					)
 				: [];
 
+		const attributes: Record<string, string> = {};
+		for (const name of CAPTURED_ATTRIBUTES) {
+			const value = el.getAttribute(name);
+			if (value !== null) {
+				attributes[name] = value;
+			}
+		}
+
 		return {
 			tagName: el.tagName,
 			id: el.id || null,
@@ -223,6 +258,7 @@ export function captureLayoutTree(
 			},
 			style,
 			innerHTML: el.innerHTML,
+			attributes,
 			children,
 		};
 	}

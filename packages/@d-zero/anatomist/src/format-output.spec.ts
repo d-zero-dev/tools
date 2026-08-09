@@ -20,11 +20,12 @@ const NESTED_RESULT: LayoutAnalysisResult = {
 		children: [
 			{
 				layoutType: 'leaf',
-				tagName: 'DIV',
+				tagName: 'A',
 				id: null,
 				classList: [],
 				boundingBox: { x: 0, y: 0, width: 100, height: 100 },
 				innerHTML: 'a',
+				attributes: { href: '/about/' },
 				confidence: 0,
 				signals: {},
 				children: [],
@@ -79,6 +80,12 @@ describe('formatResultLine', () => {
 		const parsed = JSON.parse(formatResultLine(NESTED_RESULT, { innerHtmlMode: 'none' }));
 		expect(parsed.root.innerHTML).toBeUndefined();
 		expect(parsed.root.children[0].innerHTML).toBeUndefined();
+	});
+
+	it('includes attributes on every block, defaulting to {} when absent', () => {
+		const parsed = JSON.parse(formatResultLine(NESTED_RESULT));
+		expect(parsed.root.attributes).toEqual({});
+		expect(parsed.root.children[0].attributes).toEqual({ href: '/about/' });
 	});
 
 	it('renders a null root as null', () => {

@@ -42,6 +42,19 @@ export type RawLayoutNode = {
 	boundingBox: BoundingBox;
 	style: RawNodeStyle;
 	innerHTML: string;
+	/**
+	 * Element's own attributes, limited to a fixed allowlist relevant to
+	 * downstream classification (see `capture-layout-tree.ts`'s
+	 * `CAPTURED_ATTRIBUTES`) — not a generic attribute dump. `innerHTML`
+	 * preserves attributes on *descendant* elements verbatim, but this
+	 * node's own tag attributes (`href`/`src` etc.) are otherwise lost once
+	 * `should-recurse.ts`'s collapse logic makes this node itself the
+	 * classified block. Optional (rather than always-present-but-possibly-
+	 * empty like `classList`) so existing hand-built `RawLayoutNode`
+	 * literals predating this field keep type-checking; the browser-realm
+	 * capture path always sets it.
+	 */
+	attributes?: Readonly<Record<string, string>>;
 	children: readonly RawLayoutNode[];
 };
 
@@ -75,6 +88,8 @@ export type LayoutBlock = {
 	classList: readonly string[];
 	boundingBox: BoundingBox;
 	innerHTML: string;
+	/** Carried over verbatim from the matching `RawLayoutNode` — see that type's `attributes` for what's captured and why it's optional. */
+	attributes?: Readonly<Record<string, string>>;
 	/** 0–1. Not a probability — a relative measure of how cleanly the geometry matched `layoutType`'s pattern. */
 	confidence: number;
 	/** Raw evidence behind the judgment (computed style values, row/column counts, overflow ratios, etc.). Always present, even for `unknown`, so misclassifications are debuggable instead of silent. */
