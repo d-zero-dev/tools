@@ -18,14 +18,7 @@ import { deal, createProcess } from '@d-zero/puppeteer-dealer';
 await deal(
 	[{ id: '1', url: 'https://example.com' }],
 	(progress, done, total) => `${done}/${total}`,
-	() =>
-		createProcess(
-			'./child.js',
-			{
-				/* params */
-			},
-			{ locale: 'ja-JP', headless: true },
-		),
+	() => createProcess('./child.js', {/* params */}, { locale: 'ja-JP', headless: true }),
 	{ limit: 5 },
 );
 ```

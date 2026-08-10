@@ -11,11 +11,7 @@
  */
 
 export type KeyTransform =
-	| 'string'
-	| 'number'
-	| 'boolean-yes'
-	| 'boolean-on'
-	| 'boolean-true';
+	'string' | 'number' | 'boolean-yes' | 'boolean-on' | 'boolean-true';
 
 export type KeyDef = {
 	/** One or more dot-paths under `Meta` to write the value into. */
