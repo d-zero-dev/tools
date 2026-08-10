@@ -1,11 +1,5 @@
 export type CompressType =
-	| 'gzip'
-	| 'compress'
-	| 'deflate'
-	| 'br'
-	| 'sdch'
-	| 'vcdiff'
-	| 'xdelta';
+	'gzip' | 'compress' | 'deflate' | 'br' | 'sdch' | 'vcdiff' | 'xdelta';
 
 /**
  * Detects the HTTP response compression algorithm from the `Content-Encoding` header.

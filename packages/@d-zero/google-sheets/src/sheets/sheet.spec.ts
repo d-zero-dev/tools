@@ -175,8 +175,7 @@ describe('appendRow / flush', () => {
 		const parent = {
 			batchUpdate: vi.fn((req: Record<string, unknown>) => {
 				const updateCells = req.updateCells as
-					| { rows?: { values?: unknown[] }[] }
-					| undefined;
+					{ rows?: { values?: unknown[] }[] } | undefined;
 				if (updateCells?.rows) {
 					updateCellsRows.push(updateCells.rows.length);
 				}

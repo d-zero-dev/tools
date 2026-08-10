@@ -4,11 +4,7 @@ import { randomInt, type RandomIntRange } from './random-int.js';
  * Preset distribution types for random sampling.
  */
 export type DistributionPreset =
-	| 'uniform'
-	| 'normal'
-	| 'triangular'
-	| 'right-skewed'
-	| 'left-skewed';
+	'uniform' | 'normal' | 'triangular' | 'right-skewed' | 'left-skewed';
 
 /**
  * Bimodal distribution configuration with peak positions.

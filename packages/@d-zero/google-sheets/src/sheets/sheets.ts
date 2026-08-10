@@ -81,8 +81,7 @@ export class Sheets {
 				return;
 			}
 			const req = request[requestName] as
-				| { sheetId?: string; start?: { sheetId?: string } }
-				| undefined;
+				{ sheetId?: string; start?: { sheetId?: string } } | undefined;
 			const sheetId = req?.sheetId ?? req?.start?.sheetId;
 			sheetsLog(`Sheet(#${sheetId})::BatchUpdate.${requestName}`);
 			const res = await this.#sheets.spreadsheets.batchUpdate({
