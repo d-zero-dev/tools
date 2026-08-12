@@ -1,4 +1,5 @@
 import type { ClusterReason } from './build-cluster-reason.js';
+import type { ClusterPartitionReport } from './validate-cluster-partition.js';
 
 import { describe, expect, test } from 'vitest';
 
@@ -757,5 +758,81 @@ describe('resolvePageClusterKeysInMemory (onClusterReason)', () => {
 			expect(reason.landmarks.header?.chromeRate).toBe(1);
 			expect(reason.memberCount).toBe(3);
 		}
+	});
+});
+
+describe('resolvePageClusterKeysInMemory (onPartitionReport)', () => {
+	/**
+	 * Builds a small multi-template, multi-language corpus: 3 distinct
+	 * templates, each mirrored under 2 language directories with its own
+	 * per-language stylesheet href — small enough to hand-verify, but with
+	 * enough distinct skeletons (3) for `detectMirrorAxis`'s
+	 * `minSkeletonCount` to accept the language position as a real axis
+	 * rather than coincidence.
+	 */
+	function buildMirroredCorpus() {
+		const templates = {
+			faq: '<article><h1>FAQ</h1><dl><dt>Q</dt><dd>A</dd></dl></article>',
+			access: '<article><h1>Access</h1><table><tr><td>map</td></tr></table></article>',
+			gallery: '<article><h1>Gallery</h1><ul><li><img></li></ul></article>',
+		};
+		const pages = [];
+		for (const [template, body] of Object.entries(templates)) {
+			for (const lang of ['en', 'zh']) {
+				pages.push({
+					paths: [lang, template, 'index.html'],
+					stylesheetHrefs: [`https://example.test/${lang}/${template}/page.css`],
+					html: `<html><body><header>H</header><main>${body}</main><footer>F</footer></body></html>`,
+				});
+			}
+		}
+		return pages;
+	}
+
+	test('reports the detected mirror axis and one cohesion entry per cluster', () => {
+		const pages = buildMirroredCorpus();
+		let report: ClusterPartitionReport | undefined;
+		resolvePageClusterKeysInMemory(pages, { onPartitionReport: (r) => (report = r) });
+
+		expect(report).toBeDefined();
+		expect(report!.mirrorAxis).toEqual({ position: 0, values: new Set(['en', 'zh']) });
+		// Every final cluster gets exactly one cohesion entry — proves the
+		// page-index recovery from `finalGroupsByRoot` covered every page
+		// (a broken recovery would silently under-count clusters here).
+		const totalMembers = report!.cohesion.reduce((sum, c) => sum + c.memberCount, 0);
+		expect(totalMembers).toBe(pages.length);
+	});
+
+	test('omitting onPartitionReport produces the same clusterKeys as providing one that merges nothing', () => {
+		const pages = buildMirroredCorpus();
+		const withoutReport = resolvePageClusterKeysInMemory(pages);
+		let report: ClusterPartitionReport | undefined;
+		const withReport = resolvePageClusterKeysInMemory(pages, {
+			onPartitionReport: (r) => (report = r),
+		});
+		// Precondition: this corpus's 3 templates already cluster correctly
+		// without any auto-merge, so registering the hook must not perturb
+		// the result.
+		expect(
+			report!.crossClusterDuplicates.filter(
+				(d) => d.similarity === 1 || d.corroboratedByMirrorAxis,
+			),
+		).toEqual([]);
+		expect(withReport).toEqual(withoutReport);
+	});
+
+	test('onClusterReason and onPartitionReport compose: memberCount matches when both are registered', () => {
+		const pages = buildMirroredCorpus();
+		const reasons = new Map<string, ClusterReason>();
+		let report: ClusterPartitionReport | undefined;
+		const keys = resolvePageClusterKeysInMemory(pages, {
+			onClusterReason: (key, reason) => reasons.set(key, reason),
+			onPartitionReport: (r) => (report = r),
+		});
+		for (const key of new Set(keys)) {
+			const actualMemberCount = keys.filter((k) => k === key).length;
+			expect(reasons.get(key)!.memberCount).toBe(actualMemberCount);
+		}
+		expect(report).toBeDefined();
 	});
 });

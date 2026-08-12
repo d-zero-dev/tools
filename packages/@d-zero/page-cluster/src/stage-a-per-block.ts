@@ -273,6 +273,7 @@ export function stageAPerBlock(
 			memberLandmarkInstances: sampledPositions.map(
 				(pos) => memberLandmarkInstancesByPage[pos]!,
 			),
+			memberPageIndices: sampledPositions.map((pos) => memberIndices[pos]!),
 		});
 	}
 	return { pageKeys, crossBlockUnits };

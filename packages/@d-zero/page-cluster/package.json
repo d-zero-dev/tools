@@ -36,6 +36,34 @@
 		"./build-cluster-reason": {
 			"import": "./dist/build-cluster-reason.js",
 			"types": "./dist/build-cluster-reason.d.ts"
+		},
+		"./detect-mirror-axis": {
+			"import": "./dist/detect-mirror-axis.js",
+			"types": "./dist/detect-mirror-axis.d.ts"
+		},
+		"./normalize-path-by-mirror-axis": {
+			"import": "./dist/normalize-path-by-mirror-axis.js",
+			"types": "./dist/normalize-path-by-mirror-axis.d.ts"
+		},
+		"./normalize-href-by-mirror-axis": {
+			"import": "./dist/normalize-href-by-mirror-axis.js",
+			"types": "./dist/normalize-href-by-mirror-axis.d.ts"
+		},
+		"./compute-cluster-cohesion": {
+			"import": "./dist/compute-cluster-cohesion.js",
+			"types": "./dist/compute-cluster-cohesion.d.ts"
+		},
+		"./find-cross-cluster-duplicates": {
+			"import": "./dist/find-cross-cluster-duplicates.js",
+			"types": "./dist/find-cross-cluster-duplicates.d.ts"
+		},
+		"./validate-cluster-partition": {
+			"import": "./dist/validate-cluster-partition.js",
+			"types": "./dist/validate-cluster-partition.d.ts"
+		},
+		"./merge-validated-clusters": {
+			"import": "./dist/merge-validated-clusters.js",
+			"types": "./dist/merge-validated-clusters.d.ts"
 		}
 	},
 	"bin": "dist/cli.js",
