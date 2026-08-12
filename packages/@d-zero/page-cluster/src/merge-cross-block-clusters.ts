@@ -31,6 +31,18 @@ export type CrossBlockUnit = {
 	readonly key: string;
 	readonly memberTokenSets: readonly ReadonlySet<string>[];
 	readonly memberLandmarkInstances: readonly (readonly PerPageLandmarkInstance[])[];
+	/**
+	 * Original corpus index of each member, parallel to `memberTokenSets` —
+	 * lets a caller that pools `finalGroupsByRoot`'s output back into
+	 * page-level records (e.g. to build a
+	 * {@link ./find-cross-cluster-duplicates.js | ClusteredPage}) recover
+	 * which page each merged token set came from, without a second
+	 * corpus-wide pass. Optional because most callers (every hand-built test
+	 * fixture in this file included) only need `mergeCrossBlockClusters` for
+	 * its cluster-key decisions and never read this back; omitted entries are
+	 * normalized to `-1` internally rather than left misaligned.
+	 */
+	readonly memberPageIndices?: readonly number[];
 };
 
 /**
@@ -156,6 +168,168 @@ export function computeQuorumCore(
 }
 
 /**
+ * Minimum ratio a proposed merge's post-merge quorum-core size must retain,
+ * relative to the strongest lineage anchor on either side (see
+ * `anchorByRoot` in {@link filterMergesByCohesion}), or the merge is
+ * discarded.
+ *
+ * Chosen against `merge-cross-block-clusters.spec.ts`'s own fixtures, which
+ * bound both edges this value has to sit between:
+ * - "a hub unit does not absorb several mutually-unrelated units via
+ *   containment" needs a ratio *above* ~`0.3` to reject each absorption (the
+ *   hub's own 10-token core collapses to the 3 tokens the absorbed unit
+ *   happens to also carry).
+ * - the bundled `buildMirroredTemplateFixture` fixture (see
+ *   `resolve-page-cluster-keys.spec.ts`) needs a ratio *at or below* ~`0.8`
+ *   to keep merging every one of its genuine per-mirror units (the same
+ *   template, once per axis value) — above that, some legitimate mirrors
+ *   stop merging because a handful of per-page module drops (this fixture's
+ *   stand-in for optional-section variation) dip just far enough below a
+ *   stricter bar.
+ *
+ * `0.7` sits with margin inside `(0.3, 0.8]` rather than against either
+ * edge. This is a per-step ratio, not an absolute floor — see
+ * `anchorByRoot`'s own JSDoc for why an anchor was needed at all, and for
+ * the residual limitation neither the ratio nor the anchor fixes: many
+ * originally-small-core units chained together one step at a time can each
+ * individually clear this ratio against the previous step's *already-small*
+ * anchor, so a long enough chain of naturally low-information pages can
+ * still end up merged even though no single step looks anomalous. Longer
+ * chains are exactly what {@link ./build-cluster-reason.js | ClusterReason}'s
+ * `blocking` array length and
+ * {@link ./compute-cluster-cohesion.js | computeClusterCohesion}'s
+ * `suspicious` flag are for — this guard reduces how often that happens and
+ * how far it goes, it does not claim to make it impossible.
+ */
+const MIN_COHESION_RATIO = 0.7;
+
+/**
+ * `computeQuorumCore` without its full-union fallback for empty cores. The
+ * fallback exists so a final `ClusterReason.structuralCoreTokens` is never
+ * empty for a genuinely tiny unit — but it makes core *size* useless as a
+ * cohesion signal: a merge that destroys every token's 80% quorum would
+ * silently read as "core size is now the size of the union", i.e. bigger,
+ * not smaller. {@link filterMergesByCohesion} needs "zero tokens survive
+ * quorum" to mean zero.
+ * @param memberDistinctiveTokens
+ */
+function strictQuorumCoreSize(
+	memberDistinctiveTokens: readonly ReadonlySet<string>[],
+): number {
+	const n = memberDistinctiveTokens.length;
+	if (n === 0) return 0;
+
+	const minCount = Math.ceil(QUORUM_FRACTION * n);
+	const tokenCount = new Map<string, number>();
+	for (const tokens of memberDistinctiveTokens) {
+		for (const token of tokens) {
+			tokenCount.set(token, (tokenCount.get(token) ?? 0) + 1);
+		}
+	}
+
+	let coreSize = 0;
+	for (const count of tokenCount.values()) {
+		if (count >= minCount) coreSize++;
+	}
+	return coreSize;
+}
+
+/**
+ * Filters a round's proposed `[absorbed, root]` merges, rejecting any merge
+ * whose post-merge quorum core would collapse relative to the best core any
+ * single original unit now pooled into either side ever had — the guard
+ * against Stage B's fine/L2 stages successively absorbing unrelated units
+ * into a "catch-all" whose core shrinks toward shell-only tokens with every
+ * additional merge (each individual merge can look locally justified — the
+ * pair's *pre-merge* cores still overlap enough to clear
+ * `CROSS_BLOCK_THRESHOLD`/containment/L2 — while the *post-merge* core keeps
+ * shrinking, which none of those pre-merge checks observe).
+ *
+ * ## Why an anchor, not just the immediately preceding step
+ *
+ * An earlier version compared each merge only against the pool as it stood
+ * after the *previous* accepted merge for that root. That still lets a long
+ * chain erode a core to nothing, one acceptable-looking step at a time: if
+ * each step's ratio is checked only against the *result of the previous
+ * step*, and each step dilutes the pool a little, the reference the ratio is
+ * measured against keeps shrinking right along with the pool being measured
+ * — nothing ever compares the current state back to where the lineage
+ * started, so a chain of many individually-small erosions can compound into
+ * a total collapse no single step's check would have allowed on its own.
+ * `anchorByRoot` fixes this: every original unit's *own*, pre-any-merge core
+ * size (`anchorCoreSizeByKey`, computed once before the round loop) is
+ * carried forward — via `Math.max`, never re-derived from the current pool —
+ * as units merge into a root, so every later merge attempt is still measured
+ * against the strongest evidence its lineage ever had, not against
+ * whatever the lineage has been diluted to by the time of the attempt.
+ *
+ * Merges proposed for the same root are applied incrementally, in the order
+ * given, checking each one against the pool as it stood *after* the
+ * previously accepted merges for that root, so a chain of merges within a
+ * single call cannot each pass by being compared to a `pooled` state that
+ * never reflects the merges already accepted earlier in the same call.
+ *
+ * Two things intentionally do not gate rejection alone:
+ * - `strictQuorumCoreSize` is used instead of `computeQuorumCore`'s size —
+ *   see that function's own JSDoc for why the fallback would invert the
+ *   signal for exactly the merges this guard exists to catch.
+ * - A merge whose post-merge core size is `0` is always rejected, even when
+ *   the anchor was also `0` (which would make the ratio check
+ *   `0 >= ratio * 0` vacuously pass) — otherwise a unit that already lost
+ *   its own core would become a sink that absorbs anything with no further
+ *   resistance.
+ * @param proposedMerges `[absorbedKey, rootKey]` pairs, as produced by the
+ *   fine or L2 stage's own union-find pass.
+ * @param groupDistinctive This round's per-group distinctive token sets,
+ *   keyed by group key. Callers pass the class-name-stripped
+ *   `groupDistinctiveShaped` projection (see
+ *   {@link mergeCrossBlockClusters}'s own body) rather than raw
+ *   `groupDistinctive` — the fine stage's shape-Jaccard merges pair units
+ *   with disjoint raw tokens by construction, and a cohesion check against
+ *   raw tokens would reject every one of those merges outright.
+ * @param anchorByRoot Every current root's strongest lineage core size (see
+ *   above). Mutated in place: an accepted merge's root inherits
+ *   `Math.max(root's anchor, absorbed's anchor)`.
+ */
+function filterMergesByCohesion(
+	proposedMerges: readonly [string, string][],
+	groupDistinctive: ReadonlyMap<string, readonly ReadonlySet<string>[]>,
+	anchorByRoot: Map<string, number>,
+): [string, string][] {
+	const byRoot = new Map<string, string[]>();
+	for (const [absorbed, root] of proposedMerges) {
+		const list = byRoot.get(root);
+		if (list) list.push(absorbed);
+		else byRoot.set(root, [absorbed]);
+	}
+
+	const accepted: [string, string][] = [];
+	for (const [root, absorbedKeys] of byRoot) {
+		let pooled = [...(groupDistinctive.get(root) ?? [])];
+		for (const absorbed of absorbedKeys) {
+			const absorbedTokens = groupDistinctive.get(absorbed) ?? [];
+			const candidatePool = [...pooled, ...absorbedTokens];
+			const candidateCoreSize = strictQuorumCoreSize(candidatePool);
+			const referenceCoreSize = Math.max(
+				anchorByRoot.get(root) ?? strictQuorumCoreSize(pooled),
+				anchorByRoot.get(absorbed) ?? strictQuorumCoreSize(absorbedTokens),
+			);
+
+			if (
+				candidateCoreSize > 0 &&
+				candidateCoreSize >= MIN_COHESION_RATIO * referenceCoreSize
+			) {
+				pooled = candidatePool;
+				anchorByRoot.set(root, referenceCoreSize);
+				anchorByRoot.delete(absorbed);
+				accepted.push([absorbed, root]);
+			}
+		}
+	}
+	return accepted;
+}
+
+/**
  *
  * @param core
  */
@@ -206,6 +380,66 @@ function l2Contained(xSig: Map<string, number>, ySig: Map<string, number>): bool
 	return true;
 }
 
+/**
+ * Canonical id for an `l2Signature`'s *shape* — its key set, ignoring the
+ * per-key counts — so {@link hasDiscriminatingL2Signatures} can tell whether
+ * two units reduced to the same vocabulary of `main`-anchored shapes,
+ * independent of how many pages contributed to each count.
+ * @param signature
+ */
+function l2SignatureShapeId(signature: Map<string, number>): string {
+	return [...signature.keys()].toSorted().join(' ');
+}
+
+/**
+ * Minimum number of units an L2-degeneracy check requires before it will
+ * reject the whole comparison — below this, "every unit shares one shape"
+ * is unremarkable (there is nothing to discriminate between yet), not
+ * evidence the signature itself lacks resolving power.
+ */
+const MIN_L2_PARTICIPANTS_FOR_DEGENERACY_CHECK = 3;
+
+/**
+ * Whether this round's L2 signatures carry any discriminating power at all,
+ * checked once per round *before* running the `O(l2n²)` containment
+ * comparison rather than discovering it empirically pair by pair.
+ *
+ * `l2Signature` truncates to `main` plus up to 2 shape-stripped levels (see
+ * its own JSDoc); a corpus where the actual template content sits under a
+ * shared `main > article > <wrapper>` chain collapses every unit's
+ * signature to the exact same handful of keys (`main>article>*`, in the
+ * bundled `buildMirroredTemplateFixture` fixture's own case — see
+ * `merge-cross-block-clusters.spec.ts`), at which point `l2Contained`'s
+ * multiset containment degenerates into a plain count comparison with no
+ * structural meaning left. Rather than let that degenerate comparison run
+ * (and rely solely on {@link filterMergesByCohesion} to catch whatever it
+ * proposes), this is checked up front: if every participating unit reduces
+ * to the *same* shape, the signature has already lost all resolving power
+ * for this round, and comparing pairs is wasted work.
+ *
+ * Only total collapse (all participants share one shape) is detected —
+ * partial collapse (e.g. 8 units reducing to 2 shapes that don't line up
+ * with their true 8 templates) is not, and still relies on
+ * {@link filterMergesByCohesion} downstream.
+ * @param l2Keys
+ * @param getL2Sig
+ */
+function hasDiscriminatingL2Signatures(
+	l2Keys: readonly string[],
+	getL2Sig: (key: string) => Map<string, number> | null,
+): boolean {
+	const shapeIds = new Set<string>();
+	let participantCount = 0;
+	for (const key of l2Keys) {
+		const sig = getL2Sig(key);
+		if (!sig) continue;
+		participantCount++;
+		shapeIds.add(l2SignatureShapeId(sig));
+		if (shapeIds.size > 1) return true;
+	}
+	return participantCount < MIN_L2_PARTICIPANTS_FOR_DEGENERACY_CHECK;
+}
+
 // ---------------------------------------------------------------------------
 // Main function
 // ---------------------------------------------------------------------------
@@ -223,6 +457,12 @@ function l2Contained(xSig: Map<string, number>, ySig: Map<string, number>): bool
 export type FinalGroupMembers = {
 	readonly tokenSets: readonly ReadonlySet<string>[];
 	readonly landmarkInstances: readonly (readonly PerPageLandmarkInstance[])[];
+	/**
+	 * Parallel to `tokenSets` — see {@link CrossBlockUnit}'s own
+	 * `memberPageIndices`. An entry is `-1` for any member whose originating
+	 * unit omitted `memberPageIndices`.
+	 */
+	readonly pageIndices: readonly number[];
 };
 
 /**
@@ -287,7 +527,11 @@ export function mergeCrossBlockClusters(
 			finalGroupsByRoot: new Map(
 				units.map((u) => [
 					u.key,
-					{ tokenSets: u.memberTokenSets, landmarkInstances: u.memberLandmarkInstances },
+					{
+						tokenSets: u.memberTokenSets,
+						landmarkInstances: u.memberLandmarkInstances,
+						pageIndices: u.memberPageIndices ?? u.memberTokenSets.map(() => -1),
+					},
 				]),
 			),
 		};
@@ -300,6 +544,7 @@ export function mergeCrossBlockClusters(
 	type GroupMembers = {
 		tokenSets: ReadonlySet<string>[];
 		landmarkInstances: (readonly PerPageLandmarkInstance[])[];
+		pageIndices: number[];
 	};
 
 	const groups = new Map<string, GroupMembers>();
@@ -307,11 +552,32 @@ export function mergeCrossBlockClusters(
 		groups.set(unit.key, {
 			tokenSets: [...unit.memberTokenSets],
 			landmarkInstances: [...unit.memberLandmarkInstances],
+			pageIndices: [...(unit.memberPageIndices ?? unit.memberTokenSets.map(() => -1))],
 		});
 	}
 
 	// Maps every original key to its current root (updated on each merge)
 	const keyToRoot = new Map<string, string>(units.map((u) => [u.key, u.key]));
+
+	// Each unit's own pre-any-merge core size, carried forward by
+	// `filterMergesByCohesion` as units merge — see that function's own
+	// JSDoc for why an anchor is needed at all. Computed the same way round
+	// 1's own `groupDistinctiveShaped` would (document frequency over the
+	// full initial unit set, then class-name-stripped), so a solo unit's
+	// anchor matches what the very first round would already compute for it.
+	const initialFrequency = computeDocumentFrequency(
+		units.flatMap((u) => u.memberTokenSets),
+	);
+	const anchorByRoot = new Map<string, number>(
+		units.map((u) => {
+			const distinctiveShaped = u.memberTokenSets.map((tokens) => {
+				const { contentTokens } = splitTokensByFrequency(tokens, initialFrequency);
+				const distinctive = contentTokens.size > 0 ? contentTokens : tokens;
+				return new Set([...distinctive].map((t) => shapeToken(t)));
+			});
+			return [u.key, strictQuorumCoreSize(distinctiveShaped)];
+		}),
+	);
 
 	/**
 	 * Applies a list of [absorbed, root] merges to `groups` and `keyToRoot`.
@@ -329,17 +595,20 @@ export function mergeCrossBlockClusters(
 				...rootG.landmarkInstances,
 				...absorbedG.landmarkInstances,
 			];
+			const mergedPageIndices = [...rootG.pageIndices, ...absorbedG.pageIndices];
 			// Only down-sample when the caller explicitly opts in (streaming
-			// path). Same-index sampling keeps memberTokenSets[i] and
-			// landmarkInstances[i] parallel.
+			// path). Same-index sampling keeps memberTokenSets[i],
+			// landmarkInstances[i], and pageIndices[i] parallel.
 			if (capMembers !== undefined && mergedTokenSets.length > capMembers) {
 				const indices = mergedTokenSets.map((_, i) => i);
 				const kept = reservoirSample(indices, capMembers, root);
 				rootG.tokenSets = kept.map((i) => mergedTokenSets[i]!);
 				rootG.landmarkInstances = kept.map((i) => mergedLandmarkInstances[i]!);
+				rootG.pageIndices = kept.map((i) => mergedPageIndices[i]!);
 			} else {
 				rootG.tokenSets = mergedTokenSets;
 				rootG.landmarkInstances = mergedLandmarkInstances;
+				rootG.pageIndices = mergedPageIndices;
 			}
 			groups.delete(absorbed);
 
@@ -370,6 +639,22 @@ export function mergeCrossBlockClusters(
 				dist.push(contentTokens.size > 0 ? contentTokens : tokens);
 			}
 			groupDistinctive.set(key, dist);
+		}
+
+		// Class-name-stripped projection of `groupDistinctive`, for
+		// {@link filterMergesByCohesion} only: the fine stage's own
+		// shape-Jaccard step (below) merges units whose *raw* tokens are
+		// disjoint by construction (same skeleton, different BEM class
+		// names — see `SHAPE_JACCARD_THRESHOLD`'s JSDoc), so a cohesion check
+		// against raw tokens would reject every shape-Jaccard merge outright.
+		// Shaping first lets the guard see that 'section.c-reports' and
+		// 'section.c-projects' both contribute to a shared 'section' token.
+		const groupDistinctiveShaped = new Map<string, ReadonlySet<string>[]>();
+		for (const [key, dist] of groupDistinctive) {
+			groupDistinctiveShaped.set(
+				key,
+				dist.map((tokens) => new Set([...tokens].map((t) => shapeToken(t)))),
+			);
 		}
 
 		// Quorum core per group
@@ -476,8 +761,13 @@ export function mergeCrossBlockClusters(
 			}
 		}
 
-		if (fineMerges.length > 0) {
-			applyMerges(fineMerges);
+		const acceptedFineMerges = filterMergesByCohesion(
+			fineMerges,
+			groupDistinctiveShaped,
+			anchorByRoot,
+		);
+		if (acceptedFineMerges.length > 0) {
+			applyMerges(acceptedFineMerges);
 			continue; // next round
 		}
 
@@ -505,6 +795,8 @@ export function mergeCrossBlockClusters(
 			}
 			return shellCache.get(key) ?? new Set();
 		};
+
+		if (!hasDiscriminatingL2Signatures(l2Keys, getL2Sig)) break;
 
 		// Collect valid L2 containment pairs and apply via union-find
 		// Direction: x is contained in y → x is absorbed by y
@@ -569,15 +861,24 @@ export function mergeCrossBlockClusters(
 			}
 		}
 
-		if (l2Merges.length === 0) break; // fully converged
+		const acceptedL2Merges = filterMergesByCohesion(
+			l2Merges,
+			groupDistinctiveShaped,
+			anchorByRoot,
+		);
+		if (acceptedL2Merges.length === 0) break; // fully converged (or every proposal was rejected)
 
-		applyMerges(l2Merges);
+		applyMerges(acceptedL2Merges);
 	}
 
 	const finalGroupsByRoot = new Map<string, FinalGroupMembers>(
 		[...groups.entries()].map(([root, g]) => [
 			root,
-			{ tokenSets: g.tokenSets, landmarkInstances: g.landmarkInstances },
+			{
+				tokenSets: g.tokenSets,
+				landmarkInstances: g.landmarkInstances,
+				pageIndices: g.pageIndices,
+			},
 		]),
 	);
 	return { rootByKey: keyToRoot, finalGroupsByRoot };

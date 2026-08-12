@@ -79,6 +79,7 @@ jq -c '.[]' crawl-output.json | page-cluster > clusters.jsonl
 
 - `--content-block-attribute <name>` — CMS が自由編集コンテンツブロックに付与している属性名（例: `data-bgb`）が分かっている場合に指定する。指定すると比較前にその属性を持つ要素配下を無視するので、同じテンプレートで本文構成だけ違うページを混同しなくなる。唯一の site-specific なオプションで、未指定でも `<main>` / `role="main"` を起点にした自動深さキャップが常時働く（詳細は `resolve-page-cluster-keys.ts` の JSDoc を参照）
 - `--cluster-reasons-file <path>` — 上記の「クラスタ選定理由」を `<path>` に JSON として書き出す。ページ数の上限はない。20,000 ページ以下のコーパスでは、指定すると進捗表示（後述）は出なくなる（進捗を出さない非ストリーミング経路に常に振り分けられるため。20,000 ページ超のストリーミング経路では進捗表示・クラスタ理由の両方が動く）
+- `--validation-file <path>` — 分類結果の事後検証レポート（下記「分類結果の事後検証」参照）を `<path>` に JSON として書き出す。指定すると、レポートの検出結果のうち安全に統合できるもの（構造トークン集合が完全一致、またはミラー軸による裏付けあり）が **stdout の `clusterKey` にも自動的に反映される**
 - `--help` / `-h` — ヘルプを表示する
 - `--version` / `-v` — バージョンを表示する
 
@@ -119,6 +120,13 @@ silence したい場合は `2>/dev/null`。ログに残したい場合は `2> pr
 | `@d-zero/page-cluster/resolve-landmark-variant-keys` | `resolveLandmarkVariantKeys` — 特定ランドマークのデザインバリアントでページを分類                                                                                                                                                                                                                   |
 | `@d-zero/page-cluster/is-chrome-landmark-instance`   | `isChromeLandmarkInstance` — 1 つの landmark インスタンスのトークン集合と `ClusterReason.landmarks[type].shellTokens` のようなシェルトークン集合を突き合わせて chrome/content を判定するステートレス関数                                                                                            |
 | `@d-zero/page-cluster/jaccard-similarity`            | `jaccardSimilarity` — 2 つのトークン集合の Jaccard 類似度。`ClusterReason` 同士（`structuralCoreTokens` や `shellTokens`）を比較して兄弟クラスタとの差分を調べる用途などに使う                                                                                                                      |
+| `@d-zero/page-cluster/validate-cluster-partition`    | `ClusterPartitionReport` 型、`validateClusterPartition` — 分類済みの `clusterKey` を、分類そのものではなく分類結果同士を突き合わせて事後検証する（下記「分類結果の事後検証」参照）。通常は `resolvePageClusterKeys` の `onPartitionReport` 経由で使うので直接呼ぶ必要はない                         |
+| `@d-zero/page-cluster/find-cross-cluster-duplicates` | `ClusteredPage` 型、`CrossClusterDuplicate` 型、`findCrossClusterDuplicates` — 別クラスタに分かれているが同一テンプレートらしいページ対を検出する                                                                                                                                                   |
+| `@d-zero/page-cluster/compute-cluster-cohesion`      | `ClusterCohesion` 型、`computeClusterCohesion` — クラスタ内メンバーが互いにどれだけ似ているかを分布として報告する（無関係なテンプレートが混ざったクラスタの検出に使う）                                                                                                                             |
+| `@d-zero/page-cluster/detect-mirror-axis`            | `MirrorAxis` 型、`detectMirrorAxis` — 言語ディレクトリなど、URL のあるセグメントだけを変えてサイトの一部をミラーしている「軸」を、事前知識なしに URL パス集合から発見する                                                                                                                           |
+| `@d-zero/page-cluster/normalize-path-by-mirror-axis` | `normalizePathByMirrorAxis` — 検出した軸に沿ってページの URL パスを正規化し、ミラー元同士を同じ形状に揃える                                                                                                                                                                                         |
+| `@d-zero/page-cluster/normalize-href-by-mirror-axis` | `normalizeHrefByMirrorAxis` — 検出した軸に沿って URL（主に stylesheet href）を正規化する                                                                                                                                                                                                            |
+| `@d-zero/page-cluster/merge-validated-clusters`      | `mergeValidatedClusters` — 確認済みのクラスタ対の統合を `clusterKey` 配列に適用する純関数                                                                                                                                                                                                           |
 
 ```ts
 import { resolvePageClusterKeysFromArray } from '@d-zero/page-cluster/resolve-page-cluster-keys';
@@ -192,6 +200,33 @@ flowchart TD
 
 マージが起きるとユニットのメンバー構成が変わり、文書頻度も quorum core も変わる。そのため毎ラウンド、統合後のプールから全指標を**再計算**してマージを再試行する。fine stage・L2 stage の両方でマージが 1 件も出なくなった時点で不動点に到達したとみなして収束する（安全弁として最大 10 ラウンド。実データでは 7 ラウンド以内に収束）。L2 stage は fine stage が空振りしたラウンドでしか実行されない最後の粗い経路で、誤マージ防止のために shell（ランドマーク由来トークン）の相互裏付けを要求する。
 
+fine stage・L2 stage いずれの経路で提案されたマージも、適用前に**凝集度ガード**を通る: 統合後の quorum core が統合前の core に対して一定比率を下回るなら、そのマージは破棄される。個々の経路が「統合前のペア類似度」だけを見て提案する一方、複数ラウンドにわたる連鎖的な統合は「統合後に実際どれだけまとまっているか」を悪化させ得る（無関係なテンプレート同士が少しずつ吸収し合う catch-all 化）ため、経路をまたいだ単一のチェックポイントとして機能する。あわせて、L2 stage 自体もラウンド開始前に判別力を検査し、参加ユニット全体が同一の署名形状に潰れている（`main` 直下の浅い階層しか手がかりが残っていない等）場合は、そのラウンドの L2 比較を丸ごとスキップする。詳細は `merge-cross-block-clusters.ts` の `filterMergesByCohesion` / `hasDiscriminatingL2Signatures` の JSDoc を参照。
+
 ### Self-tuning
 
 閾値の多くは **max-gap auto-cut**（度数分布の隣接ギャップ最大の中点を境界とする）でデータから自己発見される。① Stage A のカット高、② Stage B の shell 判定、③ chrome discovery のグローバル/ローカル判定、④ Pass 0 の URL パス深さ選択、の 4 箇所で同一プリミティブを再利用しているので、サイトごとにハイパーパラメータをチューニングする必要はない。詳細は `autoCutThreshold` の JSDoc を参照。例外的に Stage B fine stage の complete-linkage だけは固定閾値 0.8 を使う（理由は `merge-cross-block-clusters.ts` の JSDoc を参照）。
+
+## 分類結果の事後検証
+
+Stage A/B は「クラスタリング中に」正しい判断をしようとするが、判断材料はその時点でのペア類似度に限られる。分類が終わった**あとで**、確定したパーティション同士を突き合わせて検証する方が、同じ種類の誤りをかえって見つけやすい場合がある: マージ中は局所的なペア情報とマージ順序しか持たないが、事後なら分割全体を一度に見られるからだ。この事後検証は Stage A/B のアルゴリズムに一切依存しないので、`resolvePageClusterKeys` 以外で作られた分類結果（保存済みの `clusterKey` をアーカイブから読み戻した場合など）にも使える。
+
+3 つのチェックを行う。
+
+- **クラスタ間重複検出**（`findCrossClusterDuplicates`） — 別クラスタに分かれているページ対のうち、構造トークン集合が完全一致するもの（軸の裏付けなしで確定）と、ミラー軸で裏付けられる近似一致のものを検出する
+- **クラスタ内凝集度**（`computeClusterCohesion`） — クラスタ内のメンバー同士がどれだけ似ているかを中央値・10 パーセンタイル・最小値の分布として報告する。無関係なテンプレートが混ざったクラスタは、共通のシェル由来トークンだけが一致する形で `structuralCoreTokens` 自体は非空のまま残ることがあるため、core の有無だけでは過剰マージを検出できない
+- **ミラー軸の自動発見**（`detectMirrorAxis`） — 言語ディレクトリのように、URL のあるセグメントだけを変えてサイトの一部をミラーしている構造を、言語コード等の事前知識なしに発見する。同じ値集合が何種類の異なるパス骨格にわたって反復するかを数え、`autoCutThreshold` で「たまたま値が 2 つ以上あるだけの兄弟ページ」と「サイト全体を貫く軸」を切り分ける
+
+`validateClusterPartition` はこの 3 つをまとめて呼び出すエントリポイント。`ClusterReason` と同じく、判断結果ではなく構造化データだけを返す — 検出された重複をどう扱うか（統合するかどうか、`suspicious` フラグをどう解釈するか）は呼び出し側の責務。実際に統合を適用する場合は `mergeValidatedClusters` に確認済みのクラスタ対を渡す。
+
+```ts
+import { mergeValidatedClusters } from '@d-zero/page-cluster/merge-validated-clusters';
+import { validateClusterPartition } from '@d-zero/page-cluster/validate-cluster-partition';
+
+const report = validateClusterPartition(pages); // pages: { clusterKey, tokens, paths, stylesheetHrefs }[]
+const safeToMerge = report.crossClusterDuplicates.filter(
+	(d) => d.similarity === 1 || d.corroboratedByMirrorAxis,
+);
+const mergedKeys = mergeValidatedClusters(clusterKeys, safeToMerge);
+```
+
+`resolvePageClusterKeys` に `onPartitionReport` コールバックを渡すと、この検証が Stage B 完了直後に自動的に走り、上記と同じ安全な統合ポリシー（完全一致、またはミラー軸による裏付けあり）が返り値の `clusterKey` にもそのまま反映される。`onClusterReason` と同じくオプトインで、渡さない限り既存の挙動・出力は一切変わらない。詳細はその JSDoc を参照。

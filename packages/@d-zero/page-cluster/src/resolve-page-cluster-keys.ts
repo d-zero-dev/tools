@@ -1,12 +1,14 @@
 import type { ClusterReason } from './build-cluster-reason.js';
 import type { BlockingReason } from './derive-blocking-reason.js';
 import type { ExtractLandmarksResult } from './extract-landmarks.js';
+import type { ClusteredPage } from './find-cross-cluster-duplicates.js';
 import type { CrossBlockUnit, FinalGroupMembers } from './merge-cross-block-clusters.js';
 import type { Pass0PageSignals } from './pass0-blocking.js';
 import type { PerPageLandmarkInstance } from './per-page-landmark-signatures.js';
 import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-keys.js';
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
 import type { TokenizeOptions } from './types.js';
+import type { ClusterPartitionReport } from './validate-cluster-partition.js';
 
 import { autoCutThreshold } from './auto-cut-threshold.js';
 import { buildClusterReason } from './build-cluster-reason.js';
@@ -19,11 +21,13 @@ import { extractLandmarks } from './extract-landmarks.js';
 import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
 import { jaccardSimilarity } from './jaccard-similarity.js';
 import { mergeCrossBlockClusters } from './merge-cross-block-clusters.js';
+import { mergeValidatedClusters } from './merge-validated-clusters.js';
 import { groupIndicesByBlockKey, resolveBlockKeys } from './pass0-blocking.js';
 import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
 import { removeContentBlocks } from './remove-content-blocks.js';
 import { stageAPerBlock } from './stage-a-per-block.js';
 import { tokenize } from './tokenize.js';
+import { validateClusterPartition } from './validate-cluster-partition.js';
 
 /**
  * FNV-1a 32-bit hash of a string, used to seed the per-block PRNG so
@@ -315,6 +319,108 @@ function resolveBlockKeysForClustering(
 }
 
 /**
+ * Runs {@link ./validate-cluster-partition.js | validateClusterPartition}
+ * over Stage B's finished grouping and applies the built-in auto-merge
+ * policy (see `onPartitionReport`'s own JSDoc) directly to `finalKeys`,
+ * mutating it in place — the same in-place style the driver's own
+ * `rootByKey` rewrite loop already uses just before calling this.
+ *
+ * No-ops (returning `rootByKey`/`finalGroupsByRoot` unchanged) when
+ * `onPartitionReport` is `undefined` — the single gate every driver defers
+ * to, mirroring `emitClusterReasons`'s own gate for `onClusterReason`.
+ *
+ * When a merge is applied, `rootByKey` and `finalGroupsByRoot` are folded
+ * according to the same rename so `emitClusterReasons` (called with this
+ * function's return value, not the pre-merge originals) builds each
+ * survivor's `ClusterReason` from its *actual* post-merge membership —
+ * without this, a merged-away key's members would report `finalKeys[i]`
+ * pointing at the survivor while its own stale `ClusterReason.memberCount`
+ * still reflected only its pre-merge share.
+ * @param finalKeys Every page's current final cluster key, in input order.
+ *   Mutated in place when a merge is applied.
+ * @param rootByKey Stage B's own result (see
+ *   {@link ./merge-cross-block-clusters.js | MergeCrossBlockClustersResult}).
+ * @param finalGroupsByRoot Stage B's own result.
+ * @param getPageSignals Given an original page index, returns that page's
+ *   `paths`/`stylesheetHrefs` — `undefined` for an index the caller has no
+ *   record of (defensive; should not occur for indices Stage A/B actually
+ *   retained).
+ * @param onPartitionReport
+ */
+function validateAndMergePartition(
+	finalKeys: string[],
+	rootByKey: ReadonlyMap<string, string>,
+	finalGroupsByRoot: ReadonlyMap<string, FinalGroupMembers>,
+	getPageSignals: (
+		pageIndex: number,
+	) => { paths: readonly string[]; stylesheetHrefs: readonly string[] } | undefined,
+	onPartitionReport: ((report: ClusterPartitionReport) => void) | undefined,
+): {
+	rootByKey: ReadonlyMap<string, string>;
+	finalGroupsByRoot: ReadonlyMap<string, FinalGroupMembers>;
+} {
+	if (!onPartitionReport) return { rootByKey, finalGroupsByRoot };
+
+	const clusteredPages: ClusteredPage[] = [];
+	for (const [finalKey, group] of finalGroupsByRoot) {
+		for (const [i, tokens] of group.tokenSets.entries()) {
+			const pageIndex = group.pageIndices[i] ?? -1;
+			if (pageIndex === -1) continue;
+			const signals = getPageSignals(pageIndex);
+			if (!signals) continue;
+			clusteredPages.push({
+				clusterKey: finalKey,
+				tokens,
+				paths: signals.paths,
+				stylesheetHrefs: signals.stylesheetHrefs,
+			});
+		}
+	}
+
+	const report = validateClusterPartition(clusteredPages);
+	onPartitionReport(report);
+
+	// `findCrossClusterDuplicates` only ever returns entries that already
+	// satisfy this condition (its exact-match pass sets `similarity: 1`
+	// unconditionally; its near-match pass requires `corroboratedByMirrorAxis`
+	// to accept a pair at all) — this filter is a defensive invariant check,
+	// not something that currently narrows the result, kept so this call site
+	// keeps working correctly if that policy ever loosens.
+	const safeToMerge = report.crossClusterDuplicates.filter(
+		(d) => d.similarity === 1 || d.corroboratedByMirrorAxis,
+	);
+	if (safeToMerge.length === 0) return { rootByKey, finalGroupsByRoot };
+
+	const mergedKeys = mergeValidatedClusters(finalKeys, safeToMerge);
+	const renameMap = new Map<string, string>();
+	for (const [i, mergedKey] of mergedKeys.entries()) {
+		if (finalKeys[i] !== mergedKey) renameMap.set(finalKeys[i]!, mergedKey);
+		finalKeys[i] = mergedKey;
+	}
+
+	const mergedFinalGroupsByRoot = new Map<string, FinalGroupMembers>();
+	for (const [key, group] of finalGroupsByRoot) {
+		const target = renameMap.get(key) ?? key;
+		const existing = mergedFinalGroupsByRoot.get(target);
+		mergedFinalGroupsByRoot.set(target, {
+			tokenSets: [...(existing?.tokenSets ?? []), ...group.tokenSets],
+			landmarkInstances: [
+				...(existing?.landmarkInstances ?? []),
+				...group.landmarkInstances,
+			],
+			pageIndices: [...(existing?.pageIndices ?? []), ...group.pageIndices],
+		});
+	}
+
+	const mergedRootByKey = new Map<string, string>();
+	for (const [unitKey, stageBRoot] of rootByKey) {
+		mergedRootByKey.set(unitKey, renameMap.get(stageBRoot) ?? stageBRoot);
+	}
+
+	return { rootByKey: mergedRootByKey, finalGroupsByRoot: mergedFinalGroupsByRoot };
+}
+
+/**
  * Builds and emits one {@link ClusterReason} per final cluster via
  * `onClusterReason`, from data Stage A/B already computed for clustering
  * itself: `crossBlockUnits` (Stage A's pre-merge units, each carrying its
@@ -509,6 +615,48 @@ export type ResolvePageClusterKeysOptions = TokenizeOptions &
 		 * ```
 		 */
 		onClusterReason?: (clusterKey: string, reason: ClusterReason) => void;
+		/**
+		 * Optional observability hook invoked once per run with a
+		 * {@link ClusterPartitionReport} — evidence that Stage A/B's finished
+		 * partition may need correcting, from
+		 * {@link ./validate-cluster-partition.js | validateClusterPartition}.
+		 *
+		 * Setting this option does two things, both gated on its presence the
+		 * same way `onClusterReason` gates its own bookkeeping (existing
+		 * callers that omit it pay nothing and see no behavior change):
+		 *
+		 * 1. Computes the report from Stage B's finished grouping (no
+		 *    re-tokenization — reuses the token sets Stage A/B already hold).
+		 * 2. Applies a fixed, built-in auto-merge policy to the *actual*
+		 *    returned cluster keys before this callback (and
+		 *    `onClusterReason`) ever sees them: every
+		 *    `report.crossClusterDuplicates` entry with `similarity === 1` or
+		 *    `corroboratedByMirrorAxis: true` is merged via
+		 *    {@link ./merge-validated-clusters.js | mergeValidatedClusters}.
+		 *    This is the one part of this library where an option changes the
+		 *    returned `clusterKey`s themselves, not just side-channel
+		 *    metadata — a caller who wants a *different* merge policy (or
+		 *    none at all) should omit this option and call
+		 *    `validateClusterPartition`/`findCrossClusterDuplicates`/
+		 *    `mergeValidatedClusters` directly on this function's own output.
+		 *
+		 * On the streaming path (`pageCount > CORPUS_INLINE_THRESHOLD`), the
+		 * report is built only from pages Stage A/B actually retained token
+		 * sets for — reservoir-sampled block representatives, not pages
+		 * assigned in Pass 1b — the same sampling trade-off Stage B itself
+		 * already makes for corpora too large to hold in full. Any merge the
+		 * sampled evidence justifies is still applied to every page sharing
+		 * the merged keys, sampled or not.
+		 * @example
+		 * ```ts
+		 * const keys = await resolvePageClusterKeys(pages, {
+		 *   onPartitionReport: (report) => {
+		 *     for (const c of report.cohesion) if (c.suspicious) console.warn(c);
+		 *   },
+		 * });
+		 * ```
+		 */
+		onPartitionReport?: (report: ClusterPartitionReport) => void;
 	};
 
 /**
@@ -685,10 +833,18 @@ export function resolvePageClusterKeysInMemory(
 		}
 	}
 
-	emitClusterReasons(
-		crossBlockUnits,
+	const validated = validateAndMergePartition(
+		finalKeys,
 		rootByKey,
 		finalGroupsByRoot,
+		(i) => pages[i],
+		options?.onPartitionReport,
+	);
+
+	emitClusterReasons(
+		crossBlockUnits,
+		validated.rootByKey,
+		validated.finalGroupsByRoot,
 		reasonsByBlockKey,
 		siblingUnitKeysByBlock,
 		onClusterReason,
@@ -825,10 +981,18 @@ async function resolveSmallCorpusWithProgress(
 		}
 	}
 
-	emitClusterReasons(
-		crossBlockUnits,
+	const validated = validateAndMergePartition(
+		finalKeys,
 		rootByKey,
 		finalGroupsByRoot,
+		(i) => pages[i],
+		options?.onPartitionReport,
+	);
+
+	emitClusterReasons(
+		crossBlockUnits,
+		validated.rootByKey,
+		validated.finalGroupsByRoot,
 		reasonsByBlockKey,
 		siblingUnitKeysByBlock,
 		onClusterReason,
@@ -1224,10 +1388,23 @@ export async function resolvePageClusterKeys(
 		}
 	}
 
-	emitClusterReasons(
-		crossBlockUnits,
+	// `blockingSignals` (built during Pass 0, held for the whole call) has an
+	// entry for every page in the corpus, sampled or not — only the pages
+	// `finalGroupsByRoot` actually kept a token set for (reservoir-sampled
+	// block representatives) end up in the report, per `onPartitionReport`'s
+	// own JSDoc.
+	const validated = validateAndMergePartition(
+		finalKeys,
 		rootByKey,
 		finalGroupsByRoot,
+		(i) => blockingSignals[i],
+		options?.onPartitionReport,
+	);
+
+	emitClusterReasons(
+		crossBlockUnits,
+		validated.rootByKey,
+		validated.finalGroupsByRoot,
 		reasonsByBlockKey,
 		siblingUnitKeysByBlock,
 		onClusterReason,

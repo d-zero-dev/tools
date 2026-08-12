@@ -83,6 +83,18 @@ describe('parseArgs', () => {
 		});
 	});
 
+	test('--validation-file takes a value', () => {
+		expect(parseArgs(['--validation-file', 'validation.json'])).toEqual({
+			validationFile: 'validation.json',
+		});
+	});
+
+	test('--validation-file without a value flags an error', () => {
+		expect(parseArgs(['--validation-file'])).toEqual({
+			unknownFlag: '--validation-file requires a value',
+		});
+	});
+
 	test('unknown flag is captured', () => {
 		expect(parseArgs(['--nope'])).toEqual({ unknownFlag: '--nope' });
 	});
@@ -169,6 +181,19 @@ describe('runCli', () => {
 			version: '0.0.0',
 		});
 		expect(stdout.read()).toMatch(/--cluster-reasons-file/);
+	});
+
+	test('--help mentions --validation-file', async () => {
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		await runCli({
+			stdin: makeStdin(''),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: ['--help'],
+			version: '0.0.0',
+		});
+		expect(stdout.read()).toMatch(/--validation-file/);
 	});
 
 	test('--version prints version and exits 0', async () => {
@@ -403,5 +428,75 @@ describe('runCli', () => {
 		expect(code).toBe(0);
 		const line = stdout.read().split('\n').find(Boolean);
 		expect(JSON.parse(line!)).not.toHaveProperty('landmarks');
+	});
+
+	test('--validation-file writes a JSON-safe partition report (mirrorAxis.values as an array)', async () => {
+		// 3 templates mirrored under 2 language directories — enough distinct
+		// skeletons for detectMirrorAxis's minSkeletonCount to accept the
+		// language position as a real axis.
+		const templates: Record<string, string> = {
+			faq: '<article><h1>FAQ</h1><dl><dt>Q</dt><dd>A</dd></dl></article>',
+			access: '<article><h1>Access</h1><table><tr><td>map</td></tr></table></article>',
+			gallery: '<article><h1>Gallery</h1><ul><li><img></li></ul></article>',
+		};
+		const input = Object.entries(templates)
+			.flatMap(([template, body]) =>
+				['en', 'zh'].map((lang) =>
+					JSON.stringify({
+						id: `${lang}-${template}`,
+						paths: [lang, template, 'index.html'],
+						stylesheetHrefs: [`https://example.test/${lang}/${template}/page.css`],
+						html: `<html><body><header>H</header><main>${body}</main><footer>F</footer></body></html>`,
+					}),
+				),
+			)
+			.join('\n');
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		const dir = await mkdtemp(path.join(tmpdir(), 'page-cluster-cli-'));
+		const validationFile = path.join(dir, 'validation.json');
+		try {
+			const code = await runCli({
+				stdin: makeStdin(input),
+				stdout: stdout.stream,
+				stderr: stderr.stream,
+				argv: ['--validation-file', validationFile],
+				version: '0.0.0',
+			});
+			expect(code).toBe(0);
+
+			const report = JSON.parse(await readFile(validationFile, 'utf8')) as {
+				mirrorAxis: { position: number; values: string[] } | null;
+				cohesion: unknown[];
+				crossClusterDuplicates: unknown[];
+			};
+			expect(report.mirrorAxis).toEqual({ position: 0, values: ['en', 'zh'] });
+			expect(Array.isArray(report.cohesion)).toBe(true);
+			expect(Array.isArray(report.crossClusterDuplicates)).toBe(true);
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
+	});
+
+	test('without --validation-file, no validation file is written', async () => {
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		const dir = await mkdtemp(path.join(tmpdir(), 'page-cluster-cli-'));
+		const validationFile = path.join(dir, 'validation.json');
+		try {
+			const code = await runCli({
+				stdin: makeStdin(
+					JSON.stringify({ id: 'a', html: '<body><header>H</header></body>' }),
+				),
+				stdout: stdout.stream,
+				stderr: stderr.stream,
+				argv: [],
+				version: '0.0.0',
+			});
+			expect(code).toBe(0);
+			await expect(readFile(validationFile, 'utf8')).rejects.toThrow();
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
 	});
 });

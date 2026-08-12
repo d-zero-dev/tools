@@ -11,6 +11,7 @@ import type {
 	ProgressEvent,
 	ResolvePageClusterKeysOptions,
 } from './resolve-page-cluster-keys.js';
+import type { ClusterPartitionReport } from './validate-cluster-partition.js';
 
 import { writeFile } from 'node:fs/promises';
 import process from 'node:process';
@@ -26,13 +27,14 @@ import { resolvePageClusterKeys } from './resolve-page-cluster-keys.js';
 type CliArgs = {
 	readonly contentBlockAttribute?: string;
 	readonly clusterReasonsFile?: string;
+	readonly validationFile?: string;
 	readonly help?: boolean;
 	readonly version?: boolean;
 	readonly unknownFlag?: string;
 };
 
 const HELP_TEXT = `Usage:
-  page-cluster [--content-block-attribute <name>] [--cluster-reasons-file <path>] < pages.jsonl > clusters.jsonl
+  page-cluster [--content-block-attribute <name>] [--cluster-reasons-file <path>] [--validation-file <path>] < pages.jsonl > clusters.jsonl
 
 Input (JSONL, one page per line):
   {
@@ -70,6 +72,29 @@ Output (JSONL, one line per input page, in input order):
     }
   }
 
+  With --validation-file <path>, a separate JSON file is written once
+  processing completes, checking the finished partition against itself:
+  whether pages that ended up in different clusters are nonetheless
+  structurally identical or near-identical (a likely over-split), and
+  whether any single cluster's own members actually agree with each other
+  (a likely over-merge). Registering this flag also applies a built-in
+  auto-merge to the clusterKeys in the stdout output above: any pair of
+  clusters found byte-identical, or near-identical and corroborated by a
+  detected URL mirror axis (e.g. a language directory), is merged before
+  output — see ClusterPartitionReport's own JSDoc for the exact policy.
+  {
+    "mirrorAxis": { "position": 0, "values": ["en", "zh"] },
+    "cohesion": [
+      { "clusterKey": "...", "memberCount": 42, "sampledMemberCount": 40,
+        "medianPairSimilarity": 0.91, "p10PairSimilarity": 0.78,
+        "minPairSimilarity": 0.6, "suspicious": false }
+    ],
+    "crossClusterDuplicates": [
+      { "clusterKeyA": "...", "clusterKeyB": "...", "similarity": 1,
+        "corroboratedByMirrorAxis": true }
+    ]
+  }
+
 Options:
   --content-block-attribute <name>   CMS-provided attribute marking freeform
                                      content blocks that should be stripped
@@ -78,6 +103,10 @@ Options:
                                      object described above to <path> after
                                      processing completes. No page-count
                                      limit.
+  --validation-file <path>           Write the partition-validation report
+                                     described above to <path>, and apply
+                                     its built-in auto-merge to the output
+                                     clusterKeys.
   --help                             Print this help and exit.
   --version                          Print the package version and exit.
 
@@ -116,6 +145,7 @@ export function parseArgs(argv: readonly string[]): CliArgs {
 	const out: {
 		contentBlockAttribute?: string;
 		clusterReasonsFile?: string;
+		validationFile?: string;
 		help?: boolean;
 		version?: boolean;
 		unknownFlag?: string;
@@ -150,6 +180,16 @@ export function parseArgs(argv: readonly string[]): CliArgs {
 					return out;
 				}
 				out.clusterReasonsFile = next;
+				i++;
+				break;
+			}
+			case '--validation-file': {
+				const next = argv[i + 1];
+				if (next === undefined) {
+					out.unknownFlag = `${arg} requires a value`;
+					return out;
+				}
+				out.validationFile = next;
 				i++;
 				break;
 			}
@@ -366,6 +406,32 @@ function formatProgressLine(event: ProgressEvent, elapsedSec: number): ProgressL
 }
 
 /**
+ * `JSON.stringify` serializes a `Set` as `{}` — `ClusterPartitionReport`'s
+ * only non-JSON-safe field is `mirrorAxis.values`, so this is the one spot
+ * that needs converting before the report can be written to a file.
+ * @param report
+ */
+function toJsonSafePartitionReport(report: ClusterPartitionReport): {
+	readonly mirrorAxis: {
+		readonly position: number;
+		readonly values: readonly string[];
+	} | null;
+	readonly cohesion: ClusterPartitionReport['cohesion'];
+	readonly crossClusterDuplicates: ClusterPartitionReport['crossClusterDuplicates'];
+} {
+	return {
+		mirrorAxis: report.mirrorAxis
+			? {
+					position: report.mirrorAxis.position,
+					values: [...report.mirrorAxis.values].toSorted(),
+				}
+			: null,
+		cohesion: report.cohesion,
+		crossClusterDuplicates: report.crossClusterDuplicates,
+	};
+}
+
+/**
  * Test-friendly entry point: takes the run's stdin/stdout/stderr streams
  * and the parsed CLI flags rather than reading them out of the process
  * globals. `runCli` returns the exit code, allowing the caller (either the
@@ -449,6 +515,10 @@ export async function runCli(options: {
 			? new Map<string, ClusterReason>()
 			: undefined;
 
+		// Same opt-in gate as `reasonsByClusterKey` — `onPartitionReport`
+		// itself gates the underlying validation pass (see its own JSDoc).
+		let partitionReport: ClusterPartitionReport | undefined;
+
 		const resolveOptions: ResolvePageClusterKeysOptions = {
 			contentBlockAttribute: args.contentBlockAttribute,
 			onProgress: (event) => {
@@ -456,6 +526,9 @@ export async function runCli(options: {
 			},
 			onClusterReason: reasonsByClusterKey
 				? (key, reason) => reasonsByClusterKey.set(key, reason)
+				: undefined,
+			onPartitionReport: args.validationFile
+				? (report) => (partitionReport = report)
 				: undefined,
 		};
 
@@ -480,6 +553,18 @@ export async function runCli(options: {
 				await writeFile(
 					args.clusterReasonsFile,
 					JSON.stringify(Object.fromEntries(reasonsByClusterKey), null, 2),
+				);
+			} catch (error) {
+				renderProgress(lanes, useTty, errorLine((error as Error).message));
+				return 1;
+			}
+		}
+
+		if (args.validationFile && partitionReport) {
+			try {
+				await writeFile(
+					args.validationFile,
+					JSON.stringify(toJsonSafePartitionReport(partitionReport), null, 2),
 				);
 			} catch (error) {
 				renderProgress(lanes, useTty, errorLine((error as Error).message));

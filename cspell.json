@@ -19,6 +19,10 @@
 		"unioned",
 		"retags",
 		"Vitter",
+		"dedup",
+		// page-cluster synthetic fixture CSS class abbreviations (global nav / footer nav)
+		"gnav",
+		"fnav",
 
 		//
 		"gaxios",

@@ -339,3 +339,128 @@ describe('mergeCrossBlockClusters shellQuorum (via mergeCrossBlockClusters exerc
 		expect(result.rootByKey.get('B')).toBe('B');
 	});
 });
+
+describe('mergeCrossBlockClusters cohesion guard', () => {
+	test('a hub unit does not absorb several mutually-unrelated units via containment', () => {
+		// `hub`'s own tokens happen to be the union of three otherwise
+		// unrelated templates' tokens (e.g. a page embedding widgets from
+		// several different sections) — each small unit's tokens individually
+		// clear containment (`>= 90%`) against `hub`'s rich vocabulary, the
+		// exact "hub chaining" scenario `assign-contained-clusters.ts`'s own
+		// JSDoc documents a *directed* assignment as only half-solving: `s1`,
+		// `s2`, and `s3` each individually gets assigned to `hub`, but they
+		// share nothing with *each other*, so pooling all three into `hub`
+		// collapses its own quorum core toward nothing — exactly the
+		// per-merge check this guard adds.
+		const s1Tokens = [
+			'body>main>table>tbody>tr',
+			'body>main>table>tbody>tr>td',
+			'body>main>table>caption',
+		];
+		const s2Tokens = ['body>main>dl>dt', 'body>main>dl>dd', 'body>main>dl>dt>a'];
+		const s3Tokens = [
+			'body>main>form>input',
+			'body>main>form>button',
+			'body>main>form>label',
+		];
+		const hubTokens = [
+			...s1Tokens,
+			...s2Tokens,
+			...s3Tokens,
+			'body>main>.hub-only-section',
+		];
+
+		const hub: CrossBlockUnit = {
+			key: 'hub',
+			memberTokenSets: Array.from({ length: 4 }, () => new Set(hubTokens)),
+			memberLandmarkInstances: toInstances(Array.from({ length: 4 }, () => noLandmarks)),
+		};
+		const s1: CrossBlockUnit = {
+			key: 's1',
+			memberTokenSets: Array.from({ length: 4 }, () => new Set(s1Tokens)),
+			memberLandmarkInstances: toInstances(Array.from({ length: 4 }, () => noLandmarks)),
+		};
+		const s2: CrossBlockUnit = {
+			key: 's2',
+			memberTokenSets: Array.from({ length: 4 }, () => new Set(s2Tokens)),
+			memberLandmarkInstances: toInstances(Array.from({ length: 4 }, () => noLandmarks)),
+		};
+		const s3: CrossBlockUnit = {
+			key: 's3',
+			memberTokenSets: Array.from({ length: 4 }, () => new Set(s3Tokens)),
+			memberLandmarkInstances: toInstances(Array.from({ length: 4 }, () => noLandmarks)),
+		};
+
+		const result = mergeCrossBlockClusters([hub, s1, s2, s3], {});
+		expect(result.rootByKey.get('hub')).toBe('hub');
+		expect(result.rootByKey.get('s1')).toBe('s1');
+		expect(result.rootByKey.get('s2')).toBe('s2');
+		expect(result.rootByKey.get('s3')).toBe('s3');
+	});
+
+	test('does not block the shape-Jaccard merge it was added alongside', () => {
+		// Regression guard for the guard itself: shape-Jaccard pairs units
+		// whose *raw* tokens are disjoint by construction (same skeleton,
+		// different BEM class names), so a cohesion check against raw tokens
+		// would reject this merge outright — this is why the guard compares
+		// class-name-stripped tokens instead (see `mergeCrossBlockClusters`'s
+		// own body).
+		const unit1: CrossBlockUnit = {
+			key: 'reports',
+			memberTokenSets: Array.from(
+				{ length: 4 },
+				() =>
+					new Set([
+						'body>main>section.c-reports',
+						'body>main>section.c-reports>ul.c-reports__list',
+					]),
+			),
+			memberLandmarkInstances: toInstances(Array.from({ length: 4 }, () => noLandmarks)),
+		};
+		const unit2: CrossBlockUnit = {
+			key: 'projects',
+			memberTokenSets: Array.from(
+				{ length: 4 },
+				() =>
+					new Set([
+						'body>main>section.c-projects',
+						'body>main>section.c-projects>ul.c-projects__list',
+					]),
+			),
+			memberLandmarkInstances: toInstances(Array.from({ length: 4 }, () => noLandmarks)),
+		};
+		const result = mergeCrossBlockClusters([unit1, unit2], {});
+		expect(result.rootByKey.get('reports')).toBe(result.rootByKey.get('projects'));
+	});
+
+	test('units whose L2 signature collapses to the same shape do not falsely merge', () => {
+		// Every unit's tokens sit under the same `main>article>.wrap` chain —
+		// `l2Signature`'s "main plus up to 2 shape-stripped levels" truncation
+		// reduces all 8 to the identical `main>article>*` key set (see
+		// `hasDiscriminatingL2Signatures`'s own JSDoc) — while each unit's own
+		// distinctive content is a genuinely different tag skeleton one level
+		// deeper, different enough that fine stage's core-based checks find no
+		// merge either, so the round reaches the degenerate L2 comparison.
+		const skeletons = [
+			'body>main>article>.wrap>table>tbody>tr',
+			'body>main>article>.wrap>dl>dt',
+			'body>main>article>.wrap>form>input',
+			'body>main>article>.wrap>ul>li',
+			'body>main>article>.wrap>ol>li',
+			'body>main>article>.wrap>figure>img',
+			'body>main>article>.wrap>video',
+			'body>main>article>.wrap>iframe',
+		];
+		const units: CrossBlockUnit[] = skeletons.map((token, i) => ({
+			key: `t${i}`,
+			memberTokenSets: Array.from(
+				{ length: 4 },
+				() => new Set([token, `${token}-extra`]),
+			),
+			memberLandmarkInstances: toInstances(Array.from({ length: 4 }, () => noLandmarks)),
+		}));
+
+		const result = mergeCrossBlockClusters(units, {});
+		expect(new Set(result.rootByKey.values()).size).toBe(skeletons.length);
+	});
+});
