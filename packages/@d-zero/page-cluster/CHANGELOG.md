@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.7](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.6...@d-zero/page-cluster@0.5.7) (2026-08-12)
+
+### Bug Fixes
+
+- **page-cluster:** guard cross-block merges against cohesion collapse ([d136f2a](https://github.com/d-zero-dev/tools/commit/d136f2a104f5b30f6bfff15802a9cc40a6bbfe71))
+
 ## [0.5.6](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.5...@d-zero/page-cluster@0.5.6) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/page-cluster
