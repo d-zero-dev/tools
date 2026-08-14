@@ -4,7 +4,12 @@ import type { BaseCLIOptions } from '@d-zero/cli-core';
 
 import { createRequire } from 'node:module';
 
-import { createCLI, parseCommonOptions, parseList } from '@d-zero/cli-core';
+import {
+	createCLI,
+	parseCommonOptions,
+	parseList,
+	unwrapSuppressedError,
+} from '@d-zero/cli-core';
 import { parseDevicesOption } from '@d-zero/puppeteer-page-scan';
 
 import { replicate } from './index.js';
@@ -108,16 +113,20 @@ try {
 		password,
 	});
 } catch (error) {
-	if (error instanceof Error) {
-		// eslint-disable-next-line no-console
-		console.error('❌ Error:', error.message);
-		if (options.verbose) {
+	// SuppressedError（using スコープ内で本体と dispose の両方が例外を投げた場合）
+	// を分解し、定型メッセージの裏に隠れる根本原因を両方とも出力する
+	for (const cause of unwrapSuppressedError(error)) {
+		if (cause instanceof Error) {
 			// eslint-disable-next-line no-console
-			console.error('Stack trace:', error.stack);
+			console.error('❌ Error:', cause.message);
+			if (options.verbose) {
+				// eslint-disable-next-line no-console
+				console.error('Stack trace:', cause.stack);
+			}
+		} else {
+			// eslint-disable-next-line no-console
+			console.error('❌ Unknown error:', cause);
 		}
-	} else {
-		// eslint-disable-next-line no-console
-		console.error('❌ Unknown error:', error);
 	}
 	process.exit(1);
 }
