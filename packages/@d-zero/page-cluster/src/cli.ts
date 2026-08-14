@@ -16,6 +16,7 @@ import type { ClusterPartitionReport } from './validate-cluster-partition.js';
 import { writeFile } from 'node:fs/promises';
 import process from 'node:process';
 
+import { unwrapSuppressedError } from '@d-zero/cli-core';
 import { Lanes } from '@d-zero/dealer';
 
 import { resolvePageClusterKeys } from './resolve-page-cluster-keys.js';
@@ -367,6 +368,21 @@ function errorLine(message: string): ProgressLine {
 }
 
 /**
+ * Formats a caught error for `errorLine()`. `SuppressedError` (thrown when a
+ * `using`-scoped body error and a disposal error occur together) hides the
+ * real cause behind a generic message, so its underlying causes are
+ * unwrapped and joined into one line — `errorLine()`/`renderProgress()` must
+ * still be called exactly once per catch site, since Lanes' TTY repaint only
+ * keeps the latest frame (see {@link errorLine}'s JSDoc).
+ * @param error
+ */
+function formatErrorMessage(error: unknown): string {
+	return unwrapSuppressedError(error)
+		.map((cause) => (cause instanceof Error ? cause.message : String(cause)))
+		.join(' / ');
+}
+
+/**
  * Maps a library `ProgressEvent` to a human-facing `ProgressLine`. The
  * verbose arm keeps the historical `pass0:` / `pass1:` / `pass1b:` /
  * `stage-b:` phase tokens so callers who grep stderr by phase name (a
@@ -472,7 +488,10 @@ export async function runCli(options: {
 	// pass in) does — reading it defensively lets both real usage and
 	// unit-test doubles work without a separate `--no-progress` flag.
 	const useTty = (options.stderr as { isTTY?: boolean }).isTTY === true;
-	const lanes = new Lanes({ stream: options.stderr, verbose: !useTty });
+	// `using` により、この関数を抜けるすべての経路（下記の各 `return` は
+	// もちろん、想定外の例外を含む）で確実に lanes.close() が呼ばれ、
+	// Display の setTimeout タイマーが解放される。
+	using lanes = new Lanes({ stream: options.stderr, verbose: !useTty });
 	// Verbose Lanes prepends `#header` to every `update()` line. Without
 	// this seed call the header would be undefined and each progress line
 	// would begin with the literal string `undefined ` — bug caught by
@@ -484,98 +503,90 @@ export async function runCli(options: {
 	const startTime = Date.now();
 	const elapsed = () => Math.max(0, Math.round((Date.now() - startTime) / 1000));
 
-	// Every early return past this point must run through the finally block
-	// so `lanes.close()` releases the display's setTimeout timer — without
-	// it a `return 1` on a stdin parse error would leave the process
-	// hanging on the timer's next tick.
+	renderProgress(lanes, useTty, READING_INPUT);
+
+	// Load every JSONL line into memory once so the ids array stays
+	// parallel to the pages array — the streaming driver reads its
+	// factory twice, and stdin is a one-shot pipe.
+	const ids: (string | number | undefined)[] = [];
+	const pages: PageClusterSignals[] = [];
 	try {
-		renderProgress(lanes, useTty, READING_INPUT);
-
-		// Load every JSONL line into memory once so the ids array stays
-		// parallel to the pages array — the streaming driver reads its
-		// factory twice, and stdin is a one-shot pipe.
-		const ids: (string | number | undefined)[] = [];
-		const pages: PageClusterSignals[] = [];
-		try {
-			for await (const { id, page } of readJsonlPages(options.stdin)) {
-				ids.push(id);
-				pages.push(page);
-			}
-		} catch (error) {
-			renderProgress(lanes, useTty, errorLine((error as Error).message));
-			return 1;
+		for await (const { id, page } of readJsonlPages(options.stdin)) {
+			ids.push(id);
+			pages.push(page);
 		}
-
-		renderProgress(lanes, useTty, readingDoneLine(pages.length));
-
-		// Only worth collecting when the caller asked for the file — a
-		// ClusterReason Map costs bookkeeping proportional to cluster count,
-		// not page count, but there's no reason to pay even that when unused.
-		const reasonsByClusterKey = args.clusterReasonsFile
-			? new Map<string, ClusterReason>()
-			: undefined;
-
-		// Same opt-in gate as `reasonsByClusterKey` — `onPartitionReport`
-		// itself gates the underlying validation pass (see its own JSDoc).
-		let partitionReport: ClusterPartitionReport | undefined;
-
-		const resolveOptions: ResolvePageClusterKeysOptions = {
-			contentBlockAttribute: args.contentBlockAttribute,
-			onProgress: (event) => {
-				renderProgress(lanes, useTty, formatProgressLine(event, elapsed()));
-			},
-			onClusterReason: reasonsByClusterKey
-				? (key, reason) => reasonsByClusterKey.set(key, reason)
-				: undefined,
-			onPartitionReport: args.validationFile
-				? (report) => (partitionReport = report)
-				: undefined,
-		};
-
-		let clusterKeys: string[];
-		try {
-			clusterKeys = await resolvePageClusterKeys(() => pages, resolveOptions);
-		} catch (error) {
-			renderProgress(lanes, useTty, errorLine((error as Error).message));
-			return 1;
-		}
-
-		const clusterCount = new Set(clusterKeys).size;
-		renderProgress(lanes, useTty, doneLine(pages.length, clusterCount, elapsed()));
-
-		for (const [index, key] of clusterKeys.entries()) {
-			const row = { id: ids[index] ?? index, clusterKey: key };
-			options.stdout.write(`${JSON.stringify(row)}\n`);
-		}
-
-		if (args.clusterReasonsFile && reasonsByClusterKey) {
-			try {
-				await writeFile(
-					args.clusterReasonsFile,
-					JSON.stringify(Object.fromEntries(reasonsByClusterKey), null, 2),
-				);
-			} catch (error) {
-				renderProgress(lanes, useTty, errorLine((error as Error).message));
-				return 1;
-			}
-		}
-
-		if (args.validationFile && partitionReport) {
-			try {
-				await writeFile(
-					args.validationFile,
-					JSON.stringify(toJsonSafePartitionReport(partitionReport), null, 2),
-				);
-			} catch (error) {
-				renderProgress(lanes, useTty, errorLine((error as Error).message));
-				return 1;
-			}
-		}
-
-		return 0;
-	} finally {
-		lanes.close();
+	} catch (error) {
+		renderProgress(lanes, useTty, errorLine(formatErrorMessage(error)));
+		return 1;
 	}
+
+	renderProgress(lanes, useTty, readingDoneLine(pages.length));
+
+	// Only worth collecting when the caller asked for the file — a
+	// ClusterReason Map costs bookkeeping proportional to cluster count,
+	// not page count, but there's no reason to pay even that when unused.
+	const reasonsByClusterKey = args.clusterReasonsFile
+		? new Map<string, ClusterReason>()
+		: undefined;
+
+	// Same opt-in gate as `reasonsByClusterKey` — `onPartitionReport`
+	// itself gates the underlying validation pass (see its own JSDoc).
+	let partitionReport: ClusterPartitionReport | undefined;
+
+	const resolveOptions: ResolvePageClusterKeysOptions = {
+		contentBlockAttribute: args.contentBlockAttribute,
+		onProgress: (event) => {
+			renderProgress(lanes, useTty, formatProgressLine(event, elapsed()));
+		},
+		onClusterReason: reasonsByClusterKey
+			? (key, reason) => reasonsByClusterKey.set(key, reason)
+			: undefined,
+		onPartitionReport: args.validationFile
+			? (report) => (partitionReport = report)
+			: undefined,
+	};
+
+	let clusterKeys: string[];
+	try {
+		clusterKeys = await resolvePageClusterKeys(() => pages, resolveOptions);
+	} catch (error) {
+		renderProgress(lanes, useTty, errorLine(formatErrorMessage(error)));
+		return 1;
+	}
+
+	const clusterCount = new Set(clusterKeys).size;
+	renderProgress(lanes, useTty, doneLine(pages.length, clusterCount, elapsed()));
+
+	for (const [index, key] of clusterKeys.entries()) {
+		const row = { id: ids[index] ?? index, clusterKey: key };
+		options.stdout.write(`${JSON.stringify(row)}\n`);
+	}
+
+	if (args.clusterReasonsFile && reasonsByClusterKey) {
+		try {
+			await writeFile(
+				args.clusterReasonsFile,
+				JSON.stringify(Object.fromEntries(reasonsByClusterKey), null, 2),
+			);
+		} catch (error) {
+			renderProgress(lanes, useTty, errorLine(formatErrorMessage(error)));
+			return 1;
+		}
+	}
+
+	if (args.validationFile && partitionReport) {
+		try {
+			await writeFile(
+				args.validationFile,
+				JSON.stringify(toJsonSafePartitionReport(partitionReport), null, 2),
+			);
+		} catch (error) {
+			renderProgress(lanes, useTty, errorLine(formatErrorMessage(error)));
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 /**
