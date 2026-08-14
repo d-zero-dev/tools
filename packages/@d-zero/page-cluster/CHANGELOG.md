@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.7...@d-zero/page-cluster@0.6.0) (2026-08-14)
+
+### Features
+
+- **page-cluster:** use `using` for Lanes cleanup and unwrap SuppressedError ([8f34112](https://github.com/d-zero-dev/tools/commit/8f34112ec92e7e0362ba7900ded67700a504bf5b))
+
 ## [0.5.7](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.5.6...@d-zero/page-cluster@0.5.7) (2026-08-12)
 
 ### Bug Fixes

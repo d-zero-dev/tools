@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.10.4...@d-zero/dealer@1.11.0) (2026-08-14)
+
+### Features
+
+- **dealer:** add Symbol.dispose to Display/Lanes and fix deal() cleanup timing ([92a2528](https://github.com/d-zero-dev/tools/commit/92a2528df082b9377759d7c53d0746b4810b2e73))
+
 ## [1.10.4](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.10.3...@d-zero/dealer@1.10.4) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/dealer

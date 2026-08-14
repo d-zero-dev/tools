@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.7](https://github.com/d-zero-dev/tools/compare/@d-zero/fs@0.2.6...@d-zero/fs@0.2.7) (2026-08-14)
+
+### Bug Fixes
+
+- **fs:** destroy streams and register error listeners before finalize/extract ([bf01563](https://github.com/d-zero-dev/tools/commit/bf01563488bd28f4f8e0a27667006471adca47f1))
+
 ## [0.2.6](https://github.com/d-zero-dev/tools/compare/@d-zero/fs@0.2.5...@d-zero/fs@0.2.6) (2026-07-02)
 
 ### Bug Fixes

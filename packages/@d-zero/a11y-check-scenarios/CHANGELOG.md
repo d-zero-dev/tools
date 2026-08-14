@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.51](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-scenarios@0.4.50...@d-zero/a11y-check-scenarios@0.4.51) (2026-08-14)
+
+### Bug Fixes
+
+- **a11y-check-scenarios:** release console listener each loop iteration ([8b6088b](https://github.com/d-zero-dev/tools/commit/8b6088b4105506837d89bc3d2fe06a9ece681e18))
+
 ## [0.4.50](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check-scenarios@0.4.49...@d-zero/a11y-check-scenarios@0.4.50) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/a11y-check-scenarios

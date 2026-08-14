@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.9.7...@d-zero/google-sheets@0.10.0) (2026-08-14)
+
+### Features
+
+- **google-sheets:** add Symbol.asyncDispose to Sheet and SheetTable ([3a82da7](https://github.com/d-zero-dev/tools/commit/3a82da76f0ca1b575dc87addbbe0bc89dd823043))
+
 ## [0.9.7](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.9.6...@d-zero/google-sheets@0.9.7) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/google-sheets

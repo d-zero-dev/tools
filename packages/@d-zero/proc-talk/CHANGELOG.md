@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.31](https://github.com/d-zero-dev/tools/compare/@d-zero/proc-talk@0.4.30...@d-zero/proc-talk@0.4.31) (2026-08-14)
+
+### Bug Fixes
+
+- **proc-talk:** make close() idempotent and add Symbol.asyncDispose ([d8b59ed](https://github.com/d-zero-dev/tools/commit/d8b59edeb62c4582c694db32924c6daed915ff5b))
+
 ## [0.4.30](https://github.com/d-zero-dev/tools/compare/@d-zero/proc-talk@0.4.29...@d-zero/proc-talk@0.4.30) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/proc-talk

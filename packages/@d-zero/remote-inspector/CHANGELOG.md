@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.17](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.6.16...@d-zero/remote-inspector@0.6.17) (2026-08-14)
+
+### Bug Fixes
+
+- **remote-inspector:** unwrap SuppressedError in CLI error output ([52de496](https://github.com/d-zero-dev/tools/commit/52de4967274fe305714223a9bb655222ae6cb42d))
+
 ## [0.6.16](https://github.com/d-zero-dev/tools/compare/@d-zero/remote-inspector@0.6.15...@d-zero/remote-inspector@0.6.16) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/remote-inspector

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.10.17](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.10.16...@d-zero/replicator@0.10.17) (2026-08-14)
+
+### Bug Fixes
+
+- **replicator:** release response listener via disposableListener ([53a72ac](https://github.com/d-zero-dev/tools/commit/53a72ac6cefcb8a481d5cb7d1c861cf765ea214b))
+
 ## [0.10.16](https://github.com/d-zero-dev/tools/compare/@d-zero/replicator@0.10.15...@d-zero/replicator@0.10.16) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/replicator

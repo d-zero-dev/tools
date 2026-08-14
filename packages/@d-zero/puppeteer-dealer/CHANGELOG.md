@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.24](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.7.23...@d-zero/puppeteer-dealer@0.7.24) (2026-08-14)
+
+### Bug Fixes
+
+- **puppeteer-dealer:** dispose ChildProcessManager via await using ([df4ff28](https://github.com/d-zero-dev/tools/commit/df4ff2827498bc27b413ba2d9e35a798a0fd2adb))
+
 ## [0.7.23](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-dealer@0.7.22...@d-zero/puppeteer-dealer@0.7.23) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/puppeteer-dealer

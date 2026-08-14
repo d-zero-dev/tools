@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.23.0](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.22.5...@d-zero/shared@0.23.0) (2026-08-14)
+
+### Features
+
+- **shared:** add Explicit Resource Management helpers and require Node >=24.11 ([1596170](https://github.com/d-zero-dev/tools/commit/15961702e2fee9f62a3a3f77aa189cb4839939c5))
+
 ## [0.22.5](https://github.com/d-zero-dev/tools/compare/@d-zero/shared@0.22.4...@d-zero/shared@0.22.5) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/shared

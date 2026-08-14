@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.2](https://github.com/d-zero-dev/tools/compare/@d-zero/anatomist@0.3.1...@d-zero/anatomist@0.3.2) (2026-08-14)
+
+### Bug Fixes
+
+- **anatomist:** dispose browser/page via await using and unwrap SuppressedError ([d8d7beb](https://github.com/d-zero-dev/tools/commit/d8d7beb0d8fbe6ad0c91a3f8944d8687dbd189ad))
+
 ## [0.3.1](https://github.com/d-zero-dev/tools/compare/@d-zero/anatomist@0.3.0...@d-zero/anatomist@0.3.1) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/anatomist

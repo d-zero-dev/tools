@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.13](https://github.com/d-zero-dev/tools/compare/@d-zero/filematch@1.2.12...@d-zero/filematch@1.2.13) (2026-08-14)
+
+### Bug Fixes
+
+- **filematch:** destroy both streams when one errors during comparison ([b20cd7b](https://github.com/d-zero-dev/tools/commit/b20cd7bed50281781168acc605d73d5565f2ef08))
+
 ## [1.2.12](https://github.com/d-zero-dev/tools/compare/@d-zero/filematch@1.2.11...@d-zero/filematch@1.2.12) (2026-08-04)
 
 ### Bug Fixes

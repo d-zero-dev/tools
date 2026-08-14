@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.2.3](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@4.2.2...@d-zero/beholder@4.2.3) (2026-08-14)
+
+### Bug Fixes
+
+- **beholder:** dispose anchor ElementHandles via AsyncDisposableStack ([c47a97b](https://github.com/d-zero-dev/tools/commit/c47a97b75af919c1dec634526146f2726b1be1e6))
+
 ## [4.2.2](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@4.2.1...@d-zero/beholder@4.2.2) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/beholder

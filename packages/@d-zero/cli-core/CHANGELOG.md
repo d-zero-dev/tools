@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/d-zero-dev/tools/compare/@d-zero/cli-core@1.3.16...@d-zero/cli-core@1.4.0) (2026-08-14)
+
+### Features
+
+- **cli-core:** add unwrapSuppressedError and require Node >=24.11 ([d1645aa](https://github.com/d-zero-dev/tools/commit/d1645aa95aaf9cf1e251734267b3f580e1304fe2))
+
 ## [1.3.16](https://github.com/d-zero-dev/tools/compare/@d-zero/cli-core@1.3.15...@d-zero/cli-core@1.3.16) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/cli-core

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.10.17...@d-zero/a11y-check@0.11.0) (2026-08-14)
+
+### Features
+
+- **a11y-check:** add Symbol.asyncDispose to SpreadsheetReporter ([cdf3c41](https://github.com/d-zero-dev/tools/commit/cdf3c41948f75fbd2e248f44be0a94c346dba1f3))
+
 ## [0.10.17](https://github.com/d-zero-dev/tools/compare/@d-zero/a11y-check@0.10.16...@d-zero/a11y-check@0.10.17) (2026-08-11)
 
 **Note:** Version bump only for package @d-zero/a11y-check

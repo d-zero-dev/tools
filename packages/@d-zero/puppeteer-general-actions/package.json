@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/puppeteer-general-actions",
-	"version": "1.2.6",
+	"version": "1.2.7",
 	"description": "General functions for puppeteer",
 	"author": "D-ZERO",
 	"license": "MIT",

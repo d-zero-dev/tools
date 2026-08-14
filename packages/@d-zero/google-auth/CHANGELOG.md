@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.6](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.7.5...@d-zero/google-auth@0.7.6) (2026-08-14)
+
+### Bug Fixes
+
+- **google-auth:** consolidate waitForAuthCode cleanup via AsyncDisposableStack ([7ffe953](https://github.com/d-zero-dev/tools/commit/7ffe9535857291512331a76697bdf80c299d7eb0))
+
 ## [0.7.5](https://github.com/d-zero-dev/tools/compare/@d-zero/google-auth@0.7.4...@d-zero/google-auth@0.7.5) (2026-07-02)
 
 ### Bug Fixes

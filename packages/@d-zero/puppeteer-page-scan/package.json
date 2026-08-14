@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/puppeteer-page-scan",
-	"version": "4.6.8",
+	"version": "4.6.9",
 	"description": "Scanning page function for puppeteer",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -26,9 +26,9 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/puppeteer-general-actions": "1.2.6",
-		"@d-zero/puppeteer-scroll": "4.0.11",
-		"@d-zero/shared": "0.22.5"
+		"@d-zero/puppeteer-general-actions": "1.2.7",
+		"@d-zero/puppeteer-scroll": "4.0.12",
+		"@d-zero/shared": "0.23.0"
 	},
 	"devDependencies": {
 		"puppeteer": "25.5.0"
