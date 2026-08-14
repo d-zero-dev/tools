@@ -7,6 +7,9 @@
 	"publishConfig": {
 		"access": "public"
 	},
+	"engines": {
+		"node": ">=24.11.0"
+	},
 	"type": "module",
 	"exports": {
 		".": {
@@ -26,10 +29,10 @@
 		"@d-zero/shared": "0.22.5"
 	},
 	"devDependencies": {
-		"puppeteer": "25.3.0"
+		"puppeteer": "25.5.0"
 	},
 	"peerDependencies": {
-		"puppeteer": "25.2.1"
+		"puppeteer": "25.5.0"
 	},
 	"repository": {
 		"type": "git",
