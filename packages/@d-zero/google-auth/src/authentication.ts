@@ -302,6 +302,12 @@ function waitForAuthCode(
 	return new Promise((resolve, reject) => {
 		let redirectUri = '';
 
+		// server.close() / clearTimeout の呼び出しが 4 箇所・3 箇所に分散していたのを
+		// AsyncDisposableStack に一元化する。404 パス（コールバック待機の継続）だけは
+		// 意図的に解放しない — それ以外の 3 経路（成功・エラー・タイムアウト・listen 失敗）
+		// はすべてここで登録した解放処理を通る。
+		const stack = new AsyncDisposableStack();
+
 		const server = http.createServer((req, res) => {
 			const reqUrl = new URL(req.url ?? '/', redirectUri);
 			const code = reqUrl.searchParams.get('code');
@@ -313,8 +319,7 @@ function waitForAuthCode(
 					Connection: 'close',
 				});
 				res.end(authResultHtml(false, error));
-				clearTimeout(timeoutId);
-				server.close();
+				void stack.disposeAsync();
 				reject(new Error(`Authentication error: ${error}`));
 				return;
 			}
@@ -325,27 +330,35 @@ function waitForAuthCode(
 					Connection: 'close',
 				});
 				res.end(authResultHtml(true));
-				clearTimeout(timeoutId);
-				server.close();
+				void stack.disposeAsync();
 				resolve({ code, redirectUri });
 				return;
 			}
 
+			// Why not: 認証コールバックの待機を継続する必要があるパスのため、
+			// ここでは stack を解放しない
 			res.writeHead(404, { Connection: 'close' });
 			res.end();
 		});
 
-		const timeoutId = setTimeout(() => {
+		// closeAllConnections() を併用しないと、keep-alive 接続が残っている間
+		// server.close() のコールバックが発火せず dispose が完了しない
+		stack.defer(() => {
+			server.closeAllConnections();
 			server.close();
+		});
+
+		const timeoutId = setTimeout(() => {
+			void stack.disposeAsync();
 			reject(new Error('Authentication timed out (5 minutes)'));
 		}, AUTH_TIMEOUT_MS);
 		timeoutId.unref();
+		stack.use(timeoutId);
 
 		server.listen(0, () => {
 			const address = server.address();
 			if (!address || typeof address === 'string') {
-				clearTimeout(timeoutId);
-				server.close();
+				void stack.disposeAsync();
 				reject(new Error('Failed to start local server'));
 				return;
 			}
