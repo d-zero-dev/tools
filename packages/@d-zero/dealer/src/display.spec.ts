@@ -1,5 +1,6 @@
 import { Writable } from 'node:stream';
 
+import { disposableListener } from '@d-zero/shared/disposable-listener';
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { Display } from './display.js';
@@ -71,24 +72,21 @@ describe('Display listener lifecycle', () => {
 		const resizeBefore = process.stdout.listenerCount('resize');
 		const warnings: Error[] = [];
 		const captureWarning = (warning: Error) => warnings.push(warning);
-		process.on('warning', captureWarning);
+		using _warningListener = disposableListener(process, 'warning', captureWarning);
+		void _warningListener;
 
-		try {
-			// More cycles than the default MaxListeners limit (10) — this leaked
-			// before the fix and triggered MaxListenersExceededWarning
-			for (let i = 0; i < 20; i++) {
-				const display = new Display({ verbose: true });
-				display.close();
-			}
-			// process.emitWarning is dispatched via process.nextTick.
-			// Without yielding the event loop here, captureWarning would
-			// never have run before the assertion below — making this test
-			// silently pass even when a regression emits the warning
-			await new Promise((resolve) => setImmediate(resolve));
-			await new Promise((resolve) => setImmediate(resolve));
-		} finally {
-			process.off('warning', captureWarning);
+		// More cycles than the default MaxListeners limit (10) — this leaked
+		// before the fix and triggered MaxListenersExceededWarning
+		for (let i = 0; i < 20; i++) {
+			const display = new Display({ verbose: true });
+			display.close();
 		}
+		// process.emitWarning is dispatched via process.nextTick.
+		// Without yielding the event loop here, captureWarning would
+		// never have run before the assertion below — making this test
+		// silently pass even when a regression emits the warning
+		await new Promise((resolve) => setImmediate(resolve));
+		await new Promise((resolve) => setImmediate(resolve));
 
 		expect(process.stdout.listenerCount('resize')).toBe(resizeBefore);
 		// Catches the second-tier leak: a regression that keeps listenerCount
@@ -104,6 +102,31 @@ describe('Display listener lifecycle', () => {
 
 		const display = new Display();
 		display.close();
+		display.close();
+
+		expect(process.stdout.listenerCount('resize')).toBe(resizeBefore);
+	});
+
+	test('using releases the resize and SIGINT listeners on scope exit', () => {
+		const resizeBefore = process.stdout.listenerCount('resize');
+		const sigintBefore = process.listenerCount('SIGINT');
+
+		{
+			using display = new Display();
+			expect(display).toBeInstanceOf(Display);
+			expect(process.stdout.listenerCount('resize')).toBe(resizeBefore + 1);
+			expect(process.listeners('SIGINT').length).toBe(sigintBefore + 1);
+		}
+
+		expect(process.stdout.listenerCount('resize')).toBe(resizeBefore);
+		expect(process.listeners('SIGINT').length).toBe(sigintBefore);
+	});
+
+	test('[Symbol.dispose] and close() both delegate to the same release logic (idempotent together)', () => {
+		const resizeBefore = process.stdout.listenerCount('resize');
+
+		const display = new Display();
+		display[Symbol.dispose]();
 		display.close();
 
 		expect(process.stdout.listenerCount('resize')).toBe(resizeBefore);

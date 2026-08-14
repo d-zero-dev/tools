@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 
 import { deal } from './deal.js';
 
@@ -123,5 +123,33 @@ describe('deal', () => {
 
 		// interval 待機を挟んでも先頭割り込みの順序は維持される
 		expect(order).toEqual([0, 2, 1]);
+	});
+
+	test('setup callback throwing still releases lanes (no leaked SIGINT/resize listeners)', async () => {
+		// verbose: false（デフォルト）でないと Display は SIGINT ハンドラを登録しないため、
+		// このテストは非 verbose モードで実行し、`using lanes` が例外時にも
+		// 解放されることを直接観測する
+		const stdoutWriteSpy = vi
+			.spyOn(process.stdout, 'write')
+			.mockImplementation(() => true);
+		const resizeBefore = process.stdout.listenerCount('resize');
+		const sigintBefore = process.listenerCount('SIGINT');
+
+		const items = createItems(1);
+
+		await expect(
+			deal(
+				items,
+				() => {
+					throw new Error('boom');
+				},
+				{ limit: 1 },
+			),
+		).rejects.toThrow('boom');
+
+		expect(process.stdout.listenerCount('resize')).toBe(resizeBefore);
+		expect(process.listenerCount('SIGINT')).toBe(sigintBefore);
+
+		stdoutWriteSpy.mockRestore();
 	});
 });

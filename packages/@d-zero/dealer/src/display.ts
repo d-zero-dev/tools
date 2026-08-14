@@ -64,14 +64,62 @@ export class Display {
 
 		if (!this.#verbose) {
 			this.#sigintHandler = () => {
-				this.close();
+				this.#close();
 				process.exit(130);
 			};
 			process.on('SIGINT', this.#sigintHandler);
 		}
 	}
 
+	/**
+	 * `using` 宣言のスコープ脱出時に呼ばれ、{@link Display.close} と同じ解放処理を行う。
+	 * @example
+	 * ```ts
+	 * {
+	 *   using display = new Display();
+	 *   display.write('processing...');
+	 * } // スコープ脱出時に自動でタイマー・リスナーが解放される
+	 * ```
+	 */
+	[Symbol.dispose]() {
+		this.#close();
+	}
+	/**
+	 * ディスプレイを閉じ、タイマー・resize リスナー・SIGINT ハンドラを解放する。
+	 * 複数回呼び出しても安全（冪等）。
+	 * @deprecated `using` 宣言（`Symbol.dispose`）による自動解放を使用すること。
+	 * スコープと解放タイミングが一致しない場合のみ直接呼び出す。
+	 */
 	close() {
+		this.#close();
+	}
+
+	verboseMode() {
+		this.#verbose = true;
+	}
+	write(...logs: string[]) {
+		// After close() the lifecycle is finished: timers and signal listeners
+		// have been released, so a late write() must not re-arm setTimeout (the
+		// very leak close() exists to stop) or print past a "finalized" frame
+		if (this.#closed) {
+			return;
+		}
+
+		if (this.#verbose) {
+			for (const log of logs) {
+				this.#stream.write(this.#text(log, false) + '\n');
+			}
+			return;
+		}
+
+		this.#stack = [...this.#debugMessages, ...logs];
+		if (this.#timer) {
+			return;
+		}
+
+		this.#enterFrame();
+	}
+	#close() {
 		if (this.#closed) {
 			return;
 		}
@@ -101,33 +149,6 @@ export class Display {
 
 		this.#lastWroteLineNum = 0;
 		this.#stack = null;
-	}
-
-	verboseMode() {
-		this.#verbose = true;
-	}
-
-	write(...logs: string[]) {
-		// After close() the lifecycle is finished: timers and signal listeners
-		// have been released, so a late write() must not re-arm setTimeout (the
-		// very leak close() exists to stop) or print past a "finalized" frame
-		if (this.#closed) {
-			return;
-		}
-
-		if (this.#verbose) {
-			for (const log of logs) {
-				this.#stream.write(this.#text(log, false) + '\n');
-			}
-			return;
-		}
-
-		this.#stack = [...this.#debugMessages, ...logs];
-		if (this.#timer) {
-			return;
-		}
-
-		this.#enterFrame();
 	}
 
 	#countDown(text: string) {
