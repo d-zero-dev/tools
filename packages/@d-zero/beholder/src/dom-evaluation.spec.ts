@@ -213,6 +213,9 @@ function mockAnchorHandle(
 			Promise.resolve({
 				jsonValue: () => Promise.resolve(props[propName] ?? ''),
 			}),
+		// getAnchorList() が AsyncDisposableStack へ登録するため、実際の
+		// ElementHandle と同様 Symbol.asyncDispose を実装しておく必要がある
+		[Symbol.asyncDispose]: () => Promise.resolve(),
 	} as unknown as ElementHandle<Element>;
 }
 
@@ -291,6 +294,7 @@ describe('getAnchorList', () => {
 				textContent();
 				return Promise.resolve({ jsonValue: () => Promise.resolve('text fallback') });
 			},
+			[Symbol.asyncDispose]: () => Promise.resolve(),
 		} as unknown as ElementHandle<Element>;
 		const page = mockPageForAnchors({
 			anchors: [$anchor],
@@ -329,6 +333,7 @@ describe('getAnchorList', () => {
 			remoteObject: () => {
 				throw new Error('Handle is detached');
 			},
+			[Symbol.asyncDispose]: () => Promise.resolve(),
 		} as unknown as ElementHandle<Element>;
 		const $good = mockAnchorHandle('obj-1', { href: 'https://example.com/page' });
 		const page = mockPageForAnchors({
@@ -436,6 +441,7 @@ describe('getAnchorList', () => {
 		const $slow = {
 			remoteObject: () => ({ objectId: 'obj-slow' }),
 			getProperty: () => new Promise(() => {}), // never resolves
+			[Symbol.asyncDispose]: () => Promise.resolve(),
 		} as unknown as ElementHandle<Element>;
 		const page = mockPageForAnchors({
 			anchors: [$fast, $slow],
@@ -490,6 +496,41 @@ describe('getAnchorList', () => {
 		const anchors = await getAnchorList(page);
 
 		expect(anchors).toStrictEqual([]);
+	});
+
+	it('disposes every anchor handle after the list is collected (no CDP handle leak)', async () => {
+		const disposeA = vi.fn(async () => {});
+		const disposeB = vi.fn(async () => {});
+		const $a = {
+			remoteObject: () => ({ objectId: 'obj-a' }),
+			getProperty: () =>
+				Promise.resolve({ jsonValue: () => Promise.resolve('https://example.com/a') }),
+			[Symbol.asyncDispose]: disposeA,
+		} as unknown as ElementHandle<Element>;
+		const $b = {
+			remoteObject: () => ({ objectId: 'obj-b' }),
+			getProperty: () =>
+				Promise.resolve({ jsonValue: () => Promise.resolve('https://example.com/b') }),
+			[Symbol.asyncDispose]: disposeB,
+		} as unknown as ElementHandle<Element>;
+		const page = mockPageForAnchors({
+			anchors: [$a, $b],
+			axNodes: [
+				{ backendDOMNodeId: 1, name: { value: 'A' } },
+				{ backendDOMNodeId: 2, name: { value: 'B' } },
+			],
+			describeNodes: { 'obj-a': 1, 'obj-b': 2 },
+		});
+
+		const anchors = await getAnchorList(page);
+		expect(anchors).toHaveLength(2);
+
+		// 解放は work() 完了後に detached な .finally() で行われるため、
+		// getAnchorList の resolve と同期しない。1 tick 待ってから観測する
+		await new Promise((resolve) => setImmediate(resolve));
+
+		expect(disposeA).toHaveBeenCalledTimes(1);
+		expect(disposeB).toHaveBeenCalledTimes(1);
 	});
 });
 

@@ -23,6 +23,10 @@ export async function toConsoleLogEntry(
 			} catch {
 				return;
 			} finally {
+				// Why not `await using`: dispose() が reject すると SuppressedError に
+				// 包まれ、本来無視したいだけの dispose 失敗が呼び出し元へ伝播してしまう。
+				// ここでは jsonValue() の結果を最優先し、dispose の失敗は握りつぶす
+				// 現状の挙動を維持する。
 				await arg.dispose().catch(() => {});
 			}
 		}),
