@@ -255,6 +255,19 @@ describe('appendRow / flush', () => {
 		expect(sheet.sentCount).toBe(0);
 	});
 
+	test('[Symbol.asyncDispose] flushes the remaining buffer (await using does not lose pending rows)', async () => {
+		const { parent, updateCellsRows } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.appendRow(...Array.from({ length: 3 }, () => eagerRow()));
+		expect(updateCellsRows).toEqual([]);
+
+		await sheet[Symbol.asyncDispose]();
+
+		expect(updateCellsRows).toEqual([3]);
+		expect(sheet.sentCount).toBe(3);
+	});
+
 	test('suspends auto-flush as soon as a lazy row enters the buffer', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
 		const sheet = new Sheet(mockSheet as never, parent as never);
