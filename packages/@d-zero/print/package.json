@@ -7,6 +7,9 @@
 	"publishConfig": {
 		"access": "public"
 	},
+	"engines": {
+		"node": ">=24.11.0"
+	},
 	"type": "module",
 	"exports": {
 		".": {
@@ -35,7 +38,7 @@
 		"dayjs": "1.11.21",
 		"front-matter": "4.0.2",
 		"minimist": "1.2.8",
-		"puppeteer": "25.3.0"
+		"puppeteer": "25.5.0"
 	},
 	"repository": {
 		"type": "git",
