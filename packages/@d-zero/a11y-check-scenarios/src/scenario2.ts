@@ -1,8 +1,10 @@
 import type { ScenarioOptions } from './types.js';
 import type { NeedAnalysis } from '@d-zero/a11y-check-core';
+import type { ConsoleMessage } from 'puppeteer';
 
 import { createScenario } from '@d-zero/a11y-check-core';
 import { Cache } from '@d-zero/shared/cache';
+import { disposableListener } from '@d-zero/shared/disposable-listener';
 import c from 'ansi-colors';
 
 const scenarioId = 'a11y-check/scenario02';
@@ -41,19 +43,27 @@ export default createScenario((options?: ScenarioOptions) => {
 			for (const selector of navigations) {
 				const logBase = `Finding "${selector}"`;
 				logger(`Finding "${selector}"`);
-				page.on('console', (msg) => {
-					const msgType = msg.type();
-					switch (msgType) {
-						case 'error': {
-							logger(`${logBase}: ${c.red(msg.text())}`);
-							break;
+				// `using` により、各ループ反復の終わりで確実にリスナーが解除される。
+				// ループ内で page.on('console', ...) するため、解除しないと
+				// selector の数だけリスナーが累積する。
+				using _consoleListener = disposableListener(
+					page,
+					'console',
+					(msg: ConsoleMessage) => {
+						const msgType = msg.type();
+						switch (msgType) {
+							case 'error': {
+								logger(`${logBase}: ${c.red(msg.text())}`);
+								break;
+							}
+							default: {
+								logger(`${logBase}: ${c.gray(msg.text())}`);
+								break;
+							}
 						}
-						default: {
-							logger(`${logBase}: ${c.gray(msg.text())}`);
-							break;
-						}
-					}
-				});
+					},
+				);
+				void _consoleListener;
 				const outerHTML = await page.evaluate((selector) => {
 					return [...document.querySelectorAll(selector)].map((el) => el.outerHTML);
 				}, selector);
