@@ -215,6 +215,8 @@ describe('runCli', () => {
 				return true;
 			}),
 			end: mockEnd,
+			// cli.ts の `await using outFile` が要求する Symbol.asyncDispose のスタブ
+			[Symbol.asyncDispose]: vi.fn(async () => {}),
 		} as never);
 		vi.mocked(runBatch).mockImplementation((_urls, options?: RunBatchOptions) => {
 			options?.onResult?.({
@@ -249,6 +251,7 @@ describe('runCli', () => {
 			end: vi.fn((callback: (error: Error) => void) => {
 				callback(new Error('disk full'));
 			}),
+			[Symbol.asyncDispose]: vi.fn(async () => {}),
 		} as never);
 
 		const stderr = new PassThrough();

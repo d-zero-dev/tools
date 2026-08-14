@@ -45,15 +45,37 @@ function makeSequentialDealMock() {
 }
 
 describe('runBatch', () => {
-	let mockPage: { close: ReturnType<typeof vi.fn> };
-	let mockBrowser: { newPage: ReturnType<typeof vi.fn>; close: ReturnType<typeof vi.fn> };
+	let mockPage: {
+		close: ReturnType<typeof vi.fn>;
+		[Symbol.asyncDispose]: ReturnType<typeof vi.fn>;
+	};
+	let mockBrowser: {
+		newPage: ReturnType<typeof vi.fn>;
+		close: ReturnType<typeof vi.fn>;
+		[Symbol.asyncDispose]: ReturnType<typeof vi.fn>;
+	};
 
 	beforeEach(() => {
-		mockPage = { close: vi.fn().mockResolvedValue() };
+		// `run-batch.ts` now uses `await using`, which requires a real
+		// `Symbol.asyncDispose` implementation — delegate to the existing
+		// `close` mock so assertions on `close` call counts stay meaningful.
+		mockPage = {
+			close: vi.fn().mockResolvedValue(),
+			[Symbol.asyncDispose]: vi.fn(),
+		};
+		mockPage[Symbol.asyncDispose].mockImplementation(async () => {
+			await mockPage.close();
+		});
+
 		mockBrowser = {
 			newPage: vi.fn().mockResolvedValue(mockPage),
 			close: vi.fn().mockResolvedValue(),
+			[Symbol.asyncDispose]: vi.fn(),
 		};
+		mockBrowser[Symbol.asyncDispose].mockImplementation(async () => {
+			await mockBrowser.close();
+		});
+
 		vi.mocked(launch).mockResolvedValue(mockBrowser as never);
 		vi.mocked(deal).mockImplementation(makeSequentialDealMock() as never);
 		vi.mocked(analyzePageLayout).mockReset().mockResolvedValue([]);

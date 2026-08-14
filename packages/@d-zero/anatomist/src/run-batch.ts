@@ -43,41 +43,38 @@ export async function runBatch(
 	urls: readonly string[],
 	options: RunBatchOptions = {},
 ): Promise<void> {
-	const browser = await launch({ headless: true });
-	try {
-		const items: UrlItem[] = urls.map((url, index) => ({ index, url }));
+	// `await using` により、deal() が例外を投げてもブラウザが確実に閉じられる。
+	// puppeteer の Browser/Page は Symbol.asyncDispose をネイティブ実装している
+	// （型定義上の対応は puppeteer 25.5.0 以降）。
+	await using browser = await launch({ headless: true });
+	const items: UrlItem[] = urls.map((url, index) => ({ index, url }));
 
-		await deal(
-			items,
-			({ url }, update) => {
-				return async () => {
-					update(`analyzing ${url}`);
-					const page = await browser.newPage();
-					try {
-						const results = await analyzePageLayout(page, url, options);
-						for (const result of results) {
-							options.onResult?.(result);
-						}
-					} catch (error) {
-						options.onError?.(url, error);
-					} finally {
-						await page.close();
+	await deal(
+		items,
+		({ url }, update) => {
+			return async () => {
+				update(`analyzing ${url}`);
+				await using page = await browser.newPage();
+				try {
+					const results = await analyzePageLayout(page, url, options);
+					for (const result of results) {
+						options.onResult?.(result);
 					}
-				};
-			},
-			{
-				header: HEADER,
-				// Clamp to 1: `Dealer`'s worker loop (`while (this.#workers.size <
-				// this.#limit)`) never launches a worker when `limit` is `0`, and
-				// `?? 1` alone doesn't catch that — nullish coalescing only
-				// replaces `null`/`undefined`, not an explicit `0` such as
-				// `--concurrency 0` would parse to. Without this clamp, a `0`
-				// hangs the whole run with no output and no error.
-				limit: Math.max(1, options.concurrency ?? 1),
-				stream: options.stderr,
-			},
-		);
-	} finally {
-		await browser.close();
-	}
+				} catch (error) {
+					options.onError?.(url, error);
+				}
+			};
+		},
+		{
+			header: HEADER,
+			// Clamp to 1: `Dealer`'s worker loop (`while (this.#workers.size <
+			// this.#limit)`) never launches a worker when `limit` is `0`, and
+			// `?? 1` alone doesn't catch that — nullish coalescing only
+			// replaces `null`/`undefined`, not an explicit `0` such as
+			// `--concurrency 0` would parse to. Without this clamp, a `0`
+			// hangs the whole run with no output and no error.
+			limit: Math.max(1, options.concurrency ?? 1),
+			stream: options.stderr,
+		},
+	);
 }
