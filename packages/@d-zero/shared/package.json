@@ -7,6 +7,9 @@
 	"publishConfig": {
 		"access": "public"
 	},
+	"engines": {
+		"node": ">=24.11.0"
+	},
 	"type": "module",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -177,6 +180,14 @@
 		"./safe-filepath": {
 			"import": "./dist/safe-filepath.js",
 			"types": "./dist/safe-filepath.d.ts"
+		},
+		"./disposable-listener": {
+			"import": "./dist/disposable-listener.js",
+			"types": "./dist/disposable-listener.d.ts"
+		},
+		"./mkdtemp-disposable": {
+			"import": "./dist/mkdtemp-disposable.js",
+			"types": "./dist/mkdtemp-disposable.d.ts"
 		}
 	},
 	"files": [

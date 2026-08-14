@@ -88,6 +88,22 @@ export class SheetTable<T> {
 	}
 
 	/**
+	 * `await using` 宣言のスコープ脱出時に呼ばれ、内部の {@link Sheet} をフラッシュする。
+	 * バッファに未送信行が残ったままスコープを抜けてデータが欠損するのを防ぐ。
+	 * @example
+	 * ```ts
+	 * {
+	 *   await using table = await SheetTable.create(sheetUrl, sheetName, auth, header);
+	 *   await table.addRecords(records);
+	 * } // スコープ脱出時に自動で内部 Sheet の未送信バッファが flush される
+	 * ```
+	 */
+	async [Symbol.asyncDispose]() {
+		if (this.#sheet) {
+			await this.#sheet[Symbol.asyncDispose]();
+		}
+	}
+	/**
 	 * Appends rows to the sheet.
 	 * @param records - Array of row data keyed by header identifiers
 	 */

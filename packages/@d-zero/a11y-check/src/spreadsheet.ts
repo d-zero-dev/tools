@@ -16,6 +16,23 @@ export class SpreadsheetReporter {
 	// eslint-disable-next-line no-restricted-syntax
 	private constructor() {}
 
+	/**
+	 * `await using` 宣言のスコープ脱出時に呼ばれ、内部の {@link SheetTable} を
+	 * フラッシュする。バッファに未送信行が残ったままスコープを抜けてデータが
+	 * 欠損するのを防ぐ。
+	 * @example
+	 * ```ts
+	 * {
+	 *   await using reporter = await SpreadsheetReporter.setup(sheetUrl, sheetName);
+	 *   await reporter.report(violations);
+	 * } // スコープ脱出時に自動で内部 SheetTable の未送信バッファが flush される
+	 * ```
+	 */
+	async [Symbol.asyncDispose]() {
+		if (this.#table) {
+			await this.#table[Symbol.asyncDispose]();
+		}
+	}
 	async report(results: readonly Violation[]) {
 		if (!this.#table) {
 			throw new Error('Table is not created');

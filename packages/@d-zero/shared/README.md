@@ -6,13 +6,15 @@
 
 ### コアユーティリティ
 
-| Import Path                    | Description                                                            |
-| ------------------------------ | ---------------------------------------------------------------------- |
-| `@d-zero/shared/cache`         | ファイルシステムにデータを保存するシンプルなキャッシュシステムのクラス |
-| `@d-zero/shared/config-reader` | フロントマターをサポートする設定ファイルリーダー                       |
-| `@d-zero/shared/deferred`      | 遅延解決可能なPromiseクラス                                            |
-| `@d-zero/shared/hash`          | 文字列のSHA-256ハッシュ値を生成                                        |
-| `@d-zero/shared/types`         | TypeScript型定義                                                       |
+| Import Path                          | Description                                                                                               |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `@d-zero/shared/cache`               | ファイルシステムにデータを保存するシンプルなキャッシュシステムのクラス                                    |
+| `@d-zero/shared/config-reader`       | フロントマターをサポートする設定ファイルリーダー                                                          |
+| `@d-zero/shared/deferred`            | 遅延解決可能なPromiseクラス                                                                               |
+| `@d-zero/shared/disposable-listener` | イベントリスナーを登録し、`using` 宣言のスコープ脱出時に自動解除する `Disposable` を返す関数              |
+| `@d-zero/shared/mkdtemp-disposable`  | 一時ディレクトリを作成し、`using` 宣言のスコープ脱出時に自動削除する `AsyncDisposable` ハンドルを返す関数 |
+| `@d-zero/shared/hash`                | 文字列のSHA-256ハッシュ値を生成                                                                           |
+| `@d-zero/shared/types`               | TypeScript型定義                                                                                          |
 
 ### ランダム数値生成と遅延機能
 

@@ -3,7 +3,18 @@
 	"compilerOptions": {
 		"composite": true,
 		"outDir": "./dist",
-		"rootDir": "./src"
+		"rootDir": "./src",
+		// Why not the repo-wide `target: "ESNext"`: `scraper.ts`'s `@retryable`
+		// decorator wraps a private method (`#fetchData`), and esbuild's test
+		// transform (vitest) emits invalid output for that combination at
+		// target ESNext ("Private field '#fetchData' must be declared in an
+		// enclosing class"). `tsc` itself has no issue with it — only vitest's
+		// esbuild-based transform does — so this package alone stays on the
+		// `@d-zero/tsconfig` base target until that esbuild limitation is fixed.
+		// TODO: esbuild がデコレータ + private メソッドを target=esnext で正しく
+		// 変換できるようになったら、この override を撤去して root の ESNext
+		// （ネイティブ using / await using emit）に揃える。
+		"target": "es2024"
 	},
 	"references": [
 		{

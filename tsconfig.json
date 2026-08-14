@@ -1,3 +1,6 @@
 {
-	"extends": ["@d-zero/tsconfig"]
+	"extends": ["@d-zero/tsconfig"],
+	"compilerOptions": {
+		"target": "ESNext"
+	}
 }

@@ -27,6 +27,7 @@ export type ChildProcCleanup = () => void | Promise<void>;
 export class ProcTalk<T, O = void> {
 	readonly #callLog: typeof log;
 	#cleanup: ChildProcCleanup | null = null;
+	#closePromise: Promise<void> | null = null;
 	readonly #id: number;
 	readonly #initialized = new Deferred<void>();
 	readonly #initLog: typeof log;
@@ -60,6 +61,19 @@ export class ProcTalk<T, O = void> {
 		void this.#init(config);
 	}
 
+	/**
+	 * `await using` 宣言のスコープ脱出時に呼ばれ、{@link ProcTalk.close} と同じ解放処理を行う。
+	 * @example
+	 * ```ts
+	 * {
+	 *   await using talk = new ProcTalk({ type: 'main', subModulePath });
+	 *   await talk.call('doSomething');
+	 * } // スコープ脱出時に自動で子プロセスへ :kill が送られ、exit を待つ
+	 * ```
+	 */
+	async [Symbol.asyncDispose]() {
+		await this.#close();
+	}
 	bind<P extends keyof T>(type: P, listener: T[P]) {
 		this.#log('bind:%s', type);
 		this.#listeners.set(type.toString(), listener);
@@ -101,18 +115,15 @@ export class ProcTalk<T, O = void> {
 		return callPromise;
 	}
 
+	/**
+	 * 子プロセスに `:kill` を送信し、`exit` するまで待機する。複数回呼び出しても
+	 * 同じ Promise を返すため安全（冪等）。
+	 * @deprecated `await using` 宣言（`Symbol.asyncDispose`）による自動解放を使用すること。
+	 * スコープと解放タイミングが一致しない場合のみ直接呼び出す。
+	 * @returns 子プロセスが終了したら解決する Promise
+	 */
 	close() {
-		if (this.#type === 'main' && this.#process instanceof ChildProcess) {
-			return new Promise<void>((resolve) => {
-				this.#process.once('exit', () => {
-					resolve();
-				});
-				this.#process.send?.({
-					type: ':kill',
-				});
-			});
-		}
-		return Promise.resolve();
+		return this.#close();
 	}
 
 	async initialized(): Promise<void> {
@@ -120,9 +131,52 @@ export class ProcTalk<T, O = void> {
 		await this.#initialized.promise();
 		this.#initLog('done');
 	}
-
 	log(...args: Parameters<typeof log>) {
 		this.#log(...args);
+	}
+	#close() {
+		if (this.#type !== 'main' || !(this.#process instanceof ChildProcess)) {
+			return Promise.resolve();
+		}
+
+		const proc = this.#process;
+
+		// 2 回目以降の呼び出しは同じ Promise を返すことで冪等にする。
+		// ガードがないと、既に exit 済みのプロセスへ再度 once('exit', ...) を
+		// 張ってしまい、exit イベントが二度と発火せず Promise が永久に pending になる。
+		this.#closePromise ??= new Promise<void>((resolve) => {
+			if (proc.exitCode !== null || proc.signalCode !== null) {
+				resolve();
+				return;
+			}
+
+			proc.once('exit', () => {
+				resolve();
+			});
+
+			if (!proc.connected) {
+				// IPC チャネルが既に閉じている: :kill は届かないので直接シグナルで止める
+				proc.kill();
+				return;
+			}
+
+			// コールバック形式で送る理由:
+			// 1. コールバックなしだと、送信失敗時（ERR_IPC_CHANNEL_CLOSED 等）に
+			//    ChildProcess へ 'error' イベントが emit され、リスナーがいないため
+			//    親プロセスが uncaughtException でクラッシュする。コールバックを
+			//    渡すとエラーはコールバック引数に渡され、'error' emit が抑止される
+			// 2. send() の戻り値 false はバックプレッシャ（送信キュー滞留）でも
+			//    発生するため、戻り値でのフォールバック判定は健在な子への早すぎる
+			//    SIGTERM（graceful cleanup のスキップ）につながる。実際に届かなかった
+			//    場合だけコールバックの error で判定する
+			proc.send({ type: ':kill' }, (error) => {
+				if (error) {
+					proc.kill();
+				}
+			});
+		});
+
+		return this.#closePromise;
 	}
 
 	#error(error: unknown) {

@@ -371,6 +371,17 @@ export async function getAnchorList(
 		return [];
 	}
 
+	// `$anchors` の各 ElementHandle は CDP 側のリモートオブジェクト参照を保持する
+	// ため、解放しないとページごとにハンドルがリークする。AsyncDisposableStack に
+	// まとめて登録して解放するが、`await using` でこの関数のスコープ脱出時に
+	// 即座に解放してはいけない — タイムアウトで打ち切られた後もバックグラウンドで
+	// resolveAnchor が動き続けている間にハンドルを解放すると、実行中の CDP 呼び出しが
+	// 失敗する。解放は work() の完了（成功・失敗いずれも）を待って初めて行う。
+	const anchorHandles = new AsyncDisposableStack();
+	for (const $anchor of $anchors) {
+		anchorHandles.use($anchor);
+	}
+
 	const collected: AnchorData[] = [];
 	let axHits = 0;
 	let textFallbacks = 0;
@@ -410,7 +421,14 @@ export async function getAnchorList(
 		);
 	};
 
-	const { timeout: timedOut } = await raceWithTimeout(work, timeout);
+	const workPromise = work();
+	// work() が真に完了した時点（タイムアウトで打ち切られた場合は、その後
+	// バックグラウンドで走り続ける resolveAnchor がすべて解決した時点）で
+	// ハンドルを解放する。disposeAsync() 自体の失敗も無視してよい
+	// （ベストエフォートの後始末であり、呼び出し元への影響はない）。
+	void workPromise.finally(() => anchorHandles.disposeAsync()).catch(() => {});
+
+	const { timeout: timedOut } = await raceWithTimeout(() => workPromise, timeout);
 	cancelled = true;
 	if (timedOut) {
 		log(

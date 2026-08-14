@@ -113,6 +113,20 @@ export class Sheet {
 		this.#parent = parent;
 	}
 
+	/**
+	 * `await using` 宣言のスコープ脱出時に呼ばれ、{@link Sheet.flush} と同じ処理を行う。
+	 * バッファに未送信行が残ったままスコープを抜けてデータが欠損するのを防ぐ。
+	 * @example
+	 * ```ts
+	 * {
+	 *   await using sheet = sheets.create('Report');
+	 *   await sheet.appendRow(row);
+	 * } // スコープ脱出時に自動で残りのバッファが flush される
+	 * ```
+	 */
+	async [Symbol.asyncDispose]() {
+		await this.flush();
+	}
 	async addRowData(data: Row[], next = true) {
 		const total = data.length;
 		sheetLog('Will add %d items', total);

@@ -49,6 +49,19 @@ export class Lanes {
 	}
 
 	/**
+	 * `using` 宣言のスコープ脱出時に呼ばれ、{@link Lanes.close} と同じ解放処理を行う。
+	 * @example
+	 * ```ts
+	 * {
+	 *   using lanes = new Lanes();
+	 *   lanes.update(0, 'processing...');
+	 * } // スコープ脱出時に自動でディスプレイが閉じられる
+	 * ```
+	 */
+	[Symbol.dispose]() {
+		this.#close();
+	}
+	/**
 	 * すべてのログをクリアする。verbose モードでは何もしない。
 	 * @param options - クリアオプション
 	 * @param options.header
@@ -67,10 +80,12 @@ export class Lanes {
 		this.write();
 	}
 	/**
-	 * ディスプレイを閉じ、リソースを解放する。
+	 * ディスプレイを閉じ、リソースを解放する。複数回呼び出しても安全（冪等）。
+	 * @deprecated `using` 宣言（`Symbol.dispose`）による自動解放を使用すること。
+	 * スコープと解放タイミングが一致しない場合のみ直接呼び出す。
 	 */
 	close() {
-		this.#display.close();
+		this.#close();
 	}
 
 	/**
@@ -85,7 +100,6 @@ export class Lanes {
 		this.#logs.delete(id);
 		this.write();
 	}
-
 	/**
 	 * ヘッダーテキストを設定する。
 	 * @param text - ヘッダーとして表示する文字列
@@ -99,7 +113,6 @@ export class Lanes {
 
 		this.write();
 	}
-
 	/**
 	 * 指定した ID のログを更新する。
 	 * verbose モードではヘッダーとログを連結して即時出力する。
@@ -115,7 +128,6 @@ export class Lanes {
 		this.#logs.set(id, log);
 		this.write();
 	}
-
 	/**
 	 * 現在のログをソートしてターミナルに表示する。
 	 * verbose モードでは何もしない。
@@ -134,5 +146,8 @@ export class Lanes {
 			);
 		}
 		this.#display.write(...messages);
+	}
+	#close() {
+		this.#display[Symbol.dispose]();
 	}
 }

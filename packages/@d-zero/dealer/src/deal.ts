@@ -96,7 +96,9 @@ export async function deal<T extends WeakKey>(
 	options?: DealOptions<T>,
 ) {
 	const dealer = new Dealer(items, options);
-	const lanes = new Lanes(options);
+	// `using` により、setup() が例外を投げてもスコープ脱出時に必ず
+	// lanes（内部の Display）のタイマー・resize リスナー・SIGINT ハンドラが解放される。
+	using lanes = new Lanes(options);
 
 	if (options?.header) {
 		dealer.progress((progress, done, total, limit) => {
@@ -130,12 +132,11 @@ export async function deal<T extends WeakKey>(
 		});
 	}
 
-	return new Promise<void>((resolve) => {
-		dealer.finish(() => {
-			lanes.close();
-			resolve();
-		});
-
-		dealer.play();
-	});
+	// `return new Promise(...)` にすると `using` の dispose が deal() の呼び出し元へ
+	// 返す Promise の解決前に走らない（dispose はこの関数のスコープを抜けるときに
+	// 実行される必要がある）ため、ここは `await` で完了を待ってからスコープを抜ける。
+	const { promise, resolve } = Promise.withResolvers<void>();
+	dealer.finish(resolve);
+	dealer.play();
+	await promise;
 }

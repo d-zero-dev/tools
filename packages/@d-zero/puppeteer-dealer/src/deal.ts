@@ -37,7 +37,11 @@ export function deal<T, R = void>(
 
 			return async () => {
 				update(`Using ${needAuth ? 'auth' : 'no auth'}`);
-				const processManager = createProcess()(needAuth);
+				// `await using` により、ready()/each()/options.each() のいずれで
+				// throw しても子プロセスと Chromium が確実に回収される。
+				// スコープ末尾での明示的な close() では例外パスを通らず、
+				// 子プロセスと Chromium がゾンビ化する。
+				await using processManager = createProcess()(needAuth);
 				update(`Booting ChildProcess%dots%`);
 				await processManager.ready();
 				processManager.log((log) => update(log));
@@ -45,7 +49,6 @@ export function deal<T, R = void>(
 				if (options?.each) {
 					await options.each(result, push);
 				}
-				await processManager.close();
 			};
 		},
 		{

@@ -25,12 +25,22 @@ export async function compareFiles(
 		return false;
 	}
 
+	// Why not `await using`: Node.js の stream の `Symbol.asyncDispose` は
+	// stream が既に error で終了している場合、dispose 時にその error を再度
+	// reject するため、compareStreams() の失敗が `SuppressedError`（message は
+	// 空文字列）に包まれて原因が呼び出し元から見えなくなる。try/finally +
+	// `destroy()`（同期・冪等・throw しない）で同等の解放保証を得る。
 	const stream1 = createReadStream(filePath1);
 	const stream2 = createReadStream(filePath2);
 
-	return compareStreams(
-		stream1,
-		stream2,
-		onProgress && ((byte) => onProgress(byte / size1)),
-	);
+	try {
+		return await compareStreams(
+			stream1,
+			stream2,
+			onProgress && ((byte) => onProgress(byte / size1)),
+		);
+	} finally {
+		stream1.destroy();
+		stream2.destroy();
+	}
 }

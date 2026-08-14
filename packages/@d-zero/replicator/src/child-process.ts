@@ -4,6 +4,7 @@ import type { HTTPResponse } from 'puppeteer';
 import { createChildProcess } from '@d-zero/puppeteer-dealer';
 import { beforePageScan, devicePresets } from '@d-zero/puppeteer-page-scan';
 import { scrollAllOver } from '@d-zero/puppeteer-scroll';
+import { disposableListener } from '@d-zero/shared/disposable-listener';
 import { encodeResourcePath } from '@d-zero/shared/encode-resource-path';
 
 createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
@@ -52,7 +53,12 @@ createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 				resourcePaths.add(encodeResourcePath(resourceUrlObj, mimeType));
 			};
 
-			page.on('response', responseHandler);
+			// `using` により、beforePageScan()/scrollAllOver() が throw しても
+			// スコープ脱出時に確実にリスナーが解除される。この page は同一
+			// 子プロセス内で次の URL にも再利用されるため、例外パスでの
+			// 解除漏れはリスナーの累積に直結する。
+			using _responseListener = disposableListener(page, 'response', responseHandler);
+			void _responseListener;
 
 			if (username && password) {
 				await page.authenticate({ username, password });
@@ -84,8 +90,6 @@ createChildProcess<ChildProcessInput, ChildProcessResult>((param) => {
 					throw error;
 				});
 			}
-
-			page.off('response', responseHandler);
 
 			logger(`📦 Collected ${resourcePaths.size} resources`);
 

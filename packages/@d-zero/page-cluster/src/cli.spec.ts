@@ -1,8 +1,9 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
 
+import { mkdtempDisposable } from '@d-zero/shared/mkdtemp-disposable';
 import { describe, expect, test } from 'vitest';
 
 import { parseArgs, runCli } from './cli.js';
@@ -361,36 +362,32 @@ describe('runCli', () => {
 		].join('\n');
 		const stdout = makeCollector();
 		const stderr = makeCollector();
-		const dir = await mkdtemp(path.join(tmpdir(), 'page-cluster-cli-'));
-		const reasonsFile = path.join(dir, 'reasons.json');
-		try {
-			const code = await runCli({
-				stdin: makeStdin(input),
-				stdout: stdout.stream,
-				stderr: stderr.stream,
-				argv: ['--cluster-reasons-file', reasonsFile],
-				version: '0.0.0',
-			});
-			expect(code).toBe(0);
+		await using dir = await mkdtempDisposable(path.join(tmpdir(), 'page-cluster-cli-'));
+		const reasonsFile = path.join(dir.path, 'reasons.json');
+		const code = await runCli({
+			stdin: makeStdin(input),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: ['--cluster-reasons-file', reasonsFile],
+			version: '0.0.0',
+		});
+		expect(code).toBe(0);
 
-			const lines = stdout.read().split('\n').filter(Boolean);
-			expect(lines).toHaveLength(2);
-			const parsed = lines.map(
-				(line) => JSON.parse(line) as { id: string; clusterKey: string },
-			);
-			expect(parsed[0]).not.toHaveProperty('landmarks');
-			expect(parsed[0]!.clusterKey).toBe(parsed[1]!.clusterKey);
+		const lines = stdout.read().split('\n').filter(Boolean);
+		expect(lines).toHaveLength(2);
+		const parsed = lines.map(
+			(line) => JSON.parse(line) as { id: string; clusterKey: string },
+		);
+		expect(parsed[0]).not.toHaveProperty('landmarks');
+		expect(parsed[0]!.clusterKey).toBe(parsed[1]!.clusterKey);
 
-			const reasonsByKey = JSON.parse(await readFile(reasonsFile, 'utf8')) as Record<
-				string,
-				{ memberCount: number; landmarks: { header?: { chromeRate: number } } }
-			>;
-			const reason = reasonsByKey[parsed[0]!.clusterKey];
-			expect(reason?.memberCount).toBe(2);
-			expect(reason?.landmarks.header?.chromeRate).toBe(1);
-		} finally {
-			await rm(dir, { recursive: true, force: true });
-		}
+		const reasonsByKey = JSON.parse(await readFile(reasonsFile, 'utf8')) as Record<
+			string,
+			{ memberCount: number; landmarks: { header?: { chromeRate: number } } }
+		>;
+		const reason = reasonsByKey[parsed[0]!.clusterKey];
+		expect(reason?.memberCount).toBe(2);
+		expect(reason?.landmarks.header?.chromeRate).toBe(1);
 	});
 
 	test('--cluster-reasons-file write failure is reported as a clean exit-1 error, not an unhandled rejection', async () => {
@@ -453,50 +450,42 @@ describe('runCli', () => {
 			.join('\n');
 		const stdout = makeCollector();
 		const stderr = makeCollector();
-		const dir = await mkdtemp(path.join(tmpdir(), 'page-cluster-cli-'));
-		const validationFile = path.join(dir, 'validation.json');
-		try {
-			const code = await runCli({
-				stdin: makeStdin(input),
-				stdout: stdout.stream,
-				stderr: stderr.stream,
-				argv: ['--validation-file', validationFile],
-				version: '0.0.0',
-			});
-			expect(code).toBe(0);
+		await using dir = await mkdtempDisposable(path.join(tmpdir(), 'page-cluster-cli-'));
+		const validationFile = path.join(dir.path, 'validation.json');
+		const code = await runCli({
+			stdin: makeStdin(input),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: ['--validation-file', validationFile],
+			version: '0.0.0',
+		});
+		expect(code).toBe(0);
 
-			const report = JSON.parse(await readFile(validationFile, 'utf8')) as {
-				mirrorAxis: { position: number; values: string[] } | null;
-				cohesion: unknown[];
-				crossClusterDuplicates: unknown[];
-			};
-			expect(report.mirrorAxis).toEqual({ position: 0, values: ['en', 'zh'] });
-			expect(Array.isArray(report.cohesion)).toBe(true);
-			expect(Array.isArray(report.crossClusterDuplicates)).toBe(true);
-		} finally {
-			await rm(dir, { recursive: true, force: true });
-		}
+		const report = JSON.parse(await readFile(validationFile, 'utf8')) as {
+			mirrorAxis: { position: number; values: string[] } | null;
+			cohesion: unknown[];
+			crossClusterDuplicates: unknown[];
+		};
+		expect(report.mirrorAxis).toEqual({ position: 0, values: ['en', 'zh'] });
+		expect(Array.isArray(report.cohesion)).toBe(true);
+		expect(Array.isArray(report.crossClusterDuplicates)).toBe(true);
 	});
 
 	test('without --validation-file, no validation file is written', async () => {
 		const stdout = makeCollector();
 		const stderr = makeCollector();
-		const dir = await mkdtemp(path.join(tmpdir(), 'page-cluster-cli-'));
-		const validationFile = path.join(dir, 'validation.json');
-		try {
-			const code = await runCli({
-				stdin: makeStdin(
-					JSON.stringify({ id: 'a', html: '<body><header>H</header></body>' }),
-				),
-				stdout: stdout.stream,
-				stderr: stderr.stream,
-				argv: [],
-				version: '0.0.0',
-			});
-			expect(code).toBe(0);
-			await expect(readFile(validationFile, 'utf8')).rejects.toThrow();
-		} finally {
-			await rm(dir, { recursive: true, force: true });
-		}
+		await using dir = await mkdtempDisposable(path.join(tmpdir(), 'page-cluster-cli-'));
+		const validationFile = path.join(dir.path, 'validation.json');
+		const code = await runCli({
+			stdin: makeStdin(
+				JSON.stringify({ id: 'a', html: '<body><header>H</header></body>' }),
+			),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: [],
+			version: '0.0.0',
+		});
+		expect(code).toBe(0);
+		await expect(readFile(validationFile, 'utf8')).rejects.toThrow();
 	});
 });

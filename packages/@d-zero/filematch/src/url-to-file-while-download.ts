@@ -15,6 +15,9 @@ export async function urlToFileWhileDownload(urlOrFilePath: string) {
 		return urlOrFilePath;
 	}
 
+	// Why not `using`/`mkdtempDisposable`: 戻り値の tempFile はこの関数の
+	// スコープを抜けた後も呼び出し元がファイルとして参照し続けるため、
+	// スコープ脱出と同時にディレクトリを削除するわけにはいかない
 	const tempDir = await mkdtemp(path.join(tmpdir(), 'filematch-'));
 	const tempFile = path.join(tempDir, path.basename(urlOrFilePath));
 

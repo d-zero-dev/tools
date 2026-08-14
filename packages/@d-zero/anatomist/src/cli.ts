@@ -8,6 +8,8 @@ import { createWriteStream } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import process from 'node:process';
 
+import { unwrapSuppressedError } from '@d-zero/cli-core';
+
 import { formatResultLine } from './format-output.js';
 import { parseArgs } from './parse-args.js';
 import { parseUrlList } from './parse-url-list.js';
@@ -134,9 +136,12 @@ export async function runCli(options: {
 		return 1;
 	}
 
-	const outStream: NodeJS.WritableStream = args.out
-		? createWriteStream(args.out)
-		: options.stdout;
+	// `await using` により、runBatch() が想定外の例外を投げてスコープを抜けても
+	// --out で開いたファイル記述子が確実に閉じられる（stdout の場合は outFile が
+	// undefined のままなので dispose は no-op — process.stdout を誤って
+	// close してしまうことはない）。
+	await using outFile = args.out ? createWriteStream(args.out) : undefined;
+	const outStream: NodeJS.WritableStream = outFile ?? options.stdout;
 
 	let hadError = false;
 	await runBatch(urls, {
@@ -158,24 +163,26 @@ export async function runCli(options: {
 		},
 		onError: (url, error) => {
 			hadError = true;
-			options.stderr.write(
-				`anatomist: failed to analyze ${url}: ${(error as Error).message}\n`,
-			);
+			// SuppressedError（using スコープ内で本体と dispose の両方が例外を投げた
+			// 場合）を分解し、定型メッセージの裏に隠れる根本原因を両方とも出力する
+			for (const cause of unwrapSuppressedError(error)) {
+				options.stderr.write(
+					`anatomist: failed to analyze ${url}: ${cause instanceof Error ? cause.message : String(cause)}\n`,
+				);
+			}
 		},
 	});
 
-	if (args.out) {
+	if (outFile) {
 		try {
 			await new Promise<void>((resolve, reject) => {
-				(outStream as ReturnType<typeof createWriteStream>).end(
-					(error?: Error | null) => {
-						if (error) {
-							reject(error);
-						} else {
-							resolve();
-						}
-					},
-				);
+				outFile.end((error?: Error | null) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve();
+					}
+				});
 			});
 		} catch (error) {
 			// Consistent with every other failure path here: report to stderr

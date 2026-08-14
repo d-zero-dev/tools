@@ -82,9 +82,20 @@ export async function compareStreams(
 			resolve(false);
 		}
 
+		/**
+		 * @param error
+		 */
+		function handleError(error: unknown) {
+			// destroy() せずに reject だけすると、エラーを出さなかった側の
+			// ストリームが開いたまま残る
+			stream1.destroy();
+			stream2.destroy();
+			reject(error);
+		}
+
 		stream1.on('end', handleEnd);
 		stream2.on('end', handleEnd);
-		stream1.on('error', reject);
-		stream2.on('error', reject);
+		stream1.on('error', handleError);
+		stream2.on('error', handleError);
 	});
 }
