@@ -4,7 +4,7 @@ import type { ParsedArgs } from 'minimist';
 
 import { createRequire } from 'node:module';
 
-import { createCLI, parseCommonOptions } from '@d-zero/cli-core';
+import { createCLI, parseCommonOptions, unwrapSuppressedError } from '@d-zero/cli-core';
 import { config as dotenvConfig } from 'dotenv';
 
 import { remoteInspector } from './remote-inspector.js';
@@ -108,7 +108,11 @@ const { options } = createCLI(config);
 try {
 	await remoteInspector(options);
 } catch (error) {
-	// eslint-disable-next-line no-console
-	console.error('Error:', error instanceof Error ? error.message : error);
+	// SuppressedError（using スコープ内で本体と dispose の両方が例外を投げた場合）
+	// を分解し、定型メッセージの裏に隠れる根本原因を両方とも出力する
+	for (const cause of unwrapSuppressedError(error)) {
+		// eslint-disable-next-line no-console
+		console.error('Error:', cause instanceof Error ? cause.message : cause);
+	}
 	process.exit(1);
 }
