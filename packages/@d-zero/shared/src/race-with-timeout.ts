@@ -27,17 +27,20 @@ export type RaceWithTimeoutResult<T> =
  *   console.log('Operation succeeded with result:', result);
  * }
  * ```
+ * @todo `vi.useFakeTimers()`（@sinonjs/fake-timers）のフェイク Timeout が
+ * `Symbol.dispose` を実装したら、try/finally を撤去して
+ * `using timeoutId = setTimeout(...)` に移行する（Node 24 のネイティブ Timeout は
+ * 実装済みだが、フェイクタイマー環境で壊れるため採用していない）。
  */
 export async function raceWithTimeout<T>(
 	promise: () => Promise<T> | T,
 	timeout: number,
 ): Promise<RaceWithTimeoutResult<T>> {
-	let timeoutId: NodeJS.Timeout | undefined;
+	const { promise: timeoutSignal, resolve: onTimeout } = Promise.withResolvers<void>();
+	const timeoutId = setTimeout(onTimeout, timeout);
 
 	const timer = async () => {
-		await new Promise<void>((r) => {
-			timeoutId = setTimeout(r, timeout);
-		});
+		await timeoutSignal;
 		return { result: undefined, timeout: true } as const;
 	};
 
@@ -46,10 +49,12 @@ export async function raceWithTimeout<T>(
 		return { result, timeout: false } as const;
 	};
 
-	const result = await Promise.race([timer(), challenger()]);
-	if (timeoutId) {
+	// finally により、challenger 側が reject して Promise.race が早期に throw
+	// してもタイマーが必ず解放される。finally の外に clearTimeout を置くと
+	// reject 経路で到達せず、タイマーが最大 timeout ms 生存する。
+	try {
+		return await Promise.race([timer(), challenger()]);
+	} finally {
 		clearTimeout(timeoutId);
 	}
-
-	return result;
 }
