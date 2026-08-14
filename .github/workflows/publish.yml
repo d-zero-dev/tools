@@ -21,12 +21,15 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
+      # Node 26 以降は corepack が同梱されないため、先に明示的にインストールする
+      - name: Install Corepack
+        run: npm install -g corepack
       - name: Enable Corepack
         run: corepack enable
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: 26
           registry-url: "https://registry.npmjs.org"
       - name: Install dependencies
         run: yarn install --immutable
