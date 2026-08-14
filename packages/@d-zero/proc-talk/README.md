@@ -19,13 +19,13 @@ type WorkerAPI = {
 	add: (a: number, b: number) => Promise<number>;
 };
 
-const worker = new ProcTalk<WorkerAPI>({
+await using worker = new ProcTalk<WorkerAPI>({
 	type: 'main',
 	subModulePath: './worker.js',
 });
 
 const result = await worker.call('add', 10, 20);
-await worker.dispose();
+// スコープ脱出時に子プロセスへ自動で :kill が送られ、exit まで待機する
 ```
 
 子プロセス (`./worker.js`):
@@ -41,4 +41,4 @@ new ProcTalk({
 });
 ```
 
-シリアライズ仕様（関数は IPC 越境で `null` 化される制約）、エラー時のスタックトレース保持、`dispose` 時のクリーンアップ順序は `src/proc-talk.ts` と `src/serialize.ts` の JSDoc を参照。
+シリアライズ仕様（関数は IPC 越境で `null` 化される制約）、エラー時のスタックトレース保持、`Symbol.asyncDispose` 時のクリーンアップ順序は `src/proc-talk.ts` と `src/serialize.ts` の JSDoc を参照。
