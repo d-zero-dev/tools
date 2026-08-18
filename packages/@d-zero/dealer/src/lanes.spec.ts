@@ -45,3 +45,37 @@ describe('Lanes dispose', () => {
 		expect(process.stdout.listenerCount('resize')).toBe(resizeBefore);
 	});
 });
+
+describe('Lanes verbose update', () => {
+	test('update() without header() writes the log with no "undefined" prefix', () => {
+		using lanes = new Lanes({ verbose: true });
+
+		lanes.update(0, 'some log message');
+
+		expect(stdoutWriteSpy).toHaveBeenCalledWith(
+			expect.stringContaining('some log message'),
+		);
+		expect(stdoutWriteSpy).not.toHaveBeenCalledWith(expect.stringContaining('undefined'));
+	});
+
+	test('update() after header() still prefixes the log with the header', () => {
+		using lanes = new Lanes({ verbose: true });
+
+		lanes.header('My Header');
+		lanes.update(0, 'some log message');
+
+		const lastCall = stdoutWriteSpy.mock.calls.at(-1)?.[0] as string;
+		expect(lastCall).toContain('My Header');
+		expect(lastCall).toContain('some log message');
+	});
+
+	test('update() after header("") still writes without a prefix (empty string is falsy)', () => {
+		using lanes = new Lanes({ verbose: true });
+
+		lanes.header('');
+		lanes.update(0, 'some log message');
+
+		const lastCall = stdoutWriteSpy.mock.calls.at(-1)?.[0] as string;
+		expect(lastCall).not.toContain('undefined');
+	});
+});

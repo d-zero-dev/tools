@@ -115,13 +115,14 @@ export class Lanes {
 	}
 	/**
 	 * 指定した ID のログを更新する。
-	 * verbose モードではヘッダーとログを連結して即時出力する。
+	 * verbose モードではヘッダー設定済みならヘッダーとログを連結し、未設定なら
+	 * ログのみを即時出力する。
 	 * @param id - 更新するログの ID
 	 * @param log - ログメッセージ
 	 */
 	update(id: number, log: string) {
 		if (this.#verbose) {
-			this.#display.write(`${RESET}${this.#header}${RESET} ${log}`);
+			this.#display.write(this.#header ? `${RESET}${this.#header}${RESET} ${log}` : log);
 			return;
 		}
 
