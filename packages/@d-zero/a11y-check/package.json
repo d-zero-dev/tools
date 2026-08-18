@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/a11y-check",
-	"version": "0.11.0",
+	"version": "0.11.1",
 	"description": "Accessibility Checker CLI",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -27,9 +27,9 @@
 		"clean": "tsc --build --clean"
 	},
 	"dependencies": {
-		"@d-zero/a11y-check-axe-scenario": "0.5.38",
-		"@d-zero/a11y-check-core": "0.7.15",
-		"@d-zero/a11y-check-scenarios": "0.4.51",
+		"@d-zero/a11y-check-axe-scenario": "0.5.39",
+		"@d-zero/a11y-check-core": "0.7.16",
+		"@d-zero/a11y-check-scenarios": "0.4.52",
 		"@d-zero/cli-core": "1.4.0",
 		"@d-zero/google-auth": "0.7.6",
 		"@d-zero/google-sheets": "0.10.0",

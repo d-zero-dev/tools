@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.11.0...@d-zero/dealer@1.12.0) (2026-08-18)
+
+### Bug Fixes
+
+- **dealer:** omit undefined prefix in Lanes verbose update without header ([02f252f](https://github.com/d-zero-dev/tools/commit/02f252f1c840c02f4146a479dc9f2b0efd973215))
+
+### Features
+
+- **dealer:** add type-safe sequential pipeline with live task-list TUI ([9f401bf](https://github.com/d-zero-dev/tools/commit/9f401bfc3abd52fb8689505f019668aa66540ae7))
+
 # [1.11.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.10.4...@d-zero/dealer@1.11.0) (2026-08-14)
 
 ### Features
