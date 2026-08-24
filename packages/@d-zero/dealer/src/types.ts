@@ -119,4 +119,10 @@ export interface TaskListRunOptions {
 	readonly showElapsed?: boolean;
 	/** 経過時間の再描画間隔（ミリ秒）。既定は `250`。 */
 	readonly elapsedIntervalMs?: number;
+	/**
+	 * `done` / `error` で確定した行に、最終的な経過時間を残すか。既定は `false`
+	 * （確定時に経過時間表示は消える）。`showElapsed: false` のときはこの指定に
+	 * 関わらず経過時間を計測しないため無効になる。
+	 */
+	readonly keepElapsed?: boolean;
 }
