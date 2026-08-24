@@ -204,3 +204,63 @@ test('clears the elapsed-time interval once the running step settles', async () 
 		vi.useRealTimers();
 	}
 });
+
+test('omits the elapsed time on the settled line by default (keepElapsed defaults to false)', async () => {
+	const collector = makeStreamCollector();
+	const pipeline = pipe('task', () => 'ok');
+
+	await pipeline.run({ stream: collector.stream });
+
+	expect(collector.read()).not.toMatch(/\(\d+\.\ds\)/);
+});
+
+test('keeps the final elapsed time on the done line when keepElapsed is true', async () => {
+	const collector = makeStreamCollector();
+	const pipeline = pipe('task', () => 'ok');
+
+	await pipeline.run({ stream: collector.stream, keepElapsed: true });
+
+	expect(collector.read()).toMatch(/✔.*task.*\(\d+\.\ds\)/);
+});
+
+test('keeps the final elapsed time on the error line when keepElapsed is true', async () => {
+	const collector = makeStreamCollector();
+	const pipeline = pipe('task', () => {
+		throw new Error('boom');
+	});
+
+	await expect(
+		pipeline.run({ stream: collector.stream, keepElapsed: true }),
+	).rejects.toThrow(/boom/);
+
+	expect(collector.read()).toMatch(/✘.*task.*\(\d+\.\ds\)/);
+});
+
+test('ignores keepElapsed when showElapsed is false', async () => {
+	const collector = makeStreamCollector();
+	const pipeline = pipe('task', () => 'ok');
+
+	await pipeline.run({ stream: collector.stream, showElapsed: false, keepElapsed: true });
+
+	expect(collector.read()).not.toMatch(/\(\d+\.\ds\)/);
+});
+
+test('keeps the final elapsed time on the done line in verbose mode even though the running timer stays disabled', async () => {
+	const collector = makeStreamCollector();
+	const pipeline = pipe('task', () => 'ok');
+
+	await pipeline.run({ stream: collector.stream, verbose: true, keepElapsed: true });
+
+	expect(collector.read()).toMatch(/✔.*task.*\(\d+\.\ds\)/);
+});
+
+test('keeps independent final elapsed times for each step when keepElapsed is true', async () => {
+	const collector = makeStreamCollector();
+	const pipeline = pipe('first', () => 1).pipe('second', (n) => n + 1);
+
+	await pipeline.run({ stream: collector.stream, keepElapsed: true });
+
+	const output = collector.read();
+	expect(output).toMatch(/✔.*first.*\(\d+\.\ds\)/);
+	expect(output).toMatch(/✔.*second.*\(\d+\.\ds\)/);
+});

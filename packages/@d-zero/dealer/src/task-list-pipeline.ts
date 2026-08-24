@@ -131,10 +131,14 @@ export class TaskListPipeline<T> {
 
 	async #run(options?: TaskListRunOptions): Promise<T> {
 		const verbose = options?.verbose ?? false;
+		const showElapsedOption = options?.showElapsed ?? true;
 		// verbose モードでは Lanes.update() が上書きではなく毎回1行追記になるため、
 		// 経過時間タイマーによる高頻度の再描画はログ洪水になる。常に無効化する。
-		const showElapsed = (options?.showElapsed ?? true) && !verbose;
+		const showElapsed = showElapsedOption && !verbose;
 		const elapsedIntervalMs = options?.elapsedIntervalMs ?? DEFAULT_ELAPSED_INTERVAL_MS;
+		// done/error の確定行は1回きりの出力でログ洪水にならないため、verbose でも
+		// showElapsedOption が有効なら keepElapsed に従う（showElapsed とは連動させない）。
+		const keepElapsed = showElapsedOption && (options?.keepElapsed ?? false);
 
 		using lanes = new Lanes({
 			stream: options?.stream,
@@ -155,6 +159,8 @@ export class TaskListPipeline<T> {
 			step.message = '';
 
 			const startedAt = Date.now();
+			const computeFinalElapsedMs = () =>
+				keepElapsed ? Date.now() - startedAt : undefined;
 			const render = () => {
 				const elapsedMs = showElapsed ? Date.now() - startedAt : undefined;
 				lanes.update(
@@ -209,7 +215,12 @@ export class TaskListPipeline<T> {
 				step.message = error.message;
 				lanes.update(
 					step.laneId,
-					formatTaskLine('error', step.name, describeCause(error_)),
+					formatTaskLine(
+						'error',
+						step.name,
+						describeCause(error_),
+						computeFinalElapsedMs(),
+					),
 				);
 				throw error;
 			}
@@ -218,7 +229,10 @@ export class TaskListPipeline<T> {
 				clearInterval(timer);
 			}
 			step.state = 'done';
-			lanes.update(step.laneId, formatTaskLine('done', step.name, step.message));
+			lanes.update(
+				step.laneId,
+				formatTaskLine('done', step.name, step.message, computeFinalElapsedMs()),
+			);
 			index++;
 		}
 
