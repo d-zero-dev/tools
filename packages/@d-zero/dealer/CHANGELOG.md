@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.12.0...@d-zero/dealer@1.13.0) (2026-08-25)
+
+### Features
+
+- **dealer:** add keepElapsed option to persist elapsed time on settled task lines ([2686963](https://github.com/d-zero-dev/tools/commit/2686963694f8bf034fd452e049feef9603dce748))
+
 # [1.12.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.11.0...@d-zero/dealer@1.12.0) (2026-08-18)
 
 ### Bug Fixes
