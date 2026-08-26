@@ -24,6 +24,19 @@ function makeStreamCollector(): {
 	return { stream, read: () => Buffer.concat(chunks).toString('utf8') };
 }
 
+/**
+ * Repaints the current stack on demand.
+ *
+ * `Display` registers its `#resize` handler on whatever stream it was given,
+ * and a plain `Writable` is an `EventEmitter`, so emitting `resize` forces one
+ * frame at the exact fake-clock instant the test has advanced to — far more
+ * precise than waiting for the fps timer, whose interval never divides evenly.
+ * @param stream - The stream the `Display` under test was constructed with.
+ */
+function repaint(stream: NodeJS.WritableStream): void {
+	stream.emit('resize');
+}
+
 let stdoutWriteSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
@@ -292,5 +305,143 @@ describe('Display stream option', () => {
 		// Default routing must remain process.stdout so callers who don't pass
 		// stream (dealer/deal.ts) keep their pre-refactor behavior verbatim
 		expect(stdoutWriteSpy).toHaveBeenCalled();
+	});
+});
+
+describe('Display countdown placeholder', () => {
+	test('counts down while the placeholder stays on the stack', () => {
+		vi.useFakeTimers();
+		try {
+			const collector = makeStreamCollector();
+			using display = new Display({ stream: collector.stream });
+
+			display.write('waiting %countdown(1000,lane0)%ms');
+			expect(collector.read()).toContain('waiting 1000ms');
+
+			vi.advanceTimersByTime(400);
+			const mark = collector.read().length;
+			repaint(collector.stream);
+
+			expect(collector.read().slice(mark)).toContain('waiting 600ms');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	test('clamps at zero once the duration has elapsed', () => {
+		vi.useFakeTimers();
+		try {
+			const collector = makeStreamCollector();
+			using display = new Display({ stream: collector.stream });
+
+			display.write('waiting %countdown(1000,lane0)%ms');
+			vi.advanceTimersByTime(2500);
+			const mark = collector.read().length;
+			repaint(collector.stream);
+
+			expect(collector.read().slice(mark)).toContain('waiting 0ms');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	test('rounds to whole seconds for the s unit', () => {
+		vi.useFakeTimers();
+		try {
+			const collector = makeStreamCollector();
+			using display = new Display({ stream: collector.stream });
+
+			display.write('opening %countdown(30000,openPage_a,s)%s');
+			vi.advanceTimersByTime(2400);
+			const mark = collector.read().length;
+			repaint(collector.stream);
+
+			expect(collector.read().slice(mark)).toContain('opening 28s');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	test('restarts from the full duration when the same id returns to the stack', () => {
+		vi.useFakeTimers();
+		try {
+			const collector = makeStreamCollector();
+			using display = new Display({ stream: collector.stream });
+
+			display.write('opening %countdown(1000,openPage_a)%ms');
+			vi.advanceTimersByTime(1500);
+			display.write('retrying');
+			vi.advanceTimersByTime(100);
+
+			const mark = collector.read().length;
+			display.write('opening %countdown(1000,openPage_a)%ms');
+			repaint(collector.stream);
+
+			expect(collector.read().slice(mark)).toContain('opening 1000ms');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	test('restarts even when the id leaves and returns without a frame in between', () => {
+		vi.useFakeTimers();
+		try {
+			const collector = makeStreamCollector();
+			using display = new Display({ stream: collector.stream });
+
+			display.write('opening %countdown(1000,openPage_a)%ms');
+			vi.advanceTimersByTime(1500);
+
+			const mark = collector.read().length;
+			display.write('retrying');
+			display.write('opening %countdown(1000,openPage_a)%ms');
+			repaint(collector.stream);
+
+			expect(collector.read().slice(mark)).toContain('opening 1000ms');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	test('drops only the ids that left the stack, not the ones still on it', () => {
+		vi.useFakeTimers();
+		try {
+			const collector = makeStreamCollector();
+			using display = new Display({ stream: collector.stream });
+
+			display.write('a %countdown(1000,laneA)%ms', 'b %countdown(1000,laneB)%ms');
+			vi.advanceTimersByTime(400);
+
+			display.write('a %countdown(1000,laneA)%ms', 'b done');
+
+			const mark = collector.read().length;
+			display.write('a %countdown(1000,laneA)%ms', 'b %countdown(1000,laneB)%ms');
+			repaint(collector.stream);
+			const painted = collector.read().slice(mark);
+
+			expect(painted).toContain('a 600ms');
+			expect(painted).toContain('b 1000ms');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	test('verbose mode renders the full duration every time the line is logged', () => {
+		vi.useFakeTimers();
+		try {
+			const collector = makeStreamCollector();
+			using display = new Display({ stream: collector.stream, verbose: true });
+
+			display.write('waiting %countdown(1000,lane0)%ms');
+			vi.advanceTimersByTime(5000);
+			display.write('waiting %countdown(1000,lane0)%ms');
+
+			expect(collector.read().match(/waiting \d+ms/g)).toEqual([
+				'waiting 1000ms',
+				'waiting 1000ms',
+			]);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 });

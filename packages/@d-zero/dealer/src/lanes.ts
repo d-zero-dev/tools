@@ -117,8 +117,20 @@ export class Lanes {
 	 * 指定した ID のログを更新する。
 	 * verbose モードではヘッダー設定済みならヘッダーとログを連結し、未設定なら
 	 * ログのみを即時出力する。
+	 *
+	 * ログ中の `%countdown(満了ミリ秒, ID, 単位)%` は残り時間に置換される
+	 * （単位は `ms` / `s`、省略時は `ms`）。残り時間はカウントダウン ID ごとに
+	 * 追跡され、その placeholder が全レーンの表示から消えた時点で破棄される。
+	 * つまり同じカウントダウン ID を再び表示させれば満了時間から数え直しになる
+	 * ため、リトライのように同じ待機が繰り返される箇所で ID を使い回してよい。
+	 * verbose モードは1行が出力時点で確定し再描画されないため、残り時間を追跡
+	 * せず常に満了時間を出力する。
 	 * @param id - 更新するログの ID
 	 * @param log - ログメッセージ
+	 * @example
+	 * ```ts
+	 * lanes.update(0, 'Waiting: %countdown(30000, openPage, s)%s');
+	 * ```
 	 */
 	update(id: number, log: string) {
 		if (this.#verbose) {
