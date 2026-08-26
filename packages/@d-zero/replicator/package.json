@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/replicator",
-	"version": "0.10.19",
+	"version": "0.10.20",
 	"description": "Replicate web pages with all their resources to local directories",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -28,8 +28,8 @@
 	},
 	"dependencies": {
 		"@d-zero/cli-core": "1.4.0",
-		"@d-zero/dealer": "1.13.0",
-		"@d-zero/puppeteer-dealer": "0.7.26",
+		"@d-zero/dealer": "1.13.1",
+		"@d-zero/puppeteer-dealer": "0.7.27",
 		"@d-zero/puppeteer-page-scan": "4.6.9",
 		"@d-zero/puppeteer-scroll": "4.0.12",
 		"@d-zero/shared": "0.23.0",

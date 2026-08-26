@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.1](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.13.0...@d-zero/dealer@1.13.1) (2026-08-26)
+
+### Bug Fixes
+
+- **dealer:** reset countdown state when its placeholder leaves the display ([e888e2f](https://github.com/d-zero-dev/tools/commit/e888e2f098bdab1d9a68be5757460feaed316c7c))
+
 # [1.13.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.12.0...@d-zero/dealer@1.13.0) (2026-08-25)
 
 ### Features
