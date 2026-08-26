@@ -64,6 +64,6 @@ const id = await TaskList.pipe('fetch', async () => fetchUser(userId))
 
 - **`interval` 遅延はアイテム開始の「直後・最初の出力前」**に実行される（順序に注意）
 - **`unshift` は既存キューの先頭に割り込む**（優先度の高い動的追加用、push との順序を理解する必要あり）
-- **`Lanes` / `Display` を直接使う場合は `using` 宣言（`Symbol.dispose`）で自動解放**する（leak 防止）。スコープと解放タイミングが一致しない場合のみ `close()` を直接呼ぶ（`close()` は deprecated）
+- **`Lanes` を直接使う場合は `using` 宣言（`Symbol.dispose`）で自動解放**する（leak 防止）。スコープと解放タイミングが一致しない場合のみ `close()` を直接呼ぶ（`close()` は deprecated）
 
 これらの背景と実装は `src/deal.ts` / `src/dealer.ts` / `src/lanes.ts` の JSDoc を参照。

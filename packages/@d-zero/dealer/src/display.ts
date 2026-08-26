@@ -113,6 +113,8 @@ export class Display {
 		}
 
 		this.#stack = [...this.#debugMessages, ...logs];
+		this.#dropStaleCountDowns();
+
 		if (this.#timer) {
 			return;
 		}
@@ -160,21 +162,64 @@ export class Display {
 
 		const { id, time, placeholder, unit } = parsed;
 
-		const currentTime = this.#coundDownMap.get(id);
-
 		let displayTimeMS: number;
 
-		if (currentTime == null) {
-			this.#coundDownMap.set(id, Date.now());
+		if (this.#verbose) {
+			// verbose モードには繰り返し描画されるフレームが存在せず、1行は
+			// 出力された瞬間に確定する。カウントダウン行が出るのは待機の開始
+			// 時点なので満了時間をそのまま出す。開始時刻を残さないため、同じ
+			// ID の次の行が前回の経過時間を引き継ぐこともない。
 			displayTimeMS = time;
 		} else {
-			const elapsedTime = Date.now() - currentTime;
-			displayTimeMS = Math.max(time - elapsedTime, 0);
+			const currentTime = this.#coundDownMap.get(id);
+
+			if (currentTime == null) {
+				this.#coundDownMap.set(id, Date.now());
+				displayTimeMS = time;
+			} else {
+				const elapsedTime = Date.now() - currentTime;
+				displayTimeMS = Math.max(time - elapsedTime, 0);
+			}
 		}
 
 		const displayTime = unit === 's' ? Math.round(displayTimeMS / 1000) : displayTimeMS;
 
 		return text.replace(placeholder, `${displayTime}`);
+	}
+
+	/**
+	 * 表示スタックから消えたカウントダウン ID の開始時刻を破棄する。
+	 *
+	 * カウントダウンの開始時刻は「その placeholder が表示スタックに載っている
+	 * 間」だけ有効な状態。破棄することで、同じ ID が再登場したとき——リトライで
+	 * 同じページを開き直す、レーン番号だけを ID にした待機が次のアイテムで再び
+	 * 出る、など——に満了時間から数え直せる。残したままにすると前回の開始時刻を
+	 * 引き継ぎ、経過時間が満了時間を超えているため残り 0 に張り付く。Map が実行
+	 * 中ずっと ID を抱え続けるのも防ぐ。
+	 *
+	 * フレーム描画時ではなくスタック更新時に判定するのは、フレーム間隔 (既定
+	 * 33ms) より短い間に「消えて再登場」した ID を取りこぼさないため。
+	 */
+	#dropStaleCountDowns() {
+		if (this.#coundDownMap.size === 0) {
+			return;
+		}
+
+		const liveIds = new Set<string>();
+		for (const line of this.#stack ?? []) {
+			// riffle が置換するのは `%earth%` のようなアニメーション名のみで
+			// `%countdown(...)%` には触れないため、描画前の生の行で判定できる。
+			const parsed = countDownFunctionParser(line);
+			if (parsed) {
+				liveIds.add(parsed.id);
+			}
+		}
+
+		for (const id of this.#coundDownMap.keys()) {
+			if (!liveIds.has(id)) {
+				this.#coundDownMap.delete(id);
+			}
+		}
 	}
 
 	#enterFrame() {
