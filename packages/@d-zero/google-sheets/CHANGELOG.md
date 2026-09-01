@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.10.0...@d-zero/google-sheets@0.11.0) (2026-09-01)
+
+### Features
+
+- **google-sheets:** expose pending row count before flush ([8fdbb08](https://github.com/d-zero-dev/tools/commit/8fdbb0852ee6e038dba2eb902255369e28d4514e))
+
 # [0.10.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.9.7...@d-zero/google-sheets@0.10.0) (2026-08-14)
 
 ### Features
