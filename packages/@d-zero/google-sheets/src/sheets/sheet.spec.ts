@@ -328,6 +328,34 @@ describe('appendRow / flush', () => {
 		expect(sheet.sentCount).toBe(0);
 	});
 
+	test('pendingCount reflects buffered rows below the auto-flush threshold', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		expect(sheet.pendingCount).toBe(0);
+
+		await sheet.appendRow(...Array.from({ length: 2499 }, () => eagerRow()));
+		expect(sheet.pendingCount).toBe(2499);
+	});
+
+	test('pendingCount drops to the chunk remainder once auto-flush fires', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		// 6000 rows -> two auto-flushed chunks of 2500, 1000 left buffered.
+		await sheet.appendRow(...Array.from({ length: 6000 }, () => eagerRow()));
+		expect(sheet.pendingCount).toBe(1000);
+	});
+
+	test('pendingCount returns to 0 after flush() drains the buffer', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.appendRow(...Array.from({ length: 6000 }, () => eagerRow()));
+		await sheet.flush();
+		expect(sheet.pendingCount).toBe(0);
+	});
+
 	test('detects a lazy cell at any column position, not just the first cell of the row', async () => {
 		// containsLazyCell() iterates every cell of the row. A defensive
 		// "optimization" that only checks row[0] would slip past unit tests

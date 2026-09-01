@@ -101,6 +101,21 @@ export class Sheet {
 	}
 
 	/**
+	 * バッファに溜まっているが未送信の行数。`SEND_CHUNK_SIZE` 未満で
+	 * 自動 flush の閾値に達していない行、または遅延セルによって自動
+	 * flush が保留されている行を指す。
+	 *
+	 * `flush()` 呼び出し前に「これから何行分のネットワーク往復が
+	 * 発生するか」を呼び出し元が表示する用途（例: 進捗表示の
+	 * "flushing N rows..." メッセージ）。`onProgress` は chunk の
+	 * `batchUpdate` 完了後にしか呼ばれないため、送信開始前の見積もりは
+	 * この getter でのみ得られる。
+	 */
+	get pendingCount() {
+		return this.#pendingRows.length;
+	}
+
+	/**
 	 * `appendRow()` / `flush()` を通じてこれまでに送信した累計行数。
 	 * 進捗表示用途。`setHeaders()` の送信分は含まない。
 	 */
