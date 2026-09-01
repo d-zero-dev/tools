@@ -268,6 +268,15 @@ describe('appendRow / flush', () => {
 		expect(sheet.sentCount).toBe(3);
 	});
 
+	test('pendingCount returns to 0 after [Symbol.asyncDispose] flushes the buffer', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.appendRow(...Array.from({ length: 3 }, () => eagerRow()));
+		await sheet[Symbol.asyncDispose]();
+		expect(sheet.pendingCount).toBe(0);
+	});
+
 	test('suspends auto-flush as soon as a lazy row enters the buffer', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
 		const sheet = new Sheet(mockSheet as never, parent as never);
