@@ -356,6 +356,19 @@ describe('appendRow / flush', () => {
 		expect(sheet.pendingCount).toBe(0);
 	});
 
+	test('pendingCount includes rows held past SEND_CHUNK_SIZE while a lazy row suspends auto-flush', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		// 2499 eager (below threshold, no flush yet) + 1 lazy (latches
+		// auto-flush) + 5000 more eager = 7500 held in the buffer instead of
+		// auto-flushing at the 2500 boundary.
+		await sheet.appendRow(...Array.from({ length: 2499 }, () => eagerRow()));
+		await sheet.appendRow(lazyRow());
+		await sheet.appendRow(...Array.from({ length: 5000 }, () => eagerRow()));
+		expect(sheet.pendingCount).toBe(7500);
+	});
+
 	test('detects a lazy cell at any column position, not just the first cell of the row', async () => {
 		// containsLazyCell() iterates every cell of the row. A defensive
 		// "optimization" that only checks row[0] would slip past unit tests

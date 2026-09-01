@@ -110,6 +110,13 @@ export class Sheet {
 	 * "flushing N rows..." メッセージ）。`onProgress` は chunk の
 	 * `batchUpdate` 完了後にしか呼ばれないため、送信開始前の見積もりは
 	 * この getter でのみ得られる。
+	 * @example
+	 * ```ts
+	 * if (sheet.pendingCount > 0) {
+	 *   showProgress(`flushing ${sheet.pendingCount} rows...`);
+	 * }
+	 * await sheet.flush();
+	 * ```
 	 */
 	get pendingCount() {
 		return this.#pendingRows.length;
