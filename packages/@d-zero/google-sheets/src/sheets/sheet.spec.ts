@@ -268,6 +268,15 @@ describe('appendRow / flush', () => {
 		expect(sheet.sentCount).toBe(3);
 	});
 
+	test('pendingCount returns to 0 after [Symbol.asyncDispose] flushes the buffer', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.appendRow(...Array.from({ length: 3 }, () => eagerRow()));
+		await sheet[Symbol.asyncDispose]();
+		expect(sheet.pendingCount).toBe(0);
+	});
+
 	test('suspends auto-flush as soon as a lazy row enters the buffer', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
 		const sheet = new Sheet(mockSheet as never, parent as never);
@@ -326,6 +335,47 @@ describe('appendRow / flush', () => {
 		await sheet.appendRow();
 		expect(updateCellsRows).toEqual([]);
 		expect(sheet.sentCount).toBe(0);
+	});
+
+	test('pendingCount reflects buffered rows below the auto-flush threshold', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		expect(sheet.pendingCount).toBe(0);
+
+		await sheet.appendRow(...Array.from({ length: 2499 }, () => eagerRow()));
+		expect(sheet.pendingCount).toBe(2499);
+	});
+
+	test('pendingCount drops to the chunk remainder once auto-flush fires', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		// 6000 rows -> two auto-flushed chunks of 2500, 1000 left buffered.
+		await sheet.appendRow(...Array.from({ length: 6000 }, () => eagerRow()));
+		expect(sheet.pendingCount).toBe(1000);
+	});
+
+	test('pendingCount returns to 0 after flush() drains the buffer', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.appendRow(...Array.from({ length: 6000 }, () => eagerRow()));
+		await sheet.flush();
+		expect(sheet.pendingCount).toBe(0);
+	});
+
+	test('pendingCount includes rows held past SEND_CHUNK_SIZE while a lazy row suspends auto-flush', async () => {
+		const { parent } = createRecordingParent();
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		// 2499 eager (below threshold, no flush yet) + 1 lazy (latches
+		// auto-flush) + 5000 more eager = 7500 held in the buffer instead of
+		// auto-flushing at the 2500 boundary.
+		await sheet.appendRow(...Array.from({ length: 2499 }, () => eagerRow()));
+		await sheet.appendRow(lazyRow());
+		await sheet.appendRow(...Array.from({ length: 5000 }, () => eagerRow()));
+		expect(sheet.pendingCount).toBe(7500);
 	});
 
 	test('detects a lazy cell at any column position, not just the first cell of the row', async () => {
