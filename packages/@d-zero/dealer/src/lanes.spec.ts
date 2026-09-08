@@ -100,6 +100,67 @@ describe('Lanes verbose update', () => {
 	});
 });
 
+describe('Lanes footer', () => {
+	test('footer() renders after the lane logs and after the header', () => {
+		const collector = makeStreamCollector();
+		using lanes = new Lanes({ stream: collector.stream });
+
+		lanes.header('My Header');
+		lanes.update(0, 'lane log');
+		lanes.footer('> input line');
+		// header()/update()/footer() 呼び出しはタイマーが既にペンディング中なら
+		// #stack を更新するだけで同期描画しない。resize は #write() を直接叩き、
+		// 現在の #stack を強制的に同期描画する（countdown lifetime テストと同じ手法）。
+		collector.stream.emit('resize');
+
+		const painted = collector.read();
+		const headerIndex = painted.indexOf('My Header');
+		const logIndex = painted.lastIndexOf('lane log');
+		const footerIndex = painted.lastIndexOf('> input line');
+
+		expect(headerIndex).toBeGreaterThanOrEqual(0);
+		expect(logIndex).toBeGreaterThan(headerIndex);
+		expect(footerIndex).toBeGreaterThan(logIndex);
+	});
+
+	test('footer() supports multi-line text', () => {
+		const collector = makeStreamCollector();
+		using lanes = new Lanes({ stream: collector.stream });
+
+		lanes.footer('status line\n> input');
+
+		const painted = collector.read();
+		expect(painted).toContain('status line');
+		expect(painted).toContain('> input');
+	});
+
+	test('clear({ footer: true }) removes the footer, clear() alone keeps it', () => {
+		const collector = makeStreamCollector();
+		using lanes = new Lanes({ stream: collector.stream });
+
+		lanes.footer('> input line');
+
+		lanes.clear();
+		const markAfterClear = collector.read().length;
+		collector.stream.emit('resize');
+		expect(collector.read().slice(markAfterClear)).toContain('> input line');
+
+		lanes.clear({ footer: true });
+		const markAfterClearFooter = collector.read().length;
+		collector.stream.emit('resize');
+		expect(collector.read().slice(markAfterClearFooter)).not.toContain('> input line');
+	});
+
+	test('footer() is a no-op in verbose mode', () => {
+		using lanes = new Lanes({ verbose: true });
+		stdoutWriteSpy.mockClear();
+
+		lanes.footer('> input line');
+
+		expect(stdoutWriteSpy).not.toHaveBeenCalled();
+	});
+});
+
 describe('Lanes countdown lifetime', () => {
 	test('a lane-scoped countdown id restarts from its full duration on the next item', () => {
 		vi.useFakeTimers();

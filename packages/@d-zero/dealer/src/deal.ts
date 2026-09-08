@@ -1,5 +1,6 @@
 import type { DealerOptions } from './dealer.js';
 import type { LanesOptions } from './lanes.js';
+import type { DealController } from './types.js';
 import type { DelayOptions } from '@d-zero/shared/delay';
 
 import { delay } from '@d-zero/shared/delay';
@@ -18,6 +19,19 @@ export type DealOptions<T = unknown> = DealerOptions<T> &
 		readonly header?: DealHeader;
 		readonly debug?: boolean;
 		readonly interval?: number | DelayOptions;
+		/**
+		 * 呼び出し元が既に持っている `Lanes` インスタンスを使い回す。
+		 * 指定した場合、`deal()` はこの `Lanes` を生成も破棄もしない —
+		 * 呼び出し元が生成・破棄のライフサイクルを管理する。
+		 * 指定時は他の {@link LanesOptions}（`stream`/`verbose`/`fps` 等）は
+		 * 無視される（渡された `Lanes` 自身の設定が使われるため）。
+		 */
+		readonly lanes?: Lanes;
+		/**
+		 * `dealer.play()` の直前に一度だけ呼ばれ、実行中に同時実行数を
+		 * 操作できる {@link DealController} を渡す。
+		 */
+		readonly onStart?: (controller: DealController) => void;
 	};
 
 /**
@@ -98,7 +112,11 @@ export async function deal<T extends WeakKey>(
 	const dealer = new Dealer(items, options);
 	// `using` により、setup() が例外を投げてもスコープ脱出時に必ず
 	// lanes（内部の Display）のタイマー・resize リスナー・SIGINT ハンドラが解放される。
-	using lanes = new Lanes(options);
+	// `options.lanes` が渡された場合は呼び出し元が生成・破棄を管理するため、
+	// ここでは新規生成も dispose もしない（`using` は null/undefined を
+	// 許容し、その場合 dispose を呼ばない）。
+	using ownedLanes = options?.lanes ? undefined : new Lanes(options);
+	const lanes = options?.lanes ?? ownedLanes!;
 
 	if (options?.header) {
 		dealer.progress((progress, done, total, limit) => {
@@ -137,6 +155,12 @@ export async function deal<T extends WeakKey>(
 	// 実行される必要がある）ため、ここは `await` で完了を待ってからスコープを抜ける。
 	const { promise, resolve } = Promise.withResolvers<void>();
 	dealer.finish(resolve);
+	options?.onStart?.({
+		get limit() {
+			return dealer.limit;
+		},
+		setLimit: (limit) => dealer.setLimit(limit),
+	});
 	dealer.play();
 	await promise;
 }

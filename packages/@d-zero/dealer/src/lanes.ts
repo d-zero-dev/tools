@@ -8,6 +8,16 @@ type Log = readonly [id: number, message: string];
 type SortFunc = (a: Log, b: Log) => number;
 
 /**
+ * header / footer 共通の整形処理。複数行テキストを改行で分割し、
+ * 各行を `RESET` で囲む（ログ行に紛れて前の行の色が漏れ継続しないよう）。
+ * @param text - `header()` / `footer()` に渡された生テキスト
+ * @returns `Display.write()` にそのまま渡せる行の配列
+ */
+function formatFixedLines(text: string): string[] {
+	return text.split('\n').map((line) => `${RESET}${line}${RESET}`);
+}
+
+/**
  * {@link Lanes} のコンストラクタオプション。
  */
 export type LanesOptions = {
@@ -30,6 +40,7 @@ export type LanesOptions = {
  */
 export class Lanes {
 	#display: Display;
+	#footerText?: string;
 	#header?: string;
 	#indent = '';
 	#logs = new Map<number, string>();
@@ -65,8 +76,9 @@ export class Lanes {
 	 * すべてのログをクリアする。verbose モードでは何もしない。
 	 * @param options - クリアオプション
 	 * @param options.header
+	 * @param options.footer
 	 */
-	clear(options?: { header?: boolean }) {
+	clear(options?: { header?: boolean; footer?: boolean }) {
 		if (this.#verbose) {
 			return;
 		}
@@ -75,6 +87,10 @@ export class Lanes {
 
 		if (options?.header) {
 			this.#header = undefined;
+		}
+
+		if (options?.footer) {
+			this.#footerText = undefined;
 		}
 
 		this.write();
@@ -100,6 +116,25 @@ export class Lanes {
 		this.#logs.delete(id);
 		this.write();
 	}
+	/**
+	 * フッターテキストを設定する。{@link header} と対称で、全レーンの
+	 * ログの下に固定表示される。常時表示の入力行など、ログの再描画に
+	 * 巻き込まれずに末尾へ固定したい行に使う。
+	 *
+	 * verbose モードでは何もしない — verbose には上書きされる単一フレームが
+	 * 存在せず、{@link update} 呼び出しのたびにフッターが追記出力され続けると
+	 * スパムになるため。
+	 * @param text - フッターとして表示する文字列
+	 */
+	footer(text: string) {
+		if (this.#verbose) {
+			return;
+		}
+
+		this.#footerText = text;
+		this.write();
+	}
+
 	/**
 	 * ヘッダーテキストを設定する。
 	 * @param text - ヘッダーとして表示する文字列
@@ -154,9 +189,10 @@ export class Lanes {
 		logs.sort(this.#sort);
 		const messages = logs.map(([, message]) => `${this.#indent}${message}`);
 		if (this.#header) {
-			messages.unshift(
-				...this.#header.split('\n').map((line) => `${RESET}${line}${RESET}`),
-			);
+			messages.unshift(...formatFixedLines(this.#header));
+		}
+		if (this.#footerText) {
+			messages.push(...formatFixedLines(this.#footerText));
 		}
 		this.#display.write(...messages);
 	}

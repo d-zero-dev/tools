@@ -22,6 +22,37 @@ export interface ProcessInitializer<T> {
 }
 
 /**
+ * {@link deal} 実行中に同時実行数を操作するためのハンドル。
+ * `options.onStart` で `dealer.play()` 直前に一度だけ渡される。
+ *
+ * `deal()` が返す Promise は全アイテムの処理完了まで解決しないため、
+ * `controller` は `await deal(...)` の**外側**、`deal()` 実行中に発火する
+ * 別イベント（CLI のキー入力、タイマー等）から使う。`await deal(...)` の
+ * 後で呼んでも例外にはならないが、その時点で全ワーカーは完了済みのため
+ * 並列数の変更対象がなく無意味になる。
+ * @example
+ * ```ts
+ * let controller: DealController | undefined;
+ * const run = deal(items, setup, {
+ *   onStart: (c) => { controller = c; },
+ * });
+ * // deal() 実行中（run が解決する前）に、別イベントから並列数を変更する
+ * onExternalCommand((newLimit) => controller?.setLimit(newLimit));
+ * await run;
+ * ```
+ */
+export interface DealController {
+	/** 現在の同時実行ワーカー数の上限。 */
+	readonly limit: number;
+	/**
+	 * 同時実行ワーカー数の上限を変更する。
+	 * @param limit - 新しい上限（1以上の整数）
+	 * @throws {RangeError} `limit` が1以上の整数でない場合
+	 */
+	setLimit(limit: number): void;
+}
+
+/**
  * {@link TaskListPipeline} の各ステップの実行状態。
  * - `pending`: 未実行
  * - `running`: 実行中（{@link StepContext.progress} によるメッセージ更新を受け付ける）
