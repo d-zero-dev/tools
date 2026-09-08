@@ -604,4 +604,144 @@ describe('Dealer', () => {
 
 		await runDealer(dealer);
 	});
+
+	describe('setLimit', () => {
+		test('increasing the limit immediately fills newly available slots', async () => {
+			const items = createItems(4);
+			let maxConcurrent = 0;
+			let currentConcurrent = 0;
+			const dealer = new Dealer(items, { limit: 1 });
+			const { promise: firstStarted, resolve: resolveFirstStarted } =
+				Promise.withResolvers<void>();
+			const { promise: canFinishFirst, resolve: resolveCanFinishFirst } =
+				Promise.withResolvers<void>();
+			let firstCall = true;
+
+			await dealer.setup(() => {
+				return Promise.resolve(async () => {
+					currentConcurrent++;
+					maxConcurrent = Math.max(maxConcurrent, currentConcurrent);
+					if (firstCall) {
+						firstCall = false;
+						resolveFirstStarted();
+						await canFinishFirst;
+					}
+					currentConcurrent--;
+				});
+			});
+
+			const done = runDealer(dealer);
+			await firstStarted;
+			// limit 1 のあいだは1件しか動いていないはず
+			expect(maxConcurrent).toBe(1);
+
+			dealer.setLimit(4);
+			resolveCanFinishFirst();
+			await done;
+
+			expect(maxConcurrent).toBeGreaterThan(1);
+			expect(dealer.limit).toBe(4);
+		});
+
+		test('decreasing the limit lets already-started workers finish, but throttles concurrency for items dispatched afterward', async () => {
+			// limit 3・5件: 最初の3件（index 0,1,2）が同時ディスパッチされる。
+			// それらが実行中のうちに limit を 1 へ落とし、(a) 実行中の3件は
+			// 中断されず全件完了すること、(b) 減少後に新規ディスパッチされる
+			// 残り2件（index 3,4）は同時に1件までしか動かないことを検証する。
+			const items = createItems(5);
+			const dealer = new Dealer(items, { limit: 3 });
+			const startedFirstBatch: number[] = [];
+			const { promise: firstBatchStarted, resolve: resolveFirstBatchStarted } =
+				Promise.withResolvers<void>();
+			const { promise: canFinishFirstBatch, resolve: resolveCanFinishFirstBatch } =
+				Promise.withResolvers<void>();
+			let decreased = false;
+			let concurrentAfterDecrease = 0;
+			let maxConcurrentAfterDecrease = 0;
+
+			await dealer.setup((_item, index) => {
+				return Promise.resolve(async () => {
+					if (!decreased) {
+						startedFirstBatch.push(index);
+						if (startedFirstBatch.length === 3) {
+							resolveFirstBatchStarted();
+						}
+						await canFinishFirstBatch;
+						return;
+					}
+					concurrentAfterDecrease++;
+					maxConcurrentAfterDecrease = Math.max(
+						maxConcurrentAfterDecrease,
+						concurrentAfterDecrease,
+					);
+					await new Promise((r) => setTimeout(r, 5));
+					concurrentAfterDecrease--;
+				});
+			});
+
+			const done = runDealer(dealer);
+			await firstBatchStarted;
+			expect(startedFirstBatch).toHaveLength(3);
+
+			// setLimit はテストの非同期フロー（＝ワーカー自身の同期区間の外）から
+			// 呼ぶ。これは実運用（外部入力による並列数変更）と同じ呼び出し方。
+			decreased = true;
+			dealer.setLimit(1);
+			resolveCanFinishFirstBatch();
+
+			await done;
+
+			expect(startedFirstBatch).toHaveLength(3);
+			expect(maxConcurrentAfterDecrease).toBe(1);
+			expect(dealer.limit).toBe(1);
+		});
+
+		test('throws RangeError for non-positive-integer limits', () => {
+			const dealer = new Dealer(createItems(1), { limit: 5 });
+			expect(() => dealer.setLimit(0)).toThrow(RangeError);
+			expect(() => dealer.setLimit(-1)).toThrow(RangeError);
+			expect(() => dealer.setLimit(1.5)).toThrow(RangeError);
+			expect(dealer.limit).toBe(5);
+		});
+
+		test('after the dealer has finished, setLimit updates the stored limit without throwing or dispatching', async () => {
+			const items = createItems(1);
+			const dealer = new Dealer(items, { limit: 10 });
+
+			await dealer.setup(() => Promise.resolve(() => {}));
+			await runDealer(dealer);
+
+			expect(() => dealer.setLimit(3)).not.toThrow();
+			// #deal() 自体は #finished ガードで即 return する（新規ディスパッチは
+			// 発生しない）が、#limit フィールドの更新はガードの影響を受けない
+			expect(dealer.limit).toBe(3);
+		});
+
+		test('a synchronous setLimit call from within a worker still respects the limit deterministically (re-entrant #deal() calls are ignored)', async () => {
+			// worker 自身の同期区間（最初の await より前）から setLimit を呼ぶ
+			// 稀なケースでも、#deal() の再入防止により外側のディスパッチループが
+			// 一貫して最新の #limit を尊重する。increase 版は
+			// 'onStart receives a controller...'（deal.spec.ts）で間接的に検証済み
+			// なので、ここでは decrease 版のみ確認する。
+			const items = createItems(3);
+			const dealer = new Dealer(items, { limit: 3 });
+			const processed: number[] = [];
+
+			await dealer.setup((_item, index) => {
+				return Promise.resolve(async () => {
+					processed.push(index);
+					if (index === 0) {
+						// この時点で #deal() はまだ while ループの最中（再入）
+						dealer.setLimit(1);
+					}
+					await new Promise((r) => setTimeout(r, 1));
+				});
+			});
+
+			await runDealer(dealer);
+			// 再入経路でも例外や取りこぼしなく全件完了する
+			expect(processed).toHaveLength(3);
+			expect(dealer.limit).toBe(1);
+		});
+	});
 });

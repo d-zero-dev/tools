@@ -33,6 +33,7 @@ export interface DealerOptions<T = unknown> {
  * @template T - 処理対象アイテムの型（WeakKey 制約）
  */
 export class Dealer<T extends WeakKey> {
+	#dealing = false;
 	#debug: (log: string) => void = () => {};
 	#done = new WeakSet<T>();
 	#doneCount = 0;
@@ -50,6 +51,12 @@ export class Dealer<T extends WeakKey> {
 	#starts = new WeakMap<T, () => Promise<void>>();
 	#workers = new Set<T>();
 
+	/**
+	 * 現在の同時実行ワーカー数の上限。
+	 */
+	get limit(): number {
+		return this.#limit;
+	}
 	constructor(items: readonly T[], options?: DealerOptions<T>) {
 		this.#items = [...items];
 		this.#limit = options?.limit ?? 10;
@@ -103,6 +110,30 @@ export class Dealer<T extends WeakKey> {
 	}
 
 	/**
+	 * 同時実行ワーカー数の上限を実行中に変更する。
+	 * 増加時は空きスロットを即座に充填する。減少時は新規ワーカーの起動を
+	 * 絞るだけで、既に実行中のワーカーを中断しない —
+	 * `#workers.size` が新しい上限を下回るまで自然に収束する。
+	 *
+	 * 呼び出し元が別イベント（タイマー・外部入力等）から呼ぶ通常のケースでは
+	 * 上記の効果が即座に反映される。ワーカー自身の `start()` の同期区間
+	 * （最初の `await` より前）から呼んだ場合も安全（`#deal()` の再入防止に
+	 * より、その時点の `#limit` を一貫して尊重する）だが、増加時に空きスロット
+	 * を埋めるのはディスパッチ元の `#deal()` 呼び出し自身の残りイテレーションに
+	 * なる — 現在ディスパッチ中のワーカー自身がまだ起動されていない同バッチの
+	 * 他アイテムより先に完了した場合、それらのアイテムは新しい上限を下回るまで
+	 * 起動が遅れることがある。
+	 * @param limit - 新しい上限（1以上の整数）
+	 * @throws {RangeError} `limit` が1以上の整数でない場合
+	 */
+	setLimit(limit: number) {
+		if (!Number.isInteger(limit) || limit < 1) {
+			throw new RangeError(`limit must be an integer >= 1, got ${limit}`);
+		}
+		this.#limit = limit;
+		this.#deal();
+	}
+	/**
 	 * 各アイテムの初期化関数を設定する。
 	 * {@link play} を呼ぶ前に必ず呼び出すこと。
 	 * @param initializer - 各アイテムを初期化し、実行関数を返すコールバック
@@ -135,51 +166,72 @@ export class Dealer<T extends WeakKey> {
 		await this.#enqueue(items, true);
 	}
 
+	/**
+	 * ディスパッチ・完了判定を行う中核ループ。
+	 *
+	 * 再入防止（`#dealing`）: `start()` の同期区間（最初の `await` まで）から
+	 * {@link setLimit} が呼ばれると、`#deal()` が自分自身の `while` ループの
+	 * 内側から再帰的に呼ばれる。ガードなしだと、ネストした呼び出しが増えた
+	 * 枠を先取りしたり、外側のループが変更後の `#limit` で次のイテレーション
+	 * を評価したりする順序がタイミング依存になり、どちらが何件ディスパッチ
+	 * するかが不定になる。`#dealing` が立っている間の再入は即座に無視し、
+	 * 外側の `while` ループ自身が次のイテレーションで最新の `#limit`/
+	 * `#workers.size` を読み直して続行する — 増加時は外側ループが残り枠を
+	 * 埋め、減少時は外側ループがそこで打ち切る。結果はどちらも「その時点の
+	 * `#limit` を尊重する」という同じ規則の一貫した適用になり、呼び出しが
+	 * ワーカー自身の同期区間から来たか外部からの非同期呼び出しかによらず
+	 * 決定的になる。
+	 */
 	#deal() {
-		if (this.#finished) {
+		if (this.#finished || this.#dealing) {
 			return;
 		}
-		const total = this.#items.length;
-		this.#debug(`Done: ${this.#doneCount}/${total} (Limit: ${this.#limit})`);
-		this.#progress(
-			total === 0 ? 0 : this.#doneCount / total,
-			this.#doneCount,
-			total,
-			this.#limit,
-		);
+		this.#dealing = true;
+		try {
+			const total = this.#items.length;
+			this.#debug(`Done: ${this.#doneCount}/${total} (Limit: ${this.#limit})`);
+			this.#progress(
+				total === 0 ? 0 : this.#doneCount / total,
+				this.#doneCount,
+				total,
+				this.#limit,
+			);
 
-		if (this.#doneCount === total && this.#pendingInitCount === 0) {
-			this.#finished = true;
-			this.#finish();
-			return;
-		}
-
-		if (this.#signal?.aborted) {
-			if (this.#workers.size === 0) {
+			if (this.#doneCount === total && this.#pendingInitCount === 0) {
 				this.#finished = true;
 				this.#finish();
-			}
-			return;
-		}
-
-		while (this.#workers.size < this.#limit) {
-			const worker = this.#draw();
-			if (!worker) {
 				return;
 			}
 
-			this.#workers.add(worker);
-			const start = this.#starts.get(worker);
-			if (!start) {
-				throw new Error(`Didn't have a starting function`);
+			if (this.#signal?.aborted) {
+				if (this.#workers.size === 0) {
+					this.#finished = true;
+					this.#finish();
+				}
+				return;
 			}
 
-			void start().then(() => {
-				this.#workers.delete(worker);
-				this.#done.add(worker);
-				this.#doneCount++;
-				this.#deal();
-			});
+			while (this.#workers.size < this.#limit) {
+				const worker = this.#draw();
+				if (!worker) {
+					return;
+				}
+
+				this.#workers.add(worker);
+				const start = this.#starts.get(worker);
+				if (!start) {
+					throw new Error(`Didn't have a starting function`);
+				}
+
+				void start().then(() => {
+					this.#workers.delete(worker);
+					this.#done.add(worker);
+					this.#doneCount++;
+					this.#deal();
+				});
+			}
+		} finally {
+			this.#dealing = false;
 		}
 	}
 	#draw() {

@@ -39,6 +39,25 @@ await deal(items, setup, { limit: 10, signal: controller.signal });
 
 abort 時の挙動: **新規ワーカー起動を停止、実行中ワーカーは完了まで待機、`push`/`unshift` は無視**。詳細は `src/deal.ts` / `src/dealer.ts` の JSDoc。
 
+### 実行中の並列数変更・外部 `Lanes` の再利用
+
+```ts
+import { deal, Lanes } from '@d-zero/dealer';
+
+const lanes = new Lanes({ stream: process.stderr });
+let controller: DealController | undefined;
+
+await deal(items, setup, {
+	limit: 10,
+	lanes, // 呼び出し元が生成した Lanes を使い回す（deal() は生成も破棄もしない）
+	onStart: (c) => {
+		controller = c;
+	},
+});
+```
+
+`lanes` を渡すと `deal()` は自前で `Lanes` を作らず、渡されたインスタンスの生成・破棄は呼び出し元の責任になる。`onStart` は `dealer.play()` 直前に一度呼ばれ、`controller.setLimit(n)` で実行中に並列数を変更できる（`Lanes#footer(text)` と組み合わせれば、外部からの入力受付 UI を並列レーンの下に固定表示できる）。
+
 ## Sequential Pipeline（`TaskList`）
 
 ```ts

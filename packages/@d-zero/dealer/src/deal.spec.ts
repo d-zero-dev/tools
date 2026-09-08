@@ -1,6 +1,9 @@
+import type { DealController } from './types.js';
+
 import { describe, test, expect, vi } from 'vitest';
 
 import { deal } from './deal.js';
+import { Lanes } from './lanes.js';
 
 /**
  *
@@ -151,5 +154,73 @@ describe('deal', () => {
 		expect(process.listenerCount('SIGINT')).toBe(sigintBefore);
 
 		stdoutWriteSpy.mockRestore();
+	});
+
+	test('reuses an injected Lanes instead of creating its own, and does not dispose it', async () => {
+		const resizeBefore = process.stdout.listenerCount('resize');
+		const lanes = new Lanes({ verbose: true });
+		// injected の場合、deal() が独自の Lanes を作らないので resize リスナーは増えない
+		expect(process.stdout.listenerCount('resize')).toBe(resizeBefore + 1);
+
+		await deal(
+			createItems(2),
+			(_process, update, index) => {
+				return () => {
+					update(`item ${index}`);
+				};
+			},
+			{ limit: 10, lanes },
+		);
+
+		// deal() 完了後も呼び出し元の Lanes は破棄されず生きている
+		expect(process.stdout.listenerCount('resize')).toBe(resizeBefore + 1);
+		lanes[Symbol.dispose]();
+		expect(process.stdout.listenerCount('resize')).toBe(resizeBefore);
+	});
+
+	test('onStart receives a controller before play(), and setLimit affects the header limit', async () => {
+		const limits: number[] = [];
+		let controller: DealController | undefined;
+		const { promise: firstStarted, resolve: resolveFirstStarted } =
+			Promise.withResolvers<void>();
+		const { promise: canFinishFirst, resolve: resolveCanFinishFirst } =
+			Promise.withResolvers<void>();
+		let firstCall = true;
+
+		const run = deal(
+			createItems(3),
+			() => {
+				return async () => {
+					if (firstCall) {
+						firstCall = false;
+						resolveFirstStarted();
+						await canFinishFirst;
+					}
+				};
+			},
+			{
+				limit: 1,
+				verbose: true,
+				onStart: (c) => {
+					controller = c;
+				},
+				header: (_progress, _done, _total, limit) => {
+					limits.push(limit);
+					return `limit: ${limit}`;
+				},
+			},
+		);
+
+		await firstStarted;
+		expect(controller).toBeDefined();
+		expect(controller?.limit).toBe(1);
+
+		controller?.setLimit(3);
+		expect(controller?.limit).toBe(3);
+		resolveCanFinishFirst();
+
+		await run;
+
+		expect(limits).toContain(3);
 	});
 });
