@@ -47,16 +47,21 @@ import { deal, Lanes } from '@d-zero/dealer';
 const lanes = new Lanes({ stream: process.stderr });
 let controller: DealController | undefined;
 
-await deal(items, setup, {
+const run = deal(items, setup, {
 	limit: 10,
 	lanes, // 呼び出し元が生成した Lanes を使い回す（deal() は生成も破棄もしない）
 	onStart: (c) => {
 		controller = c;
 	},
 });
+
+// deal() 実行中（run が解決する前）に、別イベントから並列数を変更する
+onExternalCommand((newLimit) => controller?.setLimit(newLimit));
+
+await run;
 ```
 
-`lanes` を渡すと `deal()` は自前で `Lanes` を作らず、渡されたインスタンスの生成・破棄は呼び出し元の責任になる。`onStart` は `dealer.play()` 直前に一度呼ばれ、`controller.setLimit(n)` で実行中に並列数を変更できる（`Lanes#footer(text)` と組み合わせれば、外部からの入力受付 UI を並列レーンの下に固定表示できる）。
+`lanes` を渡すと `deal()` は自前で `Lanes` を作らず、渡されたインスタンスの生成・破棄は呼び出し元の責任になる。`onStart` は `dealer.play()` 直前に一度呼ばれ、`controller.setLimit(n)` を **`await deal(...)` が解決する前に** 呼ぶことで実行中に並列数を変更できる（`Lanes#footer(text)` と組み合わせれば、外部からの入力受付 UI を並列レーンの下に固定表示できる）。
 
 ## Sequential Pipeline（`TaskList`）
 
