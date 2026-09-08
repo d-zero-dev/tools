@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.14.0](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.13.1...@d-zero/dealer@1.14.0) (2026-09-08)
+
+### Features
+
+- **dealer:** support runtime concurrency changes and injected Lanes ([e454848](https://github.com/d-zero-dev/tools/commit/e454848aa07b60712a0797a4ae11ce7b386359a2))
+
 ## [1.13.1](https://github.com/d-zero-dev/tools/compare/@d-zero/dealer@1.13.0...@d-zero/dealer@1.13.1) (2026-08-26)
 
 ### Bug Fixes
