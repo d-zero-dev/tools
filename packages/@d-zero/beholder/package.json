@@ -24,6 +24,7 @@
 	},
 	"dependencies": {
 		"@d-zero/puppeteer-page-scan": "4.6.9",
+		"@d-zero/puppeteer-scroll": "4.0.12",
 		"@d-zero/shared": "0.23.0",
 		"debug": "4.4.3",
 		"puppeteer": "25.5.0",

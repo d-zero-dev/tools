@@ -4,6 +4,7 @@ import { scrollAllOver } from '@d-zero/puppeteer-scroll';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { beforePageScan } from './before-page-scan.js';
+import { NavigationUnsettledError } from './navigation-unsettled-error.js';
 
 vi.mock('@d-zero/puppeteer-scroll', async () => {
 	const actual = await vi.importActual<typeof import('@d-zero/puppeteer-scroll')>(
@@ -22,6 +23,7 @@ vi.mock('@d-zero/puppeteer-scroll', async () => {
 function createMockPage(scrollHeight = 0): Page {
 	return {
 		url: vi.fn(() => 'about:blank'),
+		mainFrame: vi.fn(() => ({ isDetached: vi.fn(() => false) })),
 		setViewport: vi.fn(() => Promise.resolve()),
 		goto: vi.fn(() => Promise.resolve()),
 		reload: vi.fn(() => Promise.resolve()),
@@ -137,7 +139,7 @@ describe('beforePageScan → hooks の呼び出し', () => {
 				name: 'test',
 				width: 1024,
 			}),
-		).resolves.toEqual({ scrolled: true, scrollHeight: 0 });
+		).resolves.toEqual({ scrolled: true, scrollHeight: 0, settled: 'idle' });
 	});
 
 	it('hooks の途中で throw した場合、後続の hook は呼ばれず例外が伝搬する', async () => {
@@ -195,7 +197,7 @@ describe('beforePageScan → maxScrollHeight ガード', () => {
 			listener,
 		});
 
-		expect(result).toEqual({ scrolled: false, scrollHeight: 2_000_000 });
+		expect(result).toEqual({ scrolled: false, scrollHeight: 2_000_000, settled: 'idle' });
 		expect(scrollAllOver).not.toHaveBeenCalled();
 		expect(listener).toHaveBeenCalledWith('hook', {
 			name: 'mobile-small',
@@ -212,7 +214,7 @@ describe('beforePageScan → maxScrollHeight ガード', () => {
 			maxScrollHeight: 1_000_000,
 		});
 
-		expect(result).toEqual({ scrolled: true, scrollHeight: 500_000 });
+		expect(result).toEqual({ scrolled: true, scrollHeight: 500_000, settled: 'idle' });
 		expect(scrollAllOver).toHaveBeenCalledTimes(1);
 	});
 
@@ -224,7 +226,7 @@ describe('beforePageScan → maxScrollHeight ガード', () => {
 			width: 1024,
 		});
 
-		expect(result).toEqual({ scrolled: true, scrollHeight: 99_999_999 });
+		expect(result).toEqual({ scrolled: true, scrollHeight: 99_999_999, settled: 'idle' });
 		expect(scrollAllOver).toHaveBeenCalledTimes(1);
 	});
 
@@ -237,7 +239,7 @@ describe('beforePageScan → maxScrollHeight ガード', () => {
 			maxScrollHeight: 1_000_000,
 		});
 
-		expect(result).toEqual({ scrolled: true, scrollHeight: 1_000_000 });
+		expect(result).toEqual({ scrolled: true, scrollHeight: 1_000_000, settled: 'idle' });
 		expect(scrollAllOver).toHaveBeenCalledTimes(1);
 	});
 
@@ -250,7 +252,7 @@ describe('beforePageScan → maxScrollHeight ガード', () => {
 			maxScrollHeight: 0,
 		});
 
-		expect(result).toEqual({ scrolled: true, scrollHeight: 0 });
+		expect(result).toEqual({ scrolled: true, scrollHeight: 0, settled: 'idle' });
 		expect(scrollAllOver).toHaveBeenCalledTimes(1);
 	});
 
@@ -273,7 +275,7 @@ describe('beforePageScan → maxScrollHeight ガード', () => {
 			maxScrollHeight: 1_000_000,
 		});
 
-		expect(result).toEqual({ scrolled: true, scrollHeight: 500_000 });
+		expect(result).toEqual({ scrolled: true, scrollHeight: 500_000, settled: 'idle' });
 		expect(evaluate).toHaveBeenCalledTimes(2);
 		expect(scrollAllOver).toHaveBeenCalledTimes(1);
 	});
@@ -321,5 +323,223 @@ describe('beforePageScan → maxScrollHeight ガード', () => {
 			}),
 		).rejects.toThrow('TypeError');
 		expect(evaluate).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('beforePageScan → networkidle フォールバックと settled', () => {
+	beforeEach(() => {
+		vi.mocked(scrollAllOver).mockClear();
+	});
+
+	it('networkidle0 が即座に成功したとき settled:"idle" を返す', async () => {
+		const page = createMockPage(1000);
+
+		const result = await beforePageScan(page, 'https://example.com', {
+			name: 'test',
+			width: 320,
+		});
+
+		expect(result).toEqual({ scrolled: true, scrollHeight: 1000, settled: 'idle' });
+		expect(page.goto).toHaveBeenCalledTimes(1);
+	});
+
+	it('networkidle0 timeout → networkidle2 成功で settled:"idle"、goto は2回呼ばれる', async () => {
+		const goto = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('Navigation timeout of 5000 ms exceeded'))
+			.mockResolvedValueOnce();
+		const page = {
+			url: vi.fn(() => 'about:blank'),
+			mainFrame: vi.fn(() => ({ isDetached: vi.fn(() => false) })),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto,
+			reload: vi.fn(() => Promise.resolve()),
+			evaluate: vi.fn(() => Promise.resolve(1000)),
+		} as unknown as Page;
+
+		const result = await beforePageScan(page, 'https://example.com', {
+			name: 'test',
+			width: 320,
+		});
+
+		expect(result).toEqual({ scrolled: true, scrollHeight: 1000, settled: 'idle' });
+		expect(goto).toHaveBeenCalledTimes(2);
+	});
+
+	it('networkidle0/networkidle2 とも timeout でもフレームが健全なら settled:"degraded" で scroll まで続行する', async () => {
+		// page.url() === url なので isReload=true（page.reload() が使われる）
+		const reload = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('Navigation timeout of 5000 ms exceeded'))
+			.mockRejectedValueOnce(new Error('Navigation timeout of 15000 ms exceeded'));
+		const evaluate = vi
+			.fn()
+			.mockResolvedValueOnce(true) // isFrameSettled の readyState/body チェック
+			.mockResolvedValueOnce(500_000); // scrollHeight 計測
+		const page = {
+			url: vi.fn(() => 'https://example.com'),
+			mainFrame: vi.fn(() => ({ isDetached: vi.fn(() => false) })),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto: vi.fn(() => Promise.resolve()),
+			reload,
+			evaluate,
+		} as unknown as Page;
+
+		const result = await beforePageScan(page, 'https://example.com', {
+			name: 'mobile-small',
+			width: 320,
+			continueOnDegradedNetwork: true,
+		});
+
+		expect(result).toEqual({
+			scrolled: true,
+			scrollHeight: 500_000,
+			settled: 'degraded',
+		});
+		expect(scrollAllOver).toHaveBeenCalledTimes(1);
+	});
+
+	it('continueOnDegradedNetwork 未指定（既定 false）のときは、フレームが健全でも2回目の timeout をそのまま伝播する（既存呼び出し元の後方互換）', async () => {
+		const reload = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('Navigation timeout of 5000 ms exceeded'))
+			.mockRejectedValueOnce(new Error('Navigation timeout of 15000 ms exceeded'));
+		const page = {
+			url: vi.fn(() => 'https://example.com'),
+			mainFrame: vi.fn(() => ({ isDetached: vi.fn(() => false) })),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto: vi.fn(() => Promise.resolve()),
+			reload,
+			evaluate: vi.fn(() => Promise.resolve(true)),
+		} as unknown as Page;
+
+		const promise = beforePageScan(page, 'https://example.com', {
+			name: 'mobile-small',
+			width: 320,
+		});
+
+		await expect(promise).rejects.toThrow('Navigation timeout of 15000 ms exceeded');
+		await expect(promise).rejects.not.toBeInstanceOf(NavigationUnsettledError);
+		expect(scrollAllOver).not.toHaveBeenCalled();
+	});
+
+	it('判定NG（mainFrame が detached）のとき NavigationUnsettledError を投げ、scroll は行われない', async () => {
+		const reload = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('Navigation timeout of 5000 ms exceeded'))
+			.mockRejectedValueOnce(new Error('Navigation timeout of 15000 ms exceeded'));
+		const page = {
+			url: vi.fn(() => 'https://example.com'),
+			mainFrame: vi.fn(() => ({ isDetached: vi.fn(() => true) })),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto: vi.fn(() => Promise.resolve()),
+			reload,
+			evaluate: vi.fn(() => Promise.resolve(true)),
+		} as unknown as Page;
+
+		await expect(
+			beforePageScan(page, 'https://example.com', {
+				name: 'mobile-small',
+				width: 320,
+				continueOnDegradedNetwork: true,
+			}),
+		).rejects.toThrow(NavigationUnsettledError);
+		expect(scrollAllOver).not.toHaveBeenCalled();
+	});
+
+	it('判定NG（page.url() が対象URLと不一致）のとき NavigationUnsettledError を投げる', async () => {
+		const goto = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('Navigation timeout of 5000 ms exceeded'))
+			.mockRejectedValueOnce(new Error('Navigation timeout of 15000 ms exceeded'));
+		const page = {
+			url: vi.fn(() => 'https://elsewhere.example.com/'),
+			mainFrame: vi.fn(() => ({ isDetached: vi.fn(() => false) })),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto,
+			reload: vi.fn(() => Promise.resolve()),
+			evaluate: vi.fn(() => Promise.resolve(true)),
+		} as unknown as Page;
+
+		await expect(
+			beforePageScan(page, 'https://example.com', {
+				name: 'mobile-small',
+				width: 320,
+				continueOnDegradedNetwork: true,
+			}),
+		).rejects.toThrow(NavigationUnsettledError);
+		expect(scrollAllOver).not.toHaveBeenCalled();
+	});
+
+	it('判定NG（document.readyState が loading 相当）のとき NavigationUnsettledError を投げる', async () => {
+		const reload = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('Navigation timeout of 5000 ms exceeded'))
+			.mockRejectedValueOnce(new Error('Navigation timeout of 15000 ms exceeded'));
+		const page = {
+			url: vi.fn(() => 'https://example.com'),
+			mainFrame: vi.fn(() => ({ isDetached: vi.fn(() => false) })),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto: vi.fn(() => Promise.resolve()),
+			reload,
+			evaluate: vi.fn(() => Promise.resolve(false)),
+		} as unknown as Page;
+
+		await expect(
+			beforePageScan(page, 'https://example.com', {
+				name: 'mobile-small',
+				width: 320,
+				continueOnDegradedNetwork: true,
+			}),
+		).rejects.toThrow(NavigationUnsettledError);
+		expect(scrollAllOver).not.toHaveBeenCalled();
+	});
+
+	it('networkidle0 の非timeoutエラー（Protocol error 等）は即座に伝播し、networkidle2 へフォールバックしない', async () => {
+		const goto = vi
+			.fn()
+			.mockRejectedValueOnce(
+				new Error('Protocol error (Page.navigate): Not attached to an active page'),
+			);
+		const page = {
+			url: vi.fn(() => 'about:blank'),
+			mainFrame: vi.fn(() => ({ isDetached: vi.fn(() => false) })),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto,
+			reload: vi.fn(() => Promise.resolve()),
+			evaluate: vi.fn(() => Promise.resolve(0)),
+		} as unknown as Page;
+
+		await expect(
+			beforePageScan(page, 'https://example.com', { name: 'mobile-small', width: 320 }),
+		).rejects.toThrow('Not attached to an active page');
+		expect(goto).toHaveBeenCalledTimes(1);
+	});
+
+	it('networkidle2 フォールバック中の非timeoutエラー（Protocol error 等）は NavigationUnsettledError にラップせずそのまま伝播する', async () => {
+		const reload = vi
+			.fn()
+			.mockRejectedValueOnce(new Error('Navigation timeout of 5000 ms exceeded'))
+			.mockRejectedValueOnce(
+				new Error('Protocol error (Page.reload): Not attached to an active page'),
+			);
+		const page = {
+			url: vi.fn(() => 'https://example.com'),
+			mainFrame: vi.fn(() => ({ isDetached: vi.fn(() => false) })),
+			setViewport: vi.fn(() => Promise.resolve()),
+			goto: vi.fn(() => Promise.resolve()),
+			reload,
+			evaluate: vi.fn(() => Promise.resolve(true)),
+		} as unknown as Page;
+
+		const promise = beforePageScan(page, 'https://example.com', {
+			name: 'mobile-small',
+			width: 320,
+			continueOnDegradedNetwork: true,
+		});
+
+		await expect(promise).rejects.toThrow('Not attached to an active page');
+		await expect(promise).rejects.not.toBeInstanceOf(NavigationUnsettledError);
+		expect(scrollAllOver).not.toHaveBeenCalled();
 	});
 });

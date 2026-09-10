@@ -5,6 +5,7 @@
  * @module
  */
 
+export type { ImageScanCode } from './image-scan-code.js';
 export type { ExURL, ParseURLOptions } from '@d-zero/shared/parse-url';
 export type { CompressType } from '@d-zero/shared/detect-compress';
 export type { CDNType } from '@d-zero/shared/detect-cdn';
@@ -55,6 +56,7 @@ export type {
 	RawHeadEntry,
 } from './meta/types.js';
 
+import type { ImageScanCode } from './image-scan-code.js';
 import type { Meta } from './meta/types.js';
 import type { CDNType } from '@d-zero/shared/detect-cdn';
 import type { CompressType } from '@d-zero/shared/detect-compress';
@@ -117,6 +119,22 @@ export type PageData = {
 	 */
 	scrollHeight: ScrollHeightData | null;
 
+	/**
+	 * Per-device-preset outcome of the `<img>` element scan performed by
+	 * `Scraper#fetchImages`, keyed the same way as {@link ScrollHeightData}.
+	 * A field is `null` when that device preset's image scan was never
+	 * attempted (non-HTML, external, non-HTTP page, or `captureImages: false`);
+	 * otherwise it is an {@link ImageScanCode} recording why the scan
+	 * succeeded, degraded, or was abandoned. See `IMAGE_SCAN_CODE`.
+	 * @example
+	 * ```ts
+	 * if (pageData.imageScan.mobile === IMAGE_SCAN_CODE.SCROLL_HEIGHT_EXCEEDED) {
+	 *   // mobile images were skipped due to an oversized scrollHeight
+	 * }
+	 * ```
+	 */
+	imageScan: ImageScanData;
+
 	/** Always `false` for successfully scraped pages. See {@link SkippedPageData} for skipped pages. */
 	isSkipped: false;
 };
@@ -129,6 +147,17 @@ export type ScrollHeightData = {
 	desktop: number | null;
 	/** Height at `mobile-small` (width 320 @ 2x), or `null` if that preset failed. */
 	mobile: number | null;
+};
+
+/**
+ * Per-device-preset {@link ImageScanCode} outcome of `Scraper#fetchImages`,
+ * mirroring {@link ScrollHeightData}'s desktop/mobile shape.
+ */
+export type ImageScanData = {
+	/** Outcome for `desktop-compact` (width 1280), or `null` if not attempted. */
+	desktop: ImageScanCode | null;
+	/** Outcome for `mobile-small` (width 320 @ 2x), or `null` if not attempted. */
+	mobile: ImageScanCode | null;
 };
 
 /**
