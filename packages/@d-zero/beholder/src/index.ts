@@ -22,6 +22,8 @@ export { detectCompress } from '@d-zero/shared/detect-compress';
 export type { CompressType } from '@d-zero/shared/detect-compress';
 export { detectCDN } from '@d-zero/shared/detect-cdn';
 export type { CDNType } from '@d-zero/shared/detect-cdn';
+export { IMAGE_SCAN_CODE } from './image-scan-code.js';
+export type { ImageScanCode } from './image-scan-code.js';
 export type { ScrapeResult, ResourceEntry, ConsoleLogEntry, PageData } from './types.js';
 export type { ScraperOptions, ChangePhaseEvent, ScraperEventTypes } from './types.js';
 export type {
@@ -32,6 +34,7 @@ export type {
 	SkippedPageData,
 	NetworkLog,
 	ScrollHeightData,
+	ImageScanData,
 	MainContentsData,
 	MainContentsMainTag,
 	MainContentsHeading,

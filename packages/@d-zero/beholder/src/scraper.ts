@@ -7,6 +7,7 @@ import type {
 	ScrapeResult,
 	ExURL,
 	ImageElement,
+	ImageScanData,
 	NetworkLog,
 	PageData,
 	ParseURLOptions,
@@ -23,6 +24,7 @@ import { detectCompress } from '@d-zero/shared/detect-compress';
 import { retry as retryable } from '@d-zero/shared/retry';
 import { TypedAwaitEventEmitter as EventEmitter } from '@d-zero/shared/typed-await-event-emitter';
 
+import { classifyImageScanError } from './classify-image-scan-error.js';
 import { resourceLog, scraperLog } from './debug.js';
 import {
 	DEFAULT_DOM_EVALUATION_TIMEOUT,
@@ -31,6 +33,7 @@ import {
 	getMeta,
 } from './dom-evaluation.js';
 import { getMainContents } from './get-main-contents.js';
+import { IMAGE_SCAN_CODE } from './image-scan-code.js';
 import { isError } from './is-error.js';
 import { isHtmlContentType } from './is-html-content-type.js';
 import { keywordCheck } from './keyword-check.js';
@@ -56,6 +59,9 @@ const rLog = resourceLog.extend(pid);
  * normal responsive sites complete well within the 20 min retry budget.
  */
 const MAX_SCROLL_HEIGHT = 1_000_000;
+
+/** Shared "not attempted" value for `PageData.imageScan`, reused everywhere a page is returned without an image scan (non-HTML/external/non-HTTP, or the `@retryable` fallback). */
+const EMPTY_IMAGE_SCAN: ImageScanData = { desktop: null, mobile: null };
 
 /**
  * Page-level scraper that extracts data from a single browser page.
@@ -162,6 +168,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				html: '',
 				mainContents: null,
 				scrollHeight: null,
+				imageScan: EMPTY_IMAGE_SCAN,
 				isSkipped: false,
 			};
 
@@ -633,6 +640,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					html: '',
 					mainContents: null,
 					scrollHeight: null,
+					imageScan: EMPTY_IMAGE_SCAN,
 					isSkipped: false,
 				};
 			}
@@ -684,6 +692,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					html,
 					mainContents: null,
 					scrollHeight: null,
+					imageScan: EMPTY_IMAGE_SCAN,
 					isSkipped: false,
 				};
 			}
@@ -744,6 +753,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 
 			let imageList: ImageElement[] = [];
 			let scrollHeight: ScrollHeightData | null = null;
+			let imageScan: ImageScanData = EMPTY_IMAGE_SCAN;
 
 			if (captureImages) {
 				void this.emit('changePhase', {
@@ -762,6 +772,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				);
 				imageList = fetched.imageList;
 				scrollHeight = fetched.scrollHeight;
+				imageScan = fetched.imageScan;
 			} else {
 				scrollHeight = await measureScrollHeight(page);
 			}
@@ -782,6 +793,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				html,
 				mainContents,
 				scrollHeight,
+				imageScan,
 				isSkipped: false,
 			};
 		} finally {
@@ -798,7 +810,12 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * WHY per-device try-catch: Some pages (e.g. those using fullpage.js or
 	 * scroll-jacking libraries) destroy the execution context when the viewport
 	 * changes and triggers a reload. Isolating each device preset allows partial
-	 * results — if one viewport fails, the other can still succeed.
+	 * results — if one viewport fails, the other can still succeed. The outcome
+	 * of each device preset (success, degraded, or one of the failure kinds) is
+	 * recorded per-preset in the returned `imageScan`, classified by
+	 * {@link classifyImageScanError} — a page that never goes network-idle
+	 * (analytics beacons, chat widgets, open WebSocket connections) still
+	 * yields images, just flagged `IMAGE_SCAN_CODE.DEGRADED` instead of `OK`.
 	 *
 	 * WHY retryable with 20-min timeout and empty fallback: Image extraction is
 	 * best-effort. If all retries fail, empty images and null scroll heights are
@@ -825,13 +842,14 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * @param isExternal - Whether the page is external
 	 * @param imageLoadTimeout - Timeout (ms) for waiting images to complete loading
 	 * @param domEvaluationTimeout - Timeout (ms) for the in-page image extraction `page.evaluate`
-	 * @returns Image elements plus desktop/mobile scroll heights from the scan path
+	 * @returns Image elements, desktop/mobile scroll heights, and the per-device `imageScan` outcome codes
 	 */
 	@retryable({
 		timeout: 20 * 60 * 1000,
 		fallback: {
 			imageList: [],
 			scrollHeight: { desktop: null, mobile: null },
+			imageScan: EMPTY_IMAGE_SCAN,
 		},
 		onWait(this: Scraper, determinedInterval, retryCount, methodName, error) {
 			void this.emit('changePhase', {
@@ -858,7 +876,11 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		isExternal: boolean,
 		imageLoadTimeout: number,
 		domEvaluationTimeout: number,
-	): Promise<{ imageList: ImageElement[]; scrollHeight: ScrollHeightData }> {
+	): Promise<{
+		imageList: ImageElement[];
+		scrollHeight: ScrollHeightData;
+		imageScan: ImageScanData;
+	}> {
 		const listener = this.#createPageScanListener(isExternal);
 		const devices: {
 			key: 'desktop-compact' | 'mobile-small';
@@ -869,6 +891,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 		];
 		const imageList: ImageElement[] = [];
 		const scrollHeight: ScrollHeightData = { desktop: null, mobile: null };
+		const imageScan: ImageScanData = { desktop: null, mobile: null };
 
 		for (const { key, preset } of devices) {
 			const scrollKey = key === 'desktop-compact' ? 'desktop' : 'mobile';
@@ -888,11 +911,17 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					listener,
 					timeout: 5000,
 					maxScrollHeight: MAX_SCROLL_HEIGHT,
+					// This per-device try/catch already isolates and classifies
+					// failures (see `classifyImageScanError`), so a page whose
+					// network never settles should degrade gracefully here
+					// rather than losing the whole device preset's images.
+					continueOnDegradedNetwork: true,
 				});
 
 				scrollHeight[scrollKey] = scanResult.scrollHeight;
 
 				if (!scanResult.scrolled) {
+					imageScan[scrollKey] = IMAGE_SCAN_CODE.SCROLL_HEIGHT_EXCEEDED;
 					void this.emit('changePhase', {
 						pid: process.pid,
 						name: 'retryExhausted',
@@ -926,9 +955,12 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				});
 				const images = await getImageList(page, preset.width, domEvaluationTimeout);
 				imageList.push(...images);
+				imageScan[scrollKey] =
+					scanResult.settled === 'idle' ? IMAGE_SCAN_CODE.OK : IMAGE_SCAN_CODE.DEGRADED;
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
 				log('Error(FETCH_IMAGES/%s): %s', key, errorMessage);
+				imageScan[scrollKey] = classifyImageScanError(error);
 				void this.emit('changePhase', {
 					pid: process.pid,
 					name: 'retryExhausted',
@@ -939,6 +971,6 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			}
 		}
 
-		return { imageList, scrollHeight };
+		return { imageList, scrollHeight, imageScan };
 	}
 }
