@@ -1196,6 +1196,7 @@ __metadata:
   resolution: "@d-zero/beholder@workspace:packages/@d-zero/beholder"
   dependencies:
     "@d-zero/puppeteer-page-scan": "npm:4.6.9"
+    "@d-zero/puppeteer-scroll": "npm:4.0.12"
     "@d-zero/shared": "npm:0.23.0"
     "@types/debug": "npm:4.1.13"
     "@types/jsdom": "npm:28.0.3"
