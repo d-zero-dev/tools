@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@4.2.3...@d-zero/beholder@5.0.0) (2026-09-10)
+
+- feat(beholder)!: report per-viewport image-scan outcome in PageData ([1e69228](https://github.com/d-zero-dev/tools/commit/1e692285f1ef3e0a8a89db695d635c7a2f88ba7c))
+
+### BREAKING CHANGES
+
+- PageData.imageScan is a new required field ({ desktop,
+  mobile }: ImageScanCode | null per viewport), following the same
+  precedent as the 4.0.0 addition of mainContents/scrollHeight. Anyone
+  constructing a PageData object directly (rather than only reading
+  scrapeStart()'s result) must add this field.
+
+Scraper#fetchImages now classifies each device preset's outcome via the
+new IMAGE_SCAN_CODE vocabulary (0=ok, 1=degraded, 2=nav-unsettled,
+3=frame-lost, 4=scroll-height-exceeded, 255=unknown) instead of only
+emitting a free-text changePhase message: success records ok/degraded
+based on @d-zero/puppeteer-page-scan's new settled result, a
+scrollHeight-limit skip records scroll-height-exceeded, and a caught
+exception is classified by the new classifyImageScanError (reusing
+puppeteer-scroll's isTransientFrameError, plus "Not attached to an
+active page"/"Target closed" for reload/goto-specific failures).
+
+#fetchImages opts into @d-zero/puppeteer-page-scan's new
+continueOnDegradedNetwork so a page whose network never settles still
+yields images (flagged degraded) instead of losing that viewport
+outright.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
 ## [4.2.3](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@4.2.2...@d-zero/beholder@4.2.3) (2026-08-14)
 
 ### Bug Fixes

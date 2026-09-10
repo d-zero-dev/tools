@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.6.9...@d-zero/puppeteer-page-scan@4.7.0) (2026-09-10)
+
+### Features
+
+- **puppeteer-page-scan:** continue degraded when navigation never settles but frame is usable ([2d72571](https://github.com/d-zero-dev/tools/commit/2d7257122d539d7558b6b9b7a72c1f6191f7a9fa))
+
 ## [4.6.9](https://github.com/d-zero-dev/tools/compare/@d-zero/puppeteer-page-scan@4.6.8...@d-zero/puppeteer-page-scan@4.6.9) (2026-08-14)
 
 **Note:** Version bump only for package @d-zero/puppeteer-page-scan
