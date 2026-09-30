@@ -9,10 +9,32 @@ describe('createFrame', () => {
 		expect(frame).toStrictEqual({
 			tagName: 'ul',
 			segment: 'ul',
+			classList: [],
 			isFoldCandidate: false,
 			childElementCount: 0,
 			pendingPaths: [],
 		});
+	});
+
+	test('records the filtered class list the segment was built from', () => {
+		const frame = createFrame(
+			'ul',
+			{ class: 'nav sc-bdVaJa' },
+			resolveOptions({ filterNoiseClasses: true }),
+		);
+		expect(frame.classList).toStrictEqual(['nav']);
+		expect(frame.segment).toBe('ul.nav');
+	});
+
+	test('drops classes outside allowedClasses and folds a div left class-less by it', () => {
+		const frame = createFrame(
+			'div',
+			{ class: 'outline' },
+			resolveOptions({ allowedClasses: new Set(['card']) }),
+		);
+		expect(frame.classList).toStrictEqual([]);
+		expect(frame.segment).toBe('div');
+		expect(frame.isFoldCandidate).toBe(true);
 	});
 
 	test('is a fold candidate for a class-less div', () => {

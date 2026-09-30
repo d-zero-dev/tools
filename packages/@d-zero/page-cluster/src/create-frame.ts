@@ -23,13 +23,18 @@ export function createFrame(
 	attribs: Record<string, string>,
 	options: ResolvedOptions,
 ): Frame {
-	const classList = parseClassList(attribs.class, options.filterNoiseClasses);
+	const classList = parseClassList(
+		attribs.class,
+		options.filterNoiseClasses,
+		options.allowedClasses,
+	);
 	const role = attribs.role || undefined;
 	const type = attribs.type || undefined;
 
 	return {
 		tagName,
 		segment: buildSegment(tagName, classList, role, type),
+		classList,
 		isFoldCandidate: isFoldCandidate(tagName, classList, role, type),
 		childElementCount: 0,
 		pendingPaths: [],

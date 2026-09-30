@@ -260,3 +260,76 @@ describe('tokenize (attribute notation variance)', () => {
 		expect(tokenize(html).tokens).toStrictEqual(['body>.Card[role=button]>span']);
 	});
 });
+
+describe('tokenize (allowedClasses / classList)', () => {
+	test('matches the exact output documented in the JSDoc @example', () => {
+		expect(
+			tokenize('<body><div class="card"><ul><li>A</li><li>B</li></ul></div></body>'),
+		).toStrictEqual({
+			tokens: ['body>.card>ul>li', 'body>.card>ul>li'],
+			bodyClassList: [],
+			classList: ['card'],
+		});
+		expect(
+			tokenize('<body><div class="c-abc123"><p>x</p></div></body>', {
+				filterNoiseClasses: false,
+			}),
+		).toStrictEqual({
+			tokens: ['body>.c-abc123>p'],
+			bodyClassList: [],
+			classList: ['c-abc123'],
+		});
+		expect(
+			tokenize(
+				'<body><article class="outline"><div class="grid"><p>x</p></div></article></body>',
+				{ allowedClasses: new Set(['grid']) },
+			),
+		).toStrictEqual({
+			tokens: ['body>article>.grid>p'],
+			bodyClassList: [],
+			classList: ['grid'],
+		});
+	});
+
+	test('classList lists every class kept in some segment once, in first-seen order, excluding <body> classes', () => {
+		const result = tokenize(
+			'<body class="page-home"><header class="site-header"><nav class="main-nav"><a>x</a></nav></header>' +
+				'<main><div class="card featured"><p>a</p></div><div class="card"><p>b</p></div></main></body>',
+		);
+		expect(result.bodyClassList).toStrictEqual(['page-home']);
+		expect(result.classList).toStrictEqual([
+			'site-header',
+			'main-nav',
+			'card',
+			'featured',
+		]);
+	});
+
+	test('a class dropped by allowedClasses folds its div away like a class-less single-child wrapper', () => {
+		const html = '<body><div class="outline"><p>x</p></div></body>';
+		expect(tokenize(html).tokens).toStrictEqual(['body>.outline>p']);
+		expect(tokenize(html, { allowedClasses: new Set() }).tokens).toStrictEqual([
+			'body>p',
+		]);
+		// A non-foldable tag keeps its name once its only class is dropped.
+		expect(
+			tokenize('<body><article class="outline"><p>x</p></article></body>', {
+				allowedClasses: new Set(),
+			}).tokens,
+		).toStrictEqual(['body>article>p']);
+	});
+
+	test('allowedClasses does not touch bodyClassList', () => {
+		const result = tokenize('<body class="page-home"><p>x</p></body>', {
+			allowedClasses: new Set(),
+		});
+		expect(result.bodyClassList).toStrictEqual(['page-home']);
+		expect(result.classList).toStrictEqual([]);
+	});
+
+	test('noise classes are excluded from classList when filtering is on', () => {
+		expect(
+			tokenize('<body><div class="card sc-bdVaJa"><p>x</p></div></body>').classList,
+		).toStrictEqual(['card']);
+	});
+});

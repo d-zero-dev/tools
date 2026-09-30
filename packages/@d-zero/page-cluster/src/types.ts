@@ -14,6 +14,22 @@
 export type TokenizeResult = {
 	tokens: string[];
 	bodyClassList: string[];
+	/**
+	 * Every class name that ended up in some segment of `tokens` (i.e. on an
+	 * element below `<body>`, after noise filtering and `allowedClasses`),
+	 * deduplicated, in first-seen document order. `<body>`'s own classes are
+	 * not included — they live in `bodyClassList`. Classes on an opaque
+	 * element (`script`/`style`/`noscript`/`svg`) or anything inside one are
+	 * not included either, since those elements are hashed as a whole and
+	 * their classes never reach a segment.
+	 *
+	 * Exposed so a caller comparing many pages can compute per-class document
+	 * frequency without parsing class names back out of `tokens` — which is
+	 * not reliably possible, since a class name may itself contain the `.`,
+	 * `>` and `[` characters the token grammar uses as delimiters (Tailwind
+	 * arbitrary values such as `w-[1.5rem]`, for instance).
+	 */
+	classList: string[];
 };
 
 /**
@@ -24,6 +40,16 @@ export type TokenizeOptions = {
 	filterNoiseClasses?: boolean;
 	/** Emit `comment[sha=...]` tokens for HTML comment nodes. Defaults to `false`. */
 	includeComments?: boolean;
+	/**
+	 * When set, only class names contained in this set are kept when building
+	 * segments; every other class is treated exactly as if it were absent from
+	 * the element's `class` attribute — so a `div`/`span` whose classes are all
+	 * dropped becomes an anonymous wrapper again and folds away under the
+	 * usual single-child rule. Applied after `filterNoiseClasses`. Does not
+	 * affect `bodyClassList`, which is only subject to `filterNoiseClasses`.
+	 * `undefined` (the default) keeps every class.
+	 */
+	allowedClasses?: ReadonlySet<string>;
 };
 
 /**
@@ -32,6 +58,7 @@ export type TokenizeOptions = {
 export type ResolvedOptions = {
 	filterNoiseClasses: boolean;
 	includeComments: boolean;
+	allowedClasses: ReadonlySet<string> | undefined;
 };
 
 /**
@@ -48,6 +75,8 @@ export type Frame = {
 	tagName: string;
 	/** This element's own path segment (class/role/type already applied). */
 	segment: string;
+	/** The class names `segment` was built from (already noise-filtered and `allowedClasses`-filtered). */
+	classList: readonly string[];
 	/** Whether this is a class-less/role-less/type-less `div` or `span`, eligible to be elided when it has exactly one element child. */
 	isFoldCandidate: boolean;
 	/** Count of direct element children (text and comment nodes are not counted). */

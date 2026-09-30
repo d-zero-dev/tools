@@ -17,6 +17,7 @@ import {
 import { detectContentDepthCap } from './detect-content-depth-cap.js';
 import { computePerPageLandmarkInstances } from './per-page-landmark-signatures.js';
 import { reservoirSample } from './reservoir-sample.js';
+import { resolveRecurringClasses } from './resolve-recurring-classes.js';
 import { tokenize } from './tokenize.js';
 
 /**
@@ -61,9 +62,14 @@ import { tokenize } from './tokenize.js';
 export const MAX_MEMBERS_PER_UNIT = 100;
 
 /**
+ * `TokenizeOptions.allowedClasses` is deliberately not accepted: Stage A
+ * derives that set per block from the block's own pages (see
+ * {@link stageAPerBlock}), so a caller-supplied value would either be
+ * silently replaced in every block large enough to qualify or applied only
+ * to the blocks that are not — neither is a behavior worth offering.
  * @see stageAPerBlock
  */
-export type StageAPerBlockOptions = TokenizeOptions & {
+export type StageAPerBlockOptions = Omit<TokenizeOptions, 'allowedClasses'> & {
 	readonly similarityThreshold?: number;
 	readonly minKneeRatio?: number;
 	readonly maxCandidateDepth?: number;
@@ -127,6 +133,23 @@ export type StageAPerBlockResult = {
 	 * post-Stage-A cluster, in first-seen order.
 	 */
 	readonly crossBlockUnits: readonly CrossBlockUnit[];
+	/**
+	 * The class names this block's pages were tokenized with as
+	 * `allowedClasses` (see {@link ./resolve-recurring-classes.js |
+	 * resolveRecurringClasses}) — the classes occurring on at least two of
+	 * the block's pages, returned even when that happens to be every class —
+	 * or `undefined` when the block is below
+	 * `MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT` and no stripping was applied at
+	 * all. A streaming caller assigning further pages of the same block
+	 * afterwards must tokenize them with this same set: a page tokenized
+	 * without it keeps classes the members here had stripped, so every path
+	 * beneath such a class differs and the page compares systematically
+	 * lower against every cluster than a member did. `undefined` means those
+	 * further pages are tokenized without stripping too, matching the
+	 * members. (On a sampled block that case cannot arise in practice, since
+	 * the sample size is far above the gate.)
+	 */
+	readonly allowedClasses: ReadonlySet<string> | undefined;
 };
 
 /**
@@ -149,6 +172,43 @@ export type StageAPerBlockResult = {
  * Preserves the in-memory driver's per-block behavior exactly for the same
  * inputs — same `preparedHtml`, same `landmarks`, same
  * `localLandmarkTokensByPage`, same `options` → same output.
+ *
+ * ## Page-unique class stripping
+ *
+ * Before comparison, every class that occurs on only one page of the block
+ * is removed from that block's tokens: pages are tokenized once, the per-page
+ * `classList`s are pooled through {@link ./resolve-recurring-classes.js |
+ * resolveRecurringClasses}, and the block is tokenized a second time with
+ * the recurring set as `allowedClasses`. A class on a single page cannot be
+ * shared template structure; left in place on an ancestor it changes every
+ * root-to-leaf path beneath it, so two pages differing only by a per-page
+ * label on their content root (`<article class="outline">` /
+ * `<article class="weather">`) compared at Jaccard 0.08 on a real crawl
+ * although their skeletons were near-identical — and no cut height can
+ * repair a difference that is baked into every token. `tokenize` isolates
+ * `<body>`'s class for the same reason (see `TokenizeResult.bodyClassList`)
+ * but only for that one fixed tag; here the block's own data decides which
+ * classes, on any element, are identity labels.
+ *
+ * Stripping happens at tokenize time rather than by rewriting the finished
+ * tokens so a `div`/`span` left class-less folds away exactly as it would
+ * have had the class never been written — a post-hoc string rewrite cannot
+ * reproduce that fold, and would leave a placeholder segment that matches
+ * neither a real `div` nor an absent wrapper. The second tokenize pass is not
+ * skipped for pages whose classes all recur (it would produce identical
+ * tokens for them): the pass is cheap next to the multi-depth sweep
+ * `detectContentDepthCap` already runs on the same HTML, and a per-page skip
+ * is an optimization no behavioral test can observe.
+ *
+ * Gated on `MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT`, like the frequency split and
+ * containment steps below: in a pool smaller than that, "occurs on one page"
+ * is not evidence of anything (a 2-page block would strip every class the two
+ * pages don't share and compare them shape-only), and Stage B still needs
+ * small blocks' class-bearing tokens to match them against other blocks'
+ * units. Confirmed end to end on the same crawl, Stage B included: the only
+ * clusters that changed were singletons and two-page pairs absorbed into the
+ * larger family they visibly belonged to; no existing cluster was split or
+ * lost a member.
  * @param input
  * @param options
  */
@@ -166,24 +226,38 @@ export function stageAPerBlock(
 	// back at the same single-cluster result. Skipped rather than swept.
 	const maxMainDepth =
 		preparedHtml.length > 1 ? detectContentDepthCap(preparedHtml, options) : undefined;
-	const blockTokenSets: ReadonlySet<string>[] = preparedHtml.map((html, position) => {
-		const capped =
-			maxMainDepth === undefined
-				? html
-				: capContentDepth(html, { landmark: 'main', maxDepth: maxMainDepth })
-						.remainderHtml;
-		const tokens = new Set(tokenize(capped, options).tokens);
-		// Reinject each page's local-landmark tokens (see
-		// resolve-page-cluster-keys.ts's computeLocalLandmarkTokens JSDoc).
-		const localTokens = localLandmarkTokensByPage[position];
-		if (localTokens !== undefined) {
-			for (const token of localTokens) tokens.add(token);
-		}
-		return tokens;
-	});
+	const cappedHtml = preparedHtml.map((html) =>
+		maxMainDepth === undefined
+			? html
+			: capContentDepth(html, { landmark: 'main', maxDepth: maxMainDepth }).remainderHtml,
+	);
+	const firstPass = cappedHtml.map((html) => tokenize(html, options));
+
+	// Page-unique class stripping — see this function's JSDoc.
+	const blockSize = cappedHtml.length;
+	const allowedClasses =
+		blockSize >= MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT
+			? resolveRecurringClasses(firstPass.map((result) => result.classList))
+			: undefined;
+	const strippedTokens =
+		allowedClasses === undefined
+			? firstPass.map((result) => result.tokens)
+			: cappedHtml.map((html) => tokenize(html, { ...options, allowedClasses }).tokens);
+
+	const blockTokenSets: ReadonlySet<string>[] = strippedTokens.map(
+		(pageTokens, position) => {
+			const tokens = new Set(pageTokens);
+			// Reinject each page's local-landmark tokens (see
+			// resolve-page-cluster-keys.ts's computeLocalLandmarkTokens JSDoc).
+			const localTokens = localLandmarkTokensByPage[position];
+			if (localTokens !== undefined) {
+				for (const token of localTokens) tokens.add(token);
+			}
+			return tokens;
+		},
+	);
 
 	// Stage A: dendrogram + auto-cut + optional containment assignment
-	const blockSize = blockTokenSets.length;
 	const comparisonSets = deriveComparisonSets(blockTokenSets);
 	const merges = completeLinkageDendrogram(comparisonSets);
 	const cut = autoCutThreshold(
@@ -276,5 +350,5 @@ export function stageAPerBlock(
 			memberPageIndices: sampledPositions.map((pos) => memberIndices[pos]!),
 		});
 	}
-	return { pageKeys, crossBlockUnits };
+	return { pageKeys, crossBlockUnits, allowedClasses };
 }
