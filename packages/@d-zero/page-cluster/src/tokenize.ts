@@ -3,7 +3,7 @@ import type { TokenizeOptions, TokenizeResult } from './types.js';
 import { resolveOptions } from './resolve-options.js';
 import { runTokenizer } from './run-tokenizer.js';
 
-export type { TokenizeOptions, TokenizeResult } from './types.js';
+export type { ContentRoot, TokenizeOptions, TokenizeResult } from './types.js';
 
 /**
  * Tokenizes the structural skeleton of an HTML document's `<body>` for

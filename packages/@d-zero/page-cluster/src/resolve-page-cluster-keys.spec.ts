@@ -518,17 +518,18 @@ describe('resolvePageClusterKeys', () => {
 			stylesheetHrefs: [],
 			html: `<body><main><section><article><div><span class="unique-a-${i}">c</span></div></article></section></main></body>`,
 		}));
-		// Block "dept-b" (6 pages): identical up to depth 1, page-unique
-		// content at depth 2 -> its own knee is 1, much shallower than
+		// Block "dept-b" (6 pages): identical up to depth 2, page-unique
+		// content at depth 3 -> its own knee is 2, much shallower than
 		// dept-a's. A single depth derived once across the whole corpus (the
 		// pre-per-block design) would be dominated by dept-a's larger,
 		// deeper-diverging shape and cap dept-b too deep, letting dept-b's
-		// own noise (which starts right at depth 2) leak straight through
-		// uncapped.
+		// own noise (which starts right at depth 3) leak straight through
+		// uncapped. (The default sweep starts at depth 2, so 2 is the
+		// shallowest knee a block can show.)
 		const deptB = Array.from({ length: 6 }, (_, i) => ({
 			paths: ['dept-b', `${i}`],
 			stylesheetHrefs: [],
-			html: `<body><main><article><span class="unique-b-${i}">c</span></article></main></body>`,
+			html: `<body><main><article><section><span class="unique-b-${i}">c</span></section></article></main></body>`,
 		}));
 
 		const keys = resolvePageClusterKeys([...deptA, ...deptB]);
@@ -908,8 +909,8 @@ describe('resolvePageClusterKeysInMemory (onPartitionReport)', () => {
 	function buildMirroredCorpus() {
 		const templates = {
 			faq: '<article><h1>FAQ</h1><dl><dt>Q</dt><dd>A</dd></dl></article>',
-			access: '<article><h1>Access</h1><table><tr><td>map</td></tr></table></article>',
-			gallery: '<article><h1>Gallery</h1><ul><li><img></li></ul></article>',
+			access: '<section><h1>Access</h1><table><tr><td>map</td></tr></table></section>',
+			gallery: '<figure><h1>Gallery</h1><ul><li><img></li></ul></figure>',
 		};
 		const pages = [];
 		for (const [template, body] of Object.entries(templates)) {
@@ -969,5 +970,68 @@ describe('resolvePageClusterKeysInMemory (onPartitionReport)', () => {
 			expect(reasons.get(key)!.memberCount).toBe(actualMemberCount);
 		}
 		expect(report).toBeDefined();
+	});
+});
+
+describe('resolvePageClusterKeys (content root)', () => {
+	const tags = [
+		'em',
+		'strong',
+		'b',
+		'i',
+		'u',
+		'code',
+		'kbd',
+		'samp',
+		'var',
+		'mark',
+		'q',
+		's',
+	];
+
+	/**
+	 * Pages identical down to depth 3 under a wrapper with the given id and
+	 * differing only in the tag at depth 4.
+	 * @param wrapperId
+	 */
+	function pagesUnder(wrapperId: string) {
+		return tags.map((tag, i) => ({
+			paths: ['dept-a', `${i}`],
+			stylesheetHrefs: [],
+			html: `<body><div id="${wrapperId}"><section><article><div><${tag}>x</${tag}></div></article></section></div></body>`,
+		}));
+	}
+
+	test('a contentRoot hint anchors the depth cap on pages without <main>', () => {
+		const withHint = pagesUnder('page').map((page) => ({
+			...page,
+			contentRoot: { tagName: 'div', id: 'page' },
+		}));
+		expect(new Set(resolvePageClusterKeys(withHint)).size).toBe(1);
+		// Same pages, no hint, and `page` is not a built-in anchor: uncapped.
+		expect(new Set(resolvePageClusterKeys(pagesUnder('page'))).size).toBe(12);
+	});
+
+	test('each page is capped with its own hint when several blocks are interleaved in the input', () => {
+		// Two blocks with different wrapper ids (neither a built-in anchor),
+		// interleaved so that a hint list built in input order rather than per
+		// block would hand a block the other block's hints.
+		const blockA = pagesUnder('pageA').map((page) => ({
+			...page,
+			contentRoot: { id: 'pageA' },
+		}));
+		const blockB = pagesUnder('pageB').map((page) => ({
+			...page,
+			paths: ['dept-b', ...page.paths.slice(1)],
+			contentRoot: { id: 'pageB' },
+		}));
+		const interleaved = blockA.flatMap((page, i) => [page, blockB[i]!]);
+		const keys = resolvePageClusterKeys(interleaved);
+		expect(new Set(keys.filter((_, i) => i % 2 === 0)).size).toBe(1);
+		expect(new Set(keys.filter((_, i) => i % 2 === 1)).size).toBe(1);
+	});
+
+	test('without a hint the built-in fallback list anchors the cap (#main)', () => {
+		expect(new Set(resolvePageClusterKeys(pagesUnder('main'))).size).toBe(1);
 	});
 });

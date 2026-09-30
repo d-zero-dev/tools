@@ -70,11 +70,17 @@ type Frame<T extends string> = {
  * normalized: an empty/absent `role` arrives as `undefined`), returns every
  * type `T` that element matches. Returning more than one lets a single
  * element (e.g. `<header role="navigation">`) match more than one type at
- * once.
+ * once. The element's full attribute map arrives as the third argument for
+ * matchers that identify elements by `id`/`class` (a callback that only
+ * looks at tag and role can simply declare fewer parameters).
  */
 export function findMatchingElements<T extends string>(
 	html: string,
-	matchTypes: (tagName: string, role: string | undefined) => readonly T[],
+	matchTypes: (
+		tagName: string,
+		role: string | undefined,
+		attribs: Readonly<Record<string, string>>,
+	) => readonly T[],
 ): MatchingElement<T>[] {
 	const stack: Frame<T>[] = [];
 	const matches: MatchingElement<T>[] = [];
@@ -93,7 +99,7 @@ export function findMatchingElements<T extends string>(
 					if (name === 'body' && !bodyDone) {
 						stack.push({
 							tagName: name,
-							matchedTypes: matchTypes(name, attribs.role || undefined),
+							matchedTypes: matchTypes(name, attribs.role || undefined, attribs),
 							startOffset: parser.startIndex,
 						});
 					}
@@ -109,7 +115,7 @@ export function findMatchingElements<T extends string>(
 				}
 				stack.push({
 					tagName: name,
-					matchedTypes: matchTypes(name, attribs.role || undefined),
+					matchedTypes: matchTypes(name, attribs.role || undefined, attribs),
 					startOffset: parser.startIndex,
 				});
 			},
@@ -175,7 +181,11 @@ export function findMatchingElements<T extends string>(
  */
 export function findShallowestElements<T extends string>(
 	html: string,
-	matchTypes: (tagName: string, role: string | undefined) => readonly T[],
+	matchTypes: (
+		tagName: string,
+		role: string | undefined,
+		attribs: Readonly<Record<string, string>>,
+	) => readonly T[],
 ): ShallowestElementMatch<T>[] {
 	const matches = findMatchingElements(html, matchTypes);
 	const winners = new Map<T, MatchingElement<T>>();

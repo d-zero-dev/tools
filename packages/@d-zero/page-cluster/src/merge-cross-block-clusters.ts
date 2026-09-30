@@ -1,4 +1,5 @@
 import type { PerPageLandmarkInstance } from './per-page-landmark-signatures.js';
+import type { StageALineageEntry } from './stage-a-lineage.js';
 
 import { assignContainedClusters } from './assign-contained-clusters.js';
 import { collapseAnonymousDivs } from './collapse-anonymous-divs.js';
@@ -7,11 +8,13 @@ import {
 	labelsAtThreshold,
 } from './complete-linkage-dendrogram.js';
 import { computeDocumentFrequency } from './compute-document-frequency.js';
+import { filterMergesByStageASeparation } from './filter-merges-by-stage-a-separation.js';
 import { jaccardSimilarity } from './jaccard-similarity.js';
 import { reservoirSample } from './reservoir-sample.js';
 import { shapeToken } from './shape-token.js';
 import { shellQuorum } from './shell-quorum.js';
 import { splitTokensByFrequency } from './split-tokens-by-frequency.js';
+import { initialLineage } from './stage-a-lineage.js';
 
 /**
  * One cluster (post-Stage-A) entering cross-block comparison.
@@ -29,6 +32,16 @@ import { splitTokensByFrequency } from './split-tokens-by-frequency.js';
  */
 export type CrossBlockUnit = {
 	readonly key: string;
+	/**
+	 * The Pass-0 block this unit is a Stage-A cluster of. Lets Stage B respect
+	 * Stage A's decision to keep two clusters of the same block apart (see
+	 * {@link ./are-stage-a-separated.js | areStageASeparated}). Optional
+	 * because a caller that does not run Stage A has no such decision to
+	 * respect; a unit without it never triggers that check. Carried
+	 * explicitly, not parsed back out of `key`, so Stage B does not depend on
+	 * Stage A's key format.
+	 */
+	readonly blockKey?: string;
 	readonly memberTokenSets: readonly ReadonlySet<string>[];
 	readonly memberLandmarkInstances: readonly (readonly PerPageLandmarkInstance[])[];
 	/**
@@ -579,6 +592,14 @@ export function mergeCrossBlockClusters(
 		}),
 	);
 
+	// Which Stage-A clusters (block + page count) each current group pools, so
+	// a merge proposal can be checked against Stage A's own verdict — see
+	// `filterMergesByStageASeparation`. Only merges that survive every filter
+	// are folded in (in `applyMerges`), never merely proposed ones.
+	const lineageByRoot = new Map<string, StageALineageEntry[]>(
+		units.map((u) => [u.key, initialLineage(u)]),
+	);
+
 	/**
 	 * Applies a list of [absorbed, root] merges to `groups` and `keyToRoot`.
 	 * All absorbed groups' members are folded into their respective roots.
@@ -589,6 +610,15 @@ export function mergeCrossBlockClusters(
 			const absorbedG = groups.get(absorbed);
 			const rootG = groups.get(root);
 			if (!absorbedG || !rootG) continue;
+
+			// Every current group has a lineage entry (set from `units` above and
+			// re-set here for each root), so a missing one is a bug, not "no
+			// evidence" — fail loudly instead of silently dropping the guard.
+			lineageByRoot.set(root, [
+				...lineageByRoot.get(root)!,
+				...lineageByRoot.get(absorbed)!,
+			]);
+			lineageByRoot.delete(absorbed);
 
 			const mergedTokenSets = [...rootG.tokenSets, ...absorbedG.tokenSets];
 			const mergedLandmarkInstances = [
@@ -729,6 +759,16 @@ export function mergeCrossBlockClusters(
 
 		// Step 3: Shape-Jaccard (multi-page units only — see SHAPE_MIN_PAGES)
 		const shapedCores = groupKeys.map((k) => shapedCoreSet(cores.get(k) ?? new Set()));
+		const shapedCoreByKey = new Map<string, ReadonlySet<string>>(
+			groupKeys.map((k, i) => [k, shapedCores[i] ?? new Set<string>()]),
+		);
+		const separationContext = {
+			cores,
+			shapedCores: shapedCoreByKey,
+			lineageByRoot,
+			threshold,
+			shapeThreshold: SHAPE_JACCARD_THRESHOLD,
+		};
 		const groupPageCounts = groupKeys.map((k) => groups.get(k)?.tokenSets.length ?? 0);
 		for (let i = 0; i < n; i++) {
 			for (let j = i + 1; j < n; j++) {
@@ -762,7 +802,7 @@ export function mergeCrossBlockClusters(
 		}
 
 		const acceptedFineMerges = filterMergesByCohesion(
-			fineMerges,
+			filterMergesByStageASeparation(fineMerges, separationContext),
 			groupDistinctiveShaped,
 			anchorByRoot,
 		);
@@ -862,7 +902,7 @@ export function mergeCrossBlockClusters(
 		}
 
 		const acceptedL2Merges = filterMergesByCohesion(
-			l2Merges,
+			filterMergesByStageASeparation(l2Merges, separationContext),
 			groupDistinctiveShaped,
 			anchorByRoot,
 		);

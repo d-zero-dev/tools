@@ -464,3 +464,214 @@ describe('mergeCrossBlockClusters cohesion guard', () => {
 		expect(new Set(result.rootByKey.values()).size).toBe(skeletons.length);
 	});
 });
+
+describe('mergeCrossBlockClusters Stage-A separation guard', () => {
+	const shell = Array.from({ length: 26 }, (_, i) => `body>.shell>s${i}`);
+	const padding: CrossBlockUnit = {
+		key: 'padding',
+		blockKey: 'path:elsewhere',
+		// Pages without any shell token keep every shell token's corpus-wide
+		// document frequency far below the 90% "site chrome" cutoff, so the
+		// shell stays in the cores being compared — the situation of a shell
+		// that is common to one block only.
+		memberTokenSets: Array.from(
+			{ length: 12 },
+			(_, i) => new Set([`body>.padding>p${i}`, `body>.padding>q${i}`]),
+		),
+		memberLandmarkInstances: toInstances(Array.from({ length: 12 }, () => noLandmarks)),
+	};
+
+	/**
+	 * @param key
+	 * @param blockKey
+	 * @param pageCount
+	 * @param tokens
+	 */
+	function unit(
+		key: string,
+		blockKey: string | undefined,
+		pageCount: number,
+		tokens: readonly string[],
+	): CrossBlockUnit {
+		return {
+			key,
+			...(blockKey === undefined ? {} : { blockKey }),
+			memberTokenSets: Array.from({ length: pageCount }, () => new Set(tokens)),
+			memberLandmarkInstances: toInstances(
+				Array.from({ length: pageCount }, () => noLandmarks),
+			),
+		};
+	}
+
+	const listTokens = [
+		...shell,
+		'body>.shell>list>x1',
+		'body>.shell>list>x2',
+		'body>.shell>list>x3',
+	];
+	const detailTokens = [
+		...shell,
+		'body>.shell>detail>y1',
+		'body>.shell>detail>y2',
+		'body>.shell>detail>y3',
+	];
+
+	test('precondition: without block information a list/detail pair sharing a shell is merged', () => {
+		const result = mergeCrossBlockClusters(
+			[
+				unit('list', undefined, 4, listTokens),
+				unit('detail', undefined, 4, detailTokens),
+				padding,
+			],
+			{},
+		);
+		expect(result.rootByKey.get('list')).toBe(result.rootByKey.get('detail'));
+	});
+
+	test('same-block multi-page units that share only a shell stay separate', () => {
+		const result = mergeCrossBlockClusters(
+			[
+				unit('list', 'path:news', 4, listTokens),
+				unit('detail', 'path:news', 4, detailTokens),
+				padding,
+			],
+			{},
+		);
+		expect(result.rootByKey.get('list')).toBe('list');
+		expect(result.rootByKey.get('detail')).toBe('detail');
+	});
+
+	test('units from different blocks with the same cores still merge', () => {
+		const result = mergeCrossBlockClusters(
+			[
+				unit('list', 'path:news', 4, listTokens),
+				unit('detail', 'path:blog', 4, detailTokens),
+				padding,
+			],
+			{},
+		);
+		expect(result.rootByKey.get('list')).toBe(result.rootByKey.get('detail'));
+	});
+
+	test('same-block single-page units still merge (no evidence in a lone page)', () => {
+		const units = Array.from({ length: 6 }, (_, i) =>
+			unit(`s${i}`, 'path:articles', 1, [
+				...shell,
+				`body>.shell>free${i}>a`,
+				`body>.shell>free${i}>b`,
+			]),
+		);
+		const result = mergeCrossBlockClusters([...units, padding], {});
+		expect(new Set(units.map((u) => result.rootByKey.get(u.key))).size).toBe(1);
+	});
+
+	test('a same-block multi-page pair where one core is a conditional render of the other still merges', () => {
+		const result = mergeCrossBlockClusters(
+			[
+				unit('full', 'path:news', 4, [
+					...shell,
+					'body>.shell>opt>e1',
+					'body>.shell>opt>e2',
+				]),
+				unit('short', 'path:news', 4, shell),
+				padding,
+			],
+			{},
+		);
+		expect(result.rootByKey.get('full')).toBe(result.rootByKey.get('short'));
+	});
+
+	test('a same-block pair differing only in the state of a shared component (pager first page vs later pages) still merges', () => {
+		const result = mergeCrossBlockClusters(
+			[
+				unit('first', 'path:list', 4, [
+					...shell,
+					'body>.shell>pager>current',
+					'body>.shell>pager>next',
+				]),
+				unit('later', 'path:list', 4, [
+					...shell,
+					'body>.shell>pager>prev',
+					'body>.shell>pager>first',
+				]),
+				padding,
+			],
+			{},
+		);
+		expect(result.rootByKey.get('first')).toBe(result.rootByKey.get('later'));
+	});
+
+	test('a same-block class-name-only difference (shape-Jaccard) is exempt from the guard', () => {
+		const reports = unit('reports', 'path:x', 3, [
+			'body>main>section.c-reports>ul.c-reports__list>li',
+			'body>main>section.c-reports>ul.c-reports__list>a',
+		]);
+		const projects = unit('projects', 'path:x', 3, [
+			'body>main>section.c-projects>ul.c-projects__list>li',
+			'body>main>section.c-projects>ul.c-projects__list>a',
+		]);
+		const result = mergeCrossBlockClusters([reports, projects], {});
+		expect(result.rootByKey.get('reports')).toBe(result.rootByKey.get('projects'));
+	});
+
+	test('the L2 stage cannot bypass the guard', () => {
+		// 15 shared tokens plus 2 vs 3 own tokens: fine-stage complete linkage
+		// (0.75), containment (0.88) and shape-Jaccard (0.88) all fall short,
+		// while the `main`-anchored L2 signature of the smaller unit is
+		// contained in the larger one and both share a header shell.
+		const header = landmarksWith({
+			header: ['<header><nav class="c-global-nav"><a>Home</a></nav></header>'],
+		});
+		const common = Array.from({ length: 15 }, (_, i) => `body>.wrap>c${i}`);
+		/**
+		 * @param key
+		 * @param blockKey
+		 * @param own
+		 */
+		function l2Unit(
+			key: string,
+			blockKey: string | undefined,
+			own: readonly string[],
+		): CrossBlockUnit {
+			return {
+				key,
+				...(blockKey === undefined ? {} : { blockKey }),
+				memberTokenSets: Array.from({ length: 3 }, () => new Set([...common, ...own])),
+				memberLandmarkInstances: toInstances(Array.from({ length: 3 }, () => header)),
+			};
+		}
+		const small = ['body>main>article>ul>li.x1>span', 'body>main>article>ul>li.x2>span'];
+		const large = [
+			'body>main>article>ul>li.a',
+			'body>main>article>ul>li.b',
+			'body>main>article>ul>li.c',
+		];
+
+		const merged = mergeCrossBlockClusters(
+			[l2Unit('small', undefined, small), l2Unit('large', undefined, large), padding],
+			{},
+		);
+		expect(merged.rootByKey.get('small')).toBe(merged.rootByKey.get('large'));
+
+		const guarded = mergeCrossBlockClusters(
+			[l2Unit('small', 'path:x', small), l2Unit('large', 'path:x', large), padding],
+			{},
+		);
+		expect(guarded.rootByKey.get('small')).toBe('small');
+		expect(guarded.rootByKey.get('large')).toBe('large');
+	});
+
+	test('lineage propagates through pooled groups: a unit Stage A separated from one member stays out of the whole group', () => {
+		// `a` (another block) and `b` are the same template and merge; `c` was
+		// separated from `b` — and only from `b` — by Stage A. Next to root `a`
+		// alone `c` would look unrelated to the guard; it is refused because
+		// `b`'s lineage is pooled into `a`'s group.
+		const own = ['body>.shell>opt>p1', 'body>.shell>opt>p2'];
+		const a = unit('a', 'path:other', 4, [...shell, ...own]);
+		const b = unit('b', 'path:news', 4, [...shell, ...own]);
+		const c = unit('c', 'path:news', 4, detailTokens);
+		const result = mergeCrossBlockClusters([a, b, c, padding], {});
+		expect(result.rootByKey.get('a')).toBe(result.rootByKey.get('b'));
+		expect(result.rootByKey.get('c')).toBe('c');
+	});
+});

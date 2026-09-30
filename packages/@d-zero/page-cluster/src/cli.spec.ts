@@ -489,3 +489,99 @@ describe('runCli', () => {
 		await expect(readFile(validationFile, 'utf8')).rejects.toThrow();
 	});
 });
+
+describe('runCli (contentRoot)', () => {
+	const tags = ['em', 'strong', 'b', 'i', 'u', 'code', 'kbd', 'samp', 'var', 'mark'];
+
+	/**
+	 * @param contentRoot
+	 */
+	function jsonl(contentRoot: unknown): string {
+		return tags
+			.map((tag, i) =>
+				JSON.stringify({
+					id: i,
+					paths: ['dept-a', String(i)],
+					stylesheetHrefs: [],
+					html: `<body><div id="page"><section><article><div><${tag}>x</${tag}></div></article></section></div></body>`,
+					...(contentRoot === undefined ? {} : { contentRoot }),
+				}),
+			)
+			.join('\n');
+	}
+
+	/**
+	 * @param input
+	 */
+	async function run(input: string) {
+		const stdout = makeCollector();
+		const stderr = makeCollector();
+		const code = await runCli({
+			stdin: makeStdin(input),
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+			argv: [],
+			version: '0.0.0',
+		});
+		const keys = stdout
+			.read()
+			.split('\n')
+			.filter(Boolean)
+			.map((line) => (JSON.parse(line) as { clusterKey: string }).clusterKey);
+		return { code, keys, stderr: stripAnsi(stderr.read()) };
+	}
+
+	test('a JSONL contentRoot anchors the depth cap, including on the last line without a trailing newline', async () => {
+		const withHint = await run(jsonl({ id: 'page' }));
+		expect(withHint.code).toBe(0);
+		expect(new Set(withHint.keys).size).toBe(1);
+
+		const withoutHint = await run(jsonl());
+		expect(withoutHint.code).toBe(0);
+		expect(new Set(withoutHint.keys).size).toBe(tags.length);
+	});
+
+	test('a contentRoot that is not an object is rejected with the line number', async () => {
+		const result = await run(jsonl('div#main'));
+		expect(result.code).toBe(1);
+		expect(result.stderr).toMatch(
+			/JSONL line 1 has a `contentRoot` that is not an object/,
+		);
+	});
+
+	test('an array contentRoot is rejected too', async () => {
+		const result = await run(jsonl(['div']));
+		expect(result.code).toBe(1);
+		expect(result.stderr).toMatch(/`contentRoot` that is not an object/);
+	});
+
+	test('a null contentRoot (an absent database column) means no hint, like a missing key', async () => {
+		const result = await run(jsonl(null));
+		expect(result.code).toBe(0);
+		expect(new Set(result.keys).size).toBe(tags.length);
+	});
+
+	test('a wrongly typed contentRoot field is rejected with its name and line', async () => {
+		const badClassList = await run(jsonl({ id: 'page', classList: 'spc' }));
+		expect(badClassList.code).toBe(1);
+		expect(badClassList.stderr).toMatch(
+			/JSONL line 1 has a `contentRoot.classList` that is not an array of strings/,
+		);
+
+		const badId = await run(jsonl({ id: 5 }));
+		expect(badId.code).toBe(1);
+		expect(badId.stderr).toMatch(
+			/JSONL line 1 has a `contentRoot.id` that is not a string/,
+		);
+	});
+
+	test('the final line without a trailing newline is validated too', async () => {
+		const result = await run(
+			JSON.stringify({ id: 'only', html: '<body></body>', contentRoot: 'div#main' }),
+		);
+		expect(result.code).toBe(1);
+		expect(result.stderr).toMatch(
+			/JSONL line 1 has a `contentRoot` that is not an object/,
+		);
+	});
+});

@@ -7,16 +7,13 @@ import type { Pass0PageSignals } from './pass0-blocking.js';
 import type { PerPageLandmarkInstance } from './per-page-landmark-signatures.js';
 import type { ResolveBlockingGroupKeysOptions } from './resolve-blocking-group-keys.js';
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
-import type { TokenizeOptions } from './types.js';
+import type { ContentRoot, TokenizeOptions } from './types.js';
 import type { ClusterPartitionReport } from './validate-cluster-partition.js';
 
 import { autoCutThreshold } from './auto-cut-threshold.js';
 import { buildClusterReason } from './build-cluster-reason.js';
 import { capContentDepth } from './cap-content-depth.js';
-import {
-	detectContentDepthCap,
-	validateDetectContentDepthCapOptions,
-} from './detect-content-depth-cap.js';
+import { validateDetectContentDepthCapOptions } from './detect-content-depth-cap.js';
 import { extractLandmarks } from './extract-landmarks.js';
 import { filterFirstPartyStylesheetHrefs } from './filter-first-party-stylesheet-hrefs.js';
 import { jaccardSimilarity } from './jaccard-similarity.js';
@@ -89,6 +86,8 @@ function makeSeededPrng(seed: number | string): () => number {
  * @param assignment.localSignatures
  * @param assignment.clustersByUnitKey
  * @param assignment.allowedClasses
+ * @param contentRoot This page's own content-root hint; the depth is the
+ *   block's (learned from the sample), the anchor is the page's.
  * @param excludeLandmarks
  * @param contentBlockAttribute
  * @param tokenizeOptions
@@ -96,6 +95,7 @@ function makeSeededPrng(seed: number | string): () => number {
  */
 function assignPageToNearestCluster(
 	html: string,
+	contentRoot: ContentRoot | undefined,
 	assignment: {
 		readonly maxMainDepth: number | undefined;
 		readonly localSignatures: ReadonlySet<string>;
@@ -117,6 +117,7 @@ function assignPageToNearestCluster(
 	if (assignment.maxMainDepth !== undefined) {
 		prepared = capContentDepth(prepared, {
 			landmark: 'main',
+			contentRoot,
 			maxDepth: assignment.maxMainDepth,
 		}).remainderHtml;
 	}
@@ -532,6 +533,16 @@ export type PageClusterSignals = {
 	 * instead of inferring a batch-wide dominant host.
 	 */
 	host?: string;
+	/**
+	 * Identity of this page's content-root element, as a crawler detected it
+	 * (see {@link ./types.js | ContentRoot}). Anchors the per-block content
+	 * depth cap on sites without `<main>`/`role="main"`, whose freeform
+	 * content would otherwise dominate the comparison; without it the cap
+	 * falls back to `<main>`/`role="main"` and then the built-in `#main`,
+	 * `#content`, … list. HTML-dependent, so — unlike `host` — it takes no
+	 * part in Pass 0 blocking and is read from the page only when the HTML is.
+	 */
+	contentRoot?: ContentRoot;
 };
 
 /**
@@ -831,6 +842,7 @@ export function resolvePageClusterKeysInMemory(
 				preparedHtml: indices.map((i) => preparedHtml[i]!),
 				landmarks: indices.map((i) => landmarks[i]!),
 				localLandmarkTokensByPage: indices.map((i) => localLandmarkTokensByPage[i]!),
+				contentRoots: indices.map((i) => pages[i]!.contentRoot),
 			},
 			options,
 		);
@@ -968,6 +980,7 @@ async function resolveSmallCorpusWithProgress(
 				preparedHtml: indices.map((i) => preparedHtml[i]!),
 				landmarks: indices.map((i) => landmarks[i]!),
 				localLandmarkTokensByPage: indices.map((i) => localLandmarkTokensByPage[i]!),
+				contentRoots: indices.map((i) => pages[i]!.contentRoot),
 			},
 			options,
 		);
@@ -1126,6 +1139,7 @@ export async function resolvePageClusterKeys(
 				stylesheetHrefs: page.stylesheetHrefs,
 				html: page.html,
 				host: page.host,
+				contentRoot: page.contentRoot,
 			});
 		}
 		// Without an onProgress callback the caller does not need visibility
@@ -1189,6 +1203,7 @@ export async function resolvePageClusterKeys(
 		reservoirIndices: number[];
 		reservoirPreparedHtml: string[];
 		reservoirLandmarks: ExtractLandmarksResult[];
+		reservoirContentRoots: (ContentRoot | undefined)[];
 		/** Total pages seen so far for this block (across the whole stream). */
 		seenCount: number;
 		/** Per-block PRNG state; seed derived from block key for determinism. */
@@ -1228,6 +1243,7 @@ export async function resolvePageClusterKeys(
 			reservoirIndices: [],
 			reservoirPreparedHtml: [],
 			reservoirLandmarks: [],
+			reservoirContentRoots: [],
 			seenCount: 0,
 			prng: makeSeededPrng(blockKey),
 		});
@@ -1252,6 +1268,7 @@ export async function resolvePageClusterKeys(
 				preparedHtml: bucket.reservoirPreparedHtml,
 				landmarks: bucket.reservoirLandmarks,
 				localLandmarkTokensByPage: localTokensByPage,
+				contentRoots: bucket.reservoirContentRoots,
 			},
 			// No capMembers — the reservoir already bounds `sampleSize`.
 			options,
@@ -1266,17 +1283,15 @@ export async function resolvePageClusterKeys(
 		);
 
 		if (bucket.seenCount > bucket.reservoirIndices.length) {
-			// Save assignment artifacts for Pass 1b.
-			const maxMainDepth =
-				bucket.reservoirPreparedHtml.length > 1
-					? detectContentDepthCap(bucket.reservoirPreparedHtml, options)
-					: undefined;
+			// Save assignment artifacts for Pass 1b. The depth is the one Stage A
+			// just learned and applied to the sample; sweeping again here would
+			// repeat the most expensive step of the block for the same answer.
 			const clustersByUnitKey = new Map<string, ReadonlySet<string>[]>();
 			for (const unit of result.crossBlockUnits) {
 				clustersByUnitKey.set(unit.key, [...unit.memberTokenSets]);
 			}
 			blockAssignments.set(bucket.blockKey, {
-				maxMainDepth,
+				maxMainDepth: result.maxMainDepth,
 				localSignatures,
 				clustersByUnitKey,
 				allowedClasses: result.allowedClasses,
@@ -1317,6 +1332,7 @@ export async function resolvePageClusterKeys(
 			bucket.reservoirIndices.push(pageIndex);
 			bucket.reservoirPreparedHtml.push(prepared);
 			bucket.reservoirLandmarks.push(strippedLandmark);
+			bucket.reservoirContentRoots.push(page.contentRoot);
 		} else {
 			const j = Math.floor(bucket.prng() * (bucket.seenCount + 1));
 			if (j < BLOCK_SAMPLE_SIZE) {
@@ -1336,6 +1352,7 @@ export async function resolvePageClusterKeys(
 				bucket.reservoirIndices[j] = pageIndex;
 				bucket.reservoirPreparedHtml[j] = prepared;
 				bucket.reservoirLandmarks[j] = strippedLandmark;
+				bucket.reservoirContentRoots[j] = page.contentRoot;
 			} else {
 				pendingAssignmentBlockKeyByIndex.set(pageIndex, bucket.blockKey);
 			}
@@ -1383,6 +1400,7 @@ export async function resolvePageClusterKeys(
 				if (assignment !== undefined) {
 					finalKeys[assignPageIndex] = assignPageToNearestCluster(
 						page.html,
+						page.contentRoot,
 						assignment,
 						excludeLandmarks,
 						contentBlockAttribute,
