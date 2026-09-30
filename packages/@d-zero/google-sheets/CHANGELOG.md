@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.12.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.11.0...@d-zero/google-sheets@0.12.0) (2026-09-30)
+
+### Features
+
+- **google-sheets:** create a spreadsheet in a Drive folder from its URL ([bf3bcde](https://github.com/d-zero-dev/tools/commit/bf3bcde9a727a2097cb4b4d11bff3353404f2e6f))
+
 # [0.11.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.10.0...@d-zero/google-sheets@0.11.0) (2026-09-01)
 
 ### Features

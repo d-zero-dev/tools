@@ -1113,7 +1113,7 @@ __metadata:
     "@d-zero/a11y-check-scenarios": "npm:0.4.56"
     "@d-zero/cli-core": "npm:1.4.0"
     "@d-zero/google-auth": "npm:0.7.6"
-    "@d-zero/google-sheets": "npm:0.11.0"
+    "@d-zero/google-sheets": "npm:0.12.0"
     "@d-zero/puppeteer-page-scan": "npm:4.7.0"
     "@d-zero/readtext": "npm:1.2.1"
     "@d-zero/shared": "npm:0.23.0"
@@ -1320,7 +1320,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@d-zero/google-sheets@npm:0.11.0, @d-zero/google-sheets@workspace:packages/@d-zero/google-sheets":
+"@d-zero/google-sheets@npm:0.12.0, @d-zero/google-sheets@workspace:packages/@d-zero/google-sheets":
   version: 0.0.0-use.local
   resolution: "@d-zero/google-sheets@workspace:packages/@d-zero/google-sheets"
   dependencies:
