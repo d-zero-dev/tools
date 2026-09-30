@@ -103,6 +103,23 @@ beforeEach(() => {
 	errorLogMock.mockReset();
 });
 
+describe('Sheets - url', () => {
+	test('ID から編集 URL を組み立てる', () => {
+		const sheets = new Sheets(
+			'https://docs.google.com/spreadsheets/d/abc123/edit#gid=0',
+			fakeAuth,
+		);
+
+		expect(sheets.url).toBe('https://docs.google.com/spreadsheets/d/abc123/edit');
+	});
+
+	test('スプレッドシート URL でなければ URIError', () => {
+		expect(
+			() => new Sheets('https://drive.google.com/drive/folders/abc123', fakeAuth),
+		).toThrow(URIError);
+	});
+});
+
 describe('Sheets - onLog wiring (per method)', () => {
 	for (const { name, expectedLabel, mock, successValue, invoke } of methods) {
 		test(`${name}: 502 リトライ時に onLog が waiting: true/false で呼ばれる`, async () => {
