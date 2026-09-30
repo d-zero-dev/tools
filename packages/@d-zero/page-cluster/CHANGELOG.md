@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.6.4...@d-zero/page-cluster@0.7.0) (2026-09-30)
+
+### Features
+
+- **page-cluster:** strip page-unique classes before Stage A comparison ([a90fd87](https://github.com/d-zero-dev/tools/commit/a90fd875654e85ab308600a1b1b6f73791ecacee))
+
 ## [0.6.4](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.6.3...@d-zero/page-cluster@0.6.4) (2026-09-08)
 
 **Note:** Version bump only for package @d-zero/page-cluster
