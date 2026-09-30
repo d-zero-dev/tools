@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, expectTypeOf, vi, beforeEach, afterEach } from 'vitest';
 
 import { parseCli } from './parse-cli.js';
 
@@ -540,6 +540,16 @@ describe('parseCli', () => {
 			expect(logSpy).toHaveBeenCalledWith('');
 			expect(exitSpy).toHaveBeenCalledWith(0);
 		});
+	});
+
+	it('does not give a command without flags an index signature', () => {
+		setArgv(['analyze']);
+		const result = parseCli(testSettings);
+		expect(result.command).toBe('analyze');
+		// Type-level assertion: a no-op at runtime, checked only by the type checker
+		expectTypeOf<Extract<typeof result, { command: 'analyze' }>['flags']>().toEqualTypeOf<
+			Record<never, never>
+		>();
 	});
 
 	describe('repeated flags', () => {

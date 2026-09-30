@@ -257,6 +257,23 @@ interface RoarSettings<Commands extends Record<string, CommandDef>> {
 }
 
 /**
+ * Extracts the flag definitions of a command, or an empty record when the
+ * command declares no `flags`.
+ *
+ * WHY check for the `flags` key first: inferring `F` from a command without
+ * `flags` has no candidate, so TypeScript falls back to the `AnyFlags`
+ * constraint. The command's flags would become an index signature, and a
+ * flag the command does not define (e.g. `result.flags.output`) would
+ * type-check instead of failing.
+ * @template C - Command definition
+ */
+type CommandFlagDefs<C extends CommandDef> = 'flags' extends keyof C
+	? C extends CommandDef<infer F extends AnyFlags>
+		? F
+		: never
+	: Record<never, never>;
+
+/**
  * Discriminated union of all possible parse results.
  * The `command` field narrows the union so that `flags` is
  * correctly typed for the matched command.
@@ -269,9 +286,7 @@ type RoarResult<Commands extends Record<string, CommandDef>> = {
 		/** Positional arguments that follow the command name. */
 		args: string[];
 		/** Parsed and typed flag values for this command. */
-		flags: Commands[K] extends CommandDef<infer F>
-			? InferFlags<F>
-			: Record<string, never>;
+		flags: InferFlags<CommandFlagDefs<Commands[K]>>;
 	};
 }[keyof Commands & string];
 
