@@ -33,7 +33,10 @@ interface StringFlag {
 	readonly group?: string;
 	/** Default value applied when the flag is omitted. */
 	readonly default?: string;
-	/** When `true`, the flag accepts multiple values and produces a `string[]`. */
+	/**
+	 * When `true`, the flag accepts multiple values and produces a `string[]`.
+	 * Otherwise a repeated flag keeps its last value (`--url a --url b` → `'b'`).
+	 */
 	readonly isMultiple?: boolean;
 	/** When `true`, the CLI exits with an error if this flag is omitted. */
 	readonly isRequired?: boolean;
@@ -60,7 +63,10 @@ interface NumberFlag {
 	readonly group?: string;
 	/** Default value applied when the flag is omitted. */
 	readonly default?: number;
-	/** When `true`, the flag accepts multiple values and produces a `number[]`. */
+	/**
+	 * When `true`, the flag accepts multiple values and produces a `number[]`.
+	 * Otherwise a repeated flag keeps its last value (`-n 1 -n 2` → `2`).
+	 */
 	readonly isMultiple?: boolean;
 }
 
@@ -587,6 +593,11 @@ function generateCommandHelp<Commands extends Record<string, CommandDef>>(
  * WHY yargs-parser: It handles camelCase expansion, alias stripping,
  * and type coercion out of the box, which avoids reimplementing
  * these common CLI parsing concerns.
+ *
+ * A repeated flag without `isMultiple` keeps its last value, following the
+ * common CLI convention that lets a later flag override an earlier one (e.g.
+ * one baked into a shell alias). yargs-parser collects it into an array
+ * instead, which would contradict the scalar type from {@link InferFlags}.
  * @param argv - Raw argument strings (after removing the command name)
  * @param flags - Flag definitions that drive parsing configuration
  * @returns Object containing typed flag values and positional arguments
@@ -648,8 +659,12 @@ function parseFlags<F extends AnyFlags>(
 
 	const result: Record<string, unknown> = {};
 
-	for (const key of Object.keys(flags)) {
-		result[key] = parsed[key] ?? defaults[key];
+	for (const [key, def] of Object.entries(flags)) {
+		const value: unknown = parsed[key] ?? defaults[key];
+		// Not `duplicate-arguments-array: false`: that option also collapses
+		// `isMultiple` flags to their last value.
+		const isMultiple = 'isMultiple' in def && def.isMultiple;
+		result[key] = Array.isArray(value) && !isMultiple ? value.at(-1) : value;
 	}
 
 	return { flags: result as InferFlags<F>, args: parsed._.map(String) };

@@ -541,4 +541,45 @@ describe('parseCli', () => {
 			expect(exitSpy).toHaveBeenCalledWith(0);
 		});
 	});
+
+	describe('repeated flags', () => {
+		it('keeps the last value of a repeated string flag', () => {
+			setArgv(['crawl', '--url', 'https://a.example', '--url', 'https://b.example']);
+			expect(parseCli(testSettings)).toMatchObject({
+				command: 'crawl',
+				flags: { url: 'https://b.example' },
+			});
+		});
+
+		it('keeps the last value when the short and long forms are mixed', () => {
+			setArgv(['crawl', '-u', 'https://a.example', '--url', 'https://b.example']);
+			expect(parseCli(testSettings)).toMatchObject({
+				command: 'crawl',
+				flags: { url: 'https://b.example' },
+			});
+		});
+
+		it('keeps the last value of a repeated number flag', () => {
+			setArgv(['crawl', '--depth', '1', '--depth', '2']);
+			expect(parseCli(testSettings)).toMatchObject({
+				command: 'crawl',
+				flags: { depth: 2 },
+			});
+		});
+
+		it('keeps every value of a repeated isMultiple flag', () => {
+			setArgv(['crawl', '--tag', 'a', '--tag', 'b']);
+			expect(
+				parseCli({
+					name: 'test-cli',
+					commands: {
+						crawl: {
+							desc: 'Crawl a website',
+							flags: { tag: { type: 'string' as const, isMultiple: true } },
+						},
+					},
+				}),
+			).toEqual({ command: 'crawl', args: [], flags: { tag: ['a', 'b'] } });
+		});
+	});
 });
