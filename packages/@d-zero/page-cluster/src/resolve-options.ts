@@ -8,5 +8,6 @@ export function resolveOptions(options?: TokenizeOptions): ResolvedOptions {
 	return {
 		filterNoiseClasses: options?.filterNoiseClasses ?? true,
 		includeComments: options?.includeComments ?? false,
+		allowedClasses: options?.allowedClasses,
 	};
 }

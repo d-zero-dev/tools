@@ -51,19 +51,36 @@ export type { TokenizeOptions, TokenizeResult } from './types.js';
  *
  * `<body>`'s own `class` is excluded from every leaf path and returned
  * separately as `bodyClassList` — see {@link ./types.js | TokenizeResult}'s
- * JSDoc for why.
+ * JSDoc for why. Every other class that made it into a segment is listed in
+ * `classList`, so a caller comparing many pages can measure how many pages
+ * each class occurs on without parsing it back out of the tokens.
+ *
+ * `allowedClasses` restricts which class names may appear in segments at all
+ * (see {@link ./types.js | TokenizeOptions}). A class dropped this way is
+ * indistinguishable from one that was never in the markup: a `div`/`span`
+ * left class-less by it folds away like any other anonymous single-child
+ * wrapper. This is what lets a caller neutralize page-identity classes (a
+ * per-page label on a content root such as `<article class="outline">`)
+ * without them poisoning every root-to-leaf path beneath — the same failure
+ * `bodyClassList` already guards against for `<body>`.
  * @param html
  * @param options
  * @example
  * ```ts
  * tokenize('<body><div class="card"><ul><li>A</li><li>B</li></ul></div></body>');
- * // { tokens: ["body>.card>ul>li", "body>.card>ul>li"], bodyClassList: [] }
+ * // { tokens: ["body>.card>ul>li", "body>.card>ul>li"], bodyClassList: [], classList: ["card"] }
  *
  * // Disable the built-in hash-noise class filter to keep every class name.
  * tokenize('<body><div class="c-abc123"><p>x</p></div></body>', {
  *   filterNoiseClasses: false,
  * });
- * // { tokens: ["body>.c-abc123>p"], bodyClassList: [] }
+ * // { tokens: ["body>.c-abc123>p"], bodyClassList: [], classList: ["c-abc123"] }
+ *
+ * // Keep only a known set of classes; everything else reads as class-less.
+ * tokenize('<body><article class="outline"><div class="grid"><p>x</p></div></article></body>', {
+ *   allowedClasses: new Set(['grid']),
+ * });
+ * // { tokens: ["body>article>.grid>p"], bodyClassList: [], classList: ["grid"] }
  * ```
  */
 export function tokenize(html: string, options?: TokenizeOptions): TokenizeResult {

@@ -219,33 +219,37 @@ describe('resolvePageClusterKeys', () => {
 	});
 
 	test('residual chrome not covered by header/footer/nav/aside (e.g. a breadcrumb) still gets absorbed by the frequency-split safety net at block sizes >= 10', () => {
-		// 8 class-less-content-bearing divs shared by every page (a stand-in
-		// for a breadcrumb — not a landmark tag, so extractLandmarks leaves it
-		// alone). Each page adds exactly one page-specific class. Raw
+		// 8 class-bearing divs shared by every page (a stand-in for a
+		// breadcrumb — not a landmark tag, so extractLandmarks leaves it
+		// alone). Each page adds exactly one page-specific *element*. Raw
 		// Jaccard(a, b) = 8/10 = 0.8, which meets the default threshold on its
 		// own; the frequency-split safety net (block size 11 >= the floor)
 		// must still separate them once the shared divs are recognized as
-		// chrome. Distinguishing via class name, not text, since tokenize()
-		// discards visible text entirely.
+		// chrome. The page-specific part has to be a distinct tag, not a
+		// distinct class on the same tag: a class carried by exactly one page
+		// of the block is stripped as a page identifier before comparison
+		// (see stageAPerBlock), and tokenize() discards visible text, so a
+		// class-only or text-only difference would leave a and b identical.
 		const crumbs = Array.from(
 			{ length: 8 },
 			(_, i) => `<div class="crumb-${i}"></div>`,
 		).join('');
-		const pages = Array.from({ length: 9 }, (_, i) => ({
+		const fillerTags = ['p', 'ul', 'table', 'h1', 'h2', 'h3', 'dl', 'blockquote', 'pre'];
+		const pages = fillerTags.map((tag, i) => ({
 			paths: ['dept-a', `filler-${i}`],
 			stylesheetHrefs: [],
-			html: `<body>${crumbs}<div class="filler-${i}"></div></body>`,
+			html: `<body>${crumbs}<${tag}></${tag}></body>`,
 		}));
 		pages.push(
 			{
 				paths: ['dept-a', 'a'],
 				stylesheetHrefs: [],
-				html: `<body>${crumbs}<div class="diff-a"></div></body>`,
+				html: `<body>${crumbs}<section></section></body>`,
 			},
 			{
 				paths: ['dept-a', 'b'],
 				stylesheetHrefs: [],
-				html: `<body>${crumbs}<div class="diff-b"></div></body>`,
+				html: `<body>${crumbs}<form></form></body>`,
 			},
 		);
 		const result = resolvePageClusterKeys(pages);
@@ -643,6 +647,137 @@ describe('resolvePageClusterKeys (local-landmark pseudo-token injection)', () =>
 		}));
 		const result = resolvePageClusterKeys(pages);
 		for (let i = 1; i < 6; i++) expect(result[i]).toBe(result[0]);
+	});
+});
+
+describe('resolvePageClusterKeys (page-unique class stripping)', () => {
+	/**
+	 * A static-content page whose content root carries a per-page identity
+	 * class (`<article class="<name>">`), the way a hand-authored site labels
+	 * each page for CSS. The skeleton under the article is the same on every
+	 * page; only the label differs.
+	 * @param name
+	 */
+	function labeledStaticPage(name: string): string {
+		return (
+			'<body>' +
+			'<header><nav>global</nav></header>' +
+			'<div class="wrap">' +
+			`<article class="${name}">` +
+			'<h2>title</h2>' +
+			'<section><h3>h</h3><p>text</p><img></section>' +
+			'<section><h3>h</h3><p>text</p></section>' +
+			'</article>' +
+			'</div>' +
+			'<footer>f</footer>' +
+			'</body>'
+		);
+	}
+
+	/**
+	 * A structurally different page in the same block (a listing, not an
+	 * article) — the control that must stay separate.
+	 * @param i
+	 */
+	function listingPage(i: number): string {
+		return (
+			'<body>' +
+			'<header><nav>global</nav></header>' +
+			'<div class="wrap">' +
+			`<ul class="listing listing-${i}"><li><a>a</a></li><li><a>b</a></li><li><a>c</a></li></ul>` +
+			'<form><input><button>go</button></form>' +
+			'</div>' +
+			'<footer>f</footer>' +
+			'</body>'
+		);
+	}
+
+	test('pages that differ only by a per-page class on their content root share one cluster', () => {
+		// Regression scenario from a real crawl: five hand-authored static
+		// pages under one URL section, each with `<article class="<page>">`.
+		// Without stripping, the label prefixes every root-to-leaf path under
+		// the article, so once the shared shell is removed by the frequency
+		// split the pages compare as disjoint (Jaccard ≈ 0.08 on the real
+		// data) and each ends up alone. The block also holds a listing family
+		// so it clears MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT and so there is a
+		// genuinely different template the static pages must not absorb.
+		const labels = ['outline', 'weather', 'local', 'history', 'charm'];
+		const statics = labels.map((name) => ({
+			paths: ['about', `${name}.html`],
+			stylesheetHrefs: [],
+			html: labeledStaticPage(name),
+		}));
+		const listings = Array.from({ length: 6 }, (_, i) => ({
+			paths: ['about', `list-${i}`],
+			stylesheetHrefs: [],
+			html: listingPage(i),
+		}));
+		const result = resolvePageClusterKeys([...statics, ...listings]);
+
+		const staticKey = result[0]!;
+		for (let i = 0; i < statics.length; i++) expect(result[i]).toBe(staticKey);
+		const listingKey = result[statics.length]!;
+		for (let i = statics.length; i < result.length; i++)
+			expect(result[i]).toBe(listingKey);
+		expect(staticKey).not.toBe(listingKey);
+		expect(new Set(result).size).toBe(2);
+	});
+
+	test('stripping is skipped below MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT, so a tiny block keeps per-page classes', () => {
+		// Two pages alone cannot tell "page identifier" from "the one class
+		// that distinguishes two templates" — the gate leaves them as they
+		// are, and they stay apart exactly as they would without stripping.
+		const result = resolvePageClusterKeys([
+			{ paths: ['about', 'a.html'], stylesheetHrefs: [], html: labeledStaticPage('a') },
+			{ paths: ['about', 'b.html'], stylesheetHrefs: [], html: labeledStaticPage('b') },
+		]);
+		expect(result[0]).not.toBe(result[1]);
+	});
+
+	test('a class shared by two pages of a large block is kept, so a genuine two-page variant still separates', () => {
+		// `.with-aside` recurs on exactly two pages, which is the floor for
+		// "recurring": those two keep the class (and the aside subtree) and
+		// split from the eight plain pages, while each page's own identity
+		// class is still stripped.
+		const plain = Array.from({ length: 8 }, (_, i) => ({
+			paths: ['about', `p-${i}.html`],
+			stylesheetHrefs: [],
+			html: labeledStaticPage(`page-${i}`),
+		}));
+		const withAside = Array.from({ length: 2 }, (_, i) => ({
+			paths: ['about', `aside-${i}.html`],
+			stylesheetHrefs: [],
+			html: labeledStaticPage(`aside-page-${i}`).replace(
+				'</article>',
+				'</article><aside class="with-aside"><ul><li><a>x</a></li><li><a>y</a></li></ul><p>note</p></aside>',
+			),
+		}));
+		const result = resolvePageClusterKeys([...plain, ...withAside]);
+		for (let i = 1; i < plain.length; i++) expect(result[i]).toBe(result[0]);
+		expect(result[8]).toBe(result[9]);
+		expect(result[8]).not.toBe(result[0]);
+		expect(new Set(result).size).toBe(2);
+	});
+
+	test('stripped tokens stay comparable across blocks: the same labeled template in two URL sections merges in Stage B', () => {
+		// Stripping is decided per block, so two blocks of the same template
+		// each strip their own identity labels independently. What remains is
+		// the same skeleton in both, and Stage B's cross-block comparison of
+		// quorum cores must recognize it as one template — otherwise the
+		// per-block stripping would trade one fragmentation (per page) for
+		// another (per section).
+		const sectionA = Array.from({ length: 10 }, (_, i) => ({
+			paths: ['section-a', `page-${i}.html`],
+			stylesheetHrefs: [],
+			html: labeledStaticPage(`a-${i}`),
+		}));
+		const sectionB = Array.from({ length: 10 }, (_, i) => ({
+			paths: ['section-b', `page-${i}.html`],
+			stylesheetHrefs: [],
+			html: labeledStaticPage(`b-${i}`),
+		}));
+		const result = resolvePageClusterKeys([...sectionA, ...sectionB]);
+		expect(new Set(result).size).toBe(1);
 	});
 });
 

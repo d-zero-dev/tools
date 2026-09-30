@@ -51,6 +51,11 @@ function topOf(stack: readonly Frame[]): Frame {
  * frame's `segment` (always plain `"body"`, never `"body.xxx"`) — see
  * `TokenizeResult`'s JSDoc for why — and captured separately into
  * `bodyClassList` instead of being discarded outright.
+ *
+ * `classList` (every class kept on some element below `<body>`) is collected
+ * from each frame as it opens — the only point at which the tokenizer holds
+ * the parsed class names — rather than recovered from the finished tokens;
+ * see `TokenizeResult.classList` for why the latter is not reliable.
  * @param html
  * @param options
  */
@@ -60,6 +65,7 @@ export function runTokenizer(html: string, options: ResolvedOptions): TokenizeRe
 	let bodyDone = false;
 	let result: string[] = [];
 	let bodyClassList: string[] = [];
+	const classSet = new Set<string>();
 	// Counts <body> open tags ignored because a body was already open (a
 	// stray/duplicated body from broken SSR/templating). Browsers create no
 	// node for these, so neither the open nor its matching close tag should
@@ -103,7 +109,11 @@ export function runTokenizer(html: string, options: ResolvedOptions): TokenizeRe
 				return;
 			}
 
-			stack.push(createFrame(name, attribs, options));
+			const frame = createFrame(name, attribs, options);
+			for (const className of frame.classList) {
+				classSet.add(className);
+			}
+			stack.push(frame);
 		},
 		onclosetag(name) {
 			if (opaque) {
@@ -164,5 +174,5 @@ export function runTokenizer(html: string, options: ResolvedOptions): TokenizeRe
 
 	parser.parseComplete(html);
 
-	return { tokens: result, bodyClassList };
+	return { tokens: result, bodyClassList, classList: [...classSet] };
 }

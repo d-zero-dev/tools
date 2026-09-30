@@ -230,4 +230,39 @@ describe('resolvePageClusterKeys (onClusterReason)', () => {
 		expect(reasons.size).toBe(distinctKeys.size);
 		for (const key of distinctKeys) expect(reasons.has(key)).toBe(true);
 	}, 30_000);
+
+	test('Pass 1b tokenizes non-sample pages with the allowedClasses learned from the block sample', async () => {
+		// Every page carries a page-unique label on the wrapper right under
+		// <body>, so with the label kept every root-to-leaf path of the page
+		// differs from every other page's (Jaccard 0 against every sample
+		// member). The 100-page reservoir sample sees each label once, learns
+		// `wrap` / `listing` as the recurring classes and strips the labels;
+		// the ~19,900 non-sample pages are only assigned correctly if Pass 1b
+		// applies that same set — tokenized without it they would all tie at
+		// score 0 and fall into whichever cluster is iterated first.
+		const bigCount = CORPUS_INLINE_THRESHOLD + 1;
+		/**
+		 * @yields {PageClusterSignals} Two templates alternating by index, `bigCount` times.
+		 */
+		function* generate(): Generator<PageClusterSignals> {
+			for (let i = 0; i < bigCount; i++) {
+				const inner =
+					i % 2 === 0
+						? '<article><h2>t</h2><section><h3>h</h3><p>x</p><img></section></article>'
+						: '<ul class="listing"><li><a>a</a></li><li><a>b</a></li><li><a>c</a></li></ul><form><input><button>go</button></form>';
+				yield {
+					paths: ['p', String(i)],
+					stylesheetHrefs: [],
+					html: `<body><div class="wrap u-${i}">${inner}</div></body>`,
+				};
+			}
+		}
+		const keys = await resolvePageClusterKeys(() => generate());
+		expect(keys).toHaveLength(bigCount);
+		const articleKeys = new Set(keys.filter((_, i) => i % 2 === 0));
+		const listingKeys = new Set(keys.filter((_, i) => i % 2 === 1));
+		expect(articleKeys.size).toBe(1);
+		expect(listingKeys.size).toBe(1);
+		expect(new Set(keys).size).toBe(2);
+	}, 60_000);
 });

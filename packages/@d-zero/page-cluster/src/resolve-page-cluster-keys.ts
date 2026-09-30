@@ -69,11 +69,26 @@ function makeSeededPrng(seed: number | string): () => number {
  * iteration). Falls back to a block-scoped singleton key when the block
  * has no clusters at all (edge case: an empty sample, which shouldn't
  * happen for a non-empty block but is defended against here).
+ *
+ * Tokenizes with the `allowedClasses` Stage A learned from the block's
+ * sample, so a non-sample page's tokens are built under the same class
+ * filter as the sample members' it is compared against — see
+ * {@link ./stage-a-per-block.js | StageAPerBlockResult}'s `allowedClasses`
+ * for why comparing filtered against unfiltered tokens is systematically
+ * biased. The set is learned from the sample alone: any class outside it —
+ * unseen in the sample, or seen on only one sample page — is dropped from
+ * the non-sample page even if it recurs among non-sample pages. This is a
+ * known approximation of the in-memory path (which pools every page of the
+ * block), in the same family as the sample-based chrome discovery described
+ * on `BLOCK_SAMPLE_SIZE`. When Stage A learned no set (`undefined`, i.e. the
+ * sample was below `MIN_PAGE_COUNT_FOR_FREQUENCY_SPLIT`), no class is
+ * dropped, matching the sample members.
  * @param html
  * @param assignment
  * @param assignment.maxMainDepth
  * @param assignment.localSignatures
  * @param assignment.clustersByUnitKey
+ * @param assignment.allowedClasses
  * @param excludeLandmarks
  * @param contentBlockAttribute
  * @param tokenizeOptions
@@ -85,6 +100,7 @@ function assignPageToNearestCluster(
 		readonly maxMainDepth: number | undefined;
 		readonly localSignatures: ReadonlySet<string>;
 		readonly clustersByUnitKey: ReadonlyMap<string, readonly ReadonlySet<string>[]>;
+		readonly allowedClasses: ReadonlySet<string> | undefined;
 	},
 	excludeLandmarks: boolean,
 	contentBlockAttribute: string | undefined,
@@ -105,7 +121,11 @@ function assignPageToNearestCluster(
 		}).remainderHtml;
 	}
 
-	const pageTokens = new Set(tokenize(prepared, tokenizeOptions).tokens);
+	const pageTokenizeOptions =
+		assignment.allowedClasses === undefined
+			? tokenizeOptions
+			: { ...tokenizeOptions, allowedClasses: assignment.allowedClasses };
+	const pageTokens = new Set(tokenize(prepared, pageTokenizeOptions).tokens);
 	// Reinject tokens for landmark instances whose signature matches the
 	// block's learned local-signature set (same rule the sample-side Stage
 	// A applied via computeLocalChromeArtifacts).
@@ -560,9 +580,13 @@ export type ProgressEvent =
 	| { readonly phase: 'stage-b-start'; readonly unitCount: number };
 
 /**
+ * `TokenizeOptions.allowedClasses` is deliberately excluded: Stage A derives
+ * it per block from the block's own pages (see
+ * {@link ./stage-a-per-block.js | stageAPerBlock}), and a caller-supplied
+ * value would be replaced in every block large enough to qualify.
  * @see resolvePageClusterKeys
  */
-export type ResolvePageClusterKeysOptions = TokenizeOptions &
+export type ResolvePageClusterKeysOptions = Omit<TokenizeOptions, 'allowedClasses'> &
 	ResolveBlockingGroupKeysOptions &
 	ResolveStructuralClusterKeysOptions & {
 		excludeLandmarks?: boolean;
@@ -1181,6 +1205,15 @@ export async function resolvePageClusterKeys(
 		readonly localSignatures: ReadonlySet<string>;
 		/** unitKey → the sample members' token sets that back that cluster. */
 		readonly clustersByUnitKey: ReadonlyMap<string, readonly ReadonlySet<string>[]>;
+		/**
+		 * The `allowedClasses` Stage A tokenized the sample with (see
+		 * {@link ./stage-a-per-block.js | StageAPerBlockResult}). Reused for
+		 * the block's non-sample pages so their token sets are built under
+		 * the same class filter as the sample members' and stay comparable;
+		 * `undefined` means the sample was not stripped and non-sample pages
+		 * are tokenized without stripping as well.
+		 */
+		readonly allowedClasses: ReadonlySet<string> | undefined;
 	};
 	/** Non-sample page indices that need Pass 1b Jaccard-based assignment. */
 	const pendingAssignmentBlockKeyByIndex = new Map<number, string>();
@@ -1246,6 +1279,7 @@ export async function resolvePageClusterKeys(
 				maxMainDepth,
 				localSignatures,
 				clustersByUnitKey,
+				allowedClasses: result.allowedClasses,
 			});
 		}
 
