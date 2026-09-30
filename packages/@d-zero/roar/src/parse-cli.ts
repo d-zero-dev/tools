@@ -4,6 +4,10 @@ import yargsParser from 'yargs-parser';
 
 /**
  * Definition for a string-typed CLI flag.
+ *
+ * A flag given without a value (`--url`, `--url=`) parses to `''`, the same
+ * as an explicit `--url ''`. roar cannot tell these apart, so it passes `''`
+ * through and leaves rejecting it to the caller.
  * @example
  * ```ts
  * const flag: StringFlag = {
@@ -38,7 +42,11 @@ interface StringFlag {
 	 * Otherwise a repeated flag keeps its last value (`--url a --url b` → `'b'`).
 	 */
 	readonly isMultiple?: boolean;
-	/** When `true`, the CLI exits with an error if this flag is omitted. */
+	/**
+	 * When `true`, the CLI prints an error to stderr and exits with code `1`
+	 * if this flag is omitted. A flag given without a value counts as given
+	 * (it parses to `''`).
+	 */
 	readonly isRequired?: boolean;
 }
 
@@ -239,6 +247,11 @@ interface RoarSettings<Commands extends Record<string, CommandDef>> {
 	 *
 	 * `--help` / `-h` as the first argument is not an error: it prints the
 	 * same help to stdout and exits with code `0` without calling this.
+	 *
+	 * A missing `isRequired` flag does not call this either. The help this
+	 * callback can request is the command list, which does not help with a
+	 * flag error, so roar prints the missing flags and points at the
+	 * command's `--help` instead.
 	 */
 	onError?: (error: Error) => boolean;
 }
@@ -670,6 +683,23 @@ function parseFlags<F extends AnyFlags>(
 	return { flags: result as InferFlags<F>, args: parsed._.map(String) };
 }
 
+/**
+ * Collects the `isRequired` flags that are absent from the parsed values.
+ * @param flags - Flag definitions
+ * @param values - Parsed flag values keyed like `flags`
+ * @returns Keys of the missing flags, in definition order
+ */
+function missingRequiredFlags(
+	flags: AnyFlags,
+	values: Readonly<Record<string, unknown>>,
+): string[] {
+	return Object.entries(flags)
+		.filter(
+			([key, def]) => 'isRequired' in def && def.isRequired && values[key] === undefined,
+		)
+		.map(([key]) => key);
+}
+
 // ---- Main export ----
 
 /**
@@ -683,6 +713,7 @@ function parseFlags<F extends AnyFlags>(
  *   (e.g. `my-cli query file.db pages --help`), it prints help filtered
  *   to that sub-command. All help goes to stdout with exit code `0`.
  * - Automatic `--version` / `-v` handling at the top level when `version` is set
+ * - A missing `isRequired` flag prints an error to stderr and exits with code `1`
  * - camelCase flag names converted to kebab-case in help text
  * @template Commands - Record of command name to {@link CommandDef}
  * @param settings - CLI program configuration
@@ -761,6 +792,17 @@ export function parseCli<const Commands extends Record<string, CommandDef>>(
 	const { flags, args } = commandDef.flags
 		? parseFlags(commandArgv, commandDef.flags)
 		: { flags: {}, args: yargsParser(commandArgv)._.map(String) };
+
+	const missing = missingRequiredFlags(commandDef.flags ?? {}, flags);
+	if (missing.length > 0) {
+		const plural = missing.length > 1 ? 's' : '';
+		const names = missing.map((key) => `--${camelToKebab(key)}`).join(', ');
+		// eslint-disable-next-line no-console
+		console.error(`Missing required flag${plural}: ${names}`);
+		// eslint-disable-next-line no-console
+		console.error(`Run '${settings.name} ${command} --help' for details.`);
+		process.exit(1);
+	}
 
 	return {
 		command,

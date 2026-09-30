@@ -582,4 +582,86 @@ describe('parseCli', () => {
 			).toEqual({ command: 'crawl', args: [], flags: { tag: ['a', 'b'] } });
 		});
 	});
+
+	describe('required flags', () => {
+		let errorSpy: ReturnType<typeof vi.spyOn>;
+
+		const requiredSettings = {
+			name: 'test-cli',
+			commands: {
+				report: {
+					desc: 'Generate a report',
+					flags: {
+						sheet: { type: 'string' as const, isRequired: true, desc: 'Sheet URL' },
+						title: { type: 'string' as const, isRequired: true, desc: 'Report title' },
+					},
+				},
+			},
+		} as const;
+
+		beforeEach(() => {
+			errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			errorSpy.mockRestore();
+		});
+
+		it('exits 1 with an error naming the missing required flag', () => {
+			setArgv(['report', '--title', 'Weekly']);
+			expect(() => parseCli(requiredSettings)).toThrow('process.exit called');
+			expect(exitSpy).toHaveBeenCalledWith(1);
+			expect(errorSpy).toHaveBeenCalledWith('Missing required flag: --sheet');
+			expect(errorSpy).toHaveBeenCalledWith("Run 'test-cli report --help' for details.");
+		});
+
+		it('names every missing required flag', () => {
+			setArgv(['report']);
+			expect(() => parseCli(requiredSettings)).toThrow('process.exit called');
+			expect(errorSpy).toHaveBeenCalledWith('Missing required flags: --sheet, --title');
+		});
+
+		it('does not report a required flag that has a default', () => {
+			setArgv(['report']);
+			expect(
+				parseCli({
+					name: 'test-cli',
+					commands: {
+						report: {
+							desc: 'Generate a report',
+							flags: {
+								sheet: {
+									type: 'string' as const,
+									isRequired: true,
+									default: 'https://sheets.example/default',
+								},
+							},
+						},
+					},
+				}),
+			).toEqual({
+				command: 'report',
+				args: [],
+				flags: { sheet: 'https://sheets.example/default' },
+			});
+		});
+
+		it('prints command help instead of the error when --help is given', () => {
+			const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+			setArgv(['report', '--help']);
+			expect(() => parseCli(requiredSettings)).toThrow('process.exit called');
+			expect(exitSpy).toHaveBeenCalledWith(0);
+			expect(errorSpy).not.toHaveBeenCalled();
+			logSpy.mockRestore();
+		});
+
+		it('accepts a required flag given without a value', () => {
+			setArgv(['report', '--sheet', '--title', 'Weekly']);
+			expect(parseCli(requiredSettings)).toEqual({
+				command: 'report',
+				args: [],
+				flags: { sheet: '', title: 'Weekly' },
+			});
+		});
+	});
 });
