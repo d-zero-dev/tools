@@ -16,6 +16,9 @@ import { parseCli } from '@d-zero/roar';
 const result = parseCli({
 	name: 'my-tool',
 	version: pkg.version,
+	globalFlags: {
+		config: { type: 'string', shortFlag: 'c', desc: 'Config file' },
+	},
 	commands: {
 		crawl: {
 			desc: 'Crawl a website',
@@ -37,6 +40,8 @@ const result = parseCli({
 	onError: () => true,
 });
 
+result.flags.config; // string | undefined（全コマンド共通なので絞り込み不要）
+
 if (result.command === 'crawl') {
 	result.flags.depth; // number（default から推論）
 	result.flags.verbose; // boolean | undefined
@@ -45,6 +50,7 @@ if (result.command === 'crawl') {
 
 位置引数とフラグは任意の順序で混在可能。`--` 以降はすべて位置引数として扱う。
 
+- `globalFlags` — 全コマンド共通のフラグ。各コマンドの `flags` とあわせて解析・型付けされる。コマンド名より後ろに置く（`my-tool crawl --config x`）。コマンド側のフラグとコマンドライン上の名前（kebab-case の長い名前・`shortFlag`）が衝突すると `parseCli` が例外を投げる
 - `isMultiple` でないフラグを繰り返し指定した場合は最後の値を採用する
 - `isRequired` のフラグを省略すると、エラーを stderr に出力して `exit(1)` する
 
@@ -54,7 +60,7 @@ if (result.command === 'crawl') {
 
 - `usage`（`string | string[]`）— `Usage:` 行の自由記述。複数指定で相互排他の起動モードを 1 行ずつ列挙できる。プログラム名とコマンド名は自動で前置される
 - `valueName` — string / number フラグの値プレースホルダ（`--interval <ms>` のような表記）。省略時は `<value>` / `<n>`
-- `group` — フラグをセクション見出しの下にまとめる。未指定のフラグは `Options:` 直下
+- `group` — フラグをセクション見出しの下にまとめる。未指定のフラグは `Options:` 直下（`globalFlags` は `Global options:` 直下で、トップレベルと全コマンドの help に表示される）
 - `subCommands` — help 専用のサブサブコマンドメタデータ（パースには影響しない）。コマンドの help にサブコマンド一覧を表示し、`my-tool query <file> pages --help` のようにサブコマンド名を含めるとそのサブコマンドに適用されるフラグだけに絞った help を表示する。各エントリの `flags` に適用フラグのキーを列挙し、どのエントリからも参照されないフラグは全サブコマンド共通として常に表示される
 
 説明文は端末幅（上限 100 桁）で折り返され、ラベル列の幅はフラグ長に応じて自動調整される。

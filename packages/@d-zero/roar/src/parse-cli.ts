@@ -218,8 +218,12 @@ export interface CommandDef<F extends AnyFlags = AnyFlags> {
 /**
  * Configuration object passed to {@link parseCli}.
  * @template Commands - Record of command name to {@link CommandDef}
+ * @template GlobalFlags - Flag definitions accepted by every command
  */
-interface RoarSettings<Commands extends Record<string, CommandDef>> {
+interface RoarSettings<
+	Commands extends Record<string, CommandDef>,
+	GlobalFlags extends AnyFlags = Record<never, never>,
+> {
 	/**
 	 * CLI program name shown in help text. Use the canonical invocation
 	 * (e.g. the full `npx`-prefixed command for a scoped package) rather
@@ -239,6 +243,25 @@ interface RoarSettings<Commands extends Record<string, CommandDef>> {
 	 * `exit(0)` する（`undefined` のみが「未指定」を意味する）。
 	 */
 	version?: string;
+	/**
+	 * Flag definitions accepted by every command, merged into each command's
+	 * `flags` for parsing, typing, and `--help` output (listed under
+	 * `Global options:` unless the flag sets a `group`).
+	 *
+	 * Defining a flag here, instead of spreading a shared definition into every
+	 * command, guarantees that no command silently drops it: a flag missing
+	 * from a command's definition is discarded without an error.
+	 *
+	 * A command flag that shares a name with a global flag makes
+	 * {@link parseCli} throw. Names are compared as they appear on the command
+	 * line: kebab-case long names and short flags, so `dryRun` conflicts with
+	 * `'dry-run'`, and a one-letter key `c` conflicts with `shortFlag: 'c'`.
+	 *
+	 * Global flags are placed after the command name like any other flag;
+	 * `my-cli --config x build` is not supported because the command is
+	 * always read from the first argument.
+	 */
+	globalFlags?: GlobalFlags;
 	/** Map of sub-command names to their definitions. */
 	commands: Commands;
 	/**
@@ -278,15 +301,19 @@ type CommandFlagDefs<C extends CommandDef> = 'flags' extends keyof C
  * The `command` field narrows the union so that `flags` is
  * correctly typed for the matched command.
  * @template Commands - Record of command name to {@link CommandDef}
+ * @template GlobalFlags - Flag definitions accepted by every command
  */
-type RoarResult<Commands extends Record<string, CommandDef>> = {
+type RoarResult<
+	Commands extends Record<string, CommandDef>,
+	GlobalFlags extends AnyFlags,
+> = {
 	[K in keyof Commands & string]: {
 		/** The matched command name. */
 		command: K;
 		/** Positional arguments that follow the command name. */
 		args: string[];
-		/** Parsed and typed flag values for this command. */
-		flags: InferFlags<CommandFlagDefs<Commands[K]>>;
+		/** Parsed and typed flag values for this command, including global flags. */
+		flags: InferFlags<CommandFlagDefs<Commands[K]> & GlobalFlags>;
 	};
 }[keyof Commands & string];
 
@@ -307,6 +334,8 @@ const HELP_MIN_WIDTH = 40;
 const LABEL_COLUMN_CAP = 32;
 const INDENT = '  ';
 const COLUMN_GAP = '  ';
+const DEFAULT_GROUP = 'Options';
+const GLOBAL_GROUP = 'Global options';
 
 /**
  * Resolves the effective help width from the current terminal.
@@ -434,16 +463,19 @@ function flagDesc(def: FlagDef): string {
 }
 
 /**
- * Renders flags as grouped two-column sections. Ungrouped flags come first
- * under `Options:`; grouped flags follow under their `group` heading in
- * first-appearance order.
- * @param flags - Flag definitions to render
- * @param keys - Flag keys to include, in definition order
+ * Renders flags as grouped two-column sections. Ungrouped command flags come
+ * first under `Options:`; the other sections follow in first-appearance
+ * order. Ungrouped global flags are listed under `Global options:`, so they
+ * come after the command's own flags when their keys are passed last.
+ * @param flags - Flag definitions to render (command and global flags)
+ * @param keys - Flag keys to include, in display order
+ * @param globalKeys - Keys that belong to global flags
  * @returns Formatted lines including section headings
  */
 function renderFlagSections<F extends AnyFlags>(
 	flags: F,
 	keys: readonly string[],
+	globalKeys: ReadonlySet<string>,
 ): string[] {
 	const sections = new Map<string, HelpRow[]>();
 	for (const key of keys) {
@@ -451,18 +483,18 @@ function renderFlagSections<F extends AnyFlags>(
 		if (!def) {
 			continue;
 		}
-		const group = def.group ?? 'Options';
+		const group = def.group ?? (globalKeys.has(key) ? GLOBAL_GROUP : DEFAULT_GROUP);
 		const rows = sections.get(group) ?? [];
 		rows.push({ label: flagLabel(key, def), desc: flagDesc(def) });
 		sections.set(group, rows);
 	}
 	const lines: string[] = [];
-	const ungrouped = sections.get('Options');
+	const ungrouped = sections.get(DEFAULT_GROUP);
 	if (ungrouped) {
-		lines.push('Options:', ...renderRows(ungrouped));
+		lines.push(`${DEFAULT_GROUP}:`, ...renderRows(ungrouped));
 	}
 	for (const [group, rows] of sections) {
-		if (group === 'Options') {
+		if (group === DEFAULT_GROUP) {
 			continue;
 		}
 		if (lines.length > 0) {
@@ -523,25 +555,32 @@ function commonFlagKeys(def: CommandDef): string[] {
 }
 
 /**
- * Generates the top-level help text listing all available commands.
+ * Generates the top-level help text listing all available commands, followed
+ * by the global flags when any are defined.
  * @param settings - The roar settings containing program name and commands
  * @returns Formatted multi-line help string
  */
-function generateHelp<Commands extends Record<string, CommandDef>>(
-	settings: RoarSettings<Commands>,
-): string {
+function generateHelp<
+	Commands extends Record<string, CommandDef>,
+	GlobalFlags extends AnyFlags,
+>(settings: RoarSettings<Commands, GlobalFlags>): string {
 	const rows: HelpRow[] = Object.entries(settings.commands).map(([name, def]) => ({
 		label: name,
 		desc: def.desc,
 	}));
-	return [
+	const lines = [
 		`Usage: ${settings.name} <command> [options]`,
 		'',
 		'Commands:',
 		...renderRows(rows),
-		'',
-		`Run '${settings.name} <command> --help' for details on a command.`,
-	].join('\n');
+	];
+	const globalFlags: AnyFlags = settings.globalFlags ?? {};
+	const globalKeys = Object.keys(globalFlags);
+	if (globalKeys.length > 0) {
+		lines.push('', ...renderFlagSections(globalFlags, globalKeys, new Set(globalKeys)));
+	}
+	lines.push('', `Run '${settings.name} <command> --help' for details on a command.`);
+	return lines.join('\n');
 }
 
 /**
@@ -554,21 +593,32 @@ function generateHelp<Commands extends Record<string, CommandDef>>(
  *   with a hint pointing at per-sub-command help.
  * - Sub-command requested: the sub-command's usage block and the flags
  *   that apply to it (its own list plus the common flags).
+ *
+ * Global flags apply to every command and sub-command, so all three shapes
+ * list them after the command's own flags.
  * @param settings - The roar settings containing the program name
  * @param commandName - The command name
  * @param def - The command definition
  * @param subCommandName - Sub-command to filter help to, when requested
  * @returns Formatted multi-line help string
  */
-function generateCommandHelp<Commands extends Record<string, CommandDef>>(
-	settings: RoarSettings<Commands>,
+function generateCommandHelp<
+	Commands extends Record<string, CommandDef>,
+	GlobalFlags extends AnyFlags,
+>(
+	settings: RoarSettings<Commands, GlobalFlags>,
 	commandName: string,
 	def: CommandDef,
 	subCommandName?: string,
 ): string {
 	const prefix = `${settings.name} ${commandName}`;
-	const flags = def.flags ?? {};
-	const allKeys = Object.keys(flags);
+	const globalFlags: AnyFlags = settings.globalFlags ?? {};
+	const globalKeys = Object.keys(globalFlags);
+	const globalKeySet = new Set(globalKeys);
+	const flags: AnyFlags = { ...def.flags, ...globalFlags };
+	const allKeys = Object.keys(def.flags ?? {});
+	const renderSections = (commandKeys: readonly string[]) =>
+		renderFlagSections(flags, [...commandKeys, ...globalKeys], globalKeySet);
 
 	const subCommand =
 		subCommandName === undefined ? undefined : def.subCommands?.[subCommandName];
@@ -584,8 +634,8 @@ function generateCommandHelp<Commands extends Record<string, CommandDef>>(
 			'',
 			...wrapText(subCommand.desc, helpWidth()),
 		];
-		if (keys.length > 0) {
-			lines.push('', ...renderFlagSections(flags, keys));
+		if (keys.length + globalKeys.length > 0) {
+			lines.push('', ...renderSections(keys));
 		}
 		return lines.join('\n');
 	}
@@ -599,15 +649,15 @@ function generateCommandHelp<Commands extends Record<string, CommandDef>>(
 		}));
 		lines.push('', 'Sub-commands:', ...renderRows(rows));
 		const common = commonFlagKeys(def);
-		if (common.length > 0) {
-			lines.push('', ...renderFlagSections(flags, common));
+		if (common.length + globalKeys.length > 0) {
+			lines.push('', ...renderSections(common));
 		}
 		lines.push('', `Run '${prefix} <sub-command> --help' for details on a sub-command.`);
 		return lines.join('\n');
 	}
 
-	if (allKeys.length > 0) {
-		lines.push('', ...renderFlagSections(flags, allKeys));
+	if (allKeys.length + globalKeys.length > 0) {
+		lines.push('', ...renderSections(allKeys));
 	}
 	return lines.join('\n');
 }
@@ -715,6 +765,63 @@ function missingRequiredFlags(
 		.map(([key]) => key);
 }
 
+/**
+ * Lists the names a flag answers to on the command line: its kebab-case long
+ * name and its `shortFlag`.
+ *
+ * WHY kebab-case and one shared namespace: yargs-parser expands `--dry-run`
+ * to `dryRun` and treats `--c` like `-c`, so flags keyed `dryRun` and
+ * `'dry-run'`, or a flag keyed `c` and one with `shortFlag: 'c'`, are parsed
+ * into the same value.
+ * @param key - Flag key
+ * @param def - Flag definition
+ * @returns Each name with the label used in error messages
+ */
+function flagNames(key: string, def: FlagDef): { name: string; label: string }[] {
+	const kebab = camelToKebab(key);
+	const names = [{ name: kebab, label: `--${kebab}` }];
+	if (def.shortFlag) {
+		names.push({ name: def.shortFlag, label: `-${def.shortFlag}` });
+	}
+	return names;
+}
+
+/**
+ * Throws when a command flag answers to a name of a global flag (see
+ * {@link flagNames}).
+ *
+ * WHY throw instead of letting one side win: a global flag promises the same
+ * meaning on every command, and both sets land in the same `flags` object.
+ * Letting a command shadow it would silently change the flag's type and
+ * meaning for that command only. A conflict is a definition error, so it
+ * throws on every invocation and fails the first test or run of the CLI.
+ * @param globalFlags - Global flag definitions
+ * @param commands - Command definitions
+ */
+function assertNoGlobalFlagConflict(
+	globalFlags: AnyFlags,
+	commands: Readonly<Record<string, CommandDef>>,
+): void {
+	const globalKeyByName = new Map<string, string>();
+	for (const [key, def] of Object.entries(globalFlags)) {
+		for (const { name } of flagNames(key, def)) {
+			globalKeyByName.set(name, key);
+		}
+	}
+	for (const [commandName, def] of Object.entries(commands)) {
+		for (const [key, flag] of Object.entries(def.flags ?? {})) {
+			for (const { name, label } of flagNames(key, flag)) {
+				const globalKey = globalKeyByName.get(name);
+				if (globalKey !== undefined) {
+					throw new Error(
+						`Flag ${label} of command "${commandName}" conflicts with global flag --${camelToKebab(globalKey)}`,
+					);
+				}
+			}
+		}
+	}
+}
+
 // ---- Main export ----
 
 /**
@@ -728,15 +835,21 @@ function missingRequiredFlags(
  *   (e.g. `my-cli query file.db pages --help`), it prints help filtered
  *   to that sub-command. All help goes to stdout with exit code `0`.
  * - Automatic `--version` / `-v` handling at the top level when `version` is set
+ * - Global flags (`globalFlags`) accepted by every command
  * - A missing `isRequired` flag prints an error to stderr and exits with code `1`
  * - camelCase flag names converted to kebab-case in help text
  * @template Commands - Record of command name to {@link CommandDef}
+ * @template GlobalFlags - Flag definitions accepted by every command
  * @param settings - CLI program configuration
  * @returns Parsed result with the matched command name, positional args, and typed flags
+ * @throws {Error} When a command flag shares a long name or short flag with a global flag
  * @example
  * ```ts
  * const result = parseCli({
  *   name: 'my-cli',
+ *   globalFlags: {
+ *     config: { type: 'string', shortFlag: 'c', desc: 'Config file' },
+ *   },
  *   commands: {
  *     crawl: {
  *       desc: 'Crawl a website',
@@ -752,14 +865,19 @@ function missingRequiredFlags(
  *   onError: () => true,
  * });
  *
+ * console.log(result.flags.config); // string | undefined, on every command
  * if (result.command === 'crawl') {
  *   console.log(result.flags.depth); // number (inferred)
  * }
  * ```
  */
-export function parseCli<const Commands extends Record<string, CommandDef>>(
-	settings: RoarSettings<Commands>,
-): RoarResult<Commands> {
+export function parseCli<
+	const Commands extends Record<string, CommandDef>,
+	const GlobalFlags extends AnyFlags = Record<never, never>,
+>(settings: RoarSettings<Commands, GlobalFlags>): RoarResult<Commands, GlobalFlags> {
+	const globalFlags: AnyFlags = settings.globalFlags ?? {};
+	assertNoGlobalFlagConflict(globalFlags, settings.commands);
+
 	const argv = process.argv.slice(2);
 	const command = argv[0];
 
@@ -804,11 +922,10 @@ export function parseCli<const Commands extends Record<string, CommandDef>>(
 		process.exit(0);
 	}
 
-	const { flags, args } = commandDef.flags
-		? parseFlags(commandArgv, commandDef.flags)
-		: { flags: {}, args: yargsParser(commandArgv)._.map(String) };
+	const flagDefs: AnyFlags = { ...commandDef.flags, ...globalFlags };
+	const { flags, args } = parseFlags(commandArgv, flagDefs);
 
-	const missing = missingRequiredFlags(commandDef.flags ?? {}, flags);
+	const missing = missingRequiredFlags(flagDefs, flags);
 	if (missing.length > 0) {
 		const plural = missing.length > 1 ? 's' : '';
 		const names = missing.map((key) => `--${camelToKebab(key)}`).join(', ');
@@ -823,5 +940,5 @@ export function parseCli<const Commands extends Record<string, CommandDef>>(
 		command,
 		args,
 		flags,
-	} as RoarResult<Commands>;
+	} as RoarResult<Commands, GlobalFlags>;
 }
