@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.7.0...@d-zero/page-cluster@0.8.0) (2026-09-30)
+
+### Features
+
+- **page-cluster:** anchor the depth cap on a content root and keep Stage A separations ([0f58432](https://github.com/d-zero-dev/tools/commit/0f58432414694f01a4a7f24f090bb7a0efd19b22))
+
 # [0.7.0](https://github.com/d-zero-dev/tools/compare/@d-zero/page-cluster@0.6.4...@d-zero/page-cluster@0.7.0) (2026-09-30)
 
 ### Features
