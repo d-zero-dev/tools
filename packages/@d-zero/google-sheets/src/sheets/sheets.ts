@@ -6,6 +6,7 @@ import { google } from 'googleapis';
 
 import { log } from '../debug.js';
 
+import { buildSpreadsheetUrl } from './build-spreadsheet-url.js';
 import { createErrorHandler } from './error-handler.js';
 import { getIdFromSheetUrl } from './get-id-from-sheet-url.js';
 import { Sheet } from './sheet.js';
@@ -48,6 +49,11 @@ export class Sheets {
 
 	get id() {
 		return this.#spreadsheetId;
+	}
+
+	/** `createSpreadsheet` が返す `url` と同一形式の編集 URL。 */
+	get url() {
+		return buildSpreadsheetUrl(this.#spreadsheetId);
 	}
 
 	constructor(sheetUrl: string, auth: OAuth2Client) {

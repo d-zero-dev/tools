@@ -4,5 +4,10 @@ export { Cell } from './sheets/cell.js';
 export { createCellData } from './create-cell-data.js';
 export type { CellData, CellRawData, Row, CellTypeInfo } from './sheets/types.js';
 
+export { createSpreadsheet } from './create-spreadsheet.js';
+export { parseGoogleUrl } from './sheets/parse-google-url.js';
+export type { GoogleUrlTarget } from './sheets/parse-google-url.js';
+export { getIdFromSheetUrl } from './sheets/get-id-from-sheet-url.js';
+
 export { SheetTable } from './sheet-table.js';
 export { Sheets } from './sheets/sheets.js';

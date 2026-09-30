@@ -4,7 +4,7 @@ import path from 'node:path';
 import { authentication } from '@d-zero/google-auth';
 import { config as dotenvConfig } from 'dotenv';
 
-import { SheetTable } from '../dist/index.js';
+import { createSpreadsheet, SheetTable, Sheets } from '../dist/index.js';
 
 const envPath = path.join(import.meta.dirname, '..', '..', '..', '..', '.env');
 
@@ -19,7 +19,22 @@ if (!googleAuthCredentials) {
 
 const auth = await authentication(googleAuthCredentials, [
 	'https://www.googleapis.com/auth/spreadsheets',
+	'https://www.googleapis.com/auth/drive.file',
 ]);
+
+// GOOGLE_DRIVE_FOLDER_URL があれば createSpreadsheet を実 API で検証する
+const folderUrl = process.env.GOOGLE_DRIVE_FOLDER_URL;
+if (folderUrl) {
+	const created = await createSpreadsheet(
+		folderUrl,
+		`manual-test ${new Date().toISOString()}`,
+		auth,
+	);
+	console.log('Created:', created.url);
+	const createdSheets = new Sheets(created.url, auth);
+	await createdSheets.create('Sheet1');
+	assert.strictEqual(createdSheets.url, created.url);
+}
 
 const table = await SheetTable.create(
 	'https://docs.google.com/spreadsheets/d/17GnB9QSu0kXYxGh9axhWE7SUVfuHwvc_qHraCp8_2-U/edit#gid=0',
