@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
-import { detectContentDepthCap } from './detect-content-depth-cap.js';
+import {
+	DEFAULT_CANDIDATE_DEPTHS,
+	detectContentDepthCap,
+} from './detect-content-depth-cap.js';
 
 describe('detectContentDepthCap', () => {
 	test('finds the depth just before cluster count explodes: identical structure up to depth 3, unique content at depth 4', () => {
@@ -104,5 +107,76 @@ describe('detectContentDepthCap', () => {
 				filterNoiseClasses: false,
 			}),
 		).toBe(1);
+	});
+});
+
+describe('detectContentDepthCap (default depths and content roots)', () => {
+	test('the default sweep starts at depth 2, so depth 1 is never chosen as a cap', () => {
+		expect(DEFAULT_CANDIDATE_DEPTHS).toStrictEqual([2, 3, 4, 5, 6, 8, 10]);
+		// Page-unique content at depth 2 already: with depth 1 in the sweep the
+		// knee would be 1; starting at 2 there is no jump to find, so the block
+		// is left uncapped (the largest candidate).
+		const tags = ['em', 'strong', 'b', 'i', 'u', 'code', 'kbd', 'samp', 'var', 'mark'];
+		const pages = tags.map(
+			(tag) => `<body><main><article><${tag}>x</${tag}></article></main></body>`,
+		);
+		expect(detectContentDepthCap(pages)).toBe(10);
+		expect(detectContentDepthCap(pages, { candidateDepths: [1, 2, 3] })).toBe(1);
+	});
+
+	test('contentRoots anchor the sweep on pages that have no <main>', () => {
+		const tags = ['em', 'strong', 'b', 'i', 'u', 'code', 'kbd', 'samp', 'var', 'mark'];
+		const pages = tags.map(
+			(tag) =>
+				`<body><div id="page"><section><article><div><${tag}>x</${tag}></div></article></section></div></body>`,
+		);
+		expect(
+			detectContentDepthCap(pages, {
+				contentRoots: pages.map(() => ({ id: 'page' })),
+				candidateDepths: [1, 2, 3, 4, 5],
+			}),
+		).toBe(3);
+		// No hint and no built-in anchor: nothing is capped at any depth, so no knee.
+		expect(detectContentDepthCap(pages, { candidateDepths: [1, 2, 3, 4, 5] })).toBe(5);
+	});
+
+	test('contentRoots entries are per page: pages without a hint fall back to <main>', () => {
+		const tags = ['em', 'strong', 'b', 'i', 'u', 'code', 'kbd', 'samp', 'var', 'mark'];
+		const pages = tags.map((tag, i) =>
+			i % 2 === 0
+				? `<body><div id="page"><section><article><div><${tag}>x</${tag}></div></article></section></div></body>`
+				: `<body><main><section><article><div><${tag}>x</${tag}></div></article></section></main></body>`,
+		);
+		expect(
+			detectContentDepthCap(pages, {
+				contentRoots: pages.map((_, i) => (i % 2 === 0 ? { id: 'page' } : undefined)),
+				candidateDepths: [1, 2, 3, 4, 5],
+			}),
+		).toBe(3);
+	});
+
+	test('rejects a contentRoots list that is not parallel to htmlList', () => {
+		expect(() =>
+			detectContentDepthCap(['<body></body>', '<body></body>'], {
+				contentRoots: [{ id: 'page' }],
+			}),
+		).toThrow(RangeError);
+	});
+});
+
+describe('detectContentDepthCap (contentRoots length)', () => {
+	test('rejects a contentRoots list that is longer than htmlList, and an empty one for a non-empty htmlList', () => {
+		expect(() =>
+			detectContentDepthCap(['<body></body>'], {
+				contentRoots: [{ id: 'a' }, { id: 'b' }],
+			}),
+		).toThrow(/contentRoots must be parallel to htmlList \(1 pages\), got 2/);
+		expect(() => detectContentDepthCap(['<body></body>'], { contentRoots: [] })).toThrow(
+			/got 0/,
+		);
+	});
+
+	test('the exported default depth list cannot be mutated by a caller', () => {
+		expect(Object.isFrozen(DEFAULT_CANDIDATE_DEPTHS)).toBe(true);
 	});
 });

@@ -92,3 +92,25 @@ describe('findShallowestElements', () => {
 		expect(Object.keys(matches[0]!)).not.toContain('depth');
 	});
 });
+
+describe('findShallowestElements (attribute-aware matcher)', () => {
+	test('passes the element attribute map to the matcher as its third argument', () => {
+		const html = '<body><div id="main" class="a b">x</div><div id="other">y</div></body>';
+		const seen: Record<string, string>[] = [];
+		findShallowestElements(html, (_tag, _role, attribs) => {
+			seen.push({ ...attribs });
+			return [] as const;
+		});
+		expect(seen).toStrictEqual([{}, { id: 'main', class: 'a b' }, { id: 'other' }]);
+	});
+
+	test('lets a matcher identify elements by id', () => {
+		const html = '<body><div id="main">x</div></body>';
+		const winners = findShallowestElements(html, (_tag, _role, attribs) =>
+			attribs.id === 'main' ? (['main'] as const) : ([] as const),
+		);
+		expect(winners.map((w) => html.slice(w.startOffset, w.endOffset))).toStrictEqual([
+			'<div id="main">x</div>',
+		]);
+	});
+});

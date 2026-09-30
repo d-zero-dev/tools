@@ -1,3 +1,5 @@
+import type { ContentRoot } from './types.js';
+
 import { describe, expect, test } from 'vitest';
 
 import { extractLandmarks } from './extract-landmarks.js';
@@ -21,8 +23,12 @@ function labeledPage(label: string): string {
  * Runs Stage A on one block built from `htmlList`, with no local-landmark
  * reinjection (empty sets), mirroring what the in-memory driver passes.
  * @param htmlList
+ * @param contentRoots
  */
-function runBlock(htmlList: readonly string[]) {
+function runBlock(
+	htmlList: readonly string[],
+	contentRoots?: readonly (ContentRoot | undefined)[],
+) {
 	const landmarks = htmlList.map((html) => extractLandmarks(html));
 	return stageAPerBlock({
 		blockKey: 'path:section',
@@ -30,6 +36,7 @@ function runBlock(htmlList: readonly string[]) {
 		preparedHtml: landmarks.map((l) => l.remainderHtml),
 		landmarks,
 		localLandmarkTokensByPage: htmlList.map(() => new Set<string>()),
+		contentRoots,
 	});
 }
 
@@ -86,5 +93,60 @@ describe('stageAPerBlock (page-unique class stripping)', () => {
 		const result = runBlock([labeledPage('only')]);
 		expect(result.allowedClasses).toBeUndefined();
 		expect([...result.pageKeys.values()]).toStrictEqual(['["path:section","cluster:0"]']);
+	});
+});
+
+describe('stageAPerBlock (content root and block identity)', () => {
+	/**
+	 * Twelve pages under `<div id="page">` (not a built-in fallback), identical
+	 * down to depth 3 and differing only in the tag at depth 4 — so they
+	 * cluster together exactly when the cap at depth 3 is applied.
+	 */
+	const tags = [
+		'em',
+		'strong',
+		'b',
+		'i',
+		'u',
+		'code',
+		'kbd',
+		'samp',
+		'var',
+		'mark',
+		'q',
+		's',
+	];
+	const pages = tags.map(
+		(tag) =>
+			`<body><div id="page"><section><article><div><${tag}>x</${tag}></div></article></section></div></body>`,
+	);
+
+	test('per-page content roots anchor the cap: the block collapses to one cluster at the learned depth', () => {
+		const result = runBlock(
+			pages,
+			pages.map(() => ({ id: 'page' })),
+		);
+		expect(result.maxMainDepth).toBe(3);
+		expect(new Set(result.pageKeys.values()).size).toBe(1);
+	});
+
+	test('without content roots and without any built-in anchor nothing is capped and every distinct page stays apart', () => {
+		const result = runBlock(pages);
+		expect(result.maxMainDepth).toBe(10);
+		expect(new Set(result.pageKeys.values()).size).toBe(12);
+	});
+
+	test('a single-page block runs no sweep and reports no depth', () => {
+		expect(runBlock([pages[0]!], [{ id: 'page' }]).maxMainDepth).toBeUndefined();
+	});
+
+	test('every cross-block unit carries the block it came from', () => {
+		const result = runBlock(
+			pages,
+			pages.map(() => ({ id: 'page' })),
+		);
+		expect(result.crossBlockUnits.map((unit) => unit.blockKey)).toStrictEqual([
+			'path:section',
+		]);
 	});
 });

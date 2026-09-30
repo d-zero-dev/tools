@@ -1,4 +1,29 @@
 /**
+ * Identity of a page's content-root element — the element whose subtree
+ * holds the page-specific content and under which
+ * {@link ./cap-content-depth.js | capContentDepth} counts nesting depth.
+ *
+ * Every field that is given must match the same element. Empty strings and
+ * empty arrays count as "not given", and a root with no constraint at all
+ * matches nothing (otherwise the shallowest element of the page would win
+ * and the cap would silently apply to the wrong node).
+ *
+ * A structured object rather than a CSS selector string: nothing has to be
+ * parsed (the HTML parser already exposes `id`/`class`/`role`), it maps 1:1
+ * onto the columns a crawler records for its detected main-content element,
+ * and a crawler's own selector string is diagnostic (tag + id + classes) and
+ * not guaranteed to be unique, so it is the wrong thing to re-parse.
+ */
+export type ContentRoot = {
+	/** Case-insensitive: a crawler reading `Element.nodeName` reports `'DIV'`, the HTML parser reports `'div'`. */
+	readonly tagName?: string;
+	readonly id?: string;
+	readonly role?: string;
+	/** Every listed class must be present on the element (subset match; order does not matter). */
+	readonly classList?: readonly string[];
+};
+
+/**
  * Result of {@link ../tokenize.js | tokenize}. `bodyClassList` is kept
  * separate from `tokens` rather than folded into the root of every leaf
  * path: CMS `body_class()` conventions (WordPress, Drupal, ...) commonly

@@ -1,10 +1,34 @@
 import type { ContentDepthLandmark } from './cap-content-depth.js';
 import type { ResolveStructuralClusterKeysOptions } from './resolve-structural-cluster-keys.js';
-import type { TokenizeOptions } from './types.js';
+import type { ContentRoot, TokenizeOptions } from './types.js';
 
 import { capContentDepth } from './cap-content-depth.js';
 import { resolveStructuralClusterKeys } from './resolve-structural-cluster-keys.js';
 import { tokenize } from './tokenize.js';
+
+/**
+ * Default value of {@link DetectContentDepthCapOptions.candidateDepths}.
+ *
+ * The sweep starts at 2, not 1. Depth 1 keeps only the content root's direct
+ * children — a handful of tokens per page, too few to tell a list page from
+ * a detail page — and a cap that low makes the pages' comparison tokens
+ * consist almost entirely of the shell they share, which the cross-block
+ * merge stage then reads as "same template". Measured on a real crawl of
+ * about 1,800 pages without `<main>` (content root anchored on `#main`): a
+ * depth-1 cap merged list/detail pairs of several unrelated sections
+ * (48 final clusters); starting the sweep at 2 kept them apart (50).
+ * Starting at 3 (87 clusters) or requiring a 2× jump (`minKneeRatio: 2`,
+ * 73 clusters) fragmented the freeform pages of one section.
+ *
+ * Known cost: the first candidate has no predecessor to form a ratio with,
+ * so a block whose freeform content already begins at depth 2 shows no knee
+ * and is left uncapped (the largest candidate is returned). Keeping 1 in
+ * the sweep as a baseline and clamping the result to 2 was not measured and
+ * is not done.
+ */
+export const DEFAULT_CANDIDATE_DEPTHS: readonly number[] = Object.freeze([
+	2, 3, 4, 5, 6, 8, 10,
+]);
 
 /**
  * @see detectContentDepthCap
@@ -14,11 +38,21 @@ export type DetectContentDepthCapOptions = TokenizeOptions &
 		/** Forwarded to {@link ./cap-content-depth.js | capContentDepth}. Defaults to `'main'`. */
 		landmark?: ContentDepthLandmark;
 		/**
+		 * Each page's own {@link ContentRoot} hint, parallel to `htmlList`
+		 * (`undefined` entries use `<main>`/`role="main"` and the built-in
+		 * fallbacks, exactly as {@link ./cap-content-depth.js | capContentDepth}
+		 * does). Must have the same length as `htmlList` (`RangeError`
+		 * otherwise). A parallel array rather than a lookup callback because
+		 * the callers already hold their pages' hints in arrays parallel to the
+		 * HTML.
+		 */
+		contentRoots?: readonly (ContentRoot | undefined)[];
+		/**
 		 * Depths to try, in strictly ascending order (`RangeError` otherwise —
 		 * the knee-detection loop below assumes each depth is deeper than the
-		 * last). Defaults to `[1, 2, 3, 4, 5, 6, 8, 10]` — chosen to cover the
-		 * range confirmed on real crawl data (the knee landed at 3 on both
-		 * corpora checked) with a few extra steps past it to confirm the
+		 * last). Defaults to {@link DEFAULT_CANDIDATE_DEPTHS}, which covers the
+		 * range confirmed on real crawl data (the knee landed at 3 on the two
+		 * corpora with `<main>`) with a few extra steps past it to confirm the
 		 * explosion is sustained, without trying every single depth up to an
 		 * arbitrary ceiling.
 		 */
@@ -57,7 +91,7 @@ export type DetectContentDepthCapOptions = TokenizeOptions &
 export function validateDetectContentDepthCapOptions(
 	options?: DetectContentDepthCapOptions,
 ): void {
-	const candidateDepths = options?.candidateDepths ?? [1, 2, 3, 4, 5, 6, 8, 10];
+	const candidateDepths = options?.candidateDepths ?? DEFAULT_CANDIDATE_DEPTHS;
 	const minKneeRatio = options?.minKneeRatio ?? 1.5;
 
 	if (candidateDepths.length === 0) {
@@ -116,8 +150,7 @@ export function validateDetectContentDepthCapOptions(
  * resolveStructuralClusterKeys} once per candidate depth (each an O(n²)
  * comparison over `htmlList`), so cost scales with both `htmlList.length`
  * and `candidateDepths.length`. Measured standalone on a real 4,085-page
- * single-block corpus: ~4s per candidate depth, ~30s total for the default 8
- * depths. {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeys}'s
+ * single-block corpus: ~4s per candidate depth (~30s for an 8-depth sweep). {@link ./resolve-page-cluster-keys.js | resolvePageClusterKeys}'s
  * `autoCapMainDepth` option calls this once *per block* rather than once
  * globally (different blocks can have different knees — see that option's
  * own JSDoc for why this matters, not just for cost) — measured end to end on
@@ -148,12 +181,22 @@ export function detectContentDepthCap(
 ): number {
 	validateDetectContentDepthCapOptions(options);
 	const landmark = options?.landmark ?? 'main';
-	const candidateDepths = options?.candidateDepths ?? [1, 2, 3, 4, 5, 6, 8, 10];
+	const candidateDepths = options?.candidateDepths ?? DEFAULT_CANDIDATE_DEPTHS;
 	const minKneeRatio = options?.minKneeRatio ?? 1.5;
+	const contentRoots = options?.contentRoots;
+	if (contentRoots !== undefined && contentRoots.length !== htmlList.length) {
+		throw new RangeError(
+			`detectContentDepthCap: contentRoots must be parallel to htmlList (${htmlList.length} pages), got ${contentRoots.length}`,
+		);
+	}
 
 	const clusterCounts = candidateDepths.map((maxDepth) => {
-		const tokenSets = htmlList.map((html) => {
-			const capped = capContentDepth(html, { landmark, maxDepth }).remainderHtml;
+		const tokenSets = htmlList.map((html, index) => {
+			const capped = capContentDepth(html, {
+				landmark,
+				contentRoot: contentRoots?.[index],
+				maxDepth,
+			}).remainderHtml;
 			return new Set(tokenize(capped, options).tokens);
 		});
 		return new Set(resolveStructuralClusterKeys(tokenSets, options)).size;

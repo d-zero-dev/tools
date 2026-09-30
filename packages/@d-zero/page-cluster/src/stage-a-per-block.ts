@@ -1,6 +1,6 @@
 import type { ExtractLandmarksResult } from './extract-landmarks.js';
 import type { CrossBlockUnit } from './merge-cross-block-clusters.js';
-import type { TokenizeOptions } from './types.js';
+import type { ContentRoot, TokenizeOptions } from './types.js';
 
 import { assignContainedClusters } from './assign-contained-clusters.js';
 import { autoCutThreshold } from './auto-cut-threshold.js';
@@ -114,12 +114,25 @@ export type StageAPerBlockInput = {
 	 * per-block (large-corpus streaming path).
 	 */
 	readonly localLandmarkTokensByPage: readonly ReadonlySet<string>[];
+	/**
+	 * The block's per-page {@link ContentRoot} hints, parallel to
+	 * `preparedHtml` (`undefined` entries anchor on `<main>`/`role="main"`
+	 * and the built-in fallbacks). Optional: omitted means no page has a hint.
+	 */
+	readonly contentRoots?: readonly (ContentRoot | undefined)[];
 };
 
 /**
  * @see stageAPerBlock
  */
 export type StageAPerBlockResult = {
+	/**
+	 * The content-depth cap Stage A learned for this block and applied to its
+	 * pages, or `undefined` for a block of one page (no sweep is run). A
+	 * streaming caller assigning further pages of the same block afterwards
+	 * caps them at this same depth instead of sweeping again.
+	 */
+	readonly maxMainDepth: number | undefined;
 	/**
 	 * Map from `memberIndices[i]` (original input index) to that page's
 	 * post-Stage-A cluster key. Keys are of the form
@@ -216,8 +229,14 @@ export function stageAPerBlock(
 	input: StageAPerBlockInput,
 	options?: StageAPerBlockOptions,
 ): StageAPerBlockResult {
-	const { blockKey, memberIndices, preparedHtml, landmarks, localLandmarkTokensByPage } =
-		input;
+	const {
+		blockKey,
+		memberIndices,
+		preparedHtml,
+		landmarks,
+		localLandmarkTokensByPage,
+		contentRoots,
+	} = input;
 	const similarityThreshold = options?.similarityThreshold ?? 0.8;
 
 	// A block of 1 can never produce more than one cluster regardless of how
@@ -225,11 +244,17 @@ export function stageAPerBlock(
 	// and capping for it would only spend a full multi-depth sweep to arrive
 	// back at the same single-cluster result. Skipped rather than swept.
 	const maxMainDepth =
-		preparedHtml.length > 1 ? detectContentDepthCap(preparedHtml, options) : undefined;
-	const cappedHtml = preparedHtml.map((html) =>
+		preparedHtml.length > 1
+			? detectContentDepthCap(preparedHtml, { ...options, contentRoots })
+			: undefined;
+	const cappedHtml = preparedHtml.map((html, position) =>
 		maxMainDepth === undefined
 			? html
-			: capContentDepth(html, { landmark: 'main', maxDepth: maxMainDepth }).remainderHtml,
+			: capContentDepth(html, {
+					landmark: 'main',
+					contentRoot: contentRoots?.[position],
+					maxDepth: maxMainDepth,
+				}).remainderHtml,
 	);
 	const firstPass = cappedHtml.map((html) => tokenize(html, options));
 
@@ -343,6 +368,7 @@ export function stageAPerBlock(
 				: positions;
 		crossBlockUnits.push({
 			key: unitKey,
+			blockKey,
 			memberTokenSets: sampledPositions.map((pos) => blockTokenSets[pos]!),
 			memberLandmarkInstances: sampledPositions.map(
 				(pos) => memberLandmarkInstancesByPage[pos]!,
@@ -350,5 +376,5 @@ export function stageAPerBlock(
 			memberPageIndices: sampledPositions.map((pos) => memberIndices[pos]!),
 		});
 	}
-	return { pageKeys, crossBlockUnits, allowedClasses };
+	return { pageKeys, crossBlockUnits, allowedClasses, maxMainDepth };
 }

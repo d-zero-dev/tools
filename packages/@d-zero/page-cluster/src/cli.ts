@@ -11,6 +11,7 @@ import type {
 	ProgressEvent,
 	ResolvePageClusterKeysOptions,
 } from './resolve-page-cluster-keys.js';
+import type { ContentRoot } from './types.js';
 import type { ClusterPartitionReport } from './validate-cluster-partition.js';
 
 import { writeFile } from 'node:fs/promises';
@@ -43,8 +44,16 @@ Input (JSONL, one page per line):
     "html": "<html>...</html>",
     "paths": ["news", "1"],            // optional
     "stylesheetHrefs": ["/a.css"],     // optional
-    "host": "example.com"              // optional
+    "host": "example.com",             // optional
+    "contentRoot": {                   // optional
+      "tagName": "div", "id": "main", "classList": ["spc"]
+    }
   }
+
+  contentRoot identifies the element holding the page-specific content (every
+  given field must match; classList is a subset match). It anchors the
+  content-depth cap on sites without <main>. Without it the cap uses
+  <main>/role="main", then #main, .main, #content, .content, ... in that order.
 
 Output (JSONL, one line per input page, in input order):
   { "id": "...", "clusterKey": "..." }
@@ -204,6 +213,45 @@ export function parseArgs(argv: readonly string[]): CliArgs {
 }
 
 /**
+ * Validates a JSONL `contentRoot` and returns it. `null` means "no hint"
+ * (the usual JSON form of an absent database column), like a missing key.
+ * Anything else that is not an object of the {@link ContentRoot} shape is
+ * rejected with the line number: a wrongly typed field would otherwise
+ * throw from deep inside the HTML walk without a line number (`classList`
+ * as a string) or silently match nothing (`id` as a number), leaving the
+ * page uncapped with no hint why.
+ * @param contentRoot
+ * @param lineNo
+ */
+function parseContentRoot(contentRoot: unknown, lineNo: number): ContentRoot | undefined {
+	if (contentRoot === undefined || contentRoot === null) {
+		return undefined;
+	}
+	if (typeof contentRoot !== 'object' || Array.isArray(contentRoot)) {
+		throw new TypeError(
+			`JSONL line ${lineNo} has a \`contentRoot\` that is not an object`,
+		);
+	}
+	const { tagName, id, role, classList } = contentRoot as Record<string, unknown>;
+	for (const [name, value] of Object.entries({ tagName, id, role })) {
+		if (value !== undefined && typeof value !== 'string') {
+			throw new TypeError(
+				`JSONL line ${lineNo} has a \`contentRoot.${name}\` that is not a string`,
+			);
+		}
+	}
+	if (
+		classList !== undefined &&
+		!(Array.isArray(classList) && classList.every((c) => typeof c === 'string'))
+	) {
+		throw new TypeError(
+			`JSONL line ${lineNo} has a \`contentRoot.classList\` that is not an array of strings`,
+		);
+	}
+	return contentRoot as ContentRoot;
+}
+
+/**
  * Streams `stdin` and yields per-line JSON-parsed page objects (plus the
  * original line's `id`, preserved for the output row). Chunk-boundary
  * splitting is done by hand rather than via `readline` because certain
@@ -231,6 +279,7 @@ async function* readJsonlPages(
 				paths?: readonly string[];
 				stylesheetHrefs?: readonly string[];
 				host?: string;
+				contentRoot?: ContentRoot;
 			};
 			try {
 				entry = JSON.parse(line) as typeof entry;
@@ -249,6 +298,7 @@ async function* readJsonlPages(
 					paths: entry.paths ?? [],
 					stylesheetHrefs: entry.stylesheetHrefs ?? [],
 					host: entry.host,
+					contentRoot: parseContentRoot(entry.contentRoot, lineNo),
 				},
 			};
 		}
@@ -261,6 +311,7 @@ async function* readJsonlPages(
 			paths?: readonly string[];
 			stylesheetHrefs?: readonly string[];
 			host?: string;
+			contentRoot?: ContentRoot;
 		};
 		try {
 			entry = JSON.parse(leftover) as typeof entry;
@@ -279,6 +330,7 @@ async function* readJsonlPages(
 				paths: entry.paths ?? [],
 				stylesheetHrefs: entry.stylesheetHrefs ?? [],
 				host: entry.host,
+				contentRoot: parseContentRoot(entry.contentRoot, lineNo),
 			},
 		};
 	}

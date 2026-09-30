@@ -266,3 +266,80 @@ describe('resolvePageClusterKeys (onClusterReason)', () => {
 		expect(new Set(keys).size).toBe(2);
 	}, 60_000);
 });
+
+describe('resolvePageClusterKeys (content root on the streaming path)', () => {
+	const tags = [
+		'em',
+		'strong',
+		'b',
+		'i',
+		'u',
+		'code',
+		'kbd',
+		'samp',
+		'var',
+		'mark',
+		'q',
+		's',
+	];
+
+	/**
+	 * @param count
+	 * @yields {PageClusterSignals} Two alternating templates under `<div id="page">`
+	 *   (not a built-in anchor), differing per page only in a tag below the
+	 *   depth where the cap applies.
+	 */
+	function* generate(count: number): Generator<PageClusterSignals> {
+		for (let i = 0; i < count; i++) {
+			const tag = tags[i % tags.length]!;
+			// Each template has its own wrapper id (neither is a built-in
+			// anchor), so a page is capped only if it is capped with *its own*
+			// hint: the other template's hint matches nothing on it.
+			const isFirstTemplate = i % 2 === 0;
+			const wrapperId = isFirstTemplate ? 'pageA' : 'pageB';
+			const inner = isFirstTemplate
+				? `<section><article><div><${tag}>x</${tag}></div></article></section>`
+				: `<ul><li><a><${tag}>x</${tag}></a></li></ul>`;
+			yield {
+				paths: ['p', String(i)],
+				stylesheetHrefs: [],
+				html: `<body><div id="${wrapperId}">${inner}</div></body>`,
+				contentRoot: { id: wrapperId },
+			};
+		}
+	}
+
+	test('Pass 1b caps non-sample pages with their own hint at the depth learned from the sample', async () => {
+		// The 100-page reservoir sample learns the cap depth (3) with the hint
+		// and holds the capped tokens of both templates. The ~19,900 non-sample
+		// pages are only assigned to the right template if Pass 1b caps them the
+		// same way: uncapped they share no token with any capped sample member,
+		// every similarity is 0, and they would all fall into whichever cluster
+		// is compared first.
+		const count = CORPUS_INLINE_THRESHOLD + 1;
+		const keys = await resolvePageClusterKeys(() => generate(count));
+		expect(keys).toHaveLength(count);
+		expect(new Set(keys.filter((_, i) => i % 2 === 0)).size).toBe(1);
+		expect(new Set(keys.filter((_, i) => i % 2 === 1)).size).toBe(1);
+		expect(new Set(keys).size).toBe(2);
+	}, 90_000);
+
+	test('the small-corpus path keeps the hint when it re-reads the factory', async () => {
+		const pages = [...generate(24)];
+		const streamed = await resolvePageClusterKeysFromArray(pages);
+		expect(streamed).toStrictEqual(resolvePageClusterKeysInMemory(pages));
+		expect(new Set(streamed).size).toBe(2);
+	});
+
+	test('the progress-reporting small-corpus path also keeps the hint', async () => {
+		// Passing `onProgress` selects a different in-memory driver than the
+		// no-callback case above, with its own per-block Stage A call.
+		const events: string[] = [];
+		const keys = await resolvePageClusterKeys(() => generate(24), {
+			onProgress: (event) => events.push(event.phase),
+		});
+		expect(events).toContain('stage-b-start');
+		expect(new Set(keys).size).toBe(2);
+		expect(keys).toStrictEqual(resolvePageClusterKeysInMemory([...generate(24)]));
+	});
+});
