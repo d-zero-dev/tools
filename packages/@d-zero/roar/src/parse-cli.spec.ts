@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, expectTypeOf, vi, beforeEach, afterEach } from 'vitest';
 
 import { parseCli } from './parse-cli.js';
 
@@ -280,6 +280,7 @@ describe('parseCli', () => {
 			expect(text).toContain('crawl');
 			expect(text).toContain('Crawl a website');
 			expect(text).toContain("Run 'npx @test/cli <command> --help'");
+			expect(text).not.toContain('Global options:');
 		});
 
 		it('prints top-level help to stdout and exits 0 for -h', () => {
@@ -539,6 +540,403 @@ describe('parseCli', () => {
 			);
 			expect(logSpy).toHaveBeenCalledWith('');
 			expect(exitSpy).toHaveBeenCalledWith(0);
+		});
+	});
+
+	it('does not give a command without flags an index signature', () => {
+		setArgv(['analyze']);
+		const result = parseCli(testSettings);
+		expect(result.command).toBe('analyze');
+		// Type-level assertion: a no-op at runtime, checked only by the type checker
+		expectTypeOf<Extract<typeof result, { command: 'analyze' }>['flags']>().toEqualTypeOf<
+			Record<never, never>
+		>();
+	});
+
+	describe('global flags', () => {
+		let logSpy: ReturnType<typeof vi.spyOn>;
+
+		const globalSettings = {
+			name: 'test-cli',
+			globalFlags: {
+				config: { type: 'string' as const, shortFlag: 'c', desc: 'Config file' },
+				verbose: { type: 'boolean' as const, desc: 'Verbose output' },
+			},
+			commands: {
+				build: {
+					desc: 'Build files',
+					flags: { force: { type: 'boolean' as const, desc: 'Rebuild everything' } },
+				},
+				serve: { desc: 'Serve files' },
+				query: {
+					desc: 'Query an archive',
+					flags: {
+						limit: { type: 'number' as const, desc: 'Maximum number of results' },
+					},
+					subCommands: {
+						pages: { desc: 'List pages', flags: ['limit'] as const },
+					},
+				},
+			},
+			onError: vi.fn().mockReturnValue(true),
+		} as const;
+
+		/**
+		 * Returns everything printed via console.log joined together.
+		 */
+		function loggedText(): string {
+			return logSpy.mock.calls.map((call) => call.join(' ')).join('\n');
+		}
+
+		beforeEach(() => {
+			logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			logSpy.mockRestore();
+		});
+
+		it('parses global flags alongside the command flags', () => {
+			setArgv(['build', '--config', 'site.config.js', '--force', 'src']);
+			expect(parseCli(globalSettings)).toEqual({
+				command: 'build',
+				args: ['src'],
+				flags: { force: true, config: 'site.config.js', verbose: undefined },
+			});
+		});
+
+		it('parses global flags on a command without flags', () => {
+			setArgv(['serve', '-c', 'site.config.js', '--verbose', 'public']);
+			expect(parseCli(globalSettings)).toEqual({
+				command: 'serve',
+				args: ['public'],
+				flags: { config: 'site.config.js', verbose: true },
+			});
+		});
+
+		it('applies a global flag default on a command without flags', () => {
+			setArgv(['serve']);
+			expect(
+				parseCli({
+					...globalSettings,
+					globalFlags: {
+						port: { type: 'number' as const, desc: 'Port', default: 8080 },
+					},
+				}),
+			).toEqual({ command: 'serve', args: [], flags: { port: 8080 } });
+		});
+
+		it('types global flags on every command without narrowing', () => {
+			setArgv(['serve']);
+			const result = parseCli(globalSettings);
+			expect(result.command).toBe('serve');
+			// Type-level assertions: no-ops at runtime, checked only by the type checker
+			expectTypeOf(result.flags.config).toEqualTypeOf<string | undefined>();
+			expectTypeOf(result.flags.verbose).toEqualTypeOf<boolean | undefined>();
+		});
+
+		it('does not accept global flags before the command name', () => {
+			setArgv(['--config', 'site.config.js', 'build']);
+			expect(() => parseCli(globalSettings)).toThrow('process.exit called');
+			expect(exitSpy).toHaveBeenCalledWith(1);
+		});
+
+		it('lists global flags after the command flags in command help', () => {
+			setArgv(['build', '--help']);
+			expect(() => parseCli(globalSettings)).toThrow('process.exit called');
+			const text = loggedText();
+			const optionsIndex = text.indexOf('Options:');
+			const globalIndex = text.indexOf('Global options:');
+			expect(optionsIndex).toBeGreaterThanOrEqual(0);
+			expect(globalIndex).toBeGreaterThan(optionsIndex);
+			expect(text.slice(globalIndex)).toContain('-c, --config <value>');
+			expect(text.slice(globalIndex)).not.toContain('--force');
+		});
+
+		it('lists global flags in help of a command without flags', () => {
+			setArgv(['serve', '--help']);
+			expect(() => parseCli(globalSettings)).toThrow('process.exit called');
+			const text = loggedText();
+			expect(text).not.toContain('Options:');
+			expect(text).toContain('Global options:');
+			expect(text).toContain('--verbose');
+		});
+
+		it('lists global flags in command help with sub-commands', () => {
+			setArgv(['query', '--help']);
+			expect(() => parseCli(globalSettings)).toThrow('process.exit called');
+			const text = loggedText();
+			expect(text).toContain('Sub-commands:');
+			expect(text).toContain('Global options:');
+			expect(text).not.toContain('--limit');
+		});
+
+		it('lists global flags in sub-command help', () => {
+			setArgv(['query', 'archive.db', 'pages', '--help']);
+			expect(() => parseCli(globalSettings)).toThrow('process.exit called');
+			const text = loggedText();
+			expect(text).toContain('--limit');
+			expect(text).toContain('Global options:');
+			expect(text).toContain('--config');
+		});
+
+		it('lists global flags in top-level help', () => {
+			setArgv(['--help']);
+			expect(() => parseCli(globalSettings)).toThrow('process.exit called');
+			const text = loggedText();
+			const commandsIndex = text.indexOf('Commands:');
+			const globalIndex = text.indexOf('Global options:');
+			expect(commandsIndex).toBeGreaterThanOrEqual(0);
+			expect(globalIndex).toBeGreaterThan(commandsIndex);
+			expect(text).toContain('-c, --config <value>');
+		});
+
+		it('lists a grouped global flag under its own group heading', () => {
+			setArgv(['serve', '--help']);
+			expect(() =>
+				parseCli({
+					...globalSettings,
+					globalFlags: {
+						config: { type: 'string' as const, desc: 'Config file', group: 'Project' },
+					},
+				}),
+			).toThrow('process.exit called');
+			const text = loggedText();
+			expect(text).toContain('Project:');
+			expect(text).not.toContain('Global options:');
+		});
+
+		it('throws when a command flag reuses a global flag key', () => {
+			setArgv(['build']);
+			expect(() =>
+				parseCli({
+					...globalSettings,
+					commands: {
+						build: {
+							desc: 'Build files',
+							flags: { config: { type: 'string' as const, desc: 'Other config' } },
+						},
+					},
+				}),
+			).toThrow('Flag --config of command "build" conflicts with global flag --config');
+		});
+
+		it('throws when a command flag spells a global flag key in kebab-case', () => {
+			setArgv(['build']);
+			expect(() =>
+				parseCli({
+					...globalSettings,
+					globalFlags: { dryRun: { type: 'boolean' as const, desc: 'Dry run' } },
+					commands: {
+						build: {
+							desc: 'Build files',
+							flags: { 'dry-run': { type: 'string' as const, desc: 'Dry run mode' } },
+						},
+					},
+				}),
+			).toThrow('Flag --dry-run of command "build" conflicts with global flag --dry-run');
+		});
+
+		it('throws when a command short flag matches a one-letter global flag key', () => {
+			setArgv(['build']);
+			expect(() =>
+				parseCli({
+					...globalSettings,
+					globalFlags: { c: { type: 'string' as const, desc: 'Config file' } },
+					commands: {
+						build: {
+							desc: 'Build files',
+							flags: {
+								cacheDir: { type: 'string' as const, shortFlag: 'c', desc: 'Cache' },
+							},
+						},
+					},
+				}),
+			).toThrow('Flag -c of command "build" conflicts with global flag --c');
+		});
+
+		it('throws when a one-letter command flag key matches a global short flag', () => {
+			setArgv(['build']);
+			expect(() =>
+				parseCli({
+					...globalSettings,
+					commands: {
+						build: {
+							desc: 'Build files',
+							flags: { c: { type: 'boolean' as const, desc: 'Clean' } },
+						},
+					},
+				}),
+			).toThrow('Flag --c of command "build" conflicts with global flag --config');
+		});
+
+		it('throws when a command flag reuses a global short flag', () => {
+			setArgv(['build']);
+			expect(() =>
+				parseCli({
+					...globalSettings,
+					commands: {
+						build: {
+							desc: 'Build files',
+							flags: {
+								cacheDir: { type: 'string' as const, shortFlag: 'c', desc: 'Cache' },
+							},
+						},
+					},
+				}),
+			).toThrow('Flag -c of command "build" conflicts with global flag --config');
+		});
+
+		it('throws on a conflict even when only help is requested', () => {
+			setArgv(['--help']);
+			expect(() =>
+				parseCli({
+					...globalSettings,
+					commands: {
+						build: {
+							desc: 'Build files',
+							flags: { verbose: { type: 'boolean' as const, desc: 'Verbose' } },
+						},
+					},
+				}),
+			).toThrow('Flag --verbose of command "build" conflicts with global flag --verbose');
+		});
+	});
+
+	describe('repeated flags', () => {
+		it('keeps the last value of a repeated string flag', () => {
+			setArgv(['crawl', '--url', 'https://a.example', '--url', 'https://b.example']);
+			expect(parseCli(testSettings)).toMatchObject({
+				command: 'crawl',
+				flags: { url: 'https://b.example' },
+			});
+		});
+
+		it('keeps the last value when the short and long forms are mixed', () => {
+			setArgv(['crawl', '-u', 'https://a.example', '--url', 'https://b.example']);
+			expect(parseCli(testSettings)).toMatchObject({
+				command: 'crawl',
+				flags: { url: 'https://b.example' },
+			});
+		});
+
+		it('keeps the last value of a repeated number flag', () => {
+			setArgv(['crawl', '--depth', '1', '--depth', '2']);
+			expect(parseCli(testSettings)).toMatchObject({
+				command: 'crawl',
+				flags: { depth: 2 },
+			});
+		});
+
+		it('keeps every value of a repeated isMultiple flag', () => {
+			setArgv(['crawl', '--tag', 'a', '--tag', 'b']);
+			expect(
+				parseCli({
+					name: 'test-cli',
+					commands: {
+						crawl: {
+							desc: 'Crawl a website',
+							flags: { tag: { type: 'string' as const, isMultiple: true } },
+						},
+					},
+				}),
+			).toEqual({ command: 'crawl', args: [], flags: { tag: ['a', 'b'] } });
+		});
+	});
+
+	describe('required flags', () => {
+		let errorSpy: ReturnType<typeof vi.spyOn>;
+
+		const requiredSettings = {
+			name: 'test-cli',
+			commands: {
+				report: {
+					desc: 'Generate a report',
+					flags: {
+						sheet: { type: 'string' as const, isRequired: true, desc: 'Sheet URL' },
+						title: { type: 'string' as const, isRequired: true, desc: 'Report title' },
+					},
+				},
+			},
+		} as const;
+
+		beforeEach(() => {
+			errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			errorSpy.mockRestore();
+		});
+
+		it('exits 1 with an error naming the missing required flag', () => {
+			setArgv(['report', '--title', 'Weekly']);
+			expect(() => parseCli(requiredSettings)).toThrow('process.exit called');
+			expect(exitSpy).toHaveBeenCalledWith(1);
+			expect(errorSpy).toHaveBeenCalledWith('Missing required flag: --sheet');
+			expect(errorSpy).toHaveBeenCalledWith("Run 'test-cli report --help' for details.");
+		});
+
+		it('names every missing required flag', () => {
+			setArgv(['report']);
+			expect(() => parseCli(requiredSettings)).toThrow('process.exit called');
+			expect(errorSpy).toHaveBeenCalledWith('Missing required flags: --sheet, --title');
+		});
+
+		it('does not report a required flag that has a default', () => {
+			setArgv(['report']);
+			expect(
+				parseCli({
+					name: 'test-cli',
+					commands: {
+						report: {
+							desc: 'Generate a report',
+							flags: {
+								sheet: {
+									type: 'string' as const,
+									isRequired: true,
+									default: 'https://sheets.example/default',
+								},
+							},
+						},
+					},
+				}),
+			).toEqual({
+				command: 'report',
+				args: [],
+				flags: { sheet: 'https://sheets.example/default' },
+			});
+		});
+
+		it('prints command help instead of the error when --help is given', () => {
+			const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+			setArgv(['report', '--help']);
+			expect(() => parseCli(requiredSettings)).toThrow('process.exit called');
+			expect(exitSpy).toHaveBeenCalledWith(0);
+			expect(errorSpy).not.toHaveBeenCalled();
+			logSpy.mockRestore();
+		});
+
+		it('accepts a required flag given without a value', () => {
+			setArgv(['report', '--sheet', '--title', 'Weekly']);
+			expect(parseCli(requiredSettings)).toEqual({
+				command: 'report',
+				args: [],
+				flags: { sheet: '', title: 'Weekly' },
+			});
+		});
+
+		it('enforces a required global flag on a command without flags', () => {
+			setArgv(['serve']);
+			expect(() =>
+				parseCli({
+					name: 'test-cli',
+					globalFlags: {
+						project: { type: 'string' as const, isRequired: true, desc: 'Project' },
+					},
+					commands: { serve: { desc: 'Serve files' } },
+				}),
+			).toThrow('process.exit called');
+			expect(errorSpy).toHaveBeenCalledWith('Missing required flag: --project');
 		});
 	});
 });
