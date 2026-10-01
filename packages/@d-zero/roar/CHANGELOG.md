@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/roar@2.2.1...@d-zero/roar@2.3.0) (2026-10-01)
+
+### Bug Fixes
+
+- **roar:** exit with an error when an isRequired flag is missing ([0101706](https://github.com/d-zero-dev/tools/commit/010170647109e46e6d3025bfa14d3883828b4d81)), closes [#966](https://github.com/d-zero-dev/tools/issues/966)
+- **roar:** keep the last value of a repeated non-multiple flag ([d4010bc](https://github.com/d-zero-dev/tools/commit/d4010bcd8031d783706212211b289173d5487294)), closes [#966](https://github.com/d-zero-dev/tools/issues/966)
+- **roar:** stop typing flags of a command without flags as an index signature ([bc3c782](https://github.com/d-zero-dev/tools/commit/bc3c78277ca508c3e0b528934fcb5fd46e4e38d3))
+
+### Features
+
+- **roar:** add globalFlags for flags accepted by every command ([7937694](https://github.com/d-zero-dev/tools/commit/79376947a2ed8fc70e4a05c7f80584e98e31c7b5)), closes [#966](https://github.com/d-zero-dev/tools/issues/966)
+
 ## [2.2.1](https://github.com/d-zero-dev/tools/compare/@d-zero/roar@2.2.0...@d-zero/roar@2.2.1) (2026-08-14)
 
 **Note:** Version bump only for package @d-zero/roar
