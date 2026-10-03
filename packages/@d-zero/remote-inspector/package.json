@@ -5,7 +5,7 @@
 	"author": "D-ZERO",
 	"license": "MIT",
 	"engines": {
-		"node": ">=24.11.0"
+		"node": "v26.10.0"
 	},
 	"type": "module",
 	"main": "dist/index.js",
