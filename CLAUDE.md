@@ -44,7 +44,7 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 - **JSDoc = 公開 API（export）の API ユーザー向け文書**: IDE ホバーで実装を読まない読者に届くため、WHAT / HOW / WHY を適切に書き、`@example` を必須とする。メインの公開 API は README にも載せる
 - **非公開 API の JSDoc は必須にしない**: ただし複雑な内部モジュールの設計 WHY / Why not はファイルレベル JSDoc が推奨置き場
 - **README はセットアップ / 利用手順 / メイン公開 API のみ**
-- **計画相対概念の禁止**: 実装計画に由来する相対概念（Phase/Step 番号、「本 PR」「今回」「旧実装」「導入予定」）を JSDoc・テスト名・ドキュメントに書かない。現在の挙動と意図的な不在（Why not）として自己完結に書く。外部参照は issue / PR 番号のみ可
+- **計画相対概念の禁止**: 実装計画に由来する相対概念（Phase/Step 番号、「本 PR」「今回」「旧実装」「導入予定」）を JSDoc・テスト名・ドキュメントに書かない。現在の挙動と意図的な不在（Why not）として自己完結に書く。コードコメント・JSDoc・テスト名に issue / PR 番号も書かず、理由そのものを書く（例外は PR 本文とコミットメッセージ）
 - **ドキュメントと実装の矛盾**: **実装が正**とし、ドキュメントを修正すること
 
 ## independent モードの注意
@@ -75,6 +75,12 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 - 1関数1ファイルを基本とし、`index.ts` の作成は避ける
 - **CLI パッケージの `bin` は先頭 `./` なしのオブジェクト形式で書く**: `"bin": { "コマンド名": "dist/cli.js" }`。文字列形式や先頭 `./` 付きのパス（`"./dist/cli.js"`）は、npm CLI 11.17 以降の `npm publish` で「script name ... was invalid and removed」という警告とともに `bin` エントリごと削除され、CLI が使えないパッケージとして公開されてしまう。publish 前に `npm pack --dry-run` で `bin` 警告が出ないことを確認する（`npm publish --dry-run` は公開済みバージョンとの重複チェックが先に走り、tarball 内容の警告確認まで到達しないことがある）
 
+## 判断基準
+
+- **変更・修正・レビュー指摘を採用するかは 2 つで決める**: 各パッケージが README と JSDoc で宣言した契約どおりに動き、利用側（`@d-zero/*` を exact pin で使う社内の各リポジトリ）を壊さないこと、そして検証系の CLI（a11y-check・archaeologist・print 等）が対象サイトの実際の状態を正確に記録・判定すること。製品の振る舞いでない変更（tooling・docs・CI・skills）では「宣言した意図に対する正しさ」と「既存コードとの一貫性」。実装コスト、diff の大きさ、影響件数、「軽微」は基準ではなく、スキップ・先送り・質問の理由にならない
+- **基準が決めることは聞かずにやる**。質問は、基準が決めないことと、リポジトリ外への書き込みのためにある（質問の種別は `impl` スキルが定める）。Claude は「持ち越す」「スキップする」「そのままにする」を自分で決めない。それらは質問に対するユーザーの回答としてだけ存在し、「あとで」「別 PR で」「意図的に変更しない」と書く応答・PR 本文・コミットは、その質問と回答を指せなければならない
+- **レビュー指摘は直すか、証拠を添えてユーザーに出す**。「false positive」「元からあった」「意図どおり」はユーザーに対して主張することであって、Claude が 1 人で指摘を閉じる手段ではない
+
 ## セキュリティ
 
 ### 機密情報の取り扱い
@@ -98,14 +104,16 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 
 タスクに応じて `.claude/skills/` 配下のスキルを参照すること。
 
-| スキル          | パス                                      | 用途                                                                   |
-| --------------- | ----------------------------------------- | ---------------------------------------------------------------------- |
-| Product Manager | `.claude/skills/product-manager/SKILL.md` | リポジトリ分析、ドキュメント整合チェック、PR レビュー                  |
-| QA Engineer     | `.claude/skills/qa-engineer/SKILL.md`     | コードレビュー、テスト品質チェック、カバレッジ改善                     |
-| Impl            | `.claude/skills/impl/SKILL.md`            | 合意済み計画の実装・検証・PR 作成までのオーケストレーション            |
-| git             | `.claude/skills/git/SKILL.md`             | コミット作成ルール（粒度、メッセージ形式、コミット前チェック）         |
-| pr              | `.claude/skills/pr/SKILL.md`              | PR 作成（プリフライト、base 追従、CI 監視）                            |
-| grill-me        | `.claude/skills/grill-me/SKILL.md`        | 計画・設計の合意形成（実装前の徹底質問）                               |
-| npm publish     | `.claude/skills/npm-publish/SKILL.md`     | リリース（dev→main、バージョニング、tag push、publish 検証、dev 同期） |
+| スキル          | パス                                      | 用途                                                                             |
+| --------------- | ----------------------------------------- | -------------------------------------------------------------------------------- |
+| Product Manager | `.claude/skills/product-manager/SKILL.md` | リポジトリ分析、ドキュメント整合チェック、PR レビュー                            |
+| QA Engineer     | `.claude/skills/qa-engineer/SKILL.md`     | コードレビュー、テスト品質チェック、カバレッジ改善                               |
+| Impl            | `.claude/skills/impl/SKILL.md`            | 合意済み計画の実装・検証・持ち越しの Issue 化・PR 作成・マージ後の台帳確認       |
+| git             | `.claude/skills/git/SKILL.md`             | コミット作成ルール（粒度、メッセージ形式、コミット前チェック、破壊的変更の扱い） |
+| pr              | `.claude/skills/pr/SKILL.md`              | PR 作成（プリフライト、base 追従、本文の節構成、CI 監視）                        |
+| merged          | `.claude/skills/merged/SKILL.md`          | マージ後の手順（外部作者への完了コメント、issue への報告）                       |
+| create-issue    | `.claude/skills/create-issue/SKILL.md`    | 原因まで調べて Issue を起票する（持ち越しの引き継ぎ先）                          |
+| grill-me        | `.claude/skills/grill-me/SKILL.md`        | 計画・設計の合意形成（実装前の徹底質問）                                         |
+| npm publish     | `.claude/skills/npm-publish/SKILL.md`     | リリース（dev→main、バージョニング、tag push、publish 検証、dev 同期）           |
 
 コミットは必ず `.claude/skills/git/SKILL.md`、PR 作成は `.claude/skills/pr/SKILL.md`、リリースは `.claude/skills/npm-publish/SKILL.md` の手順に従うこと。
