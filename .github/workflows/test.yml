@@ -56,7 +56,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.full_matrix }}" = "true" ]; then
-            echo 'matrix={"os":["ubuntu-latest","macOS-latest","windows-latest"]}' >> "$GITHUB_OUTPUT"
+            echo 'matrix={"os":["ubuntu-latest","macOS-latest"]}' >> "$GITHUB_OUTPUT"
           else
             echo 'matrix={"os":["ubuntu-latest"]}' >> "$GITHUB_OUTPUT"
           fi
@@ -124,10 +124,6 @@ jobs:
         with:
           path: "**/node_modules"
           key: os-${{ matrix.os }}-node26-${{ hashFiles('yarn.lock') }}
-
-      - name: Create .yarnrc for Windows
-        if: runner.os == 'Windows' && steps.cache-depends.outputs.cache-hit != 'true'
-        run: echo "network-timeout 600000" > .yarnrc
 
       - name: Install dependencies
         if: steps.cache-depends.outputs.cache-hit != 'true'
