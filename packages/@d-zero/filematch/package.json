@@ -30,7 +30,7 @@
 	},
 	"dependencies": {
 		"@d-zero/readtext": "1.2.1",
-		"follow-redirects": "1.16.0",
+		"follow-redirects": "1.16.1",
 		"minimist": "1.2.8"
 	},
 	"devDependencies": {
