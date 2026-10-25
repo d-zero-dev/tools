@@ -28,7 +28,7 @@
 	],
 	"resolutions": {
 		"google-auth-library": "10.9.0",
-		"nx/undici": "7.29.1"
+		"nx/undici": "7.30.1"
 	},
 	"config": {
 		"commitizen": {
