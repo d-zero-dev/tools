@@ -157,3 +157,37 @@ describe('Sheets - onLog wiring (per method)', () => {
 		});
 	}
 });
+
+/**
+ * 別の版の gaxios が生成した 429 を模したエラーを作る。
+ *
+ * `new GaxiosError()` ではこのパッケージの `GaxiosError` と同じクラスになり再現にならないため、
+ * 別の版が付けるシンボルと `response.status` だけを持つ素の `Error` にする。
+ */
+function createForeign429(): Error {
+	const error: Error & { response?: unknown } = new Error('Quota exceeded');
+	Object.defineProperty(error, Symbol.for('gaxios-gaxios-error'), {
+		value: '0.0.0-other',
+	});
+	error.response = { status: 429, statusText: 'Too Many Requests' };
+	return error;
+}
+
+describe('Sheets - 別の版の gaxios が生成したエラー (per method)', () => {
+	for (const { name, mock, successValue, invoke } of methods) {
+		test(`${name}: 429 でもリトライされ、onLog が waiting: true/false で呼ばれる`, async () => {
+			mock.mockRejectedValueOnce(createForeign429()).mockResolvedValue(successValue);
+
+			const sheets = new Sheets(spreadsheetUrl, fakeAuth);
+			const messages: ErrorHandlerMessage[] = [];
+			sheets.onLog = (msg) => messages.push(msg);
+
+			await expect(invoke(sheets)).resolves.toBeDefined();
+
+			expect(mock).toHaveBeenCalledTimes(2);
+			expect(messages).toHaveLength(2);
+			expect(messages[0]).toMatchObject({ waiting: true, code: 429 });
+			expect(messages[1]).toMatchObject({ waiting: false, code: 429 });
+		});
+	}
+});
