@@ -1,7 +1,10 @@
+import type { GaxiosError } from 'gaxios';
+
 import { delay } from '@d-zero/shared/delay';
-import { GaxiosError } from 'gaxios';
 
 import { log } from '../debug.js';
+
+import { isGaxiosError } from './is-gaxios-error.js';
 
 /**
  * Google Sheets API のユーザーあたりのリクエスト制限（リクエスト/秒）。
@@ -117,6 +120,9 @@ const EXCEL_HINT =
  *
  * 最大リトライ回数は {@link MAX_RETRIES} で制限される。
  *
+ * エラーが `GaxiosError` かどうかは {@link isGaxiosError} で判定するので、`gaxios` の別の版
+ * （`google-auth-library` などが持つもの）が作ったエラーもリトライ対象になる。
+ *
  * Decorator ではなく高階関数として実装しているのは、Vite 8 が同梱する Oxc トランスフォーマが
  * ES (stage-3) decorators の lowering を未サポートのため
  * （{@link https://github.com/oxc-project/oxc/issues/9170}）。
@@ -139,7 +145,9 @@ export function createErrorHandler(methodName: string, options?: ErrorHandlerOpt
 		try {
 			return await method();
 		} catch (error) {
-			if (error instanceof GaxiosError) {
+			// `instanceof GaxiosError` は別の版の gaxios が作ったエラーを取りこぼし、429 が
+			// リトライされないまま throw されるため使わない（`isGaxiosError` の JSDoc 参照）。
+			if (isGaxiosError(error)) {
 				if (
 					error.message.includes('This operation is not supported for this document') &&
 					!error.message.includes(EXCEL_HINT)

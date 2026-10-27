@@ -1,3 +1,4 @@
+import { GaxiosError } from 'gaxios';
 import { describe, test, expect, vi } from 'vitest';
 
 import { Cell } from './cell.js';
@@ -552,5 +553,69 @@ describe('Sheet.onProgress', () => {
 			'begin-cb-5000',
 			'end-cb-5000',
 		]);
+	});
+});
+
+describe('Sheet.frozen', () => {
+	const mockSheet = {
+		properties: { title: 'TestSheet', sheetId: 0 },
+	};
+
+	/**
+	 * Builds an error shaped like a `GaxiosError` created by a different gaxios
+	 * version: it carries the shared brand symbol but is not an instance of this
+	 * package's `GaxiosError` class.
+	 */
+	function createForeignGaxiosError() {
+		const error = new Error('Quota exceeded');
+		Object.defineProperty(error, Symbol.for('gaxios-gaxios-error'), {
+			value: '0.0.0-other',
+		});
+		return error;
+	}
+
+	test('resolves when the freeze request succeeds, sending the column and row counts', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await expect(sheet.frozen(2, 3)).resolves.toBeUndefined();
+		expect(parent.batchUpdate).toHaveBeenCalledTimes(1);
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			updateSheetProperties: {
+				fields: 'gridProperties.frozenColumnCount,gridProperties.frozenRowCount',
+				properties: {
+					sheetId: 0,
+					gridProperties: { frozenColumnCount: 2, frozenRowCount: 3 },
+				},
+			},
+		});
+	});
+
+	test('swallows a GaxiosError of the same gaxios version', async () => {
+		const parent = {
+			batchUpdate: vi
+				.fn()
+				.mockRejectedValue(new GaxiosError('Quota exceeded', { url: 'test' })),
+		};
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await expect(sheet.frozen(1, 1)).resolves.toBeUndefined();
+	});
+
+	test('swallows a GaxiosError created by a different gaxios version', async () => {
+		const error = createForeignGaxiosError();
+		expect(error instanceof GaxiosError).toBe(false);
+		const parent = { batchUpdate: vi.fn().mockRejectedValue(error) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await expect(sheet.frozen(1, 1)).resolves.toBeUndefined();
+	});
+
+	test('rethrows an error that is not a GaxiosError', async () => {
+		const error = new Error('unrelated');
+		const parent = { batchUpdate: vi.fn().mockRejectedValue(error) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await expect(sheet.frozen(1, 1)).rejects.toBe(error);
 	});
 });

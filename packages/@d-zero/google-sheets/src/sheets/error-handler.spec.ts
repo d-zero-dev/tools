@@ -544,3 +544,126 @@ describe('createErrorHandler - 並列呼び出しの retryCount 独立性', () =
 		expect(countB).toBe(FAILURES + 1);
 	});
 });
+
+/**
+ * 別の版の gaxios が生成した `GaxiosError` を模したエラーを作る。
+ *
+ * `new GaxiosError()` で作ると、このパッケージの `GaxiosError` と同じクラスになり
+ * `instanceof` が通ってしまい再現にならない。別の版が付けるシンボルだけを持つ素の
+ * `Error` にして、`google-auth-library` が別の版の gaxios でリクエストを投げた場合を再現する。
+ * @param fields `response.status` と `code`、メッセージ
+ * @param fields.status HTTP ステータスコード
+ * @param fields.code エラーコード
+ * @param fields.message エラーメッセージ
+ */
+function createForeignGaxiosError(fields: {
+	readonly status?: number;
+	readonly code?: string;
+	readonly message?: string;
+}) {
+	const error: Error & { response?: unknown; code?: string } = new Error(
+		fields.message ?? `Request failed with status code ${fields.status}`,
+	);
+	Object.defineProperty(error, Symbol.for('gaxios-gaxios-error'), {
+		value: '0.0.0-other',
+	});
+	if (fields.status !== undefined) {
+		error.response = { status: fields.status, statusText: 'Error' };
+	}
+	if (fields.code !== undefined) {
+		error.code = fields.code;
+	}
+	return error;
+}
+
+describe('createErrorHandler - 別の版の gaxios が生成したエラー', () => {
+	test('このパッケージの GaxiosError の instanceof では判定できないエラーであること', () => {
+		expect(createForeignGaxiosError({ status: 429 }) instanceof GaxiosError).toBe(false);
+	});
+
+	test('429 のとき 110 秒待機してリトライし、log コールバックに待機の開始と終了が渡される', async () => {
+		const target = new TestTargetWithLog();
+		target.errors = [createForeignGaxiosError({ status: 429 })];
+
+		const result = await target.doWork();
+
+		expect(result).toBe('success');
+		expect(target.callCount).toBe(2);
+		expect(delay).toHaveBeenCalledWith(110_000);
+		expect(target.logMessages).toEqual([
+			expect.objectContaining({
+				message: 'TooManyRequestError',
+				code: 429,
+				waiting: true,
+				waitTime: 110_000,
+			}),
+			expect.objectContaining({
+				message: 'TooManyRequestError',
+				code: 429,
+				waiting: false,
+			}),
+		]);
+	});
+
+	test('403 かつ "User rate limit exceeded" のとき 60 秒待機してリトライする', async () => {
+		const target = new TestTarget();
+		target.errors = [
+			createForeignGaxiosError({ status: 403, message: 'User rate limit exceeded' }),
+		];
+
+		const result = await target.doWork();
+
+		expect(result).toBe('success');
+		expect(target.callCount).toBe(2);
+		expect(delay).toHaveBeenCalledWith(60_000);
+	});
+
+	test('502 のとき 30 秒待機してリトライする', async () => {
+		const target = new TestTarget();
+		target.errors = [createForeignGaxiosError({ status: 502 })];
+
+		const result = await target.doWork();
+
+		expect(result).toBe('success');
+		expect(target.callCount).toBe(2);
+		expect(delay).toHaveBeenCalledWith(30_000);
+	});
+
+	test('ECONNRESET のとき 5 秒待機してリトライする', async () => {
+		const target = new TestTarget();
+		target.errors = [
+			createForeignGaxiosError({ code: 'ECONNRESET', message: 'read ECONNRESET' }),
+		];
+
+		const result = await target.doWork();
+
+		expect(result).toBe('success');
+		expect(target.callCount).toBe(2);
+		expect(delay).toHaveBeenCalledWith(5000);
+	});
+
+	test('リトライ対象でない 404 は待機せずそのまま throw する', async () => {
+		const target = new TestTarget();
+		const error = createForeignGaxiosError({ status: 404 });
+		target.errors = [error];
+
+		await expect(target.doWork()).rejects.toBe(error);
+		expect(target.callCount).toBe(1);
+		expect(delay).not.toHaveBeenCalled();
+	});
+
+	test('リトライ対象でない 400 の Excel ファイルのエラーには、ヒントが 1 回だけ追記されて throw される', async () => {
+		const target = new TestTarget();
+		const error = createForeignGaxiosError({
+			status: 400,
+			message: 'This operation is not supported for this document',
+		});
+		target.errors = [error];
+
+		await expect(target.doWork()).rejects.toBe(error);
+		expect(error.message).toContain('This operation is not supported for this document');
+		expect((error.message.match(/⚠️ Hint:/g) ?? []).length).toBe(1);
+		expect(target.callCount).toBe(1);
+		expect(delay).not.toHaveBeenCalled();
+	});
+});

@@ -3,11 +3,11 @@ import type { Row, CellTypeInfo } from './types.js';
 import type { sheets_v4 } from 'googleapis';
 
 import { splitArray } from '@d-zero/shared/split-array';
-import { GaxiosError } from 'gaxios';
 
 import { log } from '../debug.js';
 
 import { Cell } from './cell.js';
+import { isGaxiosError } from './is-gaxios-error.js';
 
 const NUMBER_OF_PAGE_INFO_PER_ONE_REQUEST = 100_000;
 
@@ -284,13 +284,17 @@ export class Sheet {
 					},
 				},
 			})
-			.catch((error: GaxiosError) => error);
+			.catch((error: unknown) => error);
 
-		if (err instanceof GaxiosError) {
+		// `instanceof GaxiosError` は別の版の gaxios が作ったエラーを取りこぼし、握りつぶす
+		// はずの失敗が throw になるため使わない（`isGaxiosError` の JSDoc 参照）。
+		if (isGaxiosError(err)) {
 			sendLog('Frozen failed: %s', err);
 			return;
 		}
 
+		// 成功時は `batchUpdate` が応答オブジェクト（truthy）を返す前提。falsy な値と
+		// `GaxiosError` 以外の `Error` は、握りつぶさずそのまま throw する。
 		if (!err || err instanceof Error) {
 			throw err;
 		}
