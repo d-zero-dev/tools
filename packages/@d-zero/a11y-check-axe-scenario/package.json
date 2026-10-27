@@ -33,11 +33,11 @@
 	},
 	"devDependencies": {
 		"axe-core": "4.12.1",
-		"puppeteer": "25.5.0"
+		"puppeteer": "25.15.0"
 	},
 	"peerDependencies": {
 		"axe-core": "4.12.1",
-		"puppeteer": "25.5.0"
+		"puppeteer": "25.15.0"
 	},
 	"repository": {
 		"type": "git",
