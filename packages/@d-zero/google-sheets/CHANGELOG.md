@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.12.1](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fgoogle-sheets%400.12.0...%40d-zero%2Fgoogle-sheets%400.12.1) (2026-10-27)
+
+### Bug Fixes
+
+- **google-sheets:** retry rate-limit errors created by a different gaxios version ([ae67506](https://github.com/d-zero-dev/tools/commit/ae67506ed06baae53fea947ab0cfbd5a5350a730)), closes [Sheet#frozen](https://github.com/Sheet/issues/frozen) [Sheet#frozen](https://github.com/Sheet/issues/frozen)
+
 # [0.12.0](https://github.com/d-zero-dev/tools/compare/@d-zero/google-sheets@0.11.0...@d-zero/google-sheets@0.12.0) (2026-09-30)
 
 ### Features

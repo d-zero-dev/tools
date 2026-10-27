@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.14](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Ffilematch%401.2.13...%40d-zero%2Ffilematch%401.2.14) (2026-10-27)
+
+### Bug Fixes
+
+- **filematch:** update follow-redirects to 1.16.1 ([5466235](https://github.com/d-zero-dev/tools/commit/54662351952a76e129da7217e88cca83d182f499))
+
 ## [1.2.13](https://github.com/d-zero-dev/tools/compare/@d-zero/filematch@1.2.12...@d-zero/filematch@1.2.13) (2026-08-14)
 
 ### Bug Fixes
