@@ -43,7 +43,7 @@
 		"@d-zero/dealer": "1.14.0",
 		"@d-zero/puppeteer-page-scan": "4.7.0",
 		"@d-zero/shared": "0.23.0",
-		"puppeteer": "25.5.0"
+		"puppeteer": "25.15.0"
 	},
 	"repository": {
 		"type": "git",
