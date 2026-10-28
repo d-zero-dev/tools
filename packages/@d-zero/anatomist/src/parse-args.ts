@@ -3,8 +3,7 @@ import type { UrlListFormat } from './parse-url-list.js';
 
 /**
  * Parsed CLI shape. Kept as a plain record so tests can build it directly
- * without going through the argv parser (pattern shared with
- * `@d-zero/page-cluster`'s `CliArgs`).
+ * without going through the argv parser.
  */
 export type CliArgs = {
 	readonly input?: string;
@@ -49,8 +48,7 @@ function requireNumber(argv: readonly string[], index: number): number | undefin
 /**
  * Parses `process.argv`-style arguments (already sliced past `node script`)
  * into a `CliArgs`. Deliberately tolerant of an unknown flag so the caller
- * can decide the error message shape (pattern shared with
- * `@d-zero/page-cluster`'s `parseArgs`).
+ * can decide the error message shape.
  * @param argv
  */
 export function parseArgs(argv: readonly string[]): CliArgs {

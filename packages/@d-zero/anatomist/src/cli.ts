@@ -84,7 +84,7 @@ async function readAll(stream: NodeJS.ReadableStream): Promise<string> {
 /**
  * Test-friendly entry point: takes the run's stdin/stdout/stderr streams
  * and the parsed CLI flags rather than reading them out of the process
- * globals (pattern shared with `@d-zero/page-cluster`'s `runCli`).
+ * globals, so tests can drive a whole run in-process.
  * @param options
  * @param options.stdin
  * @param options.stdout

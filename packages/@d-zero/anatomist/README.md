@@ -1,6 +1,6 @@
 # `@d-zero/anatomist`
 
-URL を実際にブラウザでレンダリングし、main コンテンツ配下の子ブロックを「縦積み・横並び・シンプルgrid・複雑grid・テーブル・float画像+テキスト」のレイアウトパターンに分類して、ブロックごとの座標・innerHTML を含む再帰的な JSON ツリーとして出力するパッケージ。判定は `getComputedStyle` ではなく `getBoundingClientRect` で測定した実際の座標配置を主軸に行い、CSS プロパティ（`display` / `float` 等）は判定の裏付け情報として `signals` に残す。`page-cluster` で見つけたクラスタの代表ページのような、個別 URL のレイアウト構造を機械的に把握したいときに使う。CLI が主、ライブラリ関数群がオマケ。
+URL を実際にブラウザでレンダリングし、main コンテンツ配下の子ブロックを「縦積み・横並び・シンプルgrid・複雑grid・テーブル・float画像+テキスト」のレイアウトパターンに分類して、ブロックごとの座標・innerHTML を含む再帰的な JSON ツリーとして出力するパッケージ。判定は `getComputedStyle` ではなく `getBoundingClientRect` で測定した実際の座標配置を主軸に行い、CSS プロパティ（`display` / `float` 等）は判定の裏付け情報として `signals` に残す。[Nitpicker](https://github.com/d-zero-dev/nitpicker) のテンプレート分類で同じテンプレートに分けられたページから 1 つ選んだ URL のような、個別 URL のレイアウト構造を機械的に把握したいときに使う。CLI が主、ライブラリ関数群がオマケ。
 
 ## Installation
 
