@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.8](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fanatomist%400.3.7...%40d-zero%2Fanatomist%400.3.8) (2026-10-28)
+
+**Note:** Version bump only for package @d-zero/anatomist
+
 ## [0.3.7](https://github.com/d-zero-dev/tools/compare/@d-zero/anatomist@0.3.6...@d-zero/anatomist@0.3.7) (2026-09-10)
 
 **Note:** Version bump only for package @d-zero/anatomist

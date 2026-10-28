@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/print",
-	"version": "3.0.23",
+	"version": "3.0.24",
 	"description": "Print web pages to PDF or image files.",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -29,9 +29,9 @@
 	"dependencies": {
 		"@d-zero/cli-core": "1.4.0",
 		"@d-zero/html-distiller": "2.0.12",
-		"@d-zero/puppeteer-dealer": "0.7.28",
-		"@d-zero/puppeteer-page-scan": "4.7.0",
-		"@d-zero/puppeteer-screenshot": "3.4.13",
+		"@d-zero/puppeteer-dealer": "0.7.29",
+		"@d-zero/puppeteer-page-scan": "4.7.1",
+		"@d-zero/puppeteer-screenshot": "3.4.14",
 		"@d-zero/readtext": "1.2.1",
 		"@d-zero/shared": "0.23.0",
 		"ansi-colors": "4.1.3",

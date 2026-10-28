@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.1](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fbeholder%405.0.0...%40d-zero%2Fbeholder%405.0.1) (2026-10-28)
+
+### Bug Fixes
+
+- **beholder:** update puppeteer and simple-wappalyzer for security advisories ([424ddb3](https://github.com/d-zero-dev/tools/commit/424ddb357e3ee5ce2799a3cde7ca2b6970402a1b))
+
 # [5.0.0](https://github.com/d-zero-dev/tools/compare/@d-zero/beholder@4.2.3...@d-zero/beholder@5.0.0) (2026-09-10)
 
 - feat(beholder)!: report per-viewport image-scan outcome in PageData ([1e69228](https://github.com/d-zero-dev/tools/commit/1e692285f1ef3e0a8a89db695d635c7a2f88ba7c))
