@@ -89,6 +89,18 @@ describe('Lanes verbose update', () => {
 		expect(lastCall).toContain('some log message');
 	});
 
+	test('update() writes the log to the given stream, not to process.stdout', () => {
+		const collector = makeStreamCollector();
+		using lanes = new Lanes({ stream: collector.stream, verbose: true });
+
+		lanes.update(0, 'some log message');
+
+		expect(collector.read()).toContain('some log message');
+		expect(stdoutWriteSpy).not.toHaveBeenCalledWith(
+			expect.stringContaining('some log message'),
+		);
+	});
+
 	test('update() after header("") still writes without a prefix (empty string is falsy)', () => {
 		using lanes = new Lanes({ verbose: true });
 

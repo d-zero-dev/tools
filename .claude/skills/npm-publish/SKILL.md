@@ -34,7 +34,6 @@ disable-model-invocation: true
 | `packages/@d-zero/google-sheets` | `@d-zero/google-sheets` |
 | `packages/@d-zero/html-distiller` | `@d-zero/html-distiller` |
 | `packages/@d-zero/notion` | `@d-zero/notion` |
-| `packages/@d-zero/page-cluster` | `@d-zero/page-cluster` |
 | `packages/@d-zero/print` | `@d-zero/print` |
 | `packages/@d-zero/proc-talk` | `@d-zero/proc-talk` |
 | `packages/@d-zero/puppeteer-dealer` | `@d-zero/puppeteer-dealer` |
@@ -200,7 +199,7 @@ gh run watch --exit-status
 
 ## 11. publish 結果の検証
 
-workflow が success でも publish が意図通りとは限らない。**「対象パッケージ」の全 29 パッケージについて**実際の npm 上の状態を確認する。
+workflow が success でも publish が意図通りとは限らない。**「対象パッケージ」の全 28 パッケージについて**実際の npm 上の状態を確認する。
 
 ```bash
 npm view <package> version
@@ -213,7 +212,7 @@ npm view <package> dist-tags
 - dist-tag が手順 10 のロジック通りか（正式リリースは `latest`、プレリリースは `alpha` / `beta` / `rc` / `next`）
 - provenance が付与されているか（npm の該当バージョンページ、または `npm view <package> --json` の `dist.attestations`）
 
-independent モードでは**一部のパッケージだけ publish される（部分 publish）**ことがある。29 パッケージ全てを個別に確認し、漏れがあればユーザーに報告する。
+independent モードでは**一部のパッケージだけ publish される（部分 publish）**ことがある。28 パッケージ全てを個別に確認し、漏れがあればユーザーに報告する。
 
 **ここが success の判定点**。npm 上の状態を確認するまでリリース完了と判断してはいけない。
 

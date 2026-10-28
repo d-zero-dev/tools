@@ -81,7 +81,8 @@ test/fixture/.__*
 # Print Result Directory
 .print
 
-# page-cluster dogfooding scratch (results, throwaway scripts)
+# Page-cluster dogfooding output. Local copies may hold real-site results, so
+# the directory is ignored to keep them out of commits.
 .page-cluster
 
 # Secret Test Files
