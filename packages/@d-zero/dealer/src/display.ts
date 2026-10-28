@@ -24,8 +24,7 @@ interface Options {
 	 * 出力先のストリーム。省略時は `process.stdout`。
 	 * `process.stderr` のような別ストリームを指定すると、フレーム描画・verbose
 	 * 出力・resize ハンドラ・カラム幅取得のすべてがそのストリームに向く。
-	 * page-cluster CLI のように stdout を別用途 (JSONL 出力) に使うツールが
-	 * stderr へ進捗を出すために追加された。
+	 * stdout を別用途 (JSONL 出力など) に使うツールが、stderr へ進捗を出すために使う。
 	 */
 	stream?: NodeJS.WritableStream;
 }
