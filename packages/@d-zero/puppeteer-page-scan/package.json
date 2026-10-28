@@ -31,10 +31,10 @@
 		"@d-zero/shared": "0.23.0"
 	},
 	"devDependencies": {
-		"puppeteer": "25.5.0"
+		"puppeteer": "25.15.0"
 	},
 	"peerDependencies": {
-		"puppeteer": "25.5.0"
+		"puppeteer": "25.15.0"
 	},
 	"repository": {
 		"type": "git",

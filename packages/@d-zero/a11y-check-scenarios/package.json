@@ -31,10 +31,10 @@
 		"ansi-colors": "4.1.3"
 	},
 	"devDependencies": {
-		"puppeteer": "25.5.0"
+		"puppeteer": "25.15.0"
 	},
 	"peerDependencies": {
-		"puppeteer": "25.5.0"
+		"puppeteer": "25.15.0"
 	},
 	"repository": {
 		"type": "git",

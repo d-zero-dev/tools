@@ -27,8 +27,8 @@
 		"@d-zero/puppeteer-scroll": "4.0.12",
 		"@d-zero/shared": "0.23.0",
 		"debug": "4.4.3",
-		"puppeteer": "25.5.0",
-		"simple-wappalyzer": "1.1.100"
+		"puppeteer": "25.15.0",
+		"simple-wappalyzer": "1.1.108"
 	},
 	"devDependencies": {
 		"@types/debug": "4.1.13",
