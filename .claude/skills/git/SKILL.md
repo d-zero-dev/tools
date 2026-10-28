@@ -63,7 +63,7 @@ description: Git 操作ルール（コミット作成、メッセージ形式、
 | ------ | ------------------------------------------------------------------------------------------------ |
 | 0      | `shared`, `readtext`, `fs`, `html-distiller`, `google-auth`, `puppeteer-general-actions`, `roar` |
 | 1      | `cli-core`, `dealer`, `notion`, `proc-talk`, `puppeteer-scroll`, `google-sheets`, `filematch`    |
-| 2      | `puppeteer-page-scan`, `puppeteer-dealer`, `page-cluster`, `remote-inspector`, `backlog-projects` |
+| 2      | `puppeteer-page-scan`, `puppeteer-dealer`, `remote-inspector`, `backlog-projects`                |
 | 3      | `puppeteer-screenshot`, `beholder`, `a11y-check-core`, `replicator`                              |
 | 4      | `archaeologist`, `print`, `anatomist`, `a11y-check-axe-scenario`, `a11y-check-scenarios`         |
 | 5      | `a11y-check`                                                                                     |
@@ -75,7 +75,7 @@ description: Git 操作ルール（コミット作成、メッセージ形式、
 - Conventional Commits を使用すること
   - 使用するタイプ: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
   - 使用するスコープ:
-    - 各パッケージ名（ネームスペースなし）: `a11y-check`, `a11y-check-axe-scenario`, `a11y-check-core`, `a11y-check-scenarios`, `anatomist`, `archaeologist`, `backlog-projects`, `beholder`, `cli-core`, `dealer`, `filematch`, `fs`, `google-auth`, `google-sheets`, `html-distiller`, `notion`, `page-cluster`, `print`, `proc-talk`, `puppeteer-dealer`, `puppeteer-general-actions`, `puppeteer-page-scan`, `puppeteer-screenshot`, `puppeteer-scroll`, `readtext`, `remote-inspector`, `replicator`, `roar`, `shared`
+    - 各パッケージ名（ネームスペースなし）: `a11y-check`, `a11y-check-axe-scenario`, `a11y-check-core`, `a11y-check-scenarios`, `anatomist`, `archaeologist`, `backlog-projects`, `beholder`, `cli-core`, `dealer`, `filematch`, `fs`, `google-auth`, `google-sheets`, `html-distiller`, `notion`, `print`, `proc-talk`, `puppeteer-dealer`, `puppeteer-general-actions`, `puppeteer-page-scan`, `puppeteer-screenshot`, `puppeteer-scroll`, `readtext`, `remote-inspector`, `replicator`, `roar`, `shared`
     - `repo`, `deps`, `github`
 - メッセージ本文の各行は100文字以下
 - 件名は sentence-case, start-case, pascal-case, upper-case にしない
