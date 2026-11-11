@@ -1564,7 +1564,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@d-zero/shared@workspace:packages/@d-zero/shared"
   dependencies:
-    "@holiday-jp/holiday_jp": "npm:2.5.1"
+    "@holiday-jp/holiday_jp": "npm:2.5.2"
     "@types/micromatch": "npm:4.0.10"
     await-event-emitter: "npm:2.0.2"
     dayjs: "npm:1.11.21"
@@ -1793,10 +1793,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@holiday-jp/holiday_jp@npm:2.5.1":
-  version: 2.5.1
-  resolution: "@holiday-jp/holiday_jp@npm:2.5.1"
-  checksum: 10c0/ef6f64041ae12eaaf4e78eb3cdc63e9d47b2561231907840de0cf90b84037043c8349f0debc19ba584b9b7959443ef26d9b587474f55c9f9af8a0a2a5ad741c3
+"@holiday-jp/holiday_jp@npm:2.5.2":
+  version: 2.5.2
+  resolution: "@holiday-jp/holiday_jp@npm:2.5.2"
+  checksum: 10c0/dfc4ded9c197865bf6265477eb91d80851a61b6a93e9b6ed2af1df9b85f753fda9c6386ae8db52645d2cc924aee9fa1f0c6d08dce4ccc795e4ea05fd48215986
   languageName: node
   linkType: hard
 
