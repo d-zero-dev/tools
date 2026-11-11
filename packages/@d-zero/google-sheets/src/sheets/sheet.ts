@@ -1,5 +1,5 @@
 import type { Sheets } from './sheets.js';
-import type { Row, CellTypeInfo } from './types.js';
+import type { Row, CellTypeInfo, SheetProtectOptions } from './types.js';
 import type { sheets_v4 } from 'googleapis';
 
 import { splitArray } from '@d-zero/shared/split-array';
@@ -8,6 +8,7 @@ import { log } from '../debug.js';
 
 import { Cell } from './cell.js';
 import { isGaxiosError } from './is-gaxios-error.js';
+import { quoteSheetTitle } from './quote-sheet-title.js';
 
 const NUMBER_OF_PAGE_INFO_PER_ONE_REQUEST = 100_000;
 
@@ -251,6 +252,37 @@ export class Sheet {
 		});
 	}
 	/**
+	 * このシートをスプレッドシートから削除する。
+	 *
+	 * 最後の 1 枚は Google Sheets API が拒否するので、そのエラーはそのまま返す。
+	 * 未送信の `appendRow` バッファは、API が成功したあとで捨てる。失敗したときは
+	 * バッファを残す。消えたシートへ `await using` の flush が書きにいかないようにし、
+	 * 削除失敗時は未送信行を失わない。
+	 *
+	 * 成功後は親のタイトルキャッシュから外れる。同じインスタンスへの追記や構造操作は
+	 * 想定しない。
+	 * @example
+	 * ```ts
+	 * await sheet.delete();
+	 * ```
+	 */
+	async delete() {
+		const title = this.props.title;
+		if (title == null) {
+			throw new Error("Sheet doesn't have title");
+		}
+		sendLog('Delete sheet %s (#%d)', title, this.id);
+		await this.#parent.batchUpdate({
+			deleteSheet: {
+				sheetId: this.id,
+			},
+		});
+		this.#pendingRows = [];
+		this.#hasLazyRow = false;
+		this.#parent.forgetSheet(title);
+	}
+
+	/**
 	 * 未送信のバッファ行を全て送り切る。
 	 *
 	 * 遅延セルを含むバッチを送る場合、呼び出し元が「すべての共有状態
@@ -302,7 +334,11 @@ export class Sheet {
 		sendLog('Frozen succeeded');
 	}
 	async getCellTypes(range: string) {
-		const res = await this.#parent.getWithGridData(`'${this.props.title}'!${range}`);
+		const title = this.props.title;
+		if (title == null) {
+			throw new Error("Sheet doesn't have title");
+		}
+		const res = await this.#parent.getWithGridData(`${quoteSheetTitle(title)}!${range}`);
 		const sheet = res.data.sheets?.[0];
 		const rowData = sheet?.data?.[0]?.rowData?.[0];
 		const cells = rowData?.values ?? [];
@@ -352,8 +388,12 @@ export class Sheet {
 	 * @returns Array of row visibility objects, one per row from `startRow` onward
 	 */
 	async getRowMetadata(startRow: number) {
+		const title = this.props.title;
+		if (title == null) {
+			throw new Error("Sheet doesn't have title");
+		}
 		const res = await this.#parent.getWithGridData(
-			`'${this.props.title}'!A${startRow}:A`,
+			`${quoteSheetTitle(title)}!A${startRow}:A`,
 		);
 		const sheet = res.data.sheets?.[0];
 		const rowMetadataList = sheet?.data?.[0]?.rowMetadata ?? [];
@@ -363,11 +403,35 @@ export class Sheet {
 		}));
 	}
 	async getValues(row: string, col: string) {
+		const title = this.props.title;
+		if (title == null) {
+			throw new Error("Sheet doesn't have title");
+		}
 		const res = await this.#parent.get({
-			range: `'${this.props.title}'!${row}:${col}`,
+			range: `${quoteSheetTitle(title)}!${row}:${col}`,
 			valueRenderOption: 'UNFORMATTED_VALUE',
 		});
 		return res.data.values;
+	}
+	/**
+	 * このシートを UI 上で非表示にする。再表示はこのメソッドのスコープ外。
+	 * @example
+	 * ```ts
+	 * await sheet.hide();
+	 * ```
+	 */
+	async hide() {
+		sendLog('Hide sheet #%d', this.id);
+		await this.#parent.batchUpdate({
+			updateSheetProperties: {
+				fields: 'hidden',
+				properties: {
+					sheetId: this.id,
+					hidden: true,
+				},
+			},
+		});
+		this.props.hidden = true;
 	}
 	async hideCol(colNum: number) {
 		sendLog('Hide col %d', colNum);
@@ -385,6 +449,43 @@ export class Sheet {
 				fields: 'hiddenByUser',
 			},
 		});
+	}
+	/**
+	 * シートタブの位置を移動する。
+	 *
+	 * `index` は Google Sheets API の「移動前の位置」基準（0 始まり）。
+	 * 例えばシートが S1, S2, S3 のとき、S1 を S2 の前へ動かす指定は `2`。
+	 * 現在位置と同じ、または現在位置 + 1 の指定は API が無視する。
+	 * 他シートの index もずれるため、成功後に親のキャッシュ済み index を揃える。
+	 * 移動の `batchUpdate` が成功したあと index 同期だけが失敗した場合は、このシートの
+	 * `props.index` に指定値を入れ、呼び出しは成功扱いにする。リモートでは既に動いているので、
+	 * 失敗として同じ before-move の `index` で再試行すると二重移動になる。
+	 * @see https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request#UpdateSheetPropertiesRequest
+	 * @example
+	 * ```ts
+	 * // S1, S2, S3 のとき、S1 を S2 の前へ
+	 * await s1.move(2);
+	 * ```
+	 * @param index - 移動先の index（移動前の並び基準）
+	 */
+	async move(index: number) {
+		sendLog('Move sheet #%d to index %d', this.id, index);
+		await this.#parent.batchUpdate({
+			updateSheetProperties: {
+				fields: 'index',
+				properties: {
+					sheetId: this.id,
+					index,
+				},
+			},
+		});
+		const refreshError = await this.#parent
+			.refreshCachedSheetIndices()
+			.catch((error: unknown) => error);
+		if (refreshError) {
+			this.props.index = index;
+			sendLog('refreshCachedSheetIndices after move failed: %O', refreshError);
+		}
 	}
 	async overwriteHeaderFormat() {
 		sendLog('Headers becomes normal format if NOT_BLANK');
@@ -422,6 +523,91 @@ export class Sheet {
 			},
 		});
 	}
+	/**
+	 * シート全体を保護する。
+	 *
+	 * Google Sheets API にシート保護専用リクエストはなく、`addProtectedRange` の
+	 * `range` に行・列の端を付けず `sheetId` だけを渡すとシート全体の保護になる。
+	 *
+	 * **`editors` が期待とずれやすい。** 省略または空配列のときは所有者だけが
+	 * 編集できる。実行者が所有者でないのに自分のメールを入れ忘れると、自分も
+	 * 編集できなくなる。セルを編集できる人と、UI からその保護を変更・削除できる人は
+	 * 同じ集合。セキュリティ境界ではなく、コピーや書き出しで内容は持ち出せる。
+	 *
+	 * このメソッドは保護の解除を提供しない。呼ぶたびに `addProtectedRange` が追加され、
+	 * 保護が積み上がる。編集者は `editors.users`（メール）のみで、`groups` や
+	 * `domainUsersCanEdit` は送らない。
+	 * @see https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#ProtectedRange
+	 * @see https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request#AddProtectedRangeRequest
+	 * @example
+	 * ```ts
+	 * await sheet.protect({
+	 *   editors: ['owner@example.com', 'editor@example.com'],
+	 *   description: '集計シート',
+	 * });
+	 * // 所有者だけが編集できる
+	 * await sheet.protect();
+	 * // 確認ダイアログだけで誰でも編集できる
+	 * await sheet.protect({ warningOnly: true });
+	 * ```
+	 * @param options - 編集者・警告のみ・説明
+	 */
+	async protect(options: SheetProtectOptions = {}) {
+		const { editors, warningOnly, description } = options;
+		sendLog(
+			'Protect sheet #%d warningOnly=%s editorsCount=%d hasDescription=%s',
+			this.id,
+			warningOnly === true,
+			editors?.length ?? 0,
+			description !== undefined,
+		);
+		const protectedRange: sheets_v4.Schema$ProtectedRange = {
+			range: {
+				sheetId: this.id,
+			},
+		};
+		if (description !== undefined) {
+			protectedRange.description = description;
+		}
+		if (warningOnly === true) {
+			protectedRange.warningOnly = true;
+		} else {
+			protectedRange.editors = {
+				users: editors ? [...editors] : [],
+			};
+		}
+		await this.#parent.batchUpdate({
+			addProtectedRange: {
+				protectedRange,
+			},
+		});
+	}
+	/**
+	 * シート名を変更する。成功後にローカルの title と親のタイトルキャッシュを更新する。
+	 * @example
+	 * ```ts
+	 * await sheet.rename('Report v2');
+	 * ```
+	 * @param title - 新しいシート名
+	 */
+	async rename(title: string) {
+		const oldTitle = this.props.title;
+		if (oldTitle == null) {
+			throw new Error("Sheet doesn't have title");
+		}
+		sendLog('Rename sheet #%d: %s -> %s', this.id, oldTitle, title);
+		await this.#parent.batchUpdate({
+			updateSheetProperties: {
+				fields: 'title',
+				properties: {
+					sheetId: this.id,
+					title,
+				},
+			},
+		});
+		this.props.title = title;
+		this.#parent.rekeySheet(oldTitle, title, this);
+	}
 	async setHeaders(headers: string[]) {
 		this.#headers = headers;
 
@@ -431,6 +617,21 @@ export class Sheet {
 		);
 		await this.addRowData([headerCells], false);
 	}
+	/**
+	 * リモート一覧で得た `index` をローカルの properties に反映する。
+	 * {@link Sheets.refreshCachedSheetIndices} から呼ぶ。
+	 * @internal
+	 * @param index - スプレッドシート内のシート位置
+	 * @example
+	 * ```ts
+	 * // Sheets.refreshCachedSheetIndices の内部からのみ想定
+	 * sheet.syncIndex(2);
+	 * ```
+	 */
+	syncIndex(index: number) {
+		this.props.index = index;
+	}
+
 	async #addRowData(data: Row[]) {
 		if (data.length === 0) {
 			return;

@@ -556,6 +556,360 @@ describe('Sheet.onProgress', () => {
 	});
 });
 
+describe('Sheet A1 title quoting', () => {
+	const mockSheet = {
+		properties: { title: "Year's End", sheetId: 0 },
+	};
+
+	test('getRowMetadata quotes a title that contains a single quote', async () => {
+		const parent = {
+			getWithGridData: vi.fn().mockResolvedValue({
+				data: { sheets: [{ data: [{ rowMetadata: [] }] }] },
+			}),
+		};
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.getRowMetadata(2);
+
+		expect(parent.getWithGridData).toHaveBeenCalledWith("'Year''s End'!A2:A");
+	});
+
+	test('getValues quotes a title that contains a single quote', async () => {
+		const parent = {
+			get: vi.fn().mockResolvedValue({ data: { values: [] } }),
+		};
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.getValues('1', '1');
+
+		expect(parent.get).toHaveBeenCalledWith({
+			range: "'Year''s End'!1:1",
+			valueRenderOption: 'UNFORMATTED_VALUE',
+		});
+	});
+
+	test('getCellTypes quotes a title that contains a single quote', async () => {
+		const parent = {
+			getWithGridData: vi.fn().mockResolvedValue({
+				data: { sheets: [{ data: [{ rowData: [{ values: [] }] }] }] },
+			}),
+		};
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.getCellTypes('A1:B1');
+
+		expect(parent.getWithGridData).toHaveBeenCalledWith("'Year''s End'!A1:B1");
+	});
+});
+
+describe('Sheet.rename', () => {
+	test('sends updateSheetProperties for title and rekeys the parent cache', async () => {
+		const parent = {
+			batchUpdate: vi.fn().mockResolvedValue({}),
+			rekeySheet: vi.fn(),
+		};
+		const sheetData = { properties: { title: 'Old', sheetId: 7 } };
+		const sheet = new Sheet(sheetData as never, parent as never);
+
+		await sheet.rename('New');
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			updateSheetProperties: {
+				fields: 'title',
+				properties: { sheetId: 7, title: 'New' },
+			},
+		});
+		expect(sheet.props.title).toBe('New');
+		expect(parent.rekeySheet).toHaveBeenCalledWith('Old', 'New', sheet);
+	});
+
+	test('keeps the title and does not rekey when update fails', async () => {
+		const error = new Error('rename failed');
+		const parent = {
+			batchUpdate: vi.fn().mockRejectedValue(error),
+			rekeySheet: vi.fn(),
+		};
+		const sheet = new Sheet(
+			{ properties: { title: 'Old', sheetId: 7 } } as never,
+			parent as never,
+		);
+
+		await expect(sheet.rename('New')).rejects.toBe(error);
+		expect(sheet.props.title).toBe('Old');
+		expect(parent.rekeySheet).not.toHaveBeenCalled();
+	});
+});
+
+describe('Sheet.protect', () => {
+	const mockSheet = {
+		properties: { title: 'TestSheet', sheetId: 3 },
+	};
+
+	test('locks the whole sheet to owner only when editors is omitted', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.protect();
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			addProtectedRange: {
+				protectedRange: {
+					range: { sheetId: 3 },
+					editors: { users: [] },
+				},
+			},
+		});
+	});
+
+	test('sends editors emails when provided', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.protect({ editors: ['owner@example.com', 'editor@example.com'] });
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			addProtectedRange: {
+				protectedRange: {
+					range: { sheetId: 3 },
+					editors: { users: ['owner@example.com', 'editor@example.com'] },
+				},
+			},
+		});
+	});
+
+	test('omits editors when warningOnly is true', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.protect({
+			warningOnly: true,
+			editors: ['ignored@example.com'],
+		});
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			addProtectedRange: {
+				protectedRange: {
+					range: { sheetId: 3 },
+					warningOnly: true,
+				},
+			},
+		});
+	});
+
+	test('sends an empty editors list when editors is an empty array', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.protect({ editors: [] });
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			addProtectedRange: {
+				protectedRange: {
+					range: { sheetId: 3 },
+					editors: { users: [] },
+				},
+			},
+		});
+	});
+
+	test('includes a non-empty description in the protected range', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.protect({ description: '集計シート' });
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			addProtectedRange: {
+				protectedRange: {
+					range: { sheetId: 3 },
+					description: '集計シート',
+					editors: { users: [] },
+				},
+			},
+		});
+	});
+
+	test('sends an empty description when description is an empty string', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.protect({ description: '' });
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			addProtectedRange: {
+				protectedRange: {
+					range: { sheetId: 3 },
+					description: '',
+					editors: { users: [] },
+				},
+			},
+		});
+	});
+
+	test('omits description when the option is undefined', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.protect();
+
+		expect(
+			parent.batchUpdate.mock.calls[0]?.[0].addProtectedRange.protectedRange,
+		).not.toHaveProperty('description');
+	});
+
+	test('sends warningOnly with description and without editors', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.protect({ warningOnly: true, description: '注意' });
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			addProtectedRange: {
+				protectedRange: {
+					range: { sheetId: 3 },
+					warningOnly: true,
+					description: '注意',
+				},
+			},
+		});
+	});
+
+	test('adds a new protected range on every call', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheet = new Sheet(mockSheet as never, parent as never);
+
+		await sheet.protect({ editors: ['owner@example.com'] });
+		await sheet.protect({ editors: ['owner@example.com'] });
+
+		expect(parent.batchUpdate).toHaveBeenCalledTimes(2);
+		expect(parent.batchUpdate.mock.calls[0]?.[0]).toHaveProperty('addProtectedRange');
+		expect(parent.batchUpdate.mock.calls[1]?.[0]).toHaveProperty('addProtectedRange');
+	});
+});
+
+describe('Sheet.delete', () => {
+	test('sends deleteSheet, clears the pending buffer, and forgets the cache key', async () => {
+		const parent = {
+			batchUpdate: vi.fn().mockResolvedValue({}),
+			forgetSheet: vi.fn(),
+		};
+		const sheet = new Sheet(
+			{ properties: { title: 'Temp', sheetId: 9 } } as never,
+			parent as never,
+		);
+		await sheet.appendRow([new Cell({ value: 'pending' })]);
+		expect(sheet.pendingCount).toBe(1);
+
+		await sheet.delete();
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			deleteSheet: { sheetId: 9 },
+		});
+		expect(sheet.pendingCount).toBe(0);
+		expect(parent.forgetSheet).toHaveBeenCalledWith('Temp');
+	});
+
+	test('keeps the pending buffer when deleteSheet fails', async () => {
+		const error = new Error('cannot delete last sheet');
+		const parent = {
+			batchUpdate: vi.fn().mockRejectedValue(error),
+			forgetSheet: vi.fn(),
+		};
+		const sheet = new Sheet(
+			{ properties: { title: 'Temp', sheetId: 9 } } as never,
+			parent as never,
+		);
+		await sheet.appendRow([new Cell({ value: 'pending' })]);
+
+		await expect(sheet.delete()).rejects.toBe(error);
+		expect(sheet.pendingCount).toBe(1);
+		expect(parent.forgetSheet).not.toHaveBeenCalled();
+	});
+});
+
+describe('Sheet.move', () => {
+	test('sends updateSheetProperties for index and refreshes cached indices', async () => {
+		const parent = {
+			batchUpdate: vi.fn().mockResolvedValue({}),
+			refreshCachedSheetIndices: vi.fn().mockResolvedValue(),
+		};
+		const sheet = new Sheet(
+			{ properties: { title: 'S1', sheetId: 1, index: 0 } } as never,
+			parent as never,
+		);
+
+		await sheet.move(2);
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			updateSheetProperties: {
+				fields: 'index',
+				properties: { sheetId: 1, index: 2 },
+			},
+		});
+		expect(parent.refreshCachedSheetIndices).toHaveBeenCalledTimes(1);
+	});
+
+	test('does not refresh cached indices when the move request fails', async () => {
+		const error = new Error('move failed');
+		const parent = {
+			batchUpdate: vi.fn().mockRejectedValue(error),
+			refreshCachedSheetIndices: vi.fn().mockResolvedValue(),
+		};
+		const sheet = new Sheet(
+			{ properties: { title: 'S1', sheetId: 1, index: 0 } } as never,
+			parent as never,
+		);
+
+		await expect(sheet.move(2)).rejects.toBe(error);
+		expect(parent.refreshCachedSheetIndices).not.toHaveBeenCalled();
+	});
+
+	test('keeps move successful when index refresh fails after batchUpdate', async () => {
+		const refreshError = new Error('refresh failed');
+		const parent = {
+			batchUpdate: vi.fn().mockResolvedValue({}),
+			refreshCachedSheetIndices: vi.fn().mockRejectedValue(refreshError),
+		};
+		const sheet = new Sheet(
+			{ properties: { title: 'S1', sheetId: 1, index: 0 } } as never,
+			parent as never,
+		);
+
+		await expect(sheet.move(2)).resolves.toBeUndefined();
+		expect(sheet.props.index).toBe(2);
+	});
+});
+
+describe('Sheet.hide', () => {
+	test('sends updateSheetProperties for hidden and updates local props', async () => {
+		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
+		const sheetData = { properties: { title: 'Hidden', sheetId: 4, hidden: false } };
+		const sheet = new Sheet(sheetData as never, parent as never);
+
+		await sheet.hide();
+
+		expect(parent.batchUpdate).toHaveBeenCalledWith({
+			updateSheetProperties: {
+				fields: 'hidden',
+				properties: { sheetId: 4, hidden: true },
+			},
+		});
+		expect(sheet.props.hidden).toBe(true);
+	});
+
+	test('keeps hidden false when the hide request fails', async () => {
+		const error = new Error('hide failed');
+		const parent = { batchUpdate: vi.fn().mockRejectedValue(error) };
+		const sheet = new Sheet(
+			{ properties: { title: 'Hidden', sheetId: 4, hidden: false } } as never,
+			parent as never,
+		);
+
+		await expect(sheet.hide()).rejects.toBe(error);
+		expect(sheet.props.hidden).toBe(false);
+	});
+});
+
 describe('Sheet.frozen', () => {
 	const mockSheet = {
 		properties: { title: 'TestSheet', sheetId: 0 },
