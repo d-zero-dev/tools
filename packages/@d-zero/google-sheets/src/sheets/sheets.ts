@@ -148,6 +148,20 @@ export class Sheets {
 		return sheet;
 	}
 
+	/**
+	 * タイトルキーのキャッシュからシートを外す。`Sheet.delete` 成功後に呼ぶ。
+	 * `create()` が削除済みシートを古いキャッシュから返さないようにする。
+	 * @internal
+	 * @param title - キャッシュキーだったシート名
+	 * @example
+	 * ```ts
+	 * // Sheet.delete の内部からのみ想定
+	 * sheets.forgetSheet('Temp');
+	 * ```
+	 */
+	forgetSheet(title: string) {
+		this.#sheetList.delete(title);
+	}
 	async get(
 		request: Omit<sheets_v4.Params$Resource$Spreadsheets$Values$Get, 'spreadsheetId'>,
 	) {
@@ -179,5 +193,44 @@ export class Sheets {
 			});
 			return res;
 		});
+	}
+
+	/**
+	 * リモートのシート一覧で、キャッシュ済みシートの `index` を揃える。
+	 * `Sheet.move` は他シートの index もずらすため、移動成功後に呼ぶ。
+	 * @internal
+	 * @example
+	 * ```ts
+	 * // Sheet.move の内部からのみ想定
+	 * await sheets.refreshCachedSheetIndices();
+	 * ```
+	 */
+	async refreshCachedSheetIndices() {
+		const list = await this.getRawSheetList();
+		for (const raw of list) {
+			const title = raw.properties?.title;
+			const index = raw.properties?.index;
+			if (title == null || index == null) {
+				continue;
+			}
+			const sheet = this.#sheetList.get(title);
+			sheet?.syncIndex(index);
+		}
+	}
+	/**
+	 * タイトル変更後にキャッシュのキーを付け替える。`Sheet.rename` 成功後に呼ぶ。
+	 * @internal
+	 * @param oldTitle - 変更前のシート名
+	 * @param newTitle - 変更後のシート名
+	 * @param sheet - 同じインスタンス
+	 * @example
+	 * ```ts
+	 * // Sheet.rename の内部からのみ想定
+	 * sheets.rekeySheet('Old', 'New', sheet);
+	 * ```
+	 */
+	rekeySheet(oldTitle: string, newTitle: string, sheet: Sheet) {
+		this.#sheetList.delete(oldTitle);
+		this.#sheetList.set(newTitle, sheet);
 	}
 }
