@@ -52,6 +52,10 @@ jobs:
           fi
       - name: Publish
         run: npx lerna publish from-package --dist-tag ${{ steps.dist-tag.outputs.tag }} --yes
+      # First publish can leave package.json dirty (gitHead etc.), which makes
+      # a bare retry fail with EUNCOMMIT before it can recover from sigstore 409.
       - name: Publish (retry on transient sigstore 409)
         if: failure()
-        run: npx lerna publish from-package --dist-tag ${{ steps.dist-tag.outputs.tag }} --yes
+        run: |
+          git restore .
+          npx lerna publish from-package --dist-tag ${{ steps.dist-tag.outputs.tag }} --yes
