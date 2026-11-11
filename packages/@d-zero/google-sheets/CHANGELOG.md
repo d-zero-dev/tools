@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.13.0](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fgoogle-sheets%400.12.1...%40d-zero%2Fgoogle-sheets%400.13.0) (2026-11-11)
+
+### Features
+
+- **google-sheets:** add sheet rename, protect, delete, move, and hide ([3aa44fb](https://github.com/d-zero-dev/tools/commit/3aa44fb345b26f1101eaea9162e1bf07b4164a2b))
+
 ## [0.12.1](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fgoogle-sheets%400.12.0...%40d-zero%2Fgoogle-sheets%400.12.1) (2026-10-27)
 
 ### Bug Fixes

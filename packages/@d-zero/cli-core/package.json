@@ -1,6 +1,6 @@
 {
 	"name": "@d-zero/cli-core",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"description": "Common CLI utilities for D-Zero tools",
 	"author": "D-ZERO",
 	"license": "MIT",
@@ -25,7 +25,7 @@
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
-		"@d-zero/shared": "0.23.0",
+		"@d-zero/shared": "0.23.1",
 		"minimist": "1.2.8"
 	},
 	"devDependencies": {

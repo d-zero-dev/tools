@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.8](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Ffs%400.2.7...%40d-zero%2Ffs%400.2.8) (2026-11-11)
+
+### Bug Fixes
+
+- **fs:** abort archive when zip output fails ([4c37c65](https://github.com/d-zero-dev/tools/commit/4c37c65229846577c4bb437915978a45579b1c22))
+
 ## [0.2.7](https://github.com/d-zero-dev/tools/compare/@d-zero/fs@0.2.6...@d-zero/fs@0.2.7) (2026-08-14)
 
 ### Bug Fixes
