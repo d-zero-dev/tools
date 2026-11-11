@@ -2,7 +2,13 @@ export type { Sheet } from './sheets/sheet.js';
 export type { ErrorHandlerMessage } from './sheets/error-handler.js';
 export { Cell } from './sheets/cell.js';
 export { createCellData } from './create-cell-data.js';
-export type { CellData, CellRawData, Row, CellTypeInfo } from './sheets/types.js';
+export type {
+	CellData,
+	CellRawData,
+	Row,
+	CellTypeInfo,
+	SheetProtectOptions,
+} from './sheets/types.js';
 
 export { createSpreadsheet } from './create-spreadsheet.js';
 export { parseGoogleUrl } from './sheets/parse-google-url.js';

@@ -58,6 +58,36 @@ const sheetUrl =
 const sheets = new Sheets(sheetUrl, auth);
 ```
 
+### シートの構造操作
+
+`Sheets.create` で得た `Sheet` に対して、名前変更・保護・削除・並び替え・非表示ができる。再表示（unhide）と保護解除（unprotect）の API は提供しない。
+
+```ts
+const sheet = await sheets.create('集計');
+
+await sheet.rename('集計 v2');
+await sheet.move(0);
+await sheet.hide();
+
+// editors を渡す（推奨）
+await sheet.protect({
+	editors: ['owner@example.com', 'editor@example.com'],
+	description: '自動生成の集計シート',
+});
+
+await sheet.delete();
+```
+
+#### `protect` の `editors`（期待とずれやすい）
+
+- **省略または空配列**にすると、シートを編集できるのはスプレッドシートの**所有者だけ**になる。ファイルの編集権限があってもシートは編集できない
+- 実行者が所有者でないのに自分のメールを入れ忘れると、**自分も編集できなくなる**
+- セルを編集できる人と、UI の「シートと範囲を保護」からその保護を変更・削除できる人は**同じ集合**。所有者は常に両方できる。「誰もセルを触れない」と「ファイル編集者の誰でも解除できる」は分けられない
+- セキュリティ境界ではない。印刷・コピー・貼り付け・書き出しで内容は持ち出せる。ブックのコピーにこの保護は残らない
+- `warningOnly: true` は確認ダイアログだけで誰でも編集できる。ダイアログの文言は固定で、任意の文は定義できない。このとき `editors` は送らない
+- `description` は右パネル「シートと範囲を保護」の見出しになるだけ。権限とダイアログ本文は変わらない
+- 対象はセルの値だけではない。書式だけをロックして値の入力は許す分け方はできない。全員に見えるフィルタは、保護された範囲にかかると作成・変更できない。自分だけのフィルタ表示は作れる
+
 書式・条件付き書式・読み取り API は `src/sheet-table.ts` の JSDoc を参照。
 
 ## 重要な制約
