@@ -1,5 +1,3 @@
-/* eslint-disable jsdoc/check-param-names */
-
 import type { KeyValue, Separator } from './types.js';
 
 import fs from 'node:fs/promises';
