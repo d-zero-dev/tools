@@ -26,4 +26,4 @@ const listen = createListener<Phases>((log) => ({
 listen('start', { name: 'desktop', url: 'https://example.com' });
 ```
 
-各フェーズハンドラはオプショナル。`name` フィールドがラベルとして表示される。
+各フェーズハンドラはオプショナル。`name`フィールドがラベルとして表示される。
