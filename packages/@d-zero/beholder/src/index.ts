@@ -10,7 +10,7 @@
  *
  * The main entry point is the `Scraper` class (default export).
  */
-export { default as default } from './scraper.js';
+export { default } from './scraper.js';
 export { isError } from './is-error.js';
 export { extractMetaFromDocument } from './extract-meta.js';
 export type { ExtractMetaContext } from './extract-meta.js';

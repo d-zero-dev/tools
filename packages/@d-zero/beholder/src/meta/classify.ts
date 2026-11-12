@@ -157,12 +157,7 @@ export function setByPath(
 function applyKeyDef(meta: Meta, def: KeyDef, rawValue: string): void {
 	const value = normalizeValue(rawValue, def.transform);
 	for (const path of def.paths) {
-		setByPath(
-			meta as unknown as Record<string, unknown>,
-			path,
-			value,
-			def.multi === true,
-		);
+		setByPath(meta, path, value, def.multi === true);
 	}
 }
 
