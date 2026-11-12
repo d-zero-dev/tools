@@ -97,6 +97,9 @@
 		"Divi",
 
 		// anatomist layout classification terminology
-		"misparse"
+		"misparse",
+
+		// npm CLI error codes
+		"EUNCOMMIT"
 	]
 }
