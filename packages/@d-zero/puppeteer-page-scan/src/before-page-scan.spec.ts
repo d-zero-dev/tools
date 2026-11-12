@@ -1,3 +1,4 @@
+import type * as PuppeteerScroll from '@d-zero/puppeteer-scroll';
 import type { Page } from 'puppeteer';
 
 import { scrollAllOver } from '@d-zero/puppeteer-scroll';
@@ -7,7 +8,7 @@ import { beforePageScan } from './before-page-scan.js';
 import { NavigationUnsettledError } from './navigation-unsettled-error.js';
 
 vi.mock('@d-zero/puppeteer-scroll', async () => {
-	const actual = await vi.importActual<typeof import('@d-zero/puppeteer-scroll')>(
+	const actual = await vi.importActual<typeof PuppeteerScroll>(
 		'@d-zero/puppeteer-scroll',
 	);
 	return {
