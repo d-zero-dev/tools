@@ -1,6 +1,6 @@
 # `@d-zero/print`
 
-Puppeteer でマルチデバイス対応のスクリーンショットを撮影する CLI / ライブラリ。`png` / `pdf` / `note`（メモ欄付き PDF）に対応。
+Puppeteer でマルチデバイス対応のスクリーンショットを撮影する CLI/ライブラリ。`png`/`pdf`/`note`（メモ欄付き PDF）に対応。
 
 ## Installation
 
@@ -15,7 +15,7 @@ npx @d-zero/print <url>... [options]
 npx @d-zero/print -f <listfile> [options]
 ```
 
-オプションは `--help`、デバイスプリセットは [`@d-zero/puppeteer-page-scan`](../puppeteer-page-scan/) を参照。
+オプションは`--help`、デバイスプリセットは[`@d-zero/puppeteer-page-scan`](../puppeteer-page-scan/)を参照。
 
 ### URL リストファイル
 
@@ -38,7 +38,7 @@ hooks:
 https://example.com
 ```
 
-`hooks` ファイルパスを通じて Puppeteer 実行側プロセスでフックが実行される。IPC 越境のため**関数配列ではなくパスを渡す**仕様（詳細は [`@d-zero/puppeteer-page-scan`](../puppeteer-page-scan/) の `PageHookSource`）。
+`hooks`ファイルパスを通じて Puppeteer 実行側プロセスでフックが実行される。IPC 越境のため**関数配列ではなくパスを渡す**仕様（詳細は[`@d-zero/puppeteer-page-scan`](../puppeteer-page-scan/)の`PageHookSource`）。
 
 ### Basic 認証
 
@@ -46,11 +46,11 @@ URL に資格情報を含める: `https://user:pass@example.com`
 
 ### `--open-disclosures`
 
-撮影前に `<details>` と `button[aria-expanded="false"]` をすべて展開。最大 1000 イテレーション・各 500ms 待機。終了条件と制限の WHY は `src/print.ts` の JSDoc を参照。
+撮影前に`<details>`と`button[aria-expanded="false"]`をすべて展開。最大 1000 イテレーション・各 500ms 待機。終了条件と制限の WHY は`src/print.ts`の JSDoc を参照。
 
 ### スクロール挙動
 
-未指定時は人間らしいランダム化が掛かる。**決定論が必要な場合（VRT、レコーディング、比較など）は `scrollInterval` / `scrollDistance` を明示**する。詳細は [`@d-zero/puppeteer-scroll`](../puppeteer-scroll/)。
+未指定時は人間らしいランダム化が掛かる。**決定論が必要な場合（VRT、レコーディング、比較など）は`scrollInterval` / `scrollDistance`を明示**する。詳細は[`@d-zero/puppeteer-scroll`](../puppeteer-scroll/)。
 
 ## Library
 
@@ -67,4 +67,4 @@ await print(['https://example.com'], {
 });
 ```
 
-`hooks` は `PageHookSource`（パス + baseDir）形式で渡す。詳細は [MIGRATION-page-hooks.md](../../../MIGRATION-page-hooks.md)。
+`hooks`は`PageHookSource`（パス + baseDir）形式で渡す。詳細は[MIGRATION-page-hooks.md](../../../MIGRATION-page-hooks.md)。
