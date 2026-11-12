@@ -23,6 +23,6 @@ const result = await screenshot(page, 'https://example.com', {
 });
 ```
 
-`path` を指定すると `save@desktop.png`、`save@mobile.png` のようにサイズ別に保存される。オプション詳細は型定義を参照。
+`path`を指定すると`save@desktop.png`、`save@mobile.png`のようにサイズ別に保存される。オプション詳細は型定義を参照。
 
-スクロール挙動（`scrollInterval` / `scrollDistance`）の決定論的指定が必要なら [`@d-zero/puppeteer-scroll`](../puppeteer-scroll/) を参照。
+スクロール挙動（`scrollInterval`/`scrollDistance`）の決定論的指定が必要なら[`@d-zero/puppeteer-scroll`](../puppeteer-scroll/)を参照。
