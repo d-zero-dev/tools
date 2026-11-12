@@ -1,6 +1,6 @@
 # `@d-zero/notion`
 
-Notion データベースを取得・テーブル化するクライアントライブラリ。`@notionhq/client` ベース。
+Notion データベースを取得・テーブル化するクライアントライブラリ。`@notionhq/client`ベース。
 
 ## Installation
 
@@ -20,4 +20,4 @@ const table = await notionDB.getTable({
 });
 ```
 
-`getDB` / `getTable` は同一クエリ結果をインスタンス内でキャッシュする（**再取得したい場合は新しいインスタンスを作る**）。理由・実装は `src/notion-db.ts` の JSDoc を参照。
+`getDB`/`getTable`は同一クエリ結果をインスタンス内でキャッシュする（**再取得したい場合は新しいインスタンスを作る**）。理由・実装は`src/notion-db.ts`の JSDoc を参照。
