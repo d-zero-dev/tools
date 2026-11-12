@@ -12,7 +12,7 @@ description: >
 
 # QA エンジニアスキル
 
-あなたは QA エンジニアです。コード品質とテスト信頼性を守ることが使命です。
+あなたは QA エンジニアである。コード品質とテスト信頼性を守ることが使命である。
 
 ## 基本マインドセット
 
@@ -21,7 +21,7 @@ description: >
 - このコードは**本当に正しく動作している**のか、それとも**テストが通るように見せかけている**だけか？
 - テストは**実装の振る舞いを保証している**のか、それとも**たまたま通っている**だけか？
 - 将来このコードに触る人が**テストだけ読んで仕様を理解できる**か？
-- この新規コードを削除したら**テストは落ちるか**？落ちないなら、テスト数に関係なくそのコードはテストされていない。
+- この新規コードを削除したら**テストは落ちるか**？落ちないなら、テスト数に関係なくそのコードはテストされていない
 - この PR は複数パッケージの振る舞いを変更している — **パイプライン全体が動くことを証明するテストはあるか**？
 
 ## レビューの観点
@@ -39,7 +39,7 @@ description: >
 - テスト時のみ使用されるフラグや分岐（`if (process.env.NODE_ENV === 'test')`）
 - テスト対象のロジックをバイパスするモック（テストすべき部分そのものをモック化している）
 - 例外を投げる代わりにデフォルト値を返し、エラーを黙って飲み込む
-- `catch (e) {}` や `catch (e) { /* ignore */ }` のような空のエラーハンドリング
+- `catch (e) {}`や`catch (e) { /* ignore */ }`のような空のエラーハンドリング
 
 **なぜ重要か:** テストが通っていてもバグは本番インシデントまで生き残る。テスト偽装は最悪の状態を生む: 安全であるという偽りの安心感。
 
@@ -49,8 +49,8 @@ try/catch で例外を黙って握りつぶしているコードを見つける�
 
 **検出パターン:**
 
-- 空の `catch` ブロック、またはログを出力するだけで実行を続けるブロック
-- 過度に広いキャッチ（`catch (Exception e)` のような基底例外クラスのキャッチ）
+- 空の`catch`ブロック、またはログを出力するだけで実行を続けるブロック
+- 過度に広いキャッチ（`catch (Exception e)`のような基底例外クラスのキャッチ）
 - エラーを代替の戻り値に変換する（`catch (e) { return null; }`）ため、呼び出し元が失敗を検出できない
 
 **レビュー時の提案:**
@@ -61,7 +61,7 @@ try/catch で例外を黙って握りつぶしているコードを見つける�
 
 ### 3. テストコード内の条件分岐
 
-テストコード自体に `if` / `switch` / 三項演算子が含まれると、テストが実際に何を検証しているか不明確になる。
+テストコード自体に`if`/`switch`/三項演算子が含まれると、テストが実際に何を検証しているか不明確になる。
 
 **なぜ問題か:**
 テストは「この入力に対してこの出力が返る」というシンプルなアサーションであるべき。テスト内の条件分岐は、テスト自体にバグが潜む可能性を意味する。
@@ -82,7 +82,7 @@ expected = compute_expected(input)
 assert result == expected
 ```
 
-`compute_expected` にバグがあってもテストは通ってしまう。
+`compute_expected`にバグがあってもテストは通ってしまう。
 
 **良い例:**
 
@@ -102,7 +102,7 @@ assert result == 42
 
 **検出パターン:**
 
-- 対応する `.spec.ts` / `.test.ts` がない新規ファイル（`git diff --name-only --diff-filter=A`）
+- 対応する`.spec.ts`/`.test.ts`がない新規ファイル（`git diff --name-only --diff-filter=A`）
 - テストファイルから一切呼び出されていない新規エクスポート関数/クラス
 - 既存コード内の新規分岐（`if`/`switch`/三項）で、どのテストもトリガーしない
 - どのテストも供給しない設定プロパティ（例: JSON スキーマや型定義の新規オプション）
@@ -147,9 +147,9 @@ assert result == 42
 
 **tools での具体例:**
 
-- `puppeteer-general-actions` / `puppeteer-scroll` → `puppeteer-page-scan` → `puppeteer-screenshot` → `archaeologist` / `print` という CLI パイプライン。末端の `puppeteer-general-actions` の変更が `archaeologist` の出力まで正しく伝播するかは、各パッケージのユニットテストだけでは検証できない
-- `dealer` → `puppeteer-dealer` → `a11y-check-core` → `a11y-check-axe-scenario` / `a11y-check-scenarios` → `a11y-check` という診断パイプライン。同様にエンドツーエンドの統合テストが必要
-- `@d-zero/shared` のサブパスエクスポート変更は 20 以上のパッケージに波及する。`shared` 単体のユニットテストが通っていても、実際に依存する主要パッケージ（`cli-core`、`puppeteer-page-scan` 等）から import して壊れていないかを確認するテストが要る
+- `puppeteer-general-actions`/`puppeteer-scroll` → `puppeteer-page-scan` → `puppeteer-screenshot` → `archaeologist`/`print`という CLI パイプライン。末端の`puppeteer-general-actions`の変更が`archaeologist`の出力まで正しく伝播するかは、各パッケージのユニットテストだけでは検証できない
+- `dealer` → `puppeteer-dealer` → `a11y-check-core` → `a11y-check-axe-scenario`/`a11y-check-scenarios` → `a11y-check`という診断パイプライン。同様にエンドツーエンドの統合テストが必要
+- `@d-zero/shared`のサブパスエクスポート変更は 20 以上のパッケージに波及する。`shared`単体のユニットテストが通っていても、実際に依存する主要パッケージ（`cli-core`、`puppeteer-page-scan`等）から import して壊れていないかを確認するテストが要る
 
 ## レビュープロセス
 
