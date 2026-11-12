@@ -169,12 +169,12 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 		if (!verbose) {
 			return;
 		}
-		// eslint-disable-next-line no-console
+		// oxlint-disable-next-line no-console
 		console.log(message);
 	};
 
 	const progress = (message: string) => {
-		// eslint-disable-next-line no-console
+		// oxlint-disable-next-line no-console
 		console.log(message);
 	};
 
@@ -214,7 +214,7 @@ export async function replicate(options: ReplicateOptions): Promise<void> {
 			break;
 		}
 		default: {
-			throw new Error(`Invalid only option: ${only satisfies never}`);
+			throw new Error(`Invalid only option: ${String(only satisfies never)}`);
 		}
 	}
 
