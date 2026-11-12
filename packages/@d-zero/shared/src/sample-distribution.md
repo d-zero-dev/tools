@@ -145,7 +145,7 @@ sampleDistribution(
 
 ### 右に偏った分布（Right-Skewed Distribution）
 
-大きい値ほど確率が高い分布。線形の重み関数 `w(t) = t` を使用します。
+大きい値ほど確率が高い分布。線形の重み関数`w(t) = t`を使用します。
 
 ```typescript
 sampleDistribution({ min: 0, max: 100 }, 'right-skewed');
@@ -159,7 +159,7 @@ sampleDistribution({ min: 0, max: 100 }, 'right-skewed');
 
 ### 左に偏った分布（Left-Skewed Distribution）
 
-小さい値ほど確率が高い分布。線形の重み関数 `w(t) = 1 - t` を使用します。
+小さい値ほど確率が高い分布。線形の重み関数`w(t) = 1 - t`を使用します。
 
 ```typescript
 sampleDistribution({ min: 0, max: 100 }, 'left-skewed');
