@@ -141,7 +141,6 @@ await deal(
 	},
 );
 
-// eslint-disable-next-line no-console
 console.log(
 	`\n${c.green.bold('\u2728')} All ${TOTAL} items done (concurrency: ${CONCURRENCY}, fps: 60)`,
 );

@@ -45,7 +45,7 @@ class Steps {
 		let i = 0;
 		for (const step of steps) {
 			await delay(step, (determinedInterval) => {
-				this.#listener?.('step', i, determinedInterval);
+				void this.#listener?.('step', i, determinedInterval);
 			});
 			i++;
 		}

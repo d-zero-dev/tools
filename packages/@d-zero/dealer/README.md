@@ -26,7 +26,7 @@ await deal(
 );
 ```
 
-`setup` コールバックは「初期化」を同期で行い、「実行関数」を返す形（並列度を超えた分はキューに入る）。`push` / `unshift` で実行中に新規アイテムを動的に追加可能。
+`setup`コールバックは「初期化」を同期で行い、「実行関数」を返す形（並列度を超えた分はキューに入る）。`push`/`unshift`で実行中に新規アイテムを動的に追加可能。
 
 ### キャンセル（`AbortSignal`）
 
@@ -37,9 +37,9 @@ setTimeout(() => controller.abort(), 30_000);
 await deal(items, setup, { limit: 10, signal: controller.signal });
 ```
 
-abort 時の挙動: **新規ワーカー起動を停止、実行中ワーカーは完了まで待機、`push`/`unshift` は無視**。詳細は `src/deal.ts` / `src/dealer.ts` の JSDoc。
+abort 時の挙動: **新規ワーカー起動を停止、実行中ワーカーは完了まで待機、`push`/`unshift`は無視**。詳細は`src/deal.ts`/`src/dealer.ts`の JSDoc。
 
-### 実行中の並列数変更・外部 `Lanes` の再利用
+### 実行中の並列数変更・外部`Lanes`の再利用
 
 ```ts
 import { deal, Lanes } from '@d-zero/dealer';
@@ -61,7 +61,7 @@ onExternalCommand((newLimit) => controller?.setLimit(newLimit));
 await run;
 ```
 
-`lanes` を渡すと `deal()` は自前で `Lanes` を作らず、渡されたインスタンスの生成・破棄は呼び出し元の責任になる。`onStart` は `dealer.play()` 直前に一度呼ばれ、`controller.setLimit(n)` を **`await deal(...)` が解決する前に** 呼ぶことで実行中に並列数を変更できる（`Lanes#footer(text)` と組み合わせれば、外部からの入力受付 UI を並列レーンの下に固定表示できる）。
+`lanes`を渡すと`deal()`は自前で`Lanes`を作らず、渡されたインスタンスの生成・破棄は呼び出し元の責任になる。`onStart`は`dealer.play()`直前に一度呼ばれ、`controller.setLimit(n)`を **`await deal(...)`が解決する前に** 呼ぶことで実行中に並列数を変更できる（`Lanes#footer(text)`と組み合わせれば、外部からの入力受付 UI を並列レーンの下に固定表示できる）。
 
 ## Sequential Pipeline（`TaskList`）
 
@@ -78,16 +78,16 @@ const id = await TaskList.pipe('fetch', async () => fetchUser(userId))
 	.run();
 ```
 
-`.pipe()` を連結するたびに前段の戻り値を受け取り型変換する新しいステップが追加され、`run()` を呼ぶと全ステップを最初から `[ ] タスク名: 進捗メッセージ` の形式で表示し、先頭から逐次実行しながら状態（pending/running/done/error）を更新する。あるステップが失敗すると即座に停止し、`TaskListStepError` で reject する（後続ステップは実行されない）。
+`.pipe()`を連結するたびに前段の戻り値を受け取り型変換する新しいステップが追加され、`run()`を呼ぶと全ステップを最初から`[ ] タスク名: 進捗メッセージ`の形式で表示し、先頭から逐次実行しながら状態（pending/running/done/error）を更新する。あるステップが失敗すると即座に停止し、`TaskListStepError`で reject する（後続ステップは実行されない）。
 
-- 各パイプラインインスタンスの `run()` は1回のみ呼び出せる（再実行したい場合は `TaskList.pipe()` から新しく構築する）
-- `ctx.insertNext()` で、実行中に同じ型のステップを直後へ動的に割り込み挿入できる
-- 詳細は `src/task-list-pipeline.ts` / `src/types.ts` の JSDoc を参照
+- 各パイプラインインスタンスの`run()`は1回のみ呼び出せる（再実行したい場合は`TaskList.pipe()`から新しく構築する）
+- `ctx.insertNext()`で、実行中に同じ型のステップを直後へ動的に割り込み挿入できる
+- 詳細は`src/task-list-pipeline.ts`/`src/types.ts`の JSDoc を参照
 
 ## 重要な制約
 
-- **`interval` 遅延はアイテム開始の「直後・最初の出力前」**に実行される（順序に注意）
-- **`unshift` は既存キューの先頭に割り込む**（優先度の高い動的追加用、push との順序を理解する必要あり）
-- **`Lanes` を直接使う場合は `using` 宣言（`Symbol.dispose`）で自動解放**する（leak 防止）。スコープと解放タイミングが一致しない場合のみ `close()` を直接呼ぶ（`close()` は deprecated）
+- **`interval`遅延はアイテム開始の「直後・最初の出力前」**に実行される（順序に注意）
+- **`unshift`は既存キューの先頭に割り込む**（優先度の高い動的追加用、push との順序を理解する必要あり）
+- **`Lanes`を直接使う場合は`using`宣言（`Symbol.dispose`）で自動解放**する（leak 防止）。スコープと解放タイミングが一致しない場合のみ`close()`を直接呼ぶ（`close()`は deprecated）
 
-これらの背景と実装は `src/deal.ts` / `src/dealer.ts` / `src/lanes.ts` の JSDoc を参照。
+これらの背景と実装は`src/deal.ts`/`src/dealer.ts`/`src/lanes.ts`の JSDoc を参照。

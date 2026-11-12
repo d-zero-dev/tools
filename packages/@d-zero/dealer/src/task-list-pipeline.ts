@@ -20,7 +20,8 @@ const DEFAULT_ELAPSED_INTERVAL_MS = 250;
  */
 interface StepRecord {
 	readonly name: string;
-	readonly fn: (input: unknown, ctx: StepContext<unknown>) => unknown | Promise<unknown>;
+	/** 型消去済みのため戻り値は同期値・Promise のどちらもありうる `unknown` として扱う */
+	readonly fn: (input: unknown, ctx: StepContext<unknown>) => unknown;
 	/**
 	 * `Lanes.update()` の `id` として使う、生成時点で確定する固有の識別子。
 	 * 配列内の物理的な位置（`insertNext` による動的挿入で変化する）とは独立しており、
@@ -194,7 +195,7 @@ export class TaskListPipeline<T> {
 						nextLaneId == null ? prevLaneId + 1 : (prevLaneId + nextLaneId) / 2;
 					this.#steps.splice(insertCursor + 1, 0, {
 						name,
-						fn: fn as StepRecord['fn'],
+						fn,
 						laneId,
 						state: 'pending',
 						message: '',

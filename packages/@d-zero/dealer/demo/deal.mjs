@@ -41,7 +41,7 @@ class Steps {
 		let i = 0;
 		for (const step of steps) {
 			await delay(step, (determinedInterval) => {
-				this.#listener?.('step', i, determinedInterval);
+				void this.#listener?.('step', i, determinedInterval);
 			});
 			i++;
 		}
@@ -96,7 +96,6 @@ const stepsCollection = [
 
 await deal(
 	stepsCollection,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	(steps, update, index, _setLineHeader) => {
 		steps.addListener((type, stepCount, delay) => {
 			update(
@@ -117,5 +116,4 @@ await deal(
 	},
 );
 
-// eslint-disable-next-line no-console
 console.log('✨ Done!');
