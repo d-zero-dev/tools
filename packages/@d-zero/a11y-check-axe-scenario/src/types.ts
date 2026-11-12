@@ -35,7 +35,7 @@ export type AxeRuleId =
 	| 'bypass'
 	| 'color-contrast'
 	| 'definition-list'
-	| 'dlitem' // cspell:disable-line
+	| 'dlitem'
 	| 'document-title'
 	| 'duplicate-id-aria'
 	| 'form-field-multiple-labels'
