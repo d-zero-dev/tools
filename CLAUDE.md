@@ -4,105 +4,108 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 概要
 
-D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero-dev/tools`）。Lerna + Yarn Workspaces のモノレポ構成で、`@d-zero/` スコープ配下に多数のライブラリ／CLI を提供する（**independent バージョンモード**）。
+D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero-dev/tools`）。Lerna + Yarn Workspaces のモノレポ構成で、`@d-zero/`スコープ配下に多数のライブラリ／CLI を提供する（**independent バージョンモード**）。
 
 ## プロジェクト構成
 
 作業前に以下のファイルを確認し、プロジェクトの状態を把握すること:
 
-- `package.json` — scripts、devDependencies、Volta（Node 24 / Yarn 4）
+- `package.json` — scripts、devDependencies、Volta（Node 24/Yarn 4）
 - `lerna.json` — **independent バージョンモード**、`packages/@d-zero/*`
 - `README.md` — リポジトリ概要
 - `tsconfig.json` — TypeScript 設定
-- 各パッケージの構成は `packages/@d-zero/*/package.json` を参照
+- `oxlint.config.mts`、`.oxfmtrc.json` — lint/フォーマッタの設定。ESLint 専用だったルール（`#private`の強制など）は無くなっており、一覧は`oxlint.config.mts`のヘッダーにある
+- 各パッケージの構成は`packages/@d-zero/*/package.json`を参照
 
 ## コマンド
 
 - `yarn build` — 全パッケージビルド（`lerna run build`）
 - `yarn watch` — `lerna run watch --parallel`
 - `yarn test` — Vitest によるテスト実行
-- `yarn lint` — eslint / prettier / textlint / cspell を直列実行
-- `yarn release` / `yarn release:alpha` 等 — リリース用。**ユーザーのみ実行可**（エージェントは実行しない）。手順は `.claude/skills/npm-publish/SKILL.md` に従う
-- **git worktree からのビルドは `NX_WORKSPACE_ROOT_PATH` 必須**: リポジトリ内部にネストした worktree（`.claude/worktrees/*` 等）から素の `yarn build` を実行すると、Nx がルートをメインチェックアウトに誤解決し、成功表示のまま成果物がメイン側に書かれる（worktree の `lib/` は生成されない）。`NX_WORKSPACE_ROOT_PATH=<worktree絶対パス> yarn build` でルートを明示すること
+- `yarn lint` — oxlint（型情報あり）/oxfmt/textlint を直列実行（書き換えあり）。**型情報ルールが各パッケージの`dist/*.d.ts`を読むため、先に`yarn build`を済ませること**。スペルチェックは無い。実行順は oxlint → textlint:fix → oxfmt → textlint:check で固定する（textlint の自動修正が Markdown の表の列幅を崩すため、oxfmt をその後ろに置かないと`yarn lint:check`が通らない）。worktree では、先に`NX_WORKSPACE_ROOT_PATH`つきで`yarn build`しないと lint が読む`dist/`が古い・無いまま走る
+- **`oxlint-disable`は理由つきで**: 抑制するときは同じ行に`-- <Why>`を書き、ルールを無効にする前にユーザーに聞く
+- `yarn lint:check` — `yarn lint`と同じ検査を書き換えずに行う（CI が使う）。pre-commit（lint-staged）の oxlint は型情報なしなので、型情報ルールは`yarn lint`/CI で初めて報告される
+- `yarn release`/`yarn release:alpha`等 — リリース用。**ユーザーのみ実行可**（エージェントは実行しない）。手順は`.claude/skills/npm-publish/SKILL.md`に従う
+- **git worktree からのビルドは`NX_WORKSPACE_ROOT_PATH`必須**: リポジトリ内部にネストした worktree（`.claude/worktrees/*`等）から素の`yarn build`を実行すると、Nx がルートをメインチェックアウトに誤解決し、成功表示のまま成果物がメイン側に書かれる（worktree の`dist/`は生成されない）。`NX_WORKSPACE_ROOT_PATH=<worktree絶対パス> yarn build`でルートを明示すること
 
 ### コマンド制約
 
-- **yarn のみ使用**: npm / pnpm / bun / deno によるコマンド実行は禁止
+- **yarn のみ使用**: npm/pnpm/bun/deno によるコマンド実行は禁止
 - **パッケージディレクトリに cd しない**: 常にリポジトリルートから実行
-- **全体実行の強制**: 時間がかかっても `yarn build` / `yarn lint` / `yarn test` のリポジトリ全体実行を使う。`tsc` / `eslint` / `prettier` の単発実行・ファイルスコープ実行（`npx tsc`、`lerna run build --scope`、`npx eslint <file>` 等）は禁止
+- **全体実行の強制**: 時間がかかっても`yarn build`/`yarn lint`/`yarn test`のリポジトリ全体実行を使う。`tsc`/`oxlint`/`oxfmt`の単発実行・ファイルスコープ実行（`npx tsc`、`lerna run build --scope`、`oxlint <file>`等）は禁止
 - **コマンドの連続実行禁止**: `&&`、`;`、改行によるコマンド連結をしない。1回の Bash 呼び出しで1コマンドのみ実行する。連結されたコマンドは settings.json の permissions allow/deny でパターンマッチできず、毎回ユーザーの手動承認が必要になり効率が大幅に低下する
-- **main / dev ブランチでの作業・コミット禁止**: 作業開始前に `git branch --show-current` で現ブランチを確認し、`main` / `master` / `dev` / `develop` にいる場合は `git switch -c <topic>` でトピックブランチを作ってから作業する
+- **main / dev ブランチでの作業・コミット禁止**: 作業開始前に`git branch --show-current`で現ブランチを確認し、`main`/`master`/`dev`/`develop`にいる場合は`git switch -c <topic>`でトピックブランチを作ってから作業する
 
 ## アーキテクチャ
 
-各パッケージの責務・依存関係はソースコードと `package.json` の `dependencies` から把握すること。設計判断の WHY は該当コード位置の JSDoc に記載する（例: `puppeteer-page-scan/src/types.ts` の `PageHookSource`、`dealer/src/deal.ts` の `AbortSignal` 挙動）。
+各パッケージの責務・依存関係はソースコードと`package.json`の`dependencies`から把握すること。設計判断の WHY は該当コード位置の JSDoc に記載する（例: `puppeteer-page-scan/src/types.ts`の`PageHookSource`、`dealer/src/deal.ts`の`AbortSignal`挙動）。
 
 ## ドキュメント原則
 
 情報は置き場で役割が決まる。**コードには How、テストコードには What、コミットログには Why、コードコメントには Why not**（Why が必要なときは Why も書く）。
 
-- **JSDoc = 公開 API（export）の API ユーザー向け文書**: IDE ホバーで実装を読まない読者に届くため、WHAT / HOW / WHY を適切に書き、`@example` を必須とする。メインの公開 API は README にも載せる
-- **非公開 API の JSDoc は必須にしない**: ただし複雑な内部モジュールの設計 WHY / Why not はファイルレベル JSDoc が推奨置き場
+- **JSDoc = 公開 API（export）の API ユーザー向け文書**: IDE ホバーで実装を読まない読者に届くため、WHAT/HOW/WHY を適切に書き、`@example`を必須とする。メインの公開 API は README にも載せる
+- **非公開 API の JSDoc は必須にしない**: ただし複雑な内部モジュールの設計 WHY/Why not はファイルレベル JSDoc が推奨置き場
 - **README はセットアップ / 利用手順 / メイン公開 API のみ**
-- **計画相対概念の禁止**: 実装計画に由来する相対概念（Phase/Step 番号、「本 PR」「今回」「旧実装」「導入予定」）を JSDoc・テスト名・ドキュメントに書かない。現在の挙動と意図的な不在（Why not）として自己完結に書く。コードコメント・JSDoc・テスト名に issue / PR 番号も書かず、理由そのものを書く（例外は PR 本文とコミットメッセージ）
+- **計画相対概念の禁止**: 実装計画に由来する相対概念（Phase/Step 番号、「本 PR」「今回」「旧実装」「導入予定」）を JSDoc・テスト名・ドキュメントに書かない。現在の挙動と意図的な不在（Why not）として自己完結に書く。コードコメント・JSDoc・テスト名に issue/PR 番号も書かず、理由そのものを書く（例外は PR 本文とコミットメッセージ）
 - **ドキュメントと実装の矛盾**: **実装が正**とし、ドキュメントを修正すること
 
 ## independent モードの注意
 
-- 各パッケージは個別のバージョンを持つ。`lerna version` は変更のあったパッケージのみ昇格させる
-- リリース時は `v-release` タグの強制更新を伴い、タグ push で Actions のリリース（[publish.yml](.github/workflows/publish.yml)）が開始される
+- 各パッケージは個別のバージョンを持つ。`lerna version`は変更のあったパッケージのみ昇格させる
+- リリース時は`v-release`タグの強制更新を伴い、タグ push で Actions のリリース（[publish.yml](.github/workflows/publish.yml)）が開始される
 - 単一パッケージの破壊的変更でもリポジトリ全体の major bump にはならない
 
 ## 依存関係の追加
 
-- バージョンは固定で追加する（`yarn add foo@1.2.3`）。`^` / `~` を付けない
-- **追加したら `.github/renovate.json` の `packageRules` を確認する**。そのパッケージが既存の `groupName` グループに入るべきか、新しいグループを作るべきかを判断する
-  - `config:recommended` は `group:monorepos` を含むため、**同一 monorepo から公開されるパッケージ群（`@vitest/*`、`@tiptap/*`、`playwright` 系など）は設定なしで自動的に束ねられる**。手で書く必要はない
+- バージョンは固定で追加する（`yarn add foo@1.2.3`）。`^`/`~`を付けない
+- **追加したら`.github/renovate.json`の`packageRules`を確認する**。そのパッケージが既存の`groupName`グループに入るべきか、新しいグループを作るべきかを判断する
+  - `config:recommended`は`group:monorepos`を含むため、**同一 monorepo から公開されるパッケージ群（`@vitest/*`、`@tiptap/*`、`playwright`系など）は設定なしで自動的に束ねられる**。手で書く必要はない
   - 手当てが必要なのは Renovate が推測できない**ベンダー横断の結合**。tools では既に以下がグループ化済み:
     - `google-apis`: `googleapis` + `google-auth-library` + `gaxios`
-    - `image-processing`: `pixelmatch` + `pngjs` + `jimp` と各型定義
-    - 本体と型定義のペア（`debug` + `@types/debug`、`diff` + `@types/diff` 等）
-    - `resolutions` で固定している `google-auth-library` とその利用側
-    - 自前の `@d-zero/*` config 系パッケージ群
-  - 判断基準は「**片方だけバージョンが上がった状態でビルドと型チェックが通るか**」。通らないなら同じ `groupName` にまとめる
+    - `image-processing`: `pixelmatch` + `pngjs` + `jimp`と各型定義
+    - 本体と型定義のペア（`debug` + `@types/debug`、`diff` + `@types/diff`等）
+    - `resolutions`で固定している`google-auth-library`とその利用側
+    - 自前の`@d-zero/*` config 系パッケージ群
+  - 判断基準は「**片方だけバージョンが上がった状態でビルドと型チェックが通るか**」。通らないなら同じ`groupName`にまとめる
 - グループ化を怠ると、Renovate が個別に PR を作り、片方だけマージされた中間状態で CI が赤になる。結果として**両方の PR がマージできなくなる**
-- グルーピングの現状は `git branch -r --list 'origin/renovate/*'` で確認できる。`*-monorepo` サフィックスのブランチは `group:monorepos` による自動グループ
+- グルーピングの現状は`git branch -r --list 'origin/renovate/*'`で確認できる。`*-monorepo`サフィックスのブランチは`group:monorepos`による自動グループ
 
 ## コーディング規約
 
-- **`@d-zero/shared` はサブパスエクスポート**: `@d-zero/shared/parse-url` のような形式で import すること（ルート import は不可）
-- **exports フィールドを壊さない**: package.json の `exports` を変更する場合は差分のみを追記し、既存パスを削除しない
-- 1関数1ファイルを基本とし、`index.ts` の作成は避ける
-- **CLI パッケージの `bin` は先頭 `./` なしのオブジェクト形式で書く**: `"bin": { "コマンド名": "dist/cli.js" }`。文字列形式や先頭 `./` 付きのパス（`"./dist/cli.js"`）は、npm CLI 11.17 以降の `npm publish` で「script name ... was invalid and removed」という警告とともに `bin` エントリごと削除され、CLI が使えないパッケージとして公開されてしまう。publish 前に `npm pack --dry-run` で `bin` 警告が出ないことを確認する（`npm publish --dry-run` は公開済みバージョンとの重複チェックが先に走り、tarball 内容の警告確認まで到達しないことがある）
+- **`@d-zero/shared`はサブパスエクスポート**: `@d-zero/shared/parse-url`のような形式で import すること（ルート import は不可）
+- **exports フィールドを壊さない**: package.json の`exports`を変更する場合は差分のみを追記し、既存パスを削除しない
+- 1関数1ファイルを基本とし、`index.ts`の作成は避ける
+- **CLI パッケージの`bin`は先頭`./`なしのオブジェクト形式で書く**: `"bin": { "コマンド名": "dist/cli.js" }`。文字列形式や先頭`./`付きのパス（`"./dist/cli.js"`）は、npm CLI 11.17 以降の`npm publish`で「script name ... was invalid and removed」という警告とともに`bin`エントリごと削除され、CLI が使えないパッケージとして公開されてしまう。publish 前に`npm pack --dry-run`で`bin`警告が出ないことを確認する（`npm publish --dry-run`は公開済みバージョンとの重複チェックが先に走り、tarball 内容の警告確認まで到達しないことがある）
 
 ## 判断基準
 
-- **変更・修正・レビュー指摘を採用するかは 2 つで決める**: 各パッケージが README と JSDoc で宣言した契約どおりに動き、利用側（`@d-zero/*` を exact pin で使う社内の各リポジトリ）を壊さないこと、そして検証系の CLI（a11y-check・archaeologist・print 等）が対象サイトの実際の状態を正確に記録・判定すること。製品の振る舞いでない変更（tooling・docs・CI・skills）では「宣言した意図に対する正しさ」と「既存コードとの一貫性」。実装コスト、diff の大きさ、影響件数、「軽微」は基準ではなく、スキップ・先送り・質問の理由にならない
-- **基準が決めることは聞かずにやる**。質問は、基準が決めないことと、リポジトリ外への書き込みのためにある（質問の種別は `impl` スキルが定める）。Claude は「持ち越す」「スキップする」「そのままにする」を自分で決めない。それらは質問に対するユーザーの回答としてだけ存在し、「あとで」「別 PR で」「意図的に変更しない」と書く応答・PR 本文・コミットは、その質問と回答を指せなければならない
+- **変更・修正・レビュー指摘を採用するかは 2 つで決める**: 各パッケージが README と JSDoc で宣言した契約どおりに動き、利用側（`@d-zero/*`を exact pin で使う社内の各リポジトリ）を壊さないこと、そして検証系の CLI（a11y-check・archaeologist・print 等）が対象サイトの実際の状態を正確に記録・判定すること。製品の振る舞いでない変更（tooling・docs・CI・skills）では「宣言した意図に対する正しさ」と「既存コードとの一貫性」。実装コスト、diff の大きさ、影響件数、「軽微」は基準ではなく、スキップ・先送り・質問の理由にならない
+- **基準が決めることは聞かずにやる**。質問は、基準が決めないことと、リポジトリ外への書き込みのためにある（質問の種別は`impl`スキルが定める）。Claude は「持ち越す」「スキップする」「そのままにする」を自分で決めない。それらは質問に対するユーザーの回答としてだけ存在し、「あとで」「別 PR で」「意図的に変更しない」と書く応答・PR 本文・コミットは、その質問と回答を指せなければならない
 - **レビュー指摘は直すか、証拠を添えてユーザーに出す**。「false positive」「元からあった」「意図どおり」はユーザーに対して主張することであって、Claude が 1 人で指摘を閉じる手段ではない
 
 ## セキュリティ
 
 ### 機密情報の取り扱い
 
-- `.env`、`.env.*` 等の機密ファイルを読み取り・編集・コミットしない（機密ファイルの判断は `.gitignore` を参考にすること）
-- `credentials.json`、`token.json` 等の Google API 認証情報も同様に扱う
-- コミット前に `git diff --staged` で機密情報（API キー、トークン、パスワード、企業名、顧客情報）が含まれていないか確認する
-- **サンプル値は予約済み慣例に従う**: ドメインは `example.com` / `*.example` / `*.test` 等（RFC 2606/6761）、IP は TEST-NET。実在の無関係ドメイン、未取得の創作ドメイン、案件識別子、実データ・実コーパスの断片を成果物に残さない（詳細は `.claude/skills/git/SKILL.md` のサンプル値慣例チェック）
+- `.env`、`.env.*`等の機密ファイルを読み取り・編集・コミットしない（機密ファイルの判断は`.gitignore`を参考にすること）
+- `credentials.json`、`token.json`等の Google API 認証情報も同様に扱う
+- コミット前に`git diff --staged`で機密情報（API キー、トークン、パスワード、企業名、顧客情報）が含まれていないか確認する
+- **サンプル値は予約済み慣例に従う**: ドメインは`example.com`/`*.example`/`*.test`等（RFC 2606/6761）、IP は TEST-NET。実在の無関係ドメイン、未取得の創作ドメイン、案件識別子、実データ・実コーパスの断片を成果物に残さない（詳細は`.claude/skills/git/SKILL.md`のサンプル値慣例チェック）
 - 環境変数やシークレットをコード内にハードコードしない
 
 ### サプライチェーン保護
 
 - **yarn dlx は完全禁止**: ローカルパッケージを使わずリモートから直接実行するため、サプライチェーン攻撃に脆弱
-- **npx は原則使わない**: package.json の scripts で定義されたコマンドを `yarn <script>` で実行すること
+- **npx は原則使わない**: package.json の scripts で定義されたコマンドを`yarn <script>`で実行すること
 - 新しい依存パッケージの追加は慎重に。既存の依存で解決できないか先に確認する
-- `yarn add` する前にパッケージの信頼性（ダウンロード数、メンテナンス状況、既知の脆弱性）を確認する
-- `yarn add` する場合はバージョンを固定する（例: `yarn add foo@1.2.3`）
+- `yarn add`する前にパッケージの信頼性（ダウンロード数、メンテナンス状況、既知の脆弱性）を確認する
+- `yarn add`する場合はバージョンを固定する（例: `yarn add foo@1.2.3`）
 - lockfile（yarn.lock）の手動編集は禁止
 
 ## スキル
 
-タスクに応じて `.claude/skills/` 配下のスキルを参照すること。
+タスクに応じて`.claude/skills/`配下のスキルを参照すること。
 
 | スキル          | パス                                      | 用途                                                                             |
 | --------------- | ----------------------------------------- | -------------------------------------------------------------------------------- |
@@ -116,4 +119,4 @@ D-ZERO 株式会社の Web 開発・テスト・自動化ツール群（`@d-zero
 | grill-me        | `.claude/skills/grill-me/SKILL.md`        | 計画・設計の合意形成（実装前の徹底質問）                                         |
 | npm publish     | `.claude/skills/npm-publish/SKILL.md`     | リリース（dev→main、バージョニング、tag push、publish 検証、dev 同期）           |
 
-コミットは必ず `.claude/skills/git/SKILL.md`、PR 作成は `.claude/skills/pr/SKILL.md`、リリースは `.claude/skills/npm-publish/SKILL.md` の手順に従うこと。
+コミットは必ず`.claude/skills/git/SKILL.md`、PR 作成は`.claude/skills/pr/SKILL.md`、リリースは`.claude/skills/npm-publish/SKILL.md`の手順に従うこと。

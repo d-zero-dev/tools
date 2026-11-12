@@ -9,11 +9,11 @@ on:
       - main
       - dev
   schedule:
-    - cron: "0 17 * * 1-5" # UTC 17:00 = JST 02:00, weekdays
+    - cron: '0 17 * * 1-5' # UTC 17:00 = JST 02:00, weekdays
   workflow_dispatch:
     inputs:
       full_matrix:
-        description: "Run build-test on the full multi-OS matrix (like nightly)"
+        description: 'Run build-test on the full multi-OS matrix (like nightly)'
         type: boolean
         default: false
 
@@ -85,15 +85,20 @@ jobs:
         id: cache-depends
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
-          path: "**/node_modules"
+          path: '**/node_modules'
           key: os-ubuntu-latest-node26-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
         if: steps.cache-depends.outputs.cache-hit != 'true'
         run: yarn install --immutable
 
+      # Type-aware lint rules (oxlint --type-aware) resolve cross-package types from each
+      # package's built dist/*.d.ts, so the lint job must consume the build output.
+      - name: Build
+        run: yarn build
+
       - name: Lint
-        run: yarn lint
+        run: yarn lint:check
 
   build-test:
     needs: [changes, setup-matrix, lint]
@@ -122,7 +127,7 @@ jobs:
         id: cache-depends
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
-          path: "**/node_modules"
+          path: '**/node_modules'
           key: os-${{ matrix.os }}-node26-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
@@ -171,7 +176,7 @@ jobs:
       - name: Open or update failure issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MARKER: "[nightly-ci-failure]"
+          MARKER: '[nightly-ci-failure]'
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         shell: bash
         run: |
