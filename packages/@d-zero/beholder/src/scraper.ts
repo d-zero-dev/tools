@@ -32,6 +32,7 @@ import {
 	getImageList,
 	getMeta,
 } from './dom-evaluation.js';
+import { getHtmlAfterNetworkIdle } from './get-html-after-network-idle.js';
 import { getMainContents } from './get-main-contents.js';
 import { IMAGE_SCAN_CODE } from './image-scan-code.js';
 import { isError } from './is-error.js';
@@ -366,7 +367,8 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	 * 1. Register request/response/requestfailed/console/pageerror listeners to
 	 *    capture sub-resources and console output (internal pages only)
 	 * 2. Navigate to URL via `page.goto()` and track redirect chain
-	 * 3. Wait for DOM content and network idle
+	 * 3. Emit `loadDOMContent` (marker only), then best-effort network idle,
+	 *    then HTML snapshot (title/html) so later anchors/meta share a settled DOM
 	 * 4. Check for network disconnection errors and throw to trigger retry
 	 * 5. Extract anchors, meta, and optionally images
 	 * 6. Check for keyword exclusion in HTML content
@@ -645,6 +647,10 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				};
 			}
 
+			// WHY keep emitting loadDOMContent with no wait: public changePhase
+			// consumers already key off this name; goto's default waitUntil
+			// ('load') already passed DOMContentLoaded, so a second DCL wait
+			// would only burn timeout. The real settle is waitNetworkIdle below.
 			void this.emit('changePhase', {
 				pid: process.pid,
 				name: 'loadDOMContent',
@@ -653,24 +659,25 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 				message: '',
 			});
 
-			await page
-				.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 5000 })
-				.catch(() => {});
-
 			void this.emit('changePhase', {
 				pid: process.pid,
-				name: 'getHTML',
+				name: 'waitNetworkIdle',
 				url,
 				isExternal,
 				message: '',
 			});
 
-			const { title, html } = await page.evaluate(() => {
-				/* global document */
-				return {
-					title: document.title,
-					html: document.documentElement.outerHTML,
-				};
+			// WHY getHtmlAfterNetworkIdle (not waitForNavigation after goto): see
+			// that helper's JSDoc. Idle must finish before the HTML snapshot so
+			// title/html/anchors/meta all read a settled DOM.
+			const { title, html } = await getHtmlAfterNetworkIdle(page, () => {
+				void this.emit('changePhase', {
+					pid: process.pid,
+					name: 'getHTML',
+					url,
+					isExternal,
+					message: '',
+				});
 			});
 
 			if (isExternal) {
@@ -696,18 +703,6 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 					isSkipped: false,
 				};
 			}
-
-			void this.emit('changePhase', {
-				pid: process.pid,
-				name: 'waitNetworkIdle',
-				url,
-				isExternal,
-				message: '',
-			});
-
-			await page
-				.waitForNavigation({ waitUntil: 'networkidle0', timeout: 5000 })
-				.catch(() => {});
 
 			// Check for network disconnection errors in failed requests
 			const disconnectionFailures = findDisconnectionFailures(failedRequests);

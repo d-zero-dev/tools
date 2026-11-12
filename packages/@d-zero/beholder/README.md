@@ -1,6 +1,6 @@
 # `@d-zero/beholder`
 
-Puppeteer の `Page` を受け取り、単一ページのメタデータ・リンク・画像・ネットワークリソースに加え、メインコンテンツの定量データと desktop/mobile の `scrollHeight` を収集するインプロセス型スクレイパー。結果は `ScrapeResult` として戻り値で返却される（イベント経由ではない）。ブラウザ管理は呼び出し側の責任。
+Puppeteer の`Page`を受け取り、単一ページのメタデータ・リンク・画像・ネットワークリソースに加え、メインコンテンツの定量データと desktop/mobile の`scrollHeight`を収集するインプロセス型スクレイパー。結果は`ScrapeResult`として戻り値で返却される（イベント経由ではない）。ブラウザ管理は呼び出し側の責任。
 
 ## Installation
 
@@ -33,19 +33,21 @@ if (result.type === 'success' && result.pageData) {
 }
 ```
 
-設計判断（イベントではなく戻り値で返す理由、`page` のライフサイクル責務、リトライ機構など）は `src/scraper.ts` の JSDoc を参照。
+設計判断（イベントではなく戻り値で返す理由、`page`のライフサイクル責務、リトライ機構など）は`src/scraper.ts`の JSDoc を参照。
 
 ## 取得フロー
+
+HTML ページでは`page.goto()`（既定`waitUntil: 'load'`）のあと、ネットワークが静かになるまでを best-effort で待ち（上限約 5 秒、失敗しても続行）、その DOM から title/HTML を取る。待ちはネットワーク連動のみで、通信を伴わない`setTimeout`だけの DOM 更新は契約外。`changePhase`の`loadDOMContent`は待ちではなく goto 完了後のマーカー。
 
 ```mermaid
 flowchart TD
   goto[page.goto]
   ct{content-type is text/html?}
   early[both null]
+  idle["networkidle best-effort"]
   html[get HTML]
   ext{isExternal?}
   extOut[title-only; both null]
-  idle[networkidle]
   mc["page.evaluate: mainContents"]
   anchors[getAnchorList / getMeta]
   imgs{captureImages?}
@@ -55,22 +57,22 @@ flowchart TD
 
   goto --> ct
   ct -->|no| early
-  ct -->|yes| html --> ext
+  ct -->|yes| idle --> html --> ext
   ext -->|yes| extOut
-  ext -->|no| idle --> mc --> anchors --> imgs
+  ext -->|no| mc --> anchors --> imgs
   imgs -->|yes| fetchImg --> done
   imgs -->|no| light --> done
 ```
 
-## 返却データ（`PageData` の追加分）
+## 返却データ（`PageData`の追加分）
 
-- `mainContents`: メイン領域の定量（`wordCount` / `bodyWordCount`、見出し・画像・表・ボタン・iframe / video / audio / canvas の配列、検出した `main` の識別情報）。メイン未検出時もオブジェクトは返り、配列は空・`wordCount` は 0（非 HTML 等で取得しなかったときだけ `null`）
-- `scrollHeight`: `{ desktop, mobile }`（各 `number | null`）。未計測時はフィールド全体が `null`
-- 配列要素のフィールド詳細は型（`MainContents*` / `ScrollHeightData`）を参照
+- `mainContents`: メイン領域の定量（`wordCount`/`bodyWordCount`、見出し・画像・表・ボタン・iframe/video/audio/canvas の配列、検出した`main`の識別情報）。メイン未検出時もオブジェクトは返り、配列は空・`wordCount`は 0（非 HTML 等で取得しなかったときだけ`null`）
+- `scrollHeight`: `{ desktop, mobile }`（各`number | null`）。未計測時はフィールド全体が`null`
+- 配列要素のフィールド詳細は型（`MainContents*`/`ScrollHeightData`）を参照
 
 ## console ログ・未捕捉例外の収集
 
-`ScrapeResult.consoleLogs`（`ConsoleLogEntry[]`）に、内部ページ（`isExternal: false`）が出力した `console` メッセージ（全type）と、未捕捉例外・未処理の Promise rejection（`page.on('pageerror')`、`type: 'pageerror'` として区別、スタックトレース付き）が格納される。`resources` と同様に `pageUrl` を持つ戻り値配列で、イベント経由では提供されない。`result.type` が `"success"` / `"skipped"` / `"error"` のいずれであっても常に配列として存在する（該当ログがなければ空配列）ため、エラー発生時のデバッグにもそのまま使える。
+`ScrapeResult.consoleLogs`（`ConsoleLogEntry[]`）に、内部ページ（`isExternal: false`）が出力した`console`メッセージ（全type）と、未捕捉例外・未処理の Promise rejection（`page.on('pageerror')`、`type: 'pageerror'`として区別、スタックトレース付き）が格納される。`resources`と同様に`pageUrl`を持つ戻り値配列で、イベント経由では提供されない。`result.type`が`"success"`/`"skipped"`/`"error"`のいずれであっても常に配列として存在する（該当ログがなければ空配列）ため、エラー発生時のデバッグにもそのまま使える。
 
 ```ts
 for (const entry of result.consoleLogs) {
@@ -80,7 +82,7 @@ for (const entry of result.consoleLogs) {
 
 ## DOM 文字列からメタ抽出（Puppeteer なし）
 
-HTML 文字列を jsdom などでパースしてから `Meta` を取り出したい場合、`extractMetaFromDocument` を使う。`Scraper` が内部で呼ぶ `collectHead → detectTags → classify` パイプラインと同じ実装を再利用するため、戻り値の `Meta` 形状は `scrapeStart` と同一。DOM ライブラリ（jsdom 等）はユーザランドの責務。
+HTML 文字列を jsdom などでパースしてから`Meta`を取り出したい場合、`extractMetaFromDocument`を使う。`Scraper`が内部で呼ぶ`collectHead → detectTags → classify`パイプラインと同じ実装を再利用するため、戻り値の`Meta`形状は`scrapeStart`と同一。DOM ライブラリ（jsdom 等）はユーザランドの責務。
 
 ```ts
 import { extractMetaFromDocument } from '@d-zero/beholder';
@@ -102,4 +104,4 @@ console.log(meta.og?.image);
 console.log(meta.tags.entries);
 ```
 
-`context.html` を省略すると `window.document.documentElement.outerHTML` がフォールバックされる。ただし Wappalyzer の HTML パターンはスクリプト実行前の生 HTML に合わせて作られているので、可能なら取得直後の HTML 文字列を明示的に渡す方が検出が安定する。
+`context.html`を省略すると`window.document.documentElement.outerHTML`がフォールバックされる。ただし Wappalyzer の HTML パターンはスクリプト実行前の生 HTML に合わせて作られているので、可能なら取得直後の HTML 文字列を明示的に渡す方が検出が安定する。

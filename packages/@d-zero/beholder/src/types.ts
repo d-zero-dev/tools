@@ -577,8 +577,13 @@ export type ChangePhaseEvent = {
 	 * - `headRequestTimeout` - The HEAD request timed out.
 	 * - `newPage` - A new browser page/tab is being created.
 	 * - `openPage` - Navigating the browser page to the target URL.
-	 * - `loadDOMContent` - Waiting for the DOM content to finish loading.
-	 * - `waitNetworkIdle` - Waiting for all network activity to cease.
+	 * - `loadDOMContent` - Marker after `page.goto()` has completed for an HTML
+	 *   response (no additional wait; DOMContentLoaded already happened under
+	 *   goto's default `waitUntil: 'load'`).
+	 * - `waitNetworkIdle` - Best-effort wait for network activity to cease
+	 *   (timeout or other failures do not abort the scrape; HTML may reflect a
+	 *   still-busy page). Settle is network-linked only — pure timer-driven DOM
+	 *   updates after a quiet network are outside the contract.
 	 * - `getHTML` - Extracting the page HTML content.
 	 * - `setViewport` - Setting the browser viewport dimensions.
 	 * - `scrollToBottom` - Scrolling the page to trigger lazy-loaded content.
