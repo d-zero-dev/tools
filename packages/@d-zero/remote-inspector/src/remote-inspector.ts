@@ -20,7 +20,7 @@ import { displayComparison, ConsoleOutputHandler } from './output.js';
 export async function remoteInspector(options: RemoteInspectorOptions): Promise<void> {
 	const client = new Client();
 
-	// eslint-disable-next-line no-console
+	// oxlint-disable-next-line no-console
 	console.log(`Connect to: ${options.host}`);
 
 	const connectionConfig: ConnectionConfig = {
@@ -41,7 +41,7 @@ export async function remoteInspector(options: RemoteInspectorOptions): Promise<
 	}
 
 	await client.connect(connectionConfig);
-	// eslint-disable-next-line no-console
+	// oxlint-disable-next-line no-console
 	console.log('Success!');
 
 	const baseDir =
@@ -178,7 +178,8 @@ async function compareFile(
 	const remoteContentBuffer = await client.get(remotePath);
 	const remoteContent = Buffer.isBuffer(remoteContentBuffer)
 		? remoteContentBuffer.toString('utf8')
-		: String(remoteContentBuffer);
+		: // oxlint-disable-next-line typescript/no-base-to-string -- `get()` without a destination returns a Buffer or string; the stream branch of its return type is not reachable here.
+			String(remoteContentBuffer);
 
 	const blocks = diffLines(remoteContent, localContent);
 

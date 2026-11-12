@@ -12,7 +12,7 @@ export class ConsoleOutputHandler implements OutputHandler {
 		return process.stdout.columns || 80;
 	}
 	log(message: string): void {
-		// eslint-disable-next-line no-console
+		// oxlint-disable-next-line no-console
 		console.log(message);
 	}
 }
