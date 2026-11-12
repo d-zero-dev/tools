@@ -19,7 +19,7 @@
  * top-level helper would be `undefined` at runtime in the page, throwing
  * `ReferenceError` on first use. `extractMainContentsFromDocument` in
  * `@d-zero/beholder` nests its helpers for the same reason; this function
- * does too, for the same reason no `@medv/finder` / shared-helper import is // cspell:disable-line
+ * does too, for the same reason no `@medv/finder` / shared-helper import is
  * usable here either. The selector arrays are instead passed as plain-data
  * arguments (see `capture-layout.ts`), sourced from
  * `@d-zero/beholder`'s `MAIN_CONTENT_SELECTORS` / `MAIN_CONTENT_FALLBACK_SELECTORS`
