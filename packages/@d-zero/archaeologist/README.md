@@ -1,6 +1,6 @@
 # `@d-zero/archaeologist`
 
-ウェブサイトの本番と開発、新旧ページなどを比較する CLI。Puppeteer でレンダリング後のスクリーンショット・DOM・テキストを比較する他、生 HTML（`code` タイプ）はブラウザ不要で比較する。
+ウェブサイトの本番と開発、新旧ページなどを比較する CLI。Puppeteer でレンダリング後のスクリーンショット・DOM・テキストを比較する他、生 HTML（`code`タイプ）はブラウザ不要で比較する。
 
 ## Installation
 
@@ -15,7 +15,7 @@ npx @d-zero/archaeologist <urlA> <urlB> [options]
 npx @d-zero/archaeologist -f <listfile> [options]
 ```
 
-オプションは `--help`、デバイスプリセットは `src/devices.ts` を参照。
+オプションは`--help`、デバイスプリセットは`src/devices.ts`を参照。
 
 ### 比較タイプ（`-t`）
 
@@ -26,7 +26,7 @@ npx @d-zero/archaeologist -f <listfile> [options]
 | `text`  | テキスト差分（形態素解析）               | 必要     |
 | `code`  | HTTP で取得した生 HTML 差分（JS 実行前） | 不要     |
 
-**`code` のみを指定するとブラウザを起動しない**（高速、デバイスサイズ非依存）。理由・実装は `src/cli.ts` の関連 JSDoc を参照。
+**`code`のみを指定するとブラウザを起動しない**（高速、デバイスサイズ非依存）。理由・実装は`src/cli.ts`の関連 JSDoc を参照。
 
 ### フリーズモード（`--freeze`）
 
@@ -45,8 +45,8 @@ https://example.com
 https://example.com/a
 ```
 
-`hooks` の IPC 越境制約は [`@d-zero/puppeteer-page-scan`](../puppeteer-page-scan/) の `PageHookSource` を参照。
+`hooks`の IPC 越境制約は[`@d-zero/puppeteer-page-scan`](../puppeteer-page-scan/)の`PageHookSource`を参照。
 
 ### Basic 認証
 
-URL に資格情報を含める: `https://user:pass@example.com`。`code` タイプは HTTP リクエストに `Authorization` ヘッダを付与し、リダイレクト後も維持する（コードを見ても分かりにくい挙動なので注意）。詳細は `src/code-compare.ts` の JSDoc。
+URL に資格情報を含める: `https://user:pass@example.com`。`code`タイプは HTTP リクエストに`Authorization`ヘッダを付与し、リダイレクト後も維持する（コードを見ても分かりにくい挙動なので注意）。詳細は`src/code-compare.ts`の JSDoc。

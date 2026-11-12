@@ -229,7 +229,7 @@ createChildProcess<ChildProcessParams, Result>(async (param) => {
 					fetchHtml(urlPair[1]),
 				]).catch((error: unknown) => {
 					logger(
-						`⚠️ CODE fetch failed: ${error instanceof Error ? error.message : error}`,
+						`⚠️ CODE fetch failed: ${error instanceof Error ? error.message : String(error)}`,
 					);
 					return null;
 				});
