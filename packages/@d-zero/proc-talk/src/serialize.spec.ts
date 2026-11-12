@@ -20,7 +20,7 @@ describe('serialize / deserialize ラウンドトリップ', () => {
 		// を経由するため、その経路をシミュレートする。
 		// structuredClone は関数で DataCloneError を投げる/型を保つため、IPC 挙動の代用にはならない。
 		const serialized = serialize(input, noopLog);
-		// eslint-disable-next-line unicorn/prefer-structured-clone
+		// oxlint-disable-next-line unicorn/prefer-structured-clone
 		const ipcRound = JSON.parse(JSON.stringify(serialized)) as unknown[];
 		const result = deserialize(ipcRound, noopLog);
 
@@ -50,7 +50,7 @@ describe('serialize / deserialize ラウンドトリップ', () => {
 		expect(typeof (serialized[0] as { hooks: unknown[] }).hooks[0]).toBe('function');
 
 		// process.send 内部の JSON 化相当（structuredClone は関数で DataCloneError なので使えない）
-		// eslint-disable-next-line unicorn/prefer-structured-clone
+		// oxlint-disable-next-line unicorn/prefer-structured-clone
 		const ipcRound = JSON.parse(JSON.stringify(serialized)) as Array<{
 			hooks: unknown[];
 		}>;
@@ -60,7 +60,7 @@ describe('serialize / deserialize ラウンドトリップ', () => {
 	it('Uint8Array はトップレベル要素なら IPC ラウンドトリップで復元される', () => {
 		const input = [new Uint8Array([1, 2, 3, 255])];
 		const serialized = serialize(input, noopLog);
-		// eslint-disable-next-line unicorn/prefer-structured-clone
+		// oxlint-disable-next-line unicorn/prefer-structured-clone
 		const ipcRound = JSON.parse(JSON.stringify(serialized)) as unknown[];
 		const restored = deserialize(ipcRound, noopLog);
 
