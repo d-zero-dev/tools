@@ -80,7 +80,7 @@ const EMPTY_IMAGE_SCAN: ImageScanData = { desktop: null, mobile: null };
  * const result = await scraper.scrapeStart(page, url, { isExternal: false });
  * ```
  */
-// eslint-disable-next-line unicorn/prefer-event-target -- TypedAwaitEventEmitter is a project-specific typed wrapper, not Node.js EventEmitter
+// oxlint-disable-next-line unicorn/prefer-event-target -- TypedAwaitEventEmitter is a project-specific typed wrapper, not Node.js EventEmitter
 export default class Scraper extends EventEmitter<ScraperEventTypes> {
 	/** Number of retries for `@retryable`-decorated methods. Set per-scrape from options. */
 	retries?: number;
@@ -439,7 +439,7 @@ export default class Scraper extends EventEmitter<ScraperEventTypes> {
 			try {
 				await dialog.accept();
 			} catch (error) {
-				log(`Error: ${error}`);
+				log(`Error: ${String(error)}`);
 			}
 			log(`Accept ${dialog.type()} dialog`);
 		};

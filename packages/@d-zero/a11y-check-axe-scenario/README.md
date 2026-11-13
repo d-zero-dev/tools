@@ -1,6 +1,6 @@
 # `@d-zero/a11y-check-axe-scenario`
 
-axe-core を用いたアクセシビリティチェックシナリオ。[`@d-zero/a11y-check-core`](../a11y-check-core/) の `scenarioRunner` に渡して使う。
+axe-core を用いたアクセシビリティチェックシナリオ。[`@d-zero/a11y-check-core`](../a11y-check-core/)の`scenarioRunner`に渡して使う。
 
 ## Installation
 
@@ -22,4 +22,4 @@ const results = await scenarioRunner(['https://example.com'], [scenarioAxe()], {
 });
 ```
 
-オプション（`screenshot` / `cache` / `cacheDir` / `lang`）は型定義を参照。`lang` のデフォルトは `'ja'`。
+オプション（`screenshot`/`cache`/`cacheDir`/`lang`）は型定義を参照。`lang`のデフォルトは`'ja'`。

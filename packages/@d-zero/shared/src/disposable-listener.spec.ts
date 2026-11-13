@@ -6,7 +6,7 @@ import { disposableListener } from './disposable-listener.js';
 
 describe('disposableListener', () => {
 	test('registers the listener on creation and removes it on scope exit', () => {
-		// eslint-disable-next-line unicorn/prefer-event-target -- disposableListener は on/off 型エミッタ（EventEmitter / puppeteer Page）専用で、addEventListener 型の EventTarget は対象外
+		// oxlint-disable-next-line unicorn/prefer-event-target -- disposableListener は on/off 型エミッタ（EventEmitter / puppeteer Page）専用で、addEventListener 型の EventTarget は対象外
 		const emitter = new EventEmitter();
 		const listener = vi.fn();
 
@@ -23,7 +23,7 @@ describe('disposableListener', () => {
 	});
 
 	test('removes only its own listener, leaving others registered', () => {
-		// eslint-disable-next-line unicorn/prefer-event-target -- disposableListener は on/off 型エミッタ（EventEmitter / puppeteer Page）専用で、addEventListener 型の EventTarget は対象外
+		// oxlint-disable-next-line unicorn/prefer-event-target -- disposableListener は on/off 型エミッタ（EventEmitter / puppeteer Page）専用で、addEventListener 型の EventTarget は対象外
 		const emitter = new EventEmitter();
 		const managed = vi.fn();
 		const unmanaged = vi.fn();

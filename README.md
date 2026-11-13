@@ -53,7 +53,7 @@
 
 破壊的変更を伴うリリースには移行手順を用意しています。
 
-- [MIGRATION-page-hooks.md](./MIGRATION-page-hooks.md) - ページフック API の整合化（`@d-zero/print` / `@d-zero/archaeologist` / `@d-zero/a11y-check` / `@d-zero/a11y-check-core` / `@d-zero/puppeteer-page-scan`）
+- [MIGRATION-page-hooks.md](./MIGRATION-page-hooks.md) - ページフック API の整合化（`@d-zero/print`/`@d-zero/archaeologist`/`@d-zero/a11y-check`/`@d-zero/a11y-check-core`/`@d-zero/puppeteer-page-scan`）
 
 ## メンテナンス環境
 
@@ -65,9 +65,10 @@
 
 ### メンテ用のコマンド
 
-| コマンド     | 内容                                                                       |
-| ------------ | -------------------------------------------------------------------------- |
-| `yarn build` | 各パッケージのビルドを行います                                             |
-| `yarn lint`  | リポジトリ内のファイルのリント・自動フォーマット・スペルチェックを行います |
-| `yarn test`  | リポジトリ内のファイルのテストを実行します                                 |
-| `yarn co`    | Gitコミットを*Commitizen*経由で実行します                                  |
+| コマンド          | 内容                                                                                                                 |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `yarn build`      | 各パッケージのビルドを行います                                                                                       |
+| `yarn lint`       | リポジトリ内のファイルのリント・自動フォーマットを行います。型情報を使うルールがあるため、先に`yarn build`が必要です |
+| `yarn lint:check` | `yarn lint`と同じ検査を、ファイルを書き換えずに行います（CI が使います）                                             |
+| `yarn test`       | リポジトリ内のファイルのテストを実行します                                                                           |
+| `yarn co`         | Gitコミットを*Commitizen*経由で実行します                                                                            |

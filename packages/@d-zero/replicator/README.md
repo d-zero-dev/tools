@@ -1,6 +1,6 @@
 # `@d-zero/replicator`
 
-ウェブページとそのリソース（CSS / JS / 画像）をレスポンシブ画像対応でローカルディレクトリに複製する CLI。Phase 1（ページスキャン）と Phase 2（リソースダウンロード）の **2 段階処理** で並列度を独立制御する。**同一ホストのみサポート**（複数ホスト検出時はエラー）。
+ウェブページとそのリソース（CSS/JS/画像）をレスポンシブ画像対応でローカルディレクトリに複製する CLI。Phase 1（ページスキャン）と Phase 2（リソースダウンロード）の **2 段階処理** で並列度を独立制御する。**同一ホストのみサポート**（複数ホスト検出時はエラー）。
 
 ## Installation
 
@@ -14,7 +14,7 @@ yarn add @d-zero/replicator
 npx @d-zero/replicator <url...> -o <output-directory> [options]
 ```
 
-オプションは `--help`、デバイスプリセットは `src/devices.ts` を参照。
+オプションは`--help`、デバイスプリセットは`src/devices.ts`を参照。
 
 ### 主なオプション
 
@@ -23,13 +23,13 @@ npx @d-zero/replicator <url...> -o <output-directory> [options]
 - `--only page|resource` … HTML のみ／リソースのみに限定
 - `-a, --auth user:pass` … Basic 認証
 
-### `--only` の使い分け
+### `--only`の使い分け
 
 - `page` … リソーススキャンをスキップして HTML のみ高速取得
 - `resource` … HTML を除外し、CSS/JS/画像のみ
 - 未指定 … 全部
 
-Phase 分離・並列数の WHY・同一ホスト制約の理由・レスポンシブ画像取得時のマルチデバイスシミュレーションは `src/replicate.ts` の JSDoc を参照。
+Phase 分離・並列数の WHY・同一ホスト制約の理由・レスポンシブ画像取得時のマルチデバイスシミュレーションは`src/replicate.ts`の JSDoc を参照。
 
 ### プログラマティック利用
 

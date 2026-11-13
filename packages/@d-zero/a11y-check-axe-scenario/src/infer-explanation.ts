@@ -217,7 +217,6 @@ export function inferExplanation(
 		case 'definition-list': {
 			return null;
 		}
-		// cspell:disable-next-line
 		case 'dlitem': {
 			return null;
 		}

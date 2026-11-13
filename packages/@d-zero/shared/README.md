@@ -6,24 +6,24 @@
 
 ### コアユーティリティ
 
-| Import Path                          | Description                                                                                               |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `@d-zero/shared/cache`               | ファイルシステムにデータを保存するシンプルなキャッシュシステムのクラス                                    |
-| `@d-zero/shared/config-reader`       | フロントマターをサポートする設定ファイルリーダー                                                          |
-| `@d-zero/shared/deferred`            | 遅延解決可能なPromiseクラス                                                                               |
-| `@d-zero/shared/disposable-listener` | イベントリスナーを登録し、`using` 宣言のスコープ脱出時に自動解除する `Disposable` を返す関数              |
-| `@d-zero/shared/mkdtemp-disposable`  | 一時ディレクトリを作成し、`using` 宣言のスコープ脱出時に自動削除する `AsyncDisposable` ハンドルを返す関数 |
-| `@d-zero/shared/hash`                | 文字列のSHA-256ハッシュ値を生成                                                                           |
-| `@d-zero/shared/types`               | TypeScript型定義                                                                                          |
+| Import Path                          | Description                                                                                            |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `@d-zero/shared/cache`               | ファイルシステムにデータを保存するシンプルなキャッシュシステムのクラス                                 |
+| `@d-zero/shared/config-reader`       | フロントマターをサポートする設定ファイルリーダー                                                       |
+| `@d-zero/shared/deferred`            | 遅延解決可能なPromiseクラス                                                                            |
+| `@d-zero/shared/disposable-listener` | イベントリスナーを登録し、`using`宣言のスコープ脱出時に自動解除する`Disposable`を返す関数              |
+| `@d-zero/shared/mkdtemp-disposable`  | 一時ディレクトリを作成し、`using`宣言のスコープ脱出時に自動削除する`AsyncDisposable`ハンドルを返す関数 |
+| `@d-zero/shared/hash`                | 文字列のSHA-256ハッシュ値を生成                                                                        |
+| `@d-zero/shared/types`               | TypeScript型定義                                                                                       |
 
 ### ランダム数値生成と遅延機能
 
-| Import Path                          | Description                                                                                                                                      |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `@d-zero/shared/delay`               | コードの実行を指定した時間だけ遅延させる関数。固定時間やランダムな遅延時間、確率分布を指定可能。 [詳細](./src/delay.md)                          |
-| `@d-zero/shared/random-int`          | 指定された範囲内でランダムな整数を生成する関数。 [詳細](./src/random-int.md)                                                                     |
-| `@d-zero/shared/sample-distribution` | 指定された確率分布（一様・正規・三角・偏り・二峰性・カスタム）からランダムな整数値をサンプリングする関数。 [詳細](./src/sample-distribution.md)  |
-| `@d-zero/shared/parse-interval`      | CLI引数の文字列（`"500"` または `"500-1000"`）をパースし、数値または`DelayOptions`に変換する関数。エラーメッセージ用のフィールドラベルを指定可能 |
+| Import Path                          | Description                                                                                                                                     |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@d-zero/shared/delay`               | コードの実行を指定した時間だけ遅延させる関数。固定時間やランダムな遅延時間、確率分布を指定可能。 [詳細](./src/delay.md)                         |
+| `@d-zero/shared/random-int`          | 指定された範囲内でランダムな整数を生成する関数。 [詳細](./src/random-int.md)                                                                    |
+| `@d-zero/shared/sample-distribution` | 指定された確率分布（一様・正規・三角・偏り・二峰性・カスタム）からランダムな整数値をサンプリングする関数。 [詳細](./src/sample-distribution.md) |
+| `@d-zero/shared/parse-interval`      | CLI引数の文字列（`"500"`または`"500-1000"`）をパースし、数値または`DelayOptions`に変換する関数。エラーメッセージ用のフィールドラベルを指定可能  |
 
 ### 日付ユーティリティ
 

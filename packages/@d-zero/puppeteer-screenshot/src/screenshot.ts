@@ -93,7 +93,7 @@ export async function screenshot(page: Page, url: string, options?: Options) {
 					await scope.screenshot({
 						fullPage,
 						type: 'png',
-						path: filePath as `${string}.png`,
+						path: filePath,
 					});
 				} else {
 					binary = await getBinary(scope, {

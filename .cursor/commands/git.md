@@ -35,7 +35,7 @@ description: Git manipulation rules
 
 # Commit message safety guidelines
 
-- Always use single quotes (') instead of double quotes (") for commit messages to avoid shell interpretation issues
+- Always use single quotes instead of double quotes for commit messages to avoid shell interpretation issues
 - For breaking changes or complex commit messages:
   - Option 1 (Recommended for complex messages): Use the git commit without -m flag to open an editor:
 

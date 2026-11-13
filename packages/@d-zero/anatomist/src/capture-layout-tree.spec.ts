@@ -33,7 +33,7 @@ function createDocument(html: string): Document {
 			toJSON() {
 				return this;
 			},
-		} as DOMRect;
+		};
 	};
 	return window.document;
 }

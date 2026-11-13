@@ -39,7 +39,7 @@ describe('readPageHooks', () => {
 		const [hook] = await readPageHooks(['./valid-hook.mjs'], fixturesDir);
 		const logs: string[] = [];
 		await hook!(
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			// oxlint-disable-next-line typescript/no-explicit-any
 			{} as any,
 			{
 				name: 'desktop',

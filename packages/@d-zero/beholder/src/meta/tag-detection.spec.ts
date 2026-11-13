@@ -94,7 +94,7 @@ describe('detectTags', () => {
 	});
 
 	it('falls back to empty TagsMeta when simple-wappalyzer returns non-array', async () => {
-		wappalyzerMock.mockResolvedValueOnce(null as unknown as never);
+		wappalyzerMock.mockResolvedValueOnce(null);
 		const result = await detectTags({
 			url: 'https://example.com/',
 			html: '<html></html>',

@@ -33,7 +33,7 @@ describe('getRowMetadata', () => {
 
 	test('returns hiddenByUser: true for user-hidden rows', async () => {
 		const parent = createMockParent([{ hiddenByUser: true }, { hiddenByUser: false }]);
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		const result = await sheet.getRowMetadata(2);
 
@@ -48,7 +48,7 @@ describe('getRowMetadata', () => {
 			{ hiddenByFilter: true },
 			{ hiddenByFilter: false },
 		]);
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		const result = await sheet.getRowMetadata(2);
 
@@ -60,7 +60,7 @@ describe('getRowMetadata', () => {
 
 	test('returns both true when hidden by user and filter', async () => {
 		const parent = createMockParent([{ hiddenByUser: true, hiddenByFilter: true }]);
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		const result = await sheet.getRowMetadata(2);
 
@@ -69,7 +69,7 @@ describe('getRowMetadata', () => {
 
 	test('returns both false for visible rows', async () => {
 		const parent = createMockParent([{}]);
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		const result = await sheet.getRowMetadata(2);
 
@@ -78,7 +78,7 @@ describe('getRowMetadata', () => {
 
 	test('returns empty array when rowMetadata is empty', async () => {
 		const parent = createMockParent([]);
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		const result = await sheet.getRowMetadata(2);
 
@@ -91,7 +91,7 @@ describe('getRowMetadata', () => {
 				data: { sheets: [] },
 			}),
 		};
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		const result = await sheet.getRowMetadata(2);
 
@@ -100,7 +100,7 @@ describe('getRowMetadata', () => {
 
 	test('passes correct range to getWithGridData', async () => {
 		const parent = createMockParent([]);
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.getRowMetadata(3);
 
@@ -122,7 +122,7 @@ describe('addRowData memory guards', () => {
 		const parent = {
 			batchUpdate: vi.fn().mockResolvedValue({}),
 		};
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 		const rows = [
 			[new Cell({ value: 'a' }), new Cell({ value: 'b' })],
 			[new Cell({ value: 'c' }), new Cell({ value: 'd' })],
@@ -149,7 +149,7 @@ describe('addRowData memory guards', () => {
 		const parent = {
 			batchUpdate: vi.fn().mockResolvedValue({}),
 		};
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 		const rows = [[new Cell({ value: 'hello' })]];
 
 		await sheet.addRowData(rows, false);
@@ -176,7 +176,8 @@ describe('appendRow / flush', () => {
 		const parent = {
 			batchUpdate: vi.fn((req: Record<string, unknown>) => {
 				const updateCells = req.updateCells as
-					{ rows?: { values?: unknown[] }[] } | undefined;
+					| { rows?: { values?: unknown[] }[] }
+					| undefined;
 				if (updateCells?.rows) {
 					updateCellsRows.push(updateCells.rows.length);
 				}
@@ -210,7 +211,7 @@ describe('appendRow / flush', () => {
 
 	test('holds rows in the buffer until the chunk threshold (2500) is reached', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		// 2499 rows must not trigger a send.
 		await sheet.appendRow(...Array.from({ length: 2499 }, () => eagerRow()));
@@ -220,7 +221,7 @@ describe('appendRow / flush', () => {
 
 	test('auto-flushes one chunk of 2500 rows once the buffer hits the threshold', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.appendRow(...Array.from({ length: 2500 }, () => eagerRow()));
 		expect(updateCellsRows).toEqual([2500]);
@@ -229,7 +230,7 @@ describe('appendRow / flush', () => {
 
 	test('auto-flushes multiple chunks within a single appendRow call', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		// 6000 rows in one call → two full chunks of 2500 plus 1000 left buffered.
 		await sheet.appendRow(...Array.from({ length: 6000 }, () => eagerRow()));
@@ -239,7 +240,7 @@ describe('appendRow / flush', () => {
 
 	test('flush() drains the buffer in chunks of at most 2500 rows', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.appendRow(...Array.from({ length: 6000 }, () => eagerRow()));
 		await sheet.flush();
@@ -249,7 +250,7 @@ describe('appendRow / flush', () => {
 
 	test('flush() is a no-op when the buffer is empty', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.flush();
 		expect(updateCellsRows).toEqual([]);
@@ -258,7 +259,7 @@ describe('appendRow / flush', () => {
 
 	test('[Symbol.asyncDispose] flushes the remaining buffer (await using does not lose pending rows)', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.appendRow(...Array.from({ length: 3 }, () => eagerRow()));
 		expect(updateCellsRows).toEqual([]);
@@ -271,7 +272,7 @@ describe('appendRow / flush', () => {
 
 	test('pendingCount returns to 0 after [Symbol.asyncDispose] flushes the buffer', async () => {
 		const { parent } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.appendRow(...Array.from({ length: 3 }, () => eagerRow()));
 		await sheet[Symbol.asyncDispose]();
@@ -280,7 +281,7 @@ describe('appendRow / flush', () => {
 
 	test('suspends auto-flush as soon as a lazy row enters the buffer', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		// 2499 eager + 1 lazy + 5000 more eager = 7500 rows total.
 		// Without lazy, this would trigger 3 auto-flushes (2500 * 3). With
@@ -299,7 +300,7 @@ describe('appendRow / flush', () => {
 
 	test('keeps eager rows held even if they arrive after the lazy row (FIFO preserved)', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		// One lazy then 4999 eager. Without lazy, 5000 eager would split as
 		// [2500, 2500]. The lazy row must force the eager tail to wait so
@@ -315,7 +316,7 @@ describe('appendRow / flush', () => {
 
 	test('resets the lazy-row latch after flush() so streaming resumes for the next round', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		// Round 1: lazy row triggers buffering; flush sends.
 		await sheet.appendRow(lazyRow());
@@ -331,7 +332,7 @@ describe('appendRow / flush', () => {
 
 	test('accepts zero rows as a valid no-op call', async () => {
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.appendRow();
 		expect(updateCellsRows).toEqual([]);
@@ -340,7 +341,7 @@ describe('appendRow / flush', () => {
 
 	test('pendingCount reflects buffered rows below the auto-flush threshold', async () => {
 		const { parent } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		expect(sheet.pendingCount).toBe(0);
 
@@ -350,7 +351,7 @@ describe('appendRow / flush', () => {
 
 	test('pendingCount drops to the chunk remainder once auto-flush fires', async () => {
 		const { parent } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		// 6000 rows -> two auto-flushed chunks of 2500, 1000 left buffered.
 		await sheet.appendRow(...Array.from({ length: 6000 }, () => eagerRow()));
@@ -359,7 +360,7 @@ describe('appendRow / flush', () => {
 
 	test('pendingCount returns to 0 after flush() drains the buffer', async () => {
 		const { parent } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.appendRow(...Array.from({ length: 6000 }, () => eagerRow()));
 		await sheet.flush();
@@ -368,7 +369,7 @@ describe('appendRow / flush', () => {
 
 	test('pendingCount includes rows held past SEND_CHUNK_SIZE while a lazy row suspends auto-flush', async () => {
 		const { parent } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		// 2499 eager (below threshold, no flush yet) + 1 lazy (latches
 		// auto-flush) + 5000 more eager = 7500 held in the buffer instead of
@@ -386,7 +387,7 @@ describe('appendRow / flush', () => {
 		// via lazyRow()). This test puts the lazy cell at the tail so the
 		// detection's for-loop is exercised in full.
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		const tailLazyCell = new Cell({ value: 'tail' });
 		(tailLazyCell as unknown as { provide: () => unknown }).provide = () => ({
@@ -418,7 +419,7 @@ describe('appendRow / flush', () => {
 		// the boundary behavior so a future "skip empty row" optimization
 		// would surface as a failing test.
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.appendRow([]);
 		await sheet.flush();
@@ -431,7 +432,7 @@ describe('appendRow / flush', () => {
 		// another batchUpdate request. Catches a future regression where
 		// state is not properly cleared between flushes.
 		const { parent, updateCellsRows } = createRecordingParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.appendRow(...Array.from({ length: 100 }, () => eagerRow()));
 		await sheet.flush();
@@ -468,7 +469,7 @@ describe('Sheet.onProgress', () => {
 
 	test('fires once per internal chunk flush with cumulative sent count and remaining buffer size', async () => {
 		const parent = createSilentParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 		const calls: Array<{ sent: number; remaining: number }> = [];
 		sheet.onProgress = (sent, remaining) => {
 			calls.push({ sent, remaining });
@@ -493,7 +494,7 @@ describe('Sheet.onProgress', () => {
 
 	test('is never invoked when left undefined', async () => {
 		const parent = createSilentParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 		// sheet.onProgress is left undefined.
 		await expect(
 			sheet.appendRow(...Array.from({ length: 5000 }, () => eagerRow())),
@@ -503,7 +504,7 @@ describe('Sheet.onProgress', () => {
 
 	test('continues flushing when the callback throws synchronously', async () => {
 		const parent = createSilentParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 		const fires: number[] = [];
 		sheet.onProgress = (sent) => {
 			fires.push(sent);
@@ -521,7 +522,7 @@ describe('Sheet.onProgress', () => {
 
 	test('continues flushing when the callback returns a rejected promise', async () => {
 		const parent = createSilentParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 		const fires: number[] = [];
 		sheet.onProgress = (sent) => {
 			fires.push(sent);
@@ -537,7 +538,7 @@ describe('Sheet.onProgress', () => {
 
 	test('awaits async callbacks so the next chunk waits for the previous report', async () => {
 		const parent = createSilentParent();
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 		const sequence: string[] = [];
 		sheet.onProgress = async (sent) => {
 			sequence.push(`begin-cb-${sent}`);
@@ -567,7 +568,7 @@ describe('Sheet A1 title quoting', () => {
 				data: { sheets: [{ data: [{ rowMetadata: [] }] }] },
 			}),
 		};
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.getRowMetadata(2);
 
@@ -578,7 +579,7 @@ describe('Sheet A1 title quoting', () => {
 		const parent = {
 			get: vi.fn().mockResolvedValue({ data: { values: [] } }),
 		};
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.getValues('1', '1');
 
@@ -594,7 +595,7 @@ describe('Sheet A1 title quoting', () => {
 				data: { sheets: [{ data: [{ rowData: [{ values: [] }] }] }] },
 			}),
 		};
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.getCellTypes('A1:B1');
 
@@ -609,7 +610,7 @@ describe('Sheet.rename', () => {
 			rekeySheet: vi.fn(),
 		};
 		const sheetData = { properties: { title: 'Old', sheetId: 7 } };
-		const sheet = new Sheet(sheetData as never, parent as never);
+		const sheet = new Sheet(sheetData, parent as never);
 
 		await sheet.rename('New');
 
@@ -630,7 +631,7 @@ describe('Sheet.rename', () => {
 			rekeySheet: vi.fn(),
 		};
 		const sheet = new Sheet(
-			{ properties: { title: 'Old', sheetId: 7 } } as never,
+			{ properties: { title: 'Old', sheetId: 7 } },
 			parent as never,
 		);
 
@@ -647,7 +648,7 @@ describe('Sheet.protect', () => {
 
 	test('locks the whole sheet to owner only when editors is omitted', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.protect();
 
@@ -663,7 +664,7 @@ describe('Sheet.protect', () => {
 
 	test('sends editors emails when provided', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.protect({ editors: ['owner@example.com', 'editor@example.com'] });
 
@@ -679,7 +680,7 @@ describe('Sheet.protect', () => {
 
 	test('omits editors when warningOnly is true', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.protect({
 			warningOnly: true,
@@ -698,7 +699,7 @@ describe('Sheet.protect', () => {
 
 	test('sends an empty editors list when editors is an empty array', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.protect({ editors: [] });
 
@@ -714,7 +715,7 @@ describe('Sheet.protect', () => {
 
 	test('includes a non-empty description in the protected range', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.protect({ description: '集計シート' });
 
@@ -731,7 +732,7 @@ describe('Sheet.protect', () => {
 
 	test('sends an empty description when description is an empty string', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.protect({ description: '' });
 
@@ -748,7 +749,7 @@ describe('Sheet.protect', () => {
 
 	test('omits description when the option is undefined', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.protect();
 
@@ -759,7 +760,7 @@ describe('Sheet.protect', () => {
 
 	test('sends warningOnly with description and without editors', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.protect({ warningOnly: true, description: '注意' });
 
@@ -776,7 +777,7 @@ describe('Sheet.protect', () => {
 
 	test('adds a new protected range on every call', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await sheet.protect({ editors: ['owner@example.com'] });
 		await sheet.protect({ editors: ['owner@example.com'] });
@@ -794,7 +795,7 @@ describe('Sheet.delete', () => {
 			forgetSheet: vi.fn(),
 		};
 		const sheet = new Sheet(
-			{ properties: { title: 'Temp', sheetId: 9 } } as never,
+			{ properties: { title: 'Temp', sheetId: 9 } },
 			parent as never,
 		);
 		await sheet.appendRow([new Cell({ value: 'pending' })]);
@@ -816,7 +817,7 @@ describe('Sheet.delete', () => {
 			forgetSheet: vi.fn(),
 		};
 		const sheet = new Sheet(
-			{ properties: { title: 'Temp', sheetId: 9 } } as never,
+			{ properties: { title: 'Temp', sheetId: 9 } },
 			parent as never,
 		);
 		await sheet.appendRow([new Cell({ value: 'pending' })]);
@@ -834,7 +835,7 @@ describe('Sheet.move', () => {
 			refreshCachedSheetIndices: vi.fn().mockResolvedValue(),
 		};
 		const sheet = new Sheet(
-			{ properties: { title: 'S1', sheetId: 1, index: 0 } } as never,
+			{ properties: { title: 'S1', sheetId: 1, index: 0 } },
 			parent as never,
 		);
 
@@ -856,7 +857,7 @@ describe('Sheet.move', () => {
 			refreshCachedSheetIndices: vi.fn().mockResolvedValue(),
 		};
 		const sheet = new Sheet(
-			{ properties: { title: 'S1', sheetId: 1, index: 0 } } as never,
+			{ properties: { title: 'S1', sheetId: 1, index: 0 } },
 			parent as never,
 		);
 
@@ -871,7 +872,7 @@ describe('Sheet.move', () => {
 			refreshCachedSheetIndices: vi.fn().mockRejectedValue(refreshError),
 		};
 		const sheet = new Sheet(
-			{ properties: { title: 'S1', sheetId: 1, index: 0 } } as never,
+			{ properties: { title: 'S1', sheetId: 1, index: 0 } },
 			parent as never,
 		);
 
@@ -884,7 +885,7 @@ describe('Sheet.hide', () => {
 	test('sends updateSheetProperties for hidden and updates local props', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
 		const sheetData = { properties: { title: 'Hidden', sheetId: 4, hidden: false } };
-		const sheet = new Sheet(sheetData as never, parent as never);
+		const sheet = new Sheet(sheetData, parent as never);
 
 		await sheet.hide();
 
@@ -901,7 +902,7 @@ describe('Sheet.hide', () => {
 		const error = new Error('hide failed');
 		const parent = { batchUpdate: vi.fn().mockRejectedValue(error) };
 		const sheet = new Sheet(
-			{ properties: { title: 'Hidden', sheetId: 4, hidden: false } } as never,
+			{ properties: { title: 'Hidden', sheetId: 4, hidden: false } },
 			parent as never,
 		);
 
@@ -930,7 +931,7 @@ describe('Sheet.frozen', () => {
 
 	test('resolves when the freeze request succeeds, sending the column and row counts', async () => {
 		const parent = { batchUpdate: vi.fn().mockResolvedValue({}) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await expect(sheet.frozen(2, 3)).resolves.toBeUndefined();
 		expect(parent.batchUpdate).toHaveBeenCalledTimes(1);
@@ -951,7 +952,7 @@ describe('Sheet.frozen', () => {
 				.fn()
 				.mockRejectedValue(new GaxiosError('Quota exceeded', { url: 'test' })),
 		};
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await expect(sheet.frozen(1, 1)).resolves.toBeUndefined();
 	});
@@ -960,7 +961,7 @@ describe('Sheet.frozen', () => {
 		const error = createForeignGaxiosError();
 		expect(error instanceof GaxiosError).toBe(false);
 		const parent = { batchUpdate: vi.fn().mockRejectedValue(error) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await expect(sheet.frozen(1, 1)).resolves.toBeUndefined();
 	});
@@ -968,7 +969,7 @@ describe('Sheet.frozen', () => {
 	test('rethrows an error that is not a GaxiosError', async () => {
 		const error = new Error('unrelated');
 		const parent = { batchUpdate: vi.fn().mockRejectedValue(error) };
-		const sheet = new Sheet(mockSheet as never, parent as never);
+		const sheet = new Sheet(mockSheet, parent as never);
 
 		await expect(sheet.frozen(1, 1)).rejects.toBe(error);
 	});

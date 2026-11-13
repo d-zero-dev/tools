@@ -1,6 +1,6 @@
 # `@d-zero/a11y-check-scenarios`
 
-WCAG 達成基準に基づくシナリオコレクション。[`@d-zero/a11y-check-core`](../a11y-check-core/) の `scenarioRunner` に渡して使う。
+WCAG 達成基準に基づくシナリオコレクション。[`@d-zero/a11y-check-core`](../a11y-check-core/)の`scenarioRunner`に渡して使う。
 
 ## Installation
 
@@ -20,4 +20,4 @@ const result1 = await scenario01.exec(page, 'desktop', console.log);
 const result2 = await scenario02.exec(page, 'desktop', console.log);
 ```
 
-各シナリオが検証する WCAG 達成基準・出力レポート構造・スクリーンショット時のマーキング規則は `src/scenario01.ts` / `src/scenario02.ts` の JSDoc を参照。
+各シナリオが検証する WCAG 達成基準・出力レポート構造・スクリーンショット時のマーキング規則は`src/scenario01.ts`/`src/scenario02.ts`の JSDoc を参照。

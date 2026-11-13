@@ -7,54 +7,54 @@ disable-model-invocation: true
 
 # 前提
 
-- リリースは `main` ブランチから行う。`dev` の変更を `main` にマージしてから実行する
+- リリースは`main`ブランチから行う。`dev`の変更を`main`にマージしてから実行する
 - タグ push（`v-release`）で publish workflow が発火し、npm へ自動 publish される（OIDC Trusted Publishing）
 - **publish は取り消せない**。各ステップでユーザーの確認を取る
-- **`yarn release` / `git push --tags` / `git push origin dev` はユーザーが実行する**。エージェントは実行せず `!` プレフィックス付きのコマンドを提示し、完了報告を待つ
+- **`yarn release` / `git push --tags` / `git push origin dev`はユーザーが実行する**。エージェントは実行せず`!`プレフィックス付きのコマンドを提示し、完了報告を待つ
 
 # 対象パッケージ
 
 このリポジトリが publish するパッケージ（independent モードのためバージョンは個別に上がる）:
 
-| ディレクトリ | npm パッケージ名 |
-|---|---|
-| `packages/@d-zero/a11y-check` | `@d-zero/a11y-check` |
-| `packages/@d-zero/a11y-check-axe-scenario` | `@d-zero/a11y-check-axe-scenario` |
-| `packages/@d-zero/a11y-check-core` | `@d-zero/a11y-check-core` |
-| `packages/@d-zero/a11y-check-scenarios` | `@d-zero/a11y-check-scenarios` |
-| `packages/@d-zero/anatomist` | `@d-zero/anatomist` |
-| `packages/@d-zero/archaeologist` | `@d-zero/archaeologist` |
-| `packages/@d-zero/backlog-projects` | `@d-zero/backlog-projects` |
-| `packages/@d-zero/beholder` | `@d-zero/beholder` |
-| `packages/@d-zero/cli-core` | `@d-zero/cli-core` |
-| `packages/@d-zero/dealer` | `@d-zero/dealer` |
-| `packages/@d-zero/filematch` | `@d-zero/filematch` |
-| `packages/@d-zero/fs` | `@d-zero/fs` |
-| `packages/@d-zero/google-auth` | `@d-zero/google-auth` |
-| `packages/@d-zero/google-sheets` | `@d-zero/google-sheets` |
-| `packages/@d-zero/html-distiller` | `@d-zero/html-distiller` |
-| `packages/@d-zero/notion` | `@d-zero/notion` |
-| `packages/@d-zero/print` | `@d-zero/print` |
-| `packages/@d-zero/proc-talk` | `@d-zero/proc-talk` |
-| `packages/@d-zero/puppeteer-dealer` | `@d-zero/puppeteer-dealer` |
+| ディレクトリ                                 | npm パッケージ名                    |
+| -------------------------------------------- | ----------------------------------- |
+| `packages/@d-zero/a11y-check`                | `@d-zero/a11y-check`                |
+| `packages/@d-zero/a11y-check-axe-scenario`   | `@d-zero/a11y-check-axe-scenario`   |
+| `packages/@d-zero/a11y-check-core`           | `@d-zero/a11y-check-core`           |
+| `packages/@d-zero/a11y-check-scenarios`      | `@d-zero/a11y-check-scenarios`      |
+| `packages/@d-zero/anatomist`                 | `@d-zero/anatomist`                 |
+| `packages/@d-zero/archaeologist`             | `@d-zero/archaeologist`             |
+| `packages/@d-zero/backlog-projects`          | `@d-zero/backlog-projects`          |
+| `packages/@d-zero/beholder`                  | `@d-zero/beholder`                  |
+| `packages/@d-zero/cli-core`                  | `@d-zero/cli-core`                  |
+| `packages/@d-zero/dealer`                    | `@d-zero/dealer`                    |
+| `packages/@d-zero/filematch`                 | `@d-zero/filematch`                 |
+| `packages/@d-zero/fs`                        | `@d-zero/fs`                        |
+| `packages/@d-zero/google-auth`               | `@d-zero/google-auth`               |
+| `packages/@d-zero/google-sheets`             | `@d-zero/google-sheets`             |
+| `packages/@d-zero/html-distiller`            | `@d-zero/html-distiller`            |
+| `packages/@d-zero/notion`                    | `@d-zero/notion`                    |
+| `packages/@d-zero/print`                     | `@d-zero/print`                     |
+| `packages/@d-zero/proc-talk`                 | `@d-zero/proc-talk`                 |
+| `packages/@d-zero/puppeteer-dealer`          | `@d-zero/puppeteer-dealer`          |
 | `packages/@d-zero/puppeteer-general-actions` | `@d-zero/puppeteer-general-actions` |
-| `packages/@d-zero/puppeteer-page-scan` | `@d-zero/puppeteer-page-scan` |
-| `packages/@d-zero/puppeteer-screenshot` | `@d-zero/puppeteer-screenshot` |
-| `packages/@d-zero/puppeteer-scroll` | `@d-zero/puppeteer-scroll` |
-| `packages/@d-zero/readtext` | `@d-zero/readtext` |
-| `packages/@d-zero/remote-inspector` | `@d-zero/remote-inspector` |
-| `packages/@d-zero/replicator` | `@d-zero/replicator` |
-| `packages/@d-zero/roar` | `@d-zero/roar` |
-| `packages/@d-zero/shared` | `@d-zero/shared` |
+| `packages/@d-zero/puppeteer-page-scan`       | `@d-zero/puppeteer-page-scan`       |
+| `packages/@d-zero/puppeteer-screenshot`      | `@d-zero/puppeteer-screenshot`      |
+| `packages/@d-zero/puppeteer-scroll`          | `@d-zero/puppeteer-scroll`          |
+| `packages/@d-zero/readtext`                  | `@d-zero/readtext`                  |
+| `packages/@d-zero/remote-inspector`          | `@d-zero/remote-inspector`          |
+| `packages/@d-zero/replicator`                | `@d-zero/replicator`                |
+| `packages/@d-zero/roar`                      | `@d-zero/roar`                      |
+| `packages/@d-zero/shared`                    | `@d-zero/shared`                    |
 
 # 手順
 
 ## 1. ワーキングツリーの状態確認
 
-`git status` で未コミットの変更・未追跡ファイルがないか確認する。
+`git status`で未コミットの変更・未追跡ファイルがないか確認する。
 
 - クリーンなら次へ
-- 変更があればユーザーに報告し、`git stash` / コミット / 中断のいずれかを尋ねる。指示に従ってから次へ
+- 変更があればユーザーに報告し、`git stash`/コミット/中断のいずれかを尋ねる。指示に従ってから次へ
 
 汚れたまま先に進むとマージ・バージョニングが意図しない差分を巻き込むため、ここは省略しない。
 
@@ -69,9 +69,9 @@ git pull origin dev
 git checkout main
 ```
 
-両ブランチをローカルで最新にしてから `main` に戻る。`dev` をローカルで最新にしておくのは、手順 11 の `main` → `dev` 同期でそのまま使うため。
+両ブランチをローカルで最新にしてから`main`に戻る。`dev`をローカルで最新にしておくのは、手順 11 の`main` → `dev`同期でそのまま使うため。
 
-いずれかの `pull` がコンフリクトやリジェクトで失敗したらユーザーに報告して指示を仰ぐ。
+いずれかの`pull`がコンフリクトやリジェクトで失敗したらユーザーに報告して指示を仰ぐ。
 
 ## 3. 未マージ PR の確認
 
@@ -83,7 +83,7 @@ gh pr list --base dev --state open
 
 ## 4. dev → main マージ
 
-`dev` が `main` より進んでいる場合、差分コミットをユーザーに提示してからマージする。
+`dev`が`main`より進んでいる場合、差分コミットをユーザーに提示してからマージする。
 
 ```bash
 git log --oneline main..dev
@@ -99,17 +99,17 @@ yarn install
 git diff yarn.lock
 ```
 
-差分が出たらユーザーに報告し、コミットしてから次へ。CI の `yarn install --immutable` が失敗するのを防ぐため必須。
+差分が出たらユーザーに報告し、コミットしてから次へ。CI の`yarn install --immutable`が失敗するのを防ぐため必須。
 
 ## 6. 事前チェック
 
 ```bash
-yarn lint
 yarn build
+yarn lint
 yarn test
 ```
 
-すべてパスすること。`yarn release` は内部の `prerelease` スクリプト（`yarn build; yarn test`）で build / test を再度走らせるが、`lerna version` の途中で失敗するより事前に落としたほうが安全なので省略しない。失敗があれば修正してから次へ。`main` の CI が green かも併せて確認する。
+すべてパスすること（型情報ルールが`dist/*.d.ts`を読むため build が先）。`yarn release`は内部の`prerelease`スクリプト（`yarn build; yarn test`）で build/test を再度走らせるが、`lerna version`の途中で失敗するより事前に落としたほうが安全なので省略しない。失敗があれば修正してから次へ。`main`の CI が green かも併せて確認する。
 
 ```bash
 gh run list --branch main --limit 5
@@ -124,16 +124,16 @@ git describe --tags --abbrev=0
 git log --oneline $(git describe --tags --abbrev=0)..HEAD
 ```
 
-independent モードではパッケージごとにバージョンが異なるため、各パッケージの現行バージョン（`packages/@d-zero/*/package.json` の `version`）も提示する。`yarn release` は conventional commits からバージョンを自動決定するため、**リリース種別（graduate / alpha / beta / rc）をユーザーに確認する必要はない**。差分は「何が入るか」の確認材料として提示するだけでよい。
+independent モードではパッケージごとにバージョンが異なるため、各パッケージの現行バージョン（`packages/@d-zero/*/package.json`の`version`）も提示する。`yarn release`は conventional commits からバージョンを自動決定するため、**リリース種別（graduate / alpha / beta / rc）をユーザーに確認する必要はない**。差分は「何が入るか」の確認材料として提示するだけでよい。
 
-あわせて、前回タグ以降に破壊的変更マーカーが無いかを確認する。independent モードなので、マーカー付きコミットが触ったパッケージだけが影響を受ける。`0.x` のパッケージではマイナーに丸められるだけだが、`1.0.0` 以降のパッケージではそのパッケージのメジャーが上がる（段階ごとの効果と、付けてよい条件は `git` スキルの「破壊的変更と振る舞いの変更」）。
+あわせて、前回タグ以降に破壊的変更マーカーが無いかを確認する。independent モードなので、マーカー付きコミットが触ったパッケージだけが影響を受ける。`0.x`のパッケージではマイナーに丸められるだけだが、`1.0.0`以降のパッケージではそのパッケージのメジャーが上がる（段階ごとの効果と、付けてよい条件は`git`スキルの「破壊的変更と振る舞いの変更」）。
 
 ```bash
 git log <last-tag>..HEAD --format=%s | grep -E '^[a-z]+(\([^)]*\))?!:'
 git log <last-tag>..HEAD --format=%B | grep -iE '^(\* +)?BREAKING[ -]CHANGE:'
 ```
 
-ヒットがあれば、どのパッケージを触ったコミットかとそのパッケージの現行バージョンを添えて提示する。ユーザーがそのパッケージのメジャーを承認していた変更ならそのまま進む。承認の無いマーカー（誤って付いたもの）でそれでもリリースするなら、バンプを明示して回避できる: `yarn release minor`（または `patch`）。`lerna version` は `--conventional-commits` の推奨より位置引数のバンプを優先し、CHANGELOG は生成する。ただし independent モードでは位置引数が**変更のあった全パッケージ**に同じバンプを適用するので、他のパッケージまで minor になることを伝える。その CHANGELOG にはコミットの注記から「BREAKING CHANGES」節が入るので、マイナーリリースが破壊的変更を告知する形になる。選択肢を提示するときにそう言う。
+ヒットがあれば、どのパッケージを触ったコミットかとそのパッケージの現行バージョンを添えて提示する。ユーザーがそのパッケージのメジャーを承認していた変更ならそのまま進む。承認の無いマーカー（誤って付いたもの）でそれでもリリースするなら、バンプを明示して回避できる: `yarn release minor`（または`patch`）。`lerna version`は`--conventional-commits`の推奨より位置引数のバンプを優先し、CHANGELOG は生成する。ただし independent モードでは位置引数が**変更のあった全パッケージ**に同じバンプを適用するので、他のパッケージまで minor になることを伝える。その CHANGELOG にはコミットの注記から「BREAKING CHANGES」節が入るので、マイナーリリースが破壊的変更を告知する形になる。選択肢を提示するときにそう言う。
 
 振る舞いの変更の段落も集めて、リリース内容の一部として提示する。
 
@@ -143,17 +143,17 @@ git log <last-tag>..HEAD --grep='^Behavior change'
 
 ## 8. バージョニングと tag push（ユーザー実行）
 
-`lerna version` は選択・確認のプロンプトを出すインタラクティブコマンドで、Claude Code の `!` 経由では対話できない（プロンプトが表示されても入力できず止まる）。ユーザーに次の手順を依頼する:
+`lerna version`は選択・確認のプロンプトを出すインタラクティブコマンドで、Claude Code の`!`経由では対話できない（プロンプトが表示されても入力できず止まる）。ユーザーに次の手順を依頼する:
 
 1. Claude Code のセッションを終了する（`exit`）
-2. ターミナルで直接 `yarn release` を実行し、プロンプトに対話的に回答する
-3. 完了したら `claude --continue` で会話に戻る
+2. ターミナルで直接`yarn release`を実行し、プロンプトに対話的に回答する
+3. 完了したら`claude --continue`で会話に戻る
 
 ```
 yarn release          # graduate（正式リリース。通常はこれだけで十分）
 ```
 
-alpha / beta / rc のプレリリースが必要な場合は、ユーザーが会話の中で明示的に指示したときだけ、上記と同じ exit → 実行 → `--continue` の手順で該当コマンドを案内する。
+alpha/beta/rc のプレリリースが必要な場合は、ユーザーが会話の中で明示的に指示したときだけ、上記と同じ exit → 実行 → `--continue`の手順で該当コマンドを案内する。
 
 ```
 yarn release:alpha    # alpha プレリリース
@@ -167,7 +167,7 @@ yarn release:rc       # RC プレリリース
 ! git push --tags
 ```
 
-`release:trigger` スクリプトが `git push origin main --follow-tags` と `v-release` タグの強制更新まで済ませているため、`git push --tags` は通常 "Everything up-to-date" になる。取りこぼしがないことの確認として実行しておく。
+`release:trigger`スクリプトが`git push origin main --follow-tags`と`v-release`タグの強制更新まで済ませているため、`git push --tags`は通常 "Everything up-to-date" になる。取りこぼしがないことの確認として実行しておく。
 
 ユーザーから完了報告を受けたら、実際にタグが push されたことを確認してから次へ進む。
 
@@ -177,7 +177,7 @@ git ls-remote --tags origin
 
 ## 9. publish workflow の監視
 
-`v-release` タグ push で `publish.yml` が発火する。バックグラウンド実行で完了を待つ。
+`v-release`タグ push で`publish.yml`が発火する。バックグラウンド実行で完了を待つ。
 
 ```bash
 gh run watch --exit-status
@@ -187,12 +187,12 @@ gh run watch --exit-status
 
 ## 10. dist-tag の判定ロジック（参考）
 
-`publish.yml` は `packages/@d-zero/shared/package.json` の `version` を読み、以下で dist-tag を決める:
+`publish.yml`は`packages/@d-zero/shared/package.json`の`version`を読み、以下で dist-tag を決める:
 
-- `-alpha` を含む → `alpha`
-- `-beta` を含む → `beta`
-- `-rc` を含む → `rc`
-- それ以外で `-` を含む → `next`
+- `-alpha`を含む → `alpha`
+- `-beta`を含む → `beta`
+- `-rc`を含む → `rc`
+- それ以外で`-`を含む → `next`
 - 上記以外 → `latest`
 
 手順 12 の検証で、実際に付いた dist-tag がこのロジック通りかを確認する材料にする。
@@ -209,8 +209,8 @@ npm view <package> dist-tags
 確認項目:
 
 - バージョンが手順 8 で上げた値と一致しているか
-- dist-tag が手順 10 のロジック通りか（正式リリースは `latest`、プレリリースは `alpha` / `beta` / `rc` / `next`）
-- provenance が付与されているか（npm の該当バージョンページ、または `npm view <package> --json` の `dist.attestations`）
+- dist-tag が手順 10 のロジック通りか（正式リリースは`latest`、プレリリースは`alpha`/`beta`/`rc`/`next`）
+- provenance が付与されているか（npm の該当バージョンページ、または`npm view <package> --json`の`dist.attestations`）
 
 independent モードでは**一部のパッケージだけ publish される（部分 publish）**ことがある。28 パッケージ全てを個別に確認し、漏れがあればユーザーに報告する。
 
@@ -218,7 +218,7 @@ independent モードでは**一部のパッケージだけ publish される（
 
 ## 12. main → dev の同期
 
-publish の成功を確認した後、バージョン更新コミットを `dev` に取り込む。
+publish の成功を確認した後、バージョン更新コミットを`dev`に取り込む。
 
 ```bash
 git checkout dev
@@ -231,17 +231,17 @@ git merge main --no-edit
 ! git push origin dev
 ```
 
-`dev` はブランチ保護がかかっており、`maintain` ロールでは直接 push できない場合がある。push が拒否されたら、`dev` への取り込みを PR 経由に切り替える（`git checkout -b chore/sync-main` してから `.claude/skills/pr/SKILL.md` の手順へ）。
+`dev`はブランチ保護がかかっており、`maintain`ロールでは直接 push できない場合がある。push が拒否されたら、`dev`への取り込みを PR 経由に切り替える（`git checkout -b chore/sync-main`してから`.claude/skills/pr/SKILL.md`の手順へ）。
 
 ## 13. 失敗時の対処
 
-- **sigstore の transient 409**: workflow 側に retry ステップがあるため、まず retry の結果を確認する。それでも失敗する場合は `gh run rerun` で再実行
-- **部分 publish**: 成功したパッケージは publish 済みで巻き戻せない。未 publish のパッケージのみを対象に、`v-release` タグを打ち直して workflow を再発火させる（`lerna publish from-package` は未 publish のバージョンのみを対象にするため、成功済みパッケージは二重 publish されない）
-- **誤ったバージョンを publish した**: unpublish は原則不可。`npm deprecate <package>@<version> "<理由>"` で非推奨化し、修正版を新バージョンとして publish する。この判断は必ずユーザーに確認を取る
-- **publish が失敗したまま中断する場合**: 手順 12 の `dev` 同期は行わない。`main` にバージョン更新コミットだけが残るため、次回リリース時にそこから再開する
+- **sigstore の transient 409**: workflow 側に retry ステップがあるため、まず retry の結果を確認する。それでも失敗する場合は`gh run rerun`で再実行
+- **部分 publish**: 成功したパッケージは publish 済みで巻き戻せない。未 publish のパッケージのみを対象に、`v-release`タグを打ち直して workflow を再発火させる（`lerna publish from-package`は未 publish のバージョンのみを対象にするため、成功済みパッケージは二重 publish されない）
+- **誤ったバージョンを publish した**: unpublish は原則不可。`npm deprecate <package>@<version> "<理由>"`で非推奨化し、修正版を新バージョンとして publish する。この判断は必ずユーザーに確認を取る
+- **publish が失敗したまま中断する場合**: 手順 12 の`dev`同期は行わない。`main`にバージョン更新コミットだけが残るため、次回リリース時にそこから再開する
 
 # 注意
 
-- **`v-release` タグの作成・削除は CODEOWNERS のみ**（GitHub Rulesets で保護）。権限がない場合は手順 8 で失敗するため、実行者がタグ権限者か事前に確認する
+- **`v-release`タグの作成・削除は CODEOWNERS のみ**（GitHub Rulesets で保護）。権限がない場合は手順 8 で失敗するため、実行者がタグ権限者か事前に確認する
 - **publish は取り消せない**。手順 5・6 の事前チェックを省略しない
-- **`.yarnrc.yml` の `npmMinimalAgeGate: 7d` を一時的に外していないか確認する**。サプライチェーン対策の設定を戻し忘れたまま publish すると保護が効かない状態でリリースすることになる
+- **`.yarnrc.yml`の`npmMinimalAgeGate: 7d`を一時的に外していないか確認する**。サプライチェーン対策の設定を戻し忘れたまま publish すると保護が効かない状態でリリースすることになる

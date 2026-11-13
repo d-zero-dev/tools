@@ -1,6 +1,6 @@
 # `@d-zero/google-auth`
 
-Google API 用 `OAuth2Client` を生成する汎用ライブラリ。複数の認証方式を優先順位付きで解決する（詳細は `src/authentication.ts` の JSDoc）。
+Google API 用`OAuth2Client`を生成する汎用ライブラリ。複数の認証方式を優先順位付きで解決する（詳細は`src/authentication.ts`の JSDoc）。
 
 ## Installation
 
@@ -20,7 +20,7 @@ const auth = await authentication('./credential.json', [
 
 ## セットアップ方法
 
-利用環境に応じて選ぶ。コード側は同じ `authentication(...)` で動く。
+利用環境に応じて選ぶ。コード側は同じ`authentication(...)`で動く。
 
 ### 方法 1: gcloud CLI（最も簡単）
 

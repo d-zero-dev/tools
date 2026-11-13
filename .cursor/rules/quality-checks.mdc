@@ -20,17 +20,18 @@ alwaysApply: true
 
 After completing any code changes, you MUST run the following commands in order **from the repository root**:
 
-1. **Lint Check**: `yarn lint`
-   - Runs ESLint across all packages
-   - Fix all linter errors and warnings before proceeding
-   - Never leave lint warnings unresolved
-   - Ask user permission before disabling ESLint rules
-
-2. **Build Check**: `yarn build`
+1. **Build Check**: `yarn build`
    - Builds all packages via Lerna
    - Ensure all packages build successfully
    - Verify import paths are correct
    - Check for TypeScript compilation errors
+   - Runs before lint because oxlint's type-aware rules read each package's built `dist/*.d.ts`
+
+2. **Lint Check**: `yarn lint`
+   - Runs oxlint (type-aware), oxfmt and textlint across the repository
+   - Fix all linter errors and warnings before proceeding
+   - Never leave lint warnings unresolved
+   - Ask user permission before disabling oxlint rules
 
 3. **Test Check**: `yarn test`
    - Run all test suites across all packages via Vitest
@@ -44,6 +45,7 @@ After completing changes to non-code files, only run:
 1. **Lint Check**: `yarn lint`
    - Ensures documentation and configuration files follow formatting rules
    - Skip build and test as they are not affected by non-code changes
+   - Type-aware rules still need existing build output: run `yarn build` once beforehand if `dist/` is missing
 
 ## When to Run
 
@@ -83,13 +85,13 @@ This is acceptable for:
 Before reporting task completion or proposing a commit, you MUST run the full suite:
 
 ```bash
-# 1. Lint first
-yarn lint
-
-# 2. Build if lint passes
+# 1. Build first (type-aware lint rules read the built dist/*.d.ts)
 yarn build
 
-# 3. Test ALL suites if build passes
+# 2. Lint if build passes
+yarn lint
+
+# 3. Test ALL suites if lint passes
 yarn test
 
 # 4. Only then report completion or proceed to commit

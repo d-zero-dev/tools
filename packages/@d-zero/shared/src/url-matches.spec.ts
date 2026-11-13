@@ -71,7 +71,7 @@ describe('urlMatches', () => {
 			expect(
 				urlMatches(
 					'https://example.com/path%20to%2Fpage',
-					'https://example.com/path to%2Fpage', // cspell:disable-line
+					'https://example.com/path to%2Fpage',
 				),
 			).toBe(true);
 		});

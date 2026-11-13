@@ -81,7 +81,7 @@ export type CodeResult = {
 /**
  * Archaeologistの分析オプション
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+// oxlint-disable-next-line typescript/no-empty-object-type -- A named subtype so that the exported name stays stable if this mode gains its own options.
 export interface ArchaeologistOptions extends AnalyzeOptions {}
 
 /**
@@ -103,7 +103,7 @@ export interface AnalyzeOptions extends GeneralOptions {
 /**
  * フリーズモードのオプション
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+// oxlint-disable-next-line typescript/no-empty-object-type -- A named subtype so that the exported name stays stable if this mode gains its own options.
 export interface FreezeOptions extends GeneralOptions {}
 
 interface GeneralOptions {

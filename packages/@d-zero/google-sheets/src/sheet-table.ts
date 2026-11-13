@@ -62,7 +62,6 @@ export class SheetTable<T> {
 	readonly #sheetName: string;
 	readonly #sheetUrl: string;
 
-	// eslint-disable-next-line no-restricted-syntax
 	private constructor(
 		readonly sheetUrl: string,
 		readonly sheetName: string,
@@ -365,6 +364,7 @@ function convertValue(
 		}
 		case 'formula': {
 			// For formulas, return the evaluated result as a string
+			// oxlint-disable-next-line typescript/no-base-to-string -- Cell values from the Sheets API are string | number | boolean; `unknown` narrows to `{}` only after the null check.
 			return String(rawValue);
 		}
 		case 'error': {
@@ -372,9 +372,11 @@ function convertValue(
 			return null;
 		}
 		case 'string': {
+			// oxlint-disable-next-line typescript/no-base-to-string -- See the `formula` case.
 			return String(rawValue);
 		}
 		default: {
+			// oxlint-disable-next-line typescript/no-base-to-string -- See the `formula` case.
 			return String(rawValue);
 		}
 	}

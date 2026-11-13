@@ -5,7 +5,7 @@
  * same logic is unit-tested without a browser. Puppeteer callers use
  * {@link getMainContents}, which passes this function into `page.evaluate`.
  *
- * WHY no `@medv/finder`: selector strings are diagnostic only; a tag+id+class // cspell:disable-line
+ * WHY no `@medv/finder`: selector strings are diagnostic only; a tag+id+class
  * path is enough and avoids a Node-only dependency inside the page realm.
  *
  * WHY the priority-list resolution logic below is duplicated rather than
@@ -197,7 +197,12 @@ export function extractMainContentsFromDocument(
 		headings.push({
 			text: removeSpaces($heading.textContent),
 			level: Number.parseInt($heading.nodeName.replace(/h/i, ''), 10) as
-				1 | 2 | 3 | 4 | 5 | 6,
+				| 1
+				| 2
+				| 3
+				| 4
+				| 5
+				| 6,
 		});
 	}
 

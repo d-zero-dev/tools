@@ -1,4 +1,3 @@
-import type { NavigationUnsettledError } from './navigation-unsettled-error.js';
 import type { Page } from 'puppeteer';
 
 import { evaluateWithFrameRetry } from '@d-zero/puppeteer-scroll';
@@ -31,7 +30,7 @@ function normalizeForComparison(url: string): string {
  * has nonetheless landed in a usable state: the main frame is attached, the
  * URL matches the navigation target, and the document has progressed past
  * `loading`. Used by `navigateWithFallback` to decide between surfacing a
- * {@link NavigationUnsettledError} and continuing as `'degraded'`.
+ * `NavigationUnsettledError` and continuing as `'degraded'`.
  * @param page - Puppeteer page instance.
  * @param url - The URL that navigation was attempting to reach.
  * @returns `true` when the main frame is attached, `page.url()` matches

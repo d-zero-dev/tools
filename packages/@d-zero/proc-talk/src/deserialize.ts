@@ -10,6 +10,7 @@ export function deserialize(data: unknown[], logger: typeof log): unknown[] {
 		// Deserialize functions
 		if (typeof item === 'string' && item.startsWith('javascript:')) {
 			logger('deserialize function: %s', item);
+			// oxlint-disable-next-line typescript/no-implied-eval -- Sending functions between processes is what `serialize` / `deserialize` exist for, so building them with `Function` is the contract.
 			return new Function(`return ${item.slice(11)}`)();
 		}
 

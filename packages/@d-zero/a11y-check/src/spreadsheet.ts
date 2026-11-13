@@ -13,7 +13,6 @@ type SpreadsheetViolation = Violation & {
 export class SpreadsheetReporter {
 	#table: SheetTable<SpreadsheetViolation> | null = null;
 
-	// eslint-disable-next-line no-restricted-syntax
 	private constructor() {}
 
 	/**

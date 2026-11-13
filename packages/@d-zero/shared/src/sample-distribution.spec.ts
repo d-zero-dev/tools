@@ -372,21 +372,21 @@ describe('sampleDistribution', () => {
 		});
 
 		it('should not return max when Math.random returns near 1 (right-skewed)', () => {
-			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9999999999);
 			const value = sampleDistribution({ min: 100, max: 1000 }, 'right-skewed');
 			expect(value).toBeGreaterThanOrEqual(100);
 			expect(value).toBeLessThan(1000);
 		});
 
 		it('should not return max when Math.random returns near 1 (left-skewed)', () => {
-			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9999999999);
 			const value = sampleDistribution({ min: 100, max: 1000 }, 'left-skewed');
 			expect(value).toBeGreaterThanOrEqual(100);
 			expect(value).toBeLessThan(1000);
 		});
 
 		it('should not return max when Math.random returns near 1 (triangular)', () => {
-			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9999999999);
 			const value = sampleDistribution({ min: 100, max: 1000 }, 'triangular');
 			expect(value).toBeGreaterThanOrEqual(100);
 			expect(value).toBeLessThan(1000);
@@ -397,7 +397,7 @@ describe('sampleDistribution', () => {
 			let callCount = 0;
 			randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => {
 				callCount++;
-				return callCount === 1 ? 0.999_999_999_9 : 0.999_999_999_9;
+				return callCount === 1 ? 0.9999999999 : 0.9999999999;
 			});
 			const value = sampleDistribution({ min: 100, max: 1000 }, 'normal');
 			expect(value).toBeGreaterThanOrEqual(100);
@@ -405,7 +405,7 @@ describe('sampleDistribution', () => {
 		});
 
 		it('should not return max when Math.random returns near 1 (custom)', () => {
-			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9999999999);
 			const value = sampleDistribution(
 				{ min: 100, max: 1000 },
 				{ type: 'custom', weight: (t: number) => t },
@@ -415,7 +415,7 @@ describe('sampleDistribution', () => {
 		});
 
 		it('should not return max when Math.random returns near 1 (bimodal)', () => {
-			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.999_999_999_9);
+			randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9999999999);
 			const value = sampleDistribution({ min: 100, max: 1000 }, { type: 'bimodal' });
 			expect(value).toBeGreaterThanOrEqual(100);
 			expect(value).toBeLessThan(1000);

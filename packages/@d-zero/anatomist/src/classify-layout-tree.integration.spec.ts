@@ -39,7 +39,7 @@ function loadFixtureDocument(name: string): Document {
 			toJSON() {
 				return this;
 			},
-		} as DOMRect;
+		};
 	};
 	return window.document;
 }

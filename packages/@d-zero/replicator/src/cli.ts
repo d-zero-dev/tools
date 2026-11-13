@@ -86,7 +86,7 @@ const urls = args.filter((arg): arg is string => typeof arg === 'string');
 const outputDir = options.output!;
 
 if (urls.length === 0) {
-	// eslint-disable-next-line no-console
+	// oxlint-disable-next-line no-console
 	console.error('❌ Error: At least one URL is required');
 	process.exit(1);
 }
@@ -117,14 +117,14 @@ try {
 	// を分解し、定型メッセージの裏に隠れる根本原因を両方とも出力する
 	for (const cause of unwrapSuppressedError(error)) {
 		if (cause instanceof Error) {
-			// eslint-disable-next-line no-console
+			// oxlint-disable-next-line no-console
 			console.error('❌ Error:', cause.message);
 			if (options.verbose) {
-				// eslint-disable-next-line no-console
+				// oxlint-disable-next-line no-console
 				console.error('Stack trace:', cause.stack);
 			}
 		} else {
-			// eslint-disable-next-line no-console
+			// oxlint-disable-next-line no-console
 			console.error('❌ Unknown error:', cause);
 		}
 	}

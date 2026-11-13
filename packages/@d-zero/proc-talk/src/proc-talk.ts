@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChildProcess, fork } from 'node:child_process';
 
 import { Deferred } from '@d-zero/shared/deferred';
@@ -79,6 +78,7 @@ export class ProcTalk<T, O = void> {
 		this.#listeners.set(type.toString(), listener);
 	}
 
+	/* oxlint-disable typescript/no-explicit-any -- The `(...args: any) => any` constraints of `call`: `unknown` parameters would reject methods with specific parameter types. */
 	call<
 		P extends keyof T,
 		R = T[P] extends (...args: any) => any ? ReturnType<T[P]> : unknown,
@@ -94,6 +94,7 @@ export class ProcTalk<T, O = void> {
 				type?: P;
 				returns?: T[P] extends (...args: any) => any ? ReturnType<T[P]>[] : never;
 			}) => void = (args) => {
+				/* oxlint-enable typescript/no-explicit-any */
 				this.#log('◀️ returnListener(%o)', args);
 				if (args?.type?.toString() === typeName && args.returns) {
 					this.#log('▶️ %s.resolve(%o)', typeName, args.returns[0]);
@@ -264,10 +265,13 @@ export class ProcTalk<T, O = void> {
 			this.#log('Unexpected error in process: %O', message?.payload);
 			if (this.#type === 'main' && this.#process instanceof ChildProcess) {
 				this.#process.kill();
+				// The `:error` payload is untrusted `unknown`; it is stringified on a best-effort basis.
+				/* oxlint-disable typescript/no-base-to-string, typescript/restrict-template-expressions */
 				const errorMessage = message?.payload?.[0]
 					? `${message?.payload?.[0]}`
 					: 'Unexpected error in process';
 				const errorStack = message?.payload?.[1] ? `${message?.payload?.[1]}` : '';
+				/* oxlint-enable typescript/no-base-to-string, typescript/restrict-template-expressions */
 				const error = new Error(errorMessage);
 				if (errorStack) {
 					error.stack = errorStack;

@@ -89,6 +89,10 @@
 			]
 		},
 		{
+			"groupName": "oxlint",
+			"matchPackageNames": ["oxlint", "oxlint-tsgolint"]
+		},
+		{
 			"groupName": "follow-redirects",
 			"matchPackageNames": ["follow-redirects", "@types/follow-redirects"]
 		},
@@ -108,12 +112,7 @@
 		},
 		{
 			"groupName": "archiver",
-			"matchPackageNames": [
-				"archiver",
-				"@types/archiver",
-				"unzipper",
-				"@types/unzipper"
-			]
+			"matchPackageNames": ["archiver", "@types/archiver", "unzipper", "@types/unzipper"]
 		},
 		{
 			"groupName": "typescript",
@@ -122,10 +121,8 @@
 		{
 			"groupName": "@d-zero configs",
 			"matchPackageNames": [
-				"@d-zero/cspell-config",
-				"@d-zero/eslint-config",
 				"@d-zero/lint-staged-config",
-				"@d-zero/prettier-config",
+				"@d-zero/oxlint-config",
 				"@d-zero/textlint-config",
 				"@d-zero/commitlint-config"
 			]

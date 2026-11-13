@@ -1,6 +1,6 @@
 # `@d-zero/proc-talk`
 
-Node.js の `child_process.fork` 上に双方向 IPC を構築するライブラリ。型安全なメソッド呼び出しとライフサイクル管理を提供する。
+Node.js の`child_process.fork`上に双方向 IPC を構築するライブラリ。型安全なメソッド呼び出しとライフサイクル管理を提供する。
 
 ## Installation
 
@@ -41,4 +41,4 @@ new ProcTalk({
 });
 ```
 
-シリアライズ仕様（関数は IPC 越境で `null` 化される制約）、エラー時のスタックトレース保持、`Symbol.asyncDispose` 時のクリーンアップ順序は `src/proc-talk.ts` と `src/serialize.ts` の JSDoc を参照。
+シリアライズ仕様（関数は IPC 越境で`null`化される制約）、エラー時のスタックトレース保持、`Symbol.asyncDispose`時のクリーンアップ順序は`src/proc-talk.ts`と`src/serialize.ts`の JSDoc を参照。

@@ -16,10 +16,10 @@ const sheetsLog = log.extend('Sheets');
 /**
  * `Sheets` インスタンスのメソッド用エラーハンドラを生成する。
  *
- * 診断ラベルは `Sheets.${method.name}` の組み立て。
+ * 診断ラベルは `Sheets.${methodName}` の組み立て。
  * - クラス名は当ファイル内のリテラル `'Sheets'` で固定する（下流 bundler の minify で
  *   クラス識別子が mangle されてもログ可読性を保つため）
- * - `method.name` は引数経由で動的に取得することで IDE rename に追従する。ただし terser の
+ * - `methodName` は呼び出し側が `this.method.name` で動的に取得することで IDE rename に追従する。ただし terser の
  *   `mangle.properties` のような aggressive な property-mangling を有効にした環境では
  *   method 側も mangle されうる — その場合は下流側で reserved 指定するか function 名保持オプションを検討
  *
@@ -28,21 +28,20 @@ const sheetsLog = log.extend('Sheets');
  * eager allocation コストは 1 インスタンスあたり 4 closure 程度で軽微だが、`Sheets`
  * を hot-loop で大量生成するケースが出た場合は lazy 化を検討。
  * @param sheets - 対象の `Sheets` インスタンス
- * @param method - 対象メソッド（`name` プロパティのみを参照）
- * @param method.name
+ * @param methodName - 対象メソッドの `name`（呼び出し側が `this.method.name` で渡す）
  */
-function handlerFor(sheets: Sheets, method: { readonly name: string }) {
-	return createErrorHandler(`Sheets.${method.name}`, {
+function handlerFor(sheets: Sheets, methodName: string) {
+	return createErrorHandler(`Sheets.${methodName}`, {
 		log: (message) => sheets.onLog?.(message),
 	});
 }
 
 export class Sheets {
 	onLog?: (message: ErrorHandlerMessage) => void;
-	readonly #handleBatchUpdate = handlerFor(this, this.batchUpdate);
-	readonly #handleGet = handlerFor(this, this.get);
-	readonly #handleGetRawSheetList = handlerFor(this, this.getRawSheetList);
-	readonly #handleGetWithGridData = handlerFor(this, this.getWithGridData);
+	readonly #handleBatchUpdate = handlerFor(this, this.batchUpdate.name);
+	readonly #handleGet = handlerFor(this, this.get.name);
+	readonly #handleGetRawSheetList = handlerFor(this, this.getRawSheetList.name);
+	readonly #handleGetWithGridData = handlerFor(this, this.getWithGridData.name);
 	readonly #sheetList = new Map<string, Sheet>();
 	readonly #sheets: sheets_v4.Sheets;
 	readonly #spreadsheetId: string;
@@ -87,7 +86,8 @@ export class Sheets {
 				return;
 			}
 			const req = request[requestName] as
-				{ sheetId?: string; start?: { sheetId?: string } } | undefined;
+				| { sheetId?: string; start?: { sheetId?: string } }
+				| undefined;
 			const sheetId = req?.sheetId ?? req?.start?.sheetId;
 			sheetsLog(`Sheet(#${sheetId})::BatchUpdate.${requestName}`);
 			const res = await this.#sheets.spreadsheets.batchUpdate({

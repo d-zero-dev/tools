@@ -15,7 +15,7 @@ npx @d-zero/backlog-projects --assign   # タスク一括登録（プロンプ�
 npx @d-zero/backlog-projects --delete   # 添付ファイル削除（ダウンロード後に削除）
 ```
 
-オプションは `--help` を参照。
+オプションは`--help`を参照。
 
 ### `.env`
 
@@ -27,4 +27,4 @@ NOTION_TOKEN=secret_xxxxxxxxxxxxxx
 
 ### 添付ファイル削除の出力
 
-保存先は `<outDir>/<プロジェクトキー>/<課題キー>/` 階層。各ファイルには削除結果のメタデータ（`.json`）が同梱される。
+保存先は`<outDir>/<プロジェクトキー>/<課題キー>/`階層。各ファイルには削除結果のメタデータ（`.json`）が同梱される。

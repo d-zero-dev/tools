@@ -882,13 +882,13 @@ export function parseCli<
 	const command = argv[0];
 
 	if (settings.version !== undefined && (command === '-v' || command === '--version')) {
-		// eslint-disable-next-line no-console
+		// oxlint-disable-next-line no-console
 		console.log(settings.version);
 		process.exit(0);
 	}
 
 	if (command === '--help' || command === '-h') {
-		// eslint-disable-next-line no-console
+		// oxlint-disable-next-line no-console
 		console.log(generateHelp(settings));
 		process.exit(0);
 	}
@@ -897,7 +897,7 @@ export function parseCli<
 		if (settings.onError) {
 			const showHelp = settings.onError(new Error('No command specified'));
 			if (showHelp) {
-				// eslint-disable-next-line no-console
+				// oxlint-disable-next-line no-console
 				console.error(generateHelp(settings));
 			}
 		}
@@ -917,7 +917,7 @@ export function parseCli<
 						!arg.startsWith('-') && Object.hasOwn(commandDef.subCommands ?? {}, arg),
 				)
 			: undefined;
-		// eslint-disable-next-line no-console
+		// oxlint-disable-next-line no-console
 		console.log(generateCommandHelp(settings, command, commandDef, subCommandName));
 		process.exit(0);
 	}
@@ -929,9 +929,9 @@ export function parseCli<
 	if (missing.length > 0) {
 		const plural = missing.length > 1 ? 's' : '';
 		const names = missing.map((key) => `--${camelToKebab(key)}`).join(', ');
-		// eslint-disable-next-line no-console
+		// oxlint-disable-next-line no-console
 		console.error(`Missing required flag${plural}: ${names}`);
-		// eslint-disable-next-line no-console
+		// oxlint-disable-next-line no-console
 		console.error(`Run '${settings.name} ${command} --help' for details.`);
 		process.exit(1);
 	}

@@ -1,6 +1,6 @@
 # `@d-zero/a11y-check-core`
 
-Puppeteer でページをスキャンし、WCAG 準拠のアクセシビリティ違反を検出するシナリオ実行エンジン。シナリオ自体は別パッケージ（[`@d-zero/a11y-check-axe-scenario`](../a11y-check-axe-scenario/) / [`@d-zero/a11y-check-scenarios`](../a11y-check-scenarios/)）が提供する。
+Puppeteer でページをスキャンし、WCAG 準拠のアクセシビリティ違反を検出するシナリオ実行エンジン。シナリオ自体は別パッケージ（[`@d-zero/a11y-check-axe-scenario`](../a11y-check-axe-scenario/)/[`@d-zero/a11y-check-scenarios`](../a11y-check-scenarios/)）が提供する。
 
 ## Installation
 
@@ -22,7 +22,7 @@ const result = await scenarioRunner(['https://example.com'], [scenarioAxe()], {
 console.log(result.violations.length);
 ```
 
-カスタムシナリオは `createScenario` で定義する:
+カスタムシナリオは`createScenario`で定義する:
 
 ```ts
 const myScenario = createScenario('my-scenario', async (page, sizeName) => {
@@ -31,4 +31,4 @@ const myScenario = createScenario('my-scenario', async (page, sizeName) => {
 });
 ```
 
-シナリオベース設計の WHY、結果分類（Passed / Violation / NeedAnalysis）、キャッシュキー仕様は `src/scenario-runner.ts` / `src/create-scenario.ts` / `src/types.ts` の JSDoc を参照。
+シナリオベース設計の WHY、結果分類（Passed/Violation/NeedAnalysis）、キャッシュキー仕様は`src/scenario-runner.ts`/`src/create-scenario.ts`/`src/types.ts`の JSDoc を参照。

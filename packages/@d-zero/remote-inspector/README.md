@@ -18,11 +18,11 @@ remote-inspector --host example.com --user deploy --key ~/.ssh/id_rsa --remote-d
 remote-inspector
 ```
 
-オプションは `--help` を参照。設定の優先順位は CLI、環境変数、`.env` の順。
+オプションは`--help`を参照。設定の優先順位は CLI、環境変数、`.env`の順。
 
 **認証**: 秘密鍵認証とパスワード認証は併用不可。
 
-**`--root`**: ファイルリストのパスからプレフィックスを除いてリモートパスを計算する。詳細は `src/remote-inspector.ts` の `compareFile` JSDoc を参照。
+**`--root`**: ファイルリストのパスからプレフィックスを除いてリモートパスを計算する。詳細は`src/remote-inspector.ts`の`compareFile` JSDoc を参照。
 
 ### ファイルリスト形式
 
@@ -31,7 +31,7 @@ htdocs/css/style.css
 htdocs/index.html
 ```
 
-### `.env` 例
+### `.env`例
 
 ```env
 RELEASE_HOST=example.com

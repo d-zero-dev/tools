@@ -82,6 +82,7 @@ function tagString(element: Element) {
 	}
 	tag += '>';
 	if (element.childNodes.length > 0) {
+		// oxlint-disable-next-line typescript/no-base-to-string -- Children of these raw-text-like elements are text; an element child would stringify as `[object Object]`, which is the existing output and is kept.
 		tag += element.childNodes.map((child) => walk(child)).join('');
 	}
 	tag += `</${element.tagName}>`;

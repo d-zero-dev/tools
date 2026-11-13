@@ -134,7 +134,7 @@ export async function retryCall<T>(
  * @returns A decorator function that can be applied to a method.
  */
 export function retry<C extends object>(options?: RetryDecoratorOptions) {
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+	// oxlint-disable-next-line typescript/no-unsafe-function-type -- The decorated method can have any signature, so it is only ever invoked through `apply`.
 	return (method: Function, context: ClassMethodDecoratorContext) => {
 		return async function (this: C, ...args: unknown[]) {
 			// Resolve retries per-call: instance property > decorator option > default 5
@@ -142,10 +142,11 @@ export function retry<C extends object>(options?: RetryDecoratorOptions) {
 				((this as Record<string, unknown>).retries as number | undefined) ??
 				options?.retries ??
 				5;
+			// oxlint-disable-next-line typescript/no-base-to-string -- The last fallback (`this`) is only reached for an object without a constructor and must keep producing a label instead of throwing.
 			const constructorName = String(this.constructor?.name || this.constructor || this);
 			const methodName = `${constructorName}.${String(context.name)}`;
 
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			// oxlint-disable-next-line typescript/no-explicit-any -- The decorated method's return type is unknown here; `any` hands it back to callers unchanged.
 			return retryLoop<any>(() => method.apply(this, args), retries, methodName, {
 				...options,
 				onWait: options?.onWait
