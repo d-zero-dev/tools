@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.2](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fcli-core%401.4.1...%40d-zero%2Fcli-core%401.4.2) (2026-11-13)
+
+**Note:** Version bump only for package @d-zero/cli-core
+
 ## [1.4.1](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fcli-core%401.4.0...%40d-zero%2Fcli-core%401.4.1) (2026-11-11)
 
 **Note:** Version bump only for package @d-zero/cli-core

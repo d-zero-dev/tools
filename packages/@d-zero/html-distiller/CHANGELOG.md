@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.13](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fhtml-distiller%402.0.12...%40d-zero%2Fhtml-distiller%402.0.13) (2026-11-13)
+
+**Note:** Version bump only for package @d-zero/html-distiller
+
 ## [2.0.12](https://github.com/d-zero-dev/tools/compare/@d-zero/html-distiller@2.0.11...@d-zero/html-distiller@2.0.12) (2026-08-14)
 
 **Note:** Version bump only for package @d-zero/html-distiller

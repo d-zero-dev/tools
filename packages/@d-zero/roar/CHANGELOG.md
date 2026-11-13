@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.1](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Froar%402.3.0...%40d-zero%2Froar%402.3.1) (2026-11-13)
+
+**Note:** Version bump only for package @d-zero/roar
+
 # [2.3.0](https://github.com/d-zero-dev/tools/compare/@d-zero/roar@2.2.1...@d-zero/roar@2.3.0) (2026-10-01)
 
 ### Bug Fixes

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.29](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fnotion%402.0.28...%40d-zero%2Fnotion%402.0.29) (2026-11-13)
+
+**Note:** Version bump only for package @d-zero/notion
+
 ## [2.0.28](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fnotion%402.0.27...%40d-zero%2Fnotion%402.0.28) (2026-11-11)
 
 **Note:** Version bump only for package @d-zero/notion

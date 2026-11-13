@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.3](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fbeholder%405.0.2...%40d-zero%2Fbeholder%405.0.3) (2026-11-13)
+
+### Bug Fixes
+
+- **beholder:** wait for network idle before HTML snapshot ([e0d1fe5](https://github.com/d-zero-dev/tools/commit/e0d1fe5854bd5c39e30232d0fd92147878473f5b))
+
 ## [5.0.2](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fbeholder%405.0.1...%40d-zero%2Fbeholder%405.0.2) (2026-11-11)
 
 **Note:** Version bump only for package @d-zero/beholder

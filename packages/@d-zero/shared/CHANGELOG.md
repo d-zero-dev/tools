@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.23.2](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fshared%400.23.1...%40d-zero%2Fshared%400.23.2) (2026-11-13)
+
+**Note:** Version bump only for package @d-zero/shared
+
 ## [0.23.1](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fshared%400.23.0...%40d-zero%2Fshared%400.23.1) (2026-11-11)
 
 **Note:** Version bump only for package @d-zero/shared

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.4.16](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fpuppeteer-screenshot%403.4.15...%40d-zero%2Fpuppeteer-screenshot%403.4.16) (2026-11-13)
+
+**Note:** Version bump only for package @d-zero/puppeteer-screenshot
+
 ## [3.4.15](https://github.com/d-zero-dev/tools/compare/%40d-zero%2Fpuppeteer-screenshot%403.4.14...%40d-zero%2Fpuppeteer-screenshot%403.4.15) (2026-11-11)
 
 **Note:** Version bump only for package @d-zero/puppeteer-screenshot
